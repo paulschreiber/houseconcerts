@@ -2,13 +2,13 @@ class CreateVenues < ActiveRecord::Migration
   def change
     create_table :venues do |t|
       t.string :name
+      t.string :slug
       t.string :address
       t.string :city
       t.string :province
       t.string :postcode
       t.string :country
       t.integer :capacity
-      t.string :slug
 
       t.timestamps null: false
 
