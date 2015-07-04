@@ -13,11 +13,12 @@ class CreatePeople < ActiveRecord::Migration
       t.datetime :removed_at
 
       t.timestamps null: false
+
+      t.index :uniqid, unique: true
+      t.index :first_name
+      t.index :last_name
+      t.index :email
+      t.index :status
     end
-    add_index :people, :uniqid, unique: true
-    add_index :people, :first_name
-    add_index :people, :last_name
-    add_index :people, :email
-    add_index :people, :status
   end
 end

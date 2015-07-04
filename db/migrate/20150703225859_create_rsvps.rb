@@ -12,9 +12,10 @@ class CreateRsvps < ActiveRecord::Migration
       t.datetime :confirmed_at
 
       t.timestamps null: false
+
+      t.index :email
+      t.index :response
+      t.index :confirmed
     end
-    add_index :rsvps, :email
-    add_index :rsvps, :response
-    add_index :rsvps, :confirmed
   end
 end

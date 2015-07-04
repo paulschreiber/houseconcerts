@@ -6,8 +6,9 @@ class CreateArtists < ActiveRecord::Migration
       t.string :url
 
       t.timestamps null: false
+
+      t.index :name
+      t.index :slug, unique: true
     end
-    add_index :artists, :name
-    add_index :artists, :slug, unique: true
   end
 end

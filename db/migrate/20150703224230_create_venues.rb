@@ -11,8 +11,9 @@ class CreateVenues < ActiveRecord::Migration
       t.string :slug
 
       t.timestamps null: false
+
+      t.index :name
+      t.index :slug, unique: true
     end
-    add_index :venues, :name
-    add_index :venues, :slug, unique: true
   end
 end

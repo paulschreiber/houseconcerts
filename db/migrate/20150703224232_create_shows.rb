@@ -10,9 +10,10 @@ class CreateShows < ActiveRecord::Migration
       t.references :venue, index: true, foreign_key: true
 
       t.timestamps null: false
+
+      t.index :slug, unique: true
+      t.index :start
+      t.index :status
     end
-    add_index :shows, :slug, unique: true
-    add_index :shows, :start
-    add_index :shows, :status
   end
 end
