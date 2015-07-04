@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150704002343) do
+ActiveRecord::Schema.define(version: 20150704023359) do
 
   create_table "artists", force: :cascade do |t|
     t.string   "name",       limit: 255
@@ -23,6 +23,14 @@ ActiveRecord::Schema.define(version: 20150704002343) do
 
   add_index "artists", ["name"], name: "index_artists_on_name", using: :btree
   add_index "artists", ["slug"], name: "index_artists_on_slug", unique: true, using: :btree
+
+  create_table "artists_shows", id: false, force: :cascade do |t|
+    t.integer "artist_id", limit: 4, null: false
+    t.integer "show_id",   limit: 4, null: false
+  end
+
+  add_index "artists_shows", ["artist_id", "show_id"], name: "index_artists_shows_on_artist_id_and_show_id", using: :btree
+  add_index "artists_shows", ["show_id", "artist_id"], name: "index_artists_shows_on_show_id_and_artist_id", using: :btree
 
   create_table "opens", force: :cascade do |t|
     t.string   "tag",        limit: 255
@@ -63,16 +71,6 @@ ActiveRecord::Schema.define(version: 20150704002343) do
   add_index "people_venue_groups", ["person_id", "venue_group_id"], name: "index_people_venue_groups_on_person_id_and_venue_group_id", using: :btree
   add_index "people_venue_groups", ["venue_group_id", "person_id"], name: "index_people_venue_groups_on_venue_group_id_and_person_id", using: :btree
 
-  create_table "performances", force: :cascade do |t|
-    t.integer  "show_id",    limit: 4
-    t.integer  "artist_id",  limit: 4
-    t.datetime "created_at",           null: false
-    t.datetime "updated_at",           null: false
-  end
-
-  add_index "performances", ["artist_id"], name: "index_performances_on_artist_id", using: :btree
-  add_index "performances", ["show_id"], name: "index_performances_on_show_id", using: :btree
-
   create_table "rsvps", force: :cascade do |t|
     t.integer  "show_id",      limit: 4
     t.string   "first_name",   limit: 255
@@ -111,12 +109,9 @@ ActiveRecord::Schema.define(version: 20150704002343) do
 
   create_table "venue_groups", force: :cascade do |t|
     t.string   "name",       limit: 255
-    t.integer  "venue_id",   limit: 4
     t.datetime "created_at",             null: false
     t.datetime "updated_at",             null: false
   end
-
-  add_index "venue_groups", ["venue_id"], name: "index_venue_groups_on_venue_id", using: :btree
 
   create_table "venue_groups_venues", id: false, force: :cascade do |t|
     t.integer "venue_id",       limit: 4, null: false
@@ -142,9 +137,6 @@ ActiveRecord::Schema.define(version: 20150704002343) do
   add_index "venues", ["name"], name: "index_venues_on_name", using: :btree
   add_index "venues", ["slug"], name: "index_venues_on_slug", unique: true, using: :btree
 
-  add_foreign_key "performances", "artists"
-  add_foreign_key "performances", "shows"
   add_foreign_key "rsvps", "shows"
   add_foreign_key "shows", "venues"
-  add_foreign_key "venue_groups", "venues"
 end
