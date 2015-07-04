@@ -93,6 +93,7 @@ ActiveRecord::Schema.define(version: 20150704023359) do
   create_table "shows", force: :cascade do |t|
     t.datetime "start"
     t.datetime "end"
+    t.string   "name",       limit: 255
     t.string   "slug",       limit: 255
     t.string   "status",     limit: 255
     t.text     "blurb",      limit: 65535
@@ -123,13 +124,13 @@ ActiveRecord::Schema.define(version: 20150704023359) do
 
   create_table "venues", force: :cascade do |t|
     t.string   "name",       limit: 255
+    t.string   "slug",       limit: 255
     t.string   "address",    limit: 255
     t.string   "city",       limit: 255
     t.string   "province",   limit: 255
     t.string   "postcode",   limit: 255
     t.string   "country",    limit: 255
     t.integer  "capacity",   limit: 4
-    t.string   "slug",       limit: 255
     t.datetime "created_at",             null: false
     t.datetime "updated_at",             null: false
   end
