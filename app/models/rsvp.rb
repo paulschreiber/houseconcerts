@@ -2,7 +2,7 @@ class RSVP < ActiveRecord::Base
   belongs_to :show
 
   before_save :downcase_email
-  before_save :update_confirmation_status
+  before_save :update_confirmation_date
 
   validates :first_name, presence: true, mixed_case: true
   validates :last_name, presence: true, mixed_case: true
@@ -15,8 +15,8 @@ class RSVP < ActiveRecord::Base
   }
   validates :response, inclusion: { in: HC_CONFIG.rsvp.response.values }
 
-  def update_confirmation_status
-    if self.confirmed_changed? and self.status == HC_CONFIG.rsvp.confirmed[:yes]
+  def update_confirmation_date
+    if self.confirmed_changed? and response == HC_CONFIG.rsvp.confirmed[:yes]
       self.confirmed_at = DateTime.now
     end
   end
