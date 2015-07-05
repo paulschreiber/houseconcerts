@@ -10,6 +10,21 @@
 	<title><%= page_title %></title>
 	<%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
 	<%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
+
+	<script type="text/javascript">
+	window.fbAsyncInit = function() {
+	  FB.init({ appId: '<%= HC_CONFIG.facebook_app_id %>', xfbml: true, version: 'v2.3' });
+	};
+
+	(function(d, s, id){
+		var js, fjs = d.getElementsByTagName(s)[0];
+		if (d.getElementById(id)) {return;}
+		js = d.createElement(s); js.id = id;
+		js.src = "//connect.facebook.net/en_US/sdk.js";
+		fjs.parentNode.insertBefore(js, fjs);
+	 }(document, 'script', 'facebook-jssdk'));
+	 </script>
+
 	<% if Rails.env.production? %>
 	<script type="text/javascript">
 	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
