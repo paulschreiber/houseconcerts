@@ -21,6 +21,7 @@ gem 'validate_url'
 gem 'validation_kit'
 gem 'stringex'
 gem 'carmen'
+gem 'devise'
 
 # Use jquery as the JavaScript library
 gem 'jquery-rails'
