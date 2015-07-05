@@ -1,6 +1,8 @@
 --- !ruby/object:OpenStruct
 table:
   :default_country: "US"
+  :meta_description: "Paul’s house concerts in Brooklyn, New York. Private shows featuring talented singer-songwriters."
+  :meta_keywords: "Brooklyn, New York, Music, Live, Concert, Concerts, House Concert, Singer Songwriter, Folk, Acoustic, Unplugged"
 
   :venue: !ruby/object:OpenStruct
     table:
