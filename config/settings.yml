@@ -1,0 +1,37 @@
+--- !ruby/object:OpenStruct
+table:
+  :default_country: "US"
+
+  :venue: !ruby/object:OpenStruct
+    table:
+      :min_capacity: 10
+      :max_capacity: 100
+
+  :show: !ruby/object:OpenStruct
+    table:
+      :min_price: 0
+      :max_price: 100
+      :min_seats: 1
+      :max_seats: 4
+      :status: !map:HashWithIndifferentAccess
+        "confirmed": G
+        "unconfirmed": U
+        "cancelled": C
+
+  :person: !ruby/object:OpenStruct
+    table:
+      :status: !map:HashWithIndifferentAccess
+        "active": "A"
+        "bouncing": "B"
+        "moved": "M"
+        "removed": "R"
+
+  :rsvp: !ruby/object:OpenStruct
+    table:
+      :response: !map:HashWithIndifferentAccess
+        "yes": "Y"
+        "no": "N"
+      :confirmed: !map:HashWithIndifferentAccess
+        "yes": "Y"
+        "no": "N"
+        "waitlisted": "W"
