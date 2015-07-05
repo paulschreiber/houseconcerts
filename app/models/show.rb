@@ -19,4 +19,10 @@ class Show < ActiveRecord::Base
   }
   validates :venue, presence: true
 
+
+  # define .confirmed, .cancelled?, .unconfirmed? methods
+  HC_CONFIG.show.status.keys.each do |key|
+    define_method("#{key}?") { status == key }
+  end
+
 end
