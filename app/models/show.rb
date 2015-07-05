@@ -11,7 +11,7 @@ class Show < ActiveRecord::Base
   validates :start, timeliness: { type: :datetime }
   validates :end, timeliness: { type: :datetime, after: lambda{ |x| x.start } }
   validates :name, presence: true
-  validates :status, inclusion: { in: HC_CONFIG.show.status.keys }
+  validates :status, inclusion: { in: HC_CONFIG.show.status.values }
   validates :price, presence: true, numericality: {
     only_integer: true,
     greater_than_or_equal_to: HC_CONFIG.show.min_price,
