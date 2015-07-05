@@ -5,4 +5,6 @@ class Show < ActiveRecord::Base
 
   scope :confirmed, -> { where(status: HC_CONFIG.show.status[:confirmed]) }
   scope :upcoming, -> { where("start > ?", Time.now) }
+
+  before_save :update_slug
 end
