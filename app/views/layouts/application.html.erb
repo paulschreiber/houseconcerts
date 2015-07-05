@@ -5,8 +5,9 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="description" content="<%= HC_CONFIG.meta_description %>">
 	<meta name="keywords" content="<%= HC_CONFIG.meta_keywords %>">
-	<link rel="apple-touch-icon" href="concerts.png">
-	<link rel="icon" sizes="any" mask href="concerts.svg">
+
+	<link rel="apple-touch-icon" href="<%= apple_touch_icon %>">
+	<link rel="icon" sizes="any" mask href="<%= svg_icon %>">
 	<title><%= page_title %></title>
 	<%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
 	<%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
