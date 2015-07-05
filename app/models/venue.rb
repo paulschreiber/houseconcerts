@@ -5,6 +5,7 @@ class Venue < ActiveRecord::Base
   has_many :shows
 
   before_save :update_slug
+  before_save :upcase_province_and_country
 
   validates :name, presence: true
   validates :address, presence: true
