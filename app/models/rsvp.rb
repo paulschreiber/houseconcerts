@@ -21,4 +21,21 @@ class RSVP < ActiveRecord::Base
     end
   end
 
+  # define .yes?, .no?
+  HC_CONFIG.rsvp.response.each_pair do |key, value|
+    define_method("#{key}?") { response == value }
+  end
+
+  def confirmed?
+    confirmed == HC_CONFIG.rsvp.confirmed[:yes]
+  end
+
+  def unconfirmed?
+    confirmed == HC_CONFIG.rsvp.confirmed[:no]
+  end
+
+  def waitlisted?
+    confirmed == HC_CONFIG.rsvp.confirmed[:waitlisted]
+  end
+
 end
