@@ -1,8 +1,10 @@
 module Geography
   extend ActiveSupport::Concern
 
-  def us_state_codes
-    Carmen::Country.coded('US').subregions.map{|s| s.code if s.type == 'state'}.compact
+  def province_codes
+    subregions = Carmen::Country.coded(HC_CONFIG.default_country).subregions
+    subregions = subregions.select{|s| s.type == 'state'} if HC_CONFIG.default_country == "US"
+    subregions.map{|s| s.code}
   end
 
   def country_codes
