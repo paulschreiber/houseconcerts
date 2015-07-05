@@ -1,9 +1,14 @@
 --- !ruby/object:OpenStruct
 table:
   :default_country: "US"
-  :page_title: "Paul’s Brooklyn House Concerts"
+  :site_name: "Paul’s Brooklyn House Concerts"
   :meta_description: "Paul’s house concerts in Brooklyn, New York. Private shows featuring talented singer-songwriters."
   :meta_keywords: "Brooklyn, New York, Music, Live, Concert, Concerts, House Concert, Singer Songwriter, Folk, Acoustic, Unplugged"
+  :facebook_app_id: "557776301028129"
+  :facebook_page_slug: BrooklynHouseConcerts
+  :twitter_name: HouseConcertsBK
+  :twitter_id: "3317563834"
+  :google_analytics_id: "UA-1895263-1"
 
   :venue: !ruby/object:OpenStruct
     table:
