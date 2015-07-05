@@ -9,7 +9,7 @@ class Show < ActiveRecord::Base
   before_save :update_slug
 
   validates :start, timeliness: { type: :datetime }
-  validates :end, timeliness: { type: :datetime }
+  validates :end, timeliness: { type: :datetime, after: lambda{ |x| x.start } }
   validates :name, presence: true
   validates :status, inclusion: { in: HC_CONFIG.show.status.keys }
   validates :price, presence: true, numericality: {
