@@ -19,4 +19,14 @@ class Person < ActiveRecord::Base
   validates :postcode, postal_code: { country: HC_CONFIG.default_country }
   validates :status, inclusion: { in: HC_CONFIG.person.status.values }
 
+  def set_ip_address
+    self.ip_address = request.remote_addr if ip_address.empty?
+  end
+
+  def update_removal_status
+    if self.status_changed? and self.status == HC_CONFIG.person.status[:removed]
+      self.removed_at = DateTime.now
+      self.removal_ip_address = request.remote_addr
+    end
+  end
 end
