@@ -1,4 +1,4 @@
-class Rsvp < ActiveRecord::Base
+class RSVP < ActiveRecord::Base
   belongs_to :show
 
   before_save :downcase_email
