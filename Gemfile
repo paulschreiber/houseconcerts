@@ -19,7 +19,7 @@ gem 'default_value_for'
 gem 'validates_timeliness'
 gem 'validate_url'
 gem 'validation_kit'
-gem 'stringex'
+gem 'friendly_id'
 gem 'carmen'
 gem 'devise'
 
