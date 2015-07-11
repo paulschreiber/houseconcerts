@@ -1,0 +1,28 @@
+<div id="tabs">
+<ul>
+<%
+
+#$currentPage = ($_SERVER["SCRIPT_NAME"] === "/index.php") ? "/" : $_SERVER["SCRIPT_NAME"];
+currentPage = "/"
+
+tabList = {
+	"/" => "House Concerts",
+	"/about" => "About",
+	"/invite" => "Invite a friend",
+	"/list" => "Mailing list",
+	"/rsvp" => "RSVP",
+	"/shows" => "Past shows",
+	"/musicians" => "Musicians",
+}
+%>
+
+<% tabList.each_pair do |url, text| %>
+	<% if (currentPage == url) %>
+		<li class='here'><%= text %></li>
+	<% else %>
+		<li><a href='<%= url %>'><%= text %></a></li>
+	<% end %>
+<% end %>
+
+</ul>
+</div>
