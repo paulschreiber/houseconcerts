@@ -18,10 +18,6 @@ module ModelCleaners
     end
   end
 
-  def update_slug
-    self.slug = name.to_url
-  end
-
   def downcase_email
     self.email = email.to_s.downcase if self.respond_to?(:email)
   end
@@ -29,5 +25,9 @@ module ModelCleaners
   def upcase_province_and_country
     self.province = province.to_s.upcase if self.respond_to?(:province)
     self.country = country.to_s.upcase if self.respond_to?(:country)
+  end
+
+  def name_slug_candidates
+    2.upto(100).inject([name]) { |m, o| m << "%s %d" % [name, o] }
   end
 end
