@@ -1,7 +1,8 @@
 class Artist < ActiveRecord::Base
-  has_and_belongs_to_many :shows
+  extend FriendlyId
+  friendly_id :name_slug_candidates, use: :slugged
 
-  before_save :update_slug
+  has_and_belongs_to_many :shows
 
   validates :name, presence: true
   validates :url, url: true

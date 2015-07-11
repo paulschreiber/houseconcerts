@@ -1,10 +1,11 @@
 class Venue < ActiveRecord::Base
   include Geography
+  extend FriendlyId
+  friendly_id :name_slug_candidates, use: :slugged
 
   has_and_belongs_to_many :venue_groups
   has_many :shows
 
-  before_save :update_slug
   before_save :upcase_province_and_country
 
   validates :name, presence: true
