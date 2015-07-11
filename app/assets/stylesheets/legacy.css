@@ -1,0 +1,294 @@
+body {
+	color: #333;
+	margin: 0;
+	border: 0;
+	border-top: 2px dotted #bbb;
+
+	padding: 10px;
+	padding-bottom: 25px;
+
+	width: 95%;
+
+	font-family: "Lucida Grande", Verdana;
+    font-size:    13px;
+
+	text-align: left;
+	color: #444;
+	background: transparent;
+}
+
+h1 {
+	font-family: "Lucida Grande";
+	margin-left: 0.98em;
+	margin-bottom: 0.1em;
+	margin-top: 0.6em;
+}
+
+h2, h3, p.listintro {
+	margin-bottom: 0px;
+}
+
+h4 {
+	margin-top: 2px;
+	margin-bottom: 0px;
+}
+
+p+h4 {
+	margin-top: 8px;
+}
+
+ul {
+	margin-top: 0px;
+}
+
+address {
+	font-style: normal;
+	display: inline;
+}
+
+abbr {
+	border: none;
+}
+
+abbr.duration, abbr.fn {
+	display: none;
+}
+
+dt {
+	font-weight: bold;
+}
+
+dd {
+	margin-left: 0px;
+	margin-bottom: 0.5em;
+}
+
+dl {
+	margin-top: 3px;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+th, td {
+	padding: 4px;
+	vertical-align: top;
+	text-align: left;
+}
+
+a {
+	color: #668;
+	text-decoration: none;
+	border-bottom: 1px dashed #668;
+}
+
+a.img {
+	border-bottom: none;
+}
+
+a:hover {
+	color: #668;
+	border-bottom: 1px dashed #668;
+}
+
+a.imagelink, a.imagelink:hover {
+	border-bottom: none;
+}
+
+/* classes */
+
+.artist, .cd, .thumbnail {
+	border: 1px solid #668;
+	margin-right: 10px;
+}
+
+.artist {
+	float: left;
+}
+
+.show, .pagetext {
+	margin-left: 2em;
+	clear: left;
+	padding-right: 20%;
+}
+
+div.pagetext > p  {
+	margin-top: 0px;
+}
+
+dd > p {
+	margin-bottom: 0px;
+}
+
+.show img {
+	margin-bottom: 20px;
+}
+
+.infoboxes {
+	width: 14em;
+	float: right;
+	padding-bottom: 5px;
+	padding-top: 1.5em;
+}
+
+.infoboxes div {
+    border: 1px dotted #bbb;
+	padding: 5px;
+	padding-top: 1px;
+	padding-bottom: 5px;
+	margin-top: 0px;
+	vertical-align: top;
+	background-color: #ffc;
+	margin-bottom: 10px;
+}
+
+.infoboxes p {
+	margin-top: 1px;
+	margin-bottom: 4px;
+}
+
+p.errorbox {
+	font-weight: bold;
+	color: #900;
+	border: 1px solid #900;
+	padding: 0.5em;
+	background: #fcc;
+	width: 30em;
+}
+
+/* navigation tabs */
+#tabs ul, #tabs ul li {
+	padding-top: 3px;
+    padding-bottom: 5px;
+}
+
+#tabs ul {
+    padding-right: 10px;
+	padding-left: 5px;
+
+    border-bottom: 1px solid #000;
+    display: inline;
+}
+
+#tabs ul li {
+    padding-right: 0.9em;
+	padding-left: 0.9em;
+
+    list-style: none;
+    display: inline;
+    background: #ffc;
+    border: 1px solid #000;
+
+    margin: 1px;
+}
+
+/* current page tab */
+#tabs ul li.here {
+    border-bottom: 1px solid #fff;
+    background: #fff;
+}
+
+/* hovering over tabs */
+#tabs ul li:hover {
+	background-color: #eee;
+    border-bottom: 1px solid #eee;
+}
+
+/* hovering over current tab */
+#tabs ul li.here:hover {
+	background-color: #fff;
+    border-bottom: 1px solid #fff;
+}
+
+/* hovering over link inside tab */
+#tabs ul li:hover a {
+	color: #000;
+	border-bottom: 1px dotted #668;
+}
+
+
+/* vcalendar -- past shows */
+
+.row1 {
+	background: #fff;
+}
+
+.row2 {
+	background: #ffc;
+}
+
+.row3 {
+	background: #dda;
+}
+
+ol.vcalendar, ol.columnheads {
+	margin: 0;
+	padding: 0;
+}
+
+ol.vcalendar, ol.columnheads  {
+	margin-right: 1px;
+	list-style: none;
+}
+
+tr.columnheads th, th.columnheads, ol.columnheads {
+	color: #fff;
+	height: 2em;
+}
+
+ol.columnheads li, li.vevent {
+	float: left;
+	margin: 0;
+	padding: 0;
+	width: 23em;
+}
+
+ol.columnheads li {
+	height: 2em;
+	margin-bottom: -1.9em;
+	background: #f0f;
+}
+
+li.vevent {
+	vertical-align: top;
+	padding-top: 0.5em;
+	padding-bottom: 0.5em;
+	height: 4em;
+}
+
+ol.columnheads h3 {
+	float: left;
+	width: 11em;
+	line-height: 2em;
+	font-size: 13px;
+	margin: 0px;
+	text-indent: 64px;
+}
+
+ol.columnheads h3+h3 {
+	text-indent: 1.2em;
+}
+
+tr.columnheads th, th.columnheads, ol.columnheads li, h3+h3 {
+	background: #000;
+}
+
+ol.vcalendar div.vcard {
+	float: left;
+	width: 12em;
+	padding-left: 4px;
+}
+
+td.centered, th.centered {
+	text-align: center;
+}
+
+span.rsvpnote {
+	color: #aaa;
+}
+
+span.resdate {
+	color: #aaa;
+	font-size: 10px;
+}
