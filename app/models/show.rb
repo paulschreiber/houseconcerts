@@ -26,4 +26,16 @@ class Show < ActiveRecord::Base
     define_method("#{key}?") { status == key }
   end
 
+  def duration
+    ((self.end - self.start)/60).to_i
+  end
+
+  def start_time
+    self.start.strftime("%l %P").strip
+  end
+
+  def start_date
+    self.start.strftime("%A, %B %e, %Y").strip
+  end
+
 end
