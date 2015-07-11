@@ -22,6 +22,8 @@ table:
       :min_seats: 1
       :max_seats: 4
       :status: !map:HashWithIndifferentAccess
+        "sold out": S
+        "waitlisted": W
         "confirmed": G
         "unconfirmed": U
         "cancelled": C
@@ -33,6 +35,8 @@ table:
         "bouncing": "B"
         "moved": "M"
         "removed": "R"
+        "deleted": "D"
+        "vacation": "V"
 
   :rsvp: !ruby/object:OpenStruct
     table:
