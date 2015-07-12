@@ -1,0 +1,53 @@
+<% row_count = 2 %>
+<h1>Past shows</h1>
+
+<div class="pagetext">
+
+<% if @shows.empty? %>
+<h2>No shows found</h2>
+<p>No past shows were found.</p>
+<% else %>
+
+<ol class="columnheads">
+<li><h3>Musician</h3><h3>Date</h3></li>
+<li><h3>Musician</h3><h3>Date</h3></li>
+<li><h3>Musician</h3><h3>Date</h3></li>
+</ol>
+
+<ol class="vcalendar">
+
+	<% @shows.each do |show, index| %>
+
+		<%
+			row_count = row_count + 1
+			klass = "row#{((row_count % 3) + 1)}"
+
+			artist_for_photo = show.artists.sample
+			artist_links = []
+			show.artists.each do |artist|
+				artist_links << "<a class='url fn' href='#{artist.url}'>#{artist.name}</a>"
+			end
+		%>
+
+		<li class='vevent <%= klass %>'>
+		<div class='vcard attendee summary'>
+
+			<a class='imagelink' href='<%= artist_for_photo.url %>'><img class='artist photo' src='/photos/headshots/thumb/<%= artist_for_photo.slug %>.jpg' width='50' height='50' alt='<%= artist_for_photo.name %>' /></a>
+
+			<%= artist_links.to_sentence.html_safe %>
+
+		</div>
+
+		<abbr class='dtstart' title='<%= show.start.to_time.iso8601 %>'><%= show.start.strftime("%B %e, %Y").strip %></abbr>
+		<abbr class='duration' title='PT<%= show.duration %>H'>((<%= show.duration %> hours)</abbr>
+
+		</li>
+
+		<% end # shows.each %>
+
+<% end # >= 1 show %>
+
+</ol>
+
+
+</div>
