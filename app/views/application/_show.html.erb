@@ -16,7 +16,7 @@
 		<% end %>
 
 		<% if ["G", "W"].include?(show.status) %>
-			<p><%= button_to "RSVP for #{show.name}", { controller: :rsvp, action: :new, slug: show.slug } %></p>
+			<p><%= button_to("RSVP for #{show.name}", { controller: :rsvps, action: :new, slug: show.slug }) unless controller_name == "rsvps" %></p>
 		<% elsif show.status == "S" %>
 			<p>This show is sold out.</p>
 		<% end >%>
