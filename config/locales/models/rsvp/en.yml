@@ -1,0 +1,18 @@
+en:
+  activerecord:
+    errors:
+      models:
+        rsvp:
+          attributes:
+            first_name:
+              blank: "enter your first name"
+            last_name:
+              blank: "enter your last name"
+            email:
+              invalid: "enter your email address"
+            postcode:
+              invalid: "enter your zip code"
+            seats:
+              not_a_number: "select the number of seats you want"
+            response:
+              inclusion: "select whether or not you’re coming"

@@ -1,0 +1,12 @@
+en:
+  activerecord:
+    errors:
+      models:
+        person:
+          attributes:
+            first_name:
+              blank: "enter your first name"
+            last_name:
+              blank: "enter your last name"
+            email:
+              invalid: "enter your email address"
