@@ -1,2 +1,2 @@
-module RSVPHelper
+module RsvpsHelper
 end
