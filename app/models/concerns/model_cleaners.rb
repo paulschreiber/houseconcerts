@@ -27,6 +27,10 @@ module ModelCleaners
     self.country = country.to_s.upcase if self.respond_to?(:country)
   end
 
+  def should_generate_new_friendly_id?
+    name_changed? || super
+  end
+
   def name_slug_candidates
     cleaned_name = name.gsub(' and', '')
 
