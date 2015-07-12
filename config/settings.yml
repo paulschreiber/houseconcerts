@@ -40,9 +40,9 @@ table:
 
   :rsvp: !ruby/object:OpenStruct
     table:
-      :response: !map:HashWithIndifferentAccess
-        "yes": "Y"
-        "no": "N"
+      :response:
+        - "Yes"
+        - "No"
       :confirmed: !map:HashWithIndifferentAccess
         "yes": "Y"
         "no": "N"

@@ -13,7 +13,7 @@ class RSVP < ActiveRecord::Base
     greater_than_or_equal_to: HC_CONFIG.show.min_seats,
     less_than_or_equal_to: HC_CONFIG.show.max_seats
   }
-  validates :response, inclusion: { in: HC_CONFIG.rsvp.response.values }
+  validates :response, inclusion: { in: HC_CONFIG.rsvp.response }
 
   def update_confirmation_date
     if self.confirmed_changed? and response == HC_CONFIG.rsvp.confirmed[:yes]
@@ -22,8 +22,8 @@ class RSVP < ActiveRecord::Base
   end
 
   # define .yes?, .no?
-  HC_CONFIG.rsvp.response.each_pair do |key, value|
-    define_method("#{key}?") { response == value }
+  HC_CONFIG.rsvp.response.each do |value|
+    define_method("#{value.downcase}?") { response == value }
   end
 
   def confirmed?
