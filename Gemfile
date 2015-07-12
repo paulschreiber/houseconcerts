@@ -22,6 +22,7 @@ gem 'validation_kit'
 gem 'friendly_id'
 gem 'carmen'
 gem 'devise'
+gem 'humanize'
 
 # Use jquery as the JavaScript library
 gem 'jquery-rails'

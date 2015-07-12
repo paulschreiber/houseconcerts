@@ -90,6 +90,7 @@ GEM
     globalid (0.3.5)
       activesupport (>= 4.1.0)
     hirb (0.7.3)
+    humanize (1.1.0)
     i18n (0.7.0)
     instance (0.2.0)
     interactive_editor (0.0.10)
@@ -241,6 +242,7 @@ DEPENDENCIES
   default_value_for
   devise
   friendly_id
+  humanize
   irbtools-more
   jbuilder (~> 2.0)
   jquery-rails
