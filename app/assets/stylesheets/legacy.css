@@ -292,3 +292,60 @@ span.resdate {
 	color: #aaa;
 	font-size: 10px;
 }
+
+label {
+  font-weight: bold;
+}
+
+@media only screen and (max-device-width: 600px)  {
+
+  #tabs {
+    display: none;
+  }
+
+  img.artist.photo {
+    width: 100%;
+    height: auto;
+  }
+
+  .show, .pagetext {
+    margin: 0 5%;
+    padding: 0;
+  }
+
+  body {
+    padding: 0;
+    margin: 0;
+  }
+
+  label {
+    text-transform: uppercase;
+  }
+
+  label.radio {
+    text-transform: none;
+  }
+
+  select {
+    -webkit-appearance: none;
+    border-radius: 0;
+    width: 101%;
+  }
+
+  select,
+  input[type='text'],
+  input[type='submit'] {
+    width: 100%;
+    font-size: 2em;
+    border: 1px solid #ddd;
+  }
+
+  input[type='submit'] {
+  }
+
+  select,
+  input[type='submit'] {
+    padding: 5px;
+    background: white;
+  }
+}
