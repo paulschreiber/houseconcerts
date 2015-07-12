@@ -12,7 +12,7 @@ class RSVP < ActiveRecord::Base
     only_integer: true,
     greater_than_or_equal_to: HC_CONFIG.show.min_seats,
     less_than_or_equal_to: HC_CONFIG.show.max_seats
-  }
+    }, unless: :no?
   validates :response, inclusion: { in: HC_CONFIG.rsvp.response }
 
   def update_confirmation_date
