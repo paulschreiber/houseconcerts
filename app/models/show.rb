@@ -7,7 +7,9 @@ class Show < ActiveRecord::Base
   belongs_to :venue
 
   scope :confirmed, -> { where(status: HC_CONFIG.show.status[:confirmed]) }
+  scope :occurred, -> { where(status: [ HC_CONFIG.show.status[:confirmed], HC_CONFIG.show.status["sold out"], HC_CONFIG.show.status[:waitlisted] ] ) }
   scope :upcoming, -> { where("start > ?", Time.now) }
+  scope :past, -> { where("start < ?", Time.now) }
 
   validates :start, timeliness: { type: :datetime }
   validates :end, timeliness: { type: :datetime, after: lambda{ |x| x.start } }
