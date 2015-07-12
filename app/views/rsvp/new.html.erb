@@ -1,0 +1,60 @@
+<h1>RSVP for a show</h1>
+
+<% if @show.id.present? %>
+	<%= render partial: 'show', locals: { show: @show } %>
+<% end %>
+
+<div class="pagetext">
+<%= form_for (@rsvp) do |f| %>
+
+<p>Please fill in your name, email address, the number of seats requested and select a show.</p>
+
+<% if @show.id.present? %>
+	<%= f.hidden_field :show_id, value: @show.id %>
+
+<% else %>
+<%= f.select :show_id, @shows.map{|s| [s.name, s.id]}, include_blank: "[Select a Show]"  %>
+<% end %>
+
+<p>
+	<%= f.label :first_name %>
+	<%= f.text_field :first_name, maxlength: 100, size: 50 %>
+</p>
+
+<p>
+	<%= f.label :last_name %>
+	<%= f.text_field :last_name, maxlength: 100, size: 50 %>
+</p>
+
+<p>
+	<%= f.label :email %>
+	<%= f.text_field :email, maxlength: 200, size: 50 %>
+</p>
+
+<p>
+	<%= f.label :postcode %>
+	<%= f.text_field :postcode, maxlength: 10, size: 11 %>
+</p>
+
+
+<p>
+	<% (HC_CONFIG.show.min_seats..HC_CONFIG.show.max_seats).each do |count| %>
+		<%= f.radio_button :seats, count %>
+		<%= f.label :seats, count %>
+	<% end %>
+</p>
+
+
+<p>
+	<% HC_CONFIG.rsvp.response.each do |response| %>
+		<%= f.radio_button :response, response %>
+		<%= f.label :response, response, value: response %>
+	<% end %>
+</p>
+
+
+
+<%= f.submit "Make a reservation" %>
+
+<% end %>
+</div>
