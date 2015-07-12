@@ -23,7 +23,7 @@ class Show < ActiveRecord::Base
 
   # define .confirmed, .cancelled?, .unconfirmed? methods
   HC_CONFIG.show.status.keys.each do |key|
-    define_method("#{key}?") { status == key }
+    define_method("#{key.gsub(' ', '_')}?") { status == key }
   end
 
   def duration
