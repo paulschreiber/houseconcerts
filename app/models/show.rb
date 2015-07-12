@@ -27,7 +27,7 @@ class Show < ActiveRecord::Base
   end
 
   def duration
-    ((self.end - self.start)/60).to_i
+    (self.end - self.start).to_i
   end
 
   def start_time
