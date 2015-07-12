@@ -298,7 +298,6 @@ label {
 }
 
 @media only screen and (max-device-width: 600px)  {
-
   #tabs {
     display: none;
   }
@@ -347,5 +346,9 @@ label {
   input[type='submit'] {
     padding: 5px;
     background: white;
+  }
+
+  .button_to input[type='submit'] {
+    white-space: normal;
   }
 }
