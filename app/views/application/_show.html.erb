@@ -1,0 +1,23 @@
+		<div class="show vevent">
+			<div class="vcard attendee summary">
+				<% show.artists.each do |artist| %>
+					<a class="imagelink" href="<%= artist.url %>"><img src="/photos/headshots/<%= artist.slug %>.jpg" class="artist photo" width="200" height="220" alt="<%= artist.name %>" /></a>
+				<% end %>
+				<h2><a href="<%= show.artists.collect(&:url).first %>"><%= show.name %></a></h2>
+			</div>
+
+			<p class="description"><%= show.blurb %></p>
+
+			<abbr class="dtstart" title="<%= show.start.to_time.iso8601 %>"><%= show.start_date %><br /><%= show.start_time %></abbr>
+			<abbr class="duration" title="PT<%= show.duration %>">(<%= show.duration %> hours)</abbr>
+
+		<% if show.status == "W" %>
+			<p><em>This show is sold out. Please RSVP now to be added to the waiting list.</em></p>
+		<% end %>
+
+		<% if ["G", "W"].include?(show.status) %>
+			<p><%= button_to "RSVP for #{show.name}", { controller: :rsvp, action: :new, slug: show.slug } %></p>
+		<% elsif show.status == "S" %>
+			<p>This show is sold out.</p>
+		<% end >%>
+		</div>
