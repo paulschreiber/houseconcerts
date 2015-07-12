@@ -38,4 +38,8 @@ class RSVP < ActiveRecord::Base
     confirmed == HC_CONFIG.rsvp.confirmed[:waitlisted]
   end
 
+  def full_name
+    "#{first_name} #{last_name}".strip
+  end
+
 end

@@ -29,4 +29,8 @@ class Person < ActiveRecord::Base
       self.removal_ip_address = request.remote_addr
     end
   end
+
+  def full_name
+    "#{first_name} #{last_name}".strip
+  end
 end
