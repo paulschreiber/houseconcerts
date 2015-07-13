@@ -148,15 +148,6 @@ dd > p {
 	margin-bottom: 4px;
 }
 
-p.errorbox {
-	font-weight: bold;
-	color: #900;
-	border: 1px solid #900;
-	padding: 0.5em;
-	background: #fcc;
-	width: 30em;
-}
-
 /* navigation tabs */
 #tabs ul, #tabs ul li {
 	padding-top: 3px;
@@ -302,7 +293,7 @@ label.radio {
   display: inline-block;
 }
 
-@media only screen and (max-device-width: 600px)  {
+@media only screen and (max-device-width: 600px) {
   h1 {
     margin: 0.5em 5%;
   }

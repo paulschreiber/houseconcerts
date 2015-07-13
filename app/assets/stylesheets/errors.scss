@@ -1,0 +1,28 @@
+div.errors {
+  border: 1px solid #900;
+
+	color: #900;
+	background: #fcc;
+  margin: 1em 0;
+
+  p {
+    font-weight: bold;
+    margin: 0;
+  	padding: 0.5em;
+  }
+
+  ul {
+    padding-left: 0;
+  	padding: 0.5em;
+  }
+
+  li {
+    margin-left: 1.3em;
+  }
+
+  width: 23.7em%;
+
+  @media only screen and (max-device-width: 600px) {
+    width: 101%;
+  }
+}
