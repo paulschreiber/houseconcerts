@@ -13,7 +13,7 @@ tabList = {
 %>
 
 <% tabList.each_pair do |url, text| %>
-	<% if (request.path == url) %>
+	<% if (request.path == url || (controller_name == "rsvps" && text == "RSVP")) %>
 		<li class='here'><%= text %></li>
 	<% else %>
 		<li><a href='<%= url %>'><%= text %></a></li>
