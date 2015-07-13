@@ -295,9 +295,22 @@ span.resdate {
 
 label {
   font-weight: bold;
+  display: block;
+}
+
+label.radio {
+  display: inline-block;
 }
 
 @media only screen and (max-device-width: 600px)  {
+  h1 {
+    margin: 0.5em 5%;
+  }
+
+  form {
+    margin-bottom: 2em;
+  }
+
   #tabs {
     display: none;
   }
