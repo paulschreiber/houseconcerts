@@ -9,6 +9,7 @@ table:
   :twitter_name: HouseConcertsBK
   :twitter_id: "3317563834"
   :google_analytics_id: "UA-1895263-1"
+  :default_venue_group: 2
 
   :venue: !ruby/object:OpenStruct
     table:
