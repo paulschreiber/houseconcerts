@@ -10,3 +10,5 @@ en:
               blank: "enter your last name"
             email:
               invalid: "enter your email address"
+            postcode:
+              invalid: "enter your zip code"
