@@ -48,3 +48,6 @@ bower.json
 
 # Ignore pow environment settings
 .powenv
+
+# local dev notes
+NOTES.md
