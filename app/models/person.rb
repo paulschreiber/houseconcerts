@@ -11,20 +11,20 @@ class Person < ActiveRecord::Base
     rand(2821109907456).to_s(36)
   end
 
-  default_value_for :status, HC_CONFIG.person.status[:active]
+  default_value_for :status, "active"
 
   validates :first_name, presence: true, mixed_case: true
   validates :last_name, presence: true, mixed_case: true
   validates :email, email: true
   validates :postcode, postal_code: { country: HC_CONFIG.default_country }
-  validates :status, inclusion: { in: HC_CONFIG.person.status.values }
+  validates :status, inclusion: { in: HC_CONFIG.person.status }
 
   def set_ip_address
     self.ip_address = request.remote_addr if ip_address.empty?
   end
 
   def update_removal_status
-    if self.status_changed? and self.status == HC_CONFIG.person.status[:removed]
+    if self.status_changed? and self.status == "removed"
       self.removed_at = DateTime.now
       self.removal_ip_address = request.remote_addr
     end

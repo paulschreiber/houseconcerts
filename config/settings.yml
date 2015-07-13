@@ -21,29 +21,29 @@ table:
       :max_price: 100
       :min_seats: 1
       :max_seats: 4
-      :status: !map:HashWithIndifferentAccess
-        "sold out": S
-        "waitlisted": W
-        "confirmed": G
-        "unconfirmed": U
-        "cancelled": C
+      :status:
+        - "sold out"
+        - "waitlisted"
+        - "confirmed"
+        - "unconfirmed"
+        - "cancelled"
 
   :person: !ruby/object:OpenStruct
     table:
-      :status: !map:HashWithIndifferentAccess
-        "active": "A"
-        "bouncing": "B"
-        "moved": "M"
-        "removed": "R"
-        "deleted": "D"
-        "vacation": "V"
+      :status:
+        - "active"
+        - "bouncing"
+        - "moved"
+        - "removed"
+        - "deleted"
+        - "vacation"
 
   :rsvp: !ruby/object:OpenStruct
     table:
       :response:
         - "Yes"
         - "No"
-      :confirmed: !map:HashWithIndifferentAccess
-        "yes": "Y"
-        "no": "N"
-        "waitlisted": "W"
+      :confirmed:
+        - "yes"
+        - "no"
+        - "waitlisted"

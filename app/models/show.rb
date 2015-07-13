@@ -6,15 +6,15 @@ class Show < ActiveRecord::Base
   has_many :rsvps
   belongs_to :venue
 
-  scope :confirmed, -> { where(status: HC_CONFIG.show.status[:confirmed]) }
-  scope :occurred, -> { where(status: [ HC_CONFIG.show.status[:confirmed], HC_CONFIG.show.status["sold out"], HC_CONFIG.show.status[:waitlisted] ] ) }
+  scope :confirmed, -> { where(status: "confirmed") }
+  scope :occurred, -> { where(status: ["sold out", "waitlisted", "confirmed"] ) }
   scope :upcoming, -> { where("start > ?", Time.now) }
   scope :past, -> { where("start < ?", Time.now) }
 
   validates :start, timeliness: { type: :datetime }
   validates :end, timeliness: { type: :datetime, after: lambda{ |x| x.start } }
   validates :name, presence: true
-  validates :status, inclusion: { in: HC_CONFIG.show.status.values }
+  validates :status, inclusion: { in: HC_CONFIG.show.status }
   validates :price, presence: true, numericality: {
     only_integer: true,
     greater_than_or_equal_to: HC_CONFIG.show.min_price,
@@ -24,8 +24,8 @@ class Show < ActiveRecord::Base
 
 
   # define .confirmed, .cancelled?, .unconfirmed? methods
-  HC_CONFIG.show.status.keys.each do |key|
-    define_method("#{key.gsub(' ', '_')}?") { status == key }
+  HC_CONFIG.show.status.each do |value|
+    define_method("#{value.gsub(' ', '_')}?") { status == value }
   end
 
   def duration
