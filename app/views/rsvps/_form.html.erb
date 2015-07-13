@@ -8,12 +8,14 @@
 <%= form_for (@rsvp) do |f| %>
 
 <% unless @rsvp.errors.empty? %>
-	<p class='errors'>Please correct the following errors:</p>
-	<ul class='errors'>
+<div class='errors'>
+	<p>Please correct the following errors:</p>
+	<ul>
 	<% @rsvp.errors.each do |attribute, message| %>
 	<li><%= message %></li>
 	<% end %>
 	</ul>
+</div>
 <% end %>
 
 

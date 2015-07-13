@@ -6,12 +6,14 @@
 <%= form_for (@person) do |f| %>
 
 <% unless @person.errors.empty? %>
-	<p class='errors'>Please correct the following errors:</p>
-	<ul class='errors'>
+<div class='errors'>
+	<p>Please correct the following errors:</p>
+	<ul>
 	<% @person.errors.each do |attribute, message| %>
 	<li><%= message %></li>
 	<% end %>
 	</ul>
+</div>
 <% end %>
 
 
