@@ -23,6 +23,8 @@ Rails.application.routes.draw do
   get 'rsvps/show/:slug' => 'rsvps#new'
   post 'rsvps/show/:slug' => 'rsvps#new'
 
+  resources :people, only: [:new, :index, :create]
+
   # Example resource route with options:
   #   resources :products do
   #     member do
