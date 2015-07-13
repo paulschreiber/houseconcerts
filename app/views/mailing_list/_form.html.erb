@@ -1,0 +1,41 @@
+<h1>Join the mailing list</h1>
+
+<div class="pagetext">
+<p>If you&rsquo;d like to hear about house concerts, join my mailing list. You&rsquo;ll get two or so messages each month.</p>
+
+<%= form_for (@person) do |f| %>
+
+<% unless @person.errors.empty? %>
+	<p class='errors'>Please correct the following errors:</p>
+	<ul class='errors'>
+	<% @person.errors.each do |attribute, message| %>
+	<li><%= message %></li>
+	<% end %>
+	</ul>
+<% end %>
+
+
+<p>
+	<%= f.label :first_name %>
+	<%= f.text_field :first_name, maxlength: 100, size: 50 %>
+</p>
+
+<p>
+	<%= f.label :last_name %>
+	<%= f.text_field :last_name, maxlength: 100, size: 50 %>
+</p>
+
+<p>
+	<%= f.label :email %>
+	<%= f.text_field :email, maxlength: 200, size: 50 %>
+</p>
+
+<p>
+	<%= f.label :postcode, "Zip Code" %>
+	<%= f.text_field :postcode, maxlength: 10, size: 11 %>
+</p>
+
+<%= f.submit "Sign Me Up" %>
+
+<% end %>
+</div>
