@@ -15,6 +15,10 @@ class MailingListController < ApplicationController
 
     @person = Person.new(person_params)
 
+    if @person.venue_groups.empty?
+      @person.venue_groups << VenueGroup.find(HC_CONFIG.default_venue_group)
+    end
+
     if @person.save
       render 'thanks' and return
     end
