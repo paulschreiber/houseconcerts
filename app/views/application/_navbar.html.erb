@@ -2,9 +2,6 @@
 <ul>
 <%
 
-#$currentPage = ($_SERVER["SCRIPT_NAME"] === "/index.php") ? "/" : $_SERVER["SCRIPT_NAME"];
-currentPage = "/"
-
 tabList = {
 	root_path => "House Concerts",
 	about_path => "About",
@@ -16,7 +13,7 @@ tabList = {
 %>
 
 <% tabList.each_pair do |url, text| %>
-	<% if (currentPage == url) %>
+	<% if (request.path == url) %>
 		<li class='here'><%= text %></li>
 	<% else %>
 		<li><a href='<%= url %>'><%= text %></a></li>
