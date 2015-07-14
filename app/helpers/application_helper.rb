@@ -18,14 +18,14 @@ module ApplicationHelper
   end
 
   def social_media_image
-    "#{root_url}concerts.png"
+    Rails.public_path.join("concerts.png")
   end
 
   def svg_icon
-    "#{root_url}concerts.svg"
+    "/concerts.svg"
   end
 
   def apple_touch_icon
-    "#{root_url}concerts.png"
+    "/concerts.png"
   end
 end
