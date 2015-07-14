@@ -353,6 +353,7 @@ label.radio {
   }
 
   .button_to input[type='submit'] {
+    -webkit-appearance: none;
     white-space: normal;
   }
 }
