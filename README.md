@@ -1,6 +1,6 @@
 # houseconcerts
 
-Soon to be a web app for managing house concerts. 
+A web app for managing house concerts.
 
 Built with Rails 2.2.2.
 
@@ -9,4 +9,12 @@ Built with Rails 2.2.2.
 * Support for multiple venues
 * Support for grouping venues together
 * Mobile/responsive
-* Mandrill integration
+
+## TODO
+[ ] Admin dashboard
+[ ] Admin UI
+[ ] Mandrill integration
+[ ] Mail merge invites
+[ ] social_media_image
+[ ] social_media_description
+[ ] Navigation on mobile
