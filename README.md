@@ -11,10 +11,10 @@ Built with Rails 2.2.2.
 * Mobile/responsive
 
 ## TODO
-[ ] Admin dashboard
-[ ] Admin UI
-[ ] Mandrill integration
-[ ] Mail merge invites
-[ ] social_media_image
-[ ] social_media_description
-[ ] Navigation on mobile
+- [ ] Admin dashboard
+- [ ] Admin UI
+- [ ] Mandrill integration
+- [ ] Mail merge invites
+- [ ] social_media_image
+- [ ] social_media_description
+- [ ] Navigation on mobile
