@@ -20,4 +20,8 @@ class Venue < ActiveRecord::Base
     less_than_or_equal_to: HC_CONFIG.venue.max_capacity
   }
 
+  def location
+    province_name = Carmen::Country.coded(HC_CONFIG.default_country).subregions.coded(province)
+    "#{city}, #{province_name}"
+  end
 end
