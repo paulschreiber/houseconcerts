@@ -8,10 +8,11 @@ class Invites < ApplicationMailer
     delivery_options = {
       user_name: HC_CONFIG.mandrill_username,
       password: HC_CONFIG.mandrill_api_key,
+      port: 587,
       address: "smtp.mandrillapp.com"
     }
 
-    puts delivery_options.inspect
+    headers["X-MC-Tags"] = "invite:#{show.slug}"
 
     mail(to: person.email_address_with_name,
         subject: subject,
