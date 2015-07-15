@@ -7,7 +7,7 @@ class RSVP < ActiveRecord::Base
   validates :first_name, presence: true, mixed_case: true
   validates :last_name, presence: true, mixed_case: true
   validates :email, email: true
-  validates :postcode, postal_code: { country: HC_CONFIG.default_country }
+  validates :postcode, postal_code: { country: HC_CONFIG.default_country }, allow_blank: true
   validates :seats, numericality: {
     only_integer: true,
     greater_than_or_equal_to: HC_CONFIG.show.min_seats,
