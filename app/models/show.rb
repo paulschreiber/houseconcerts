@@ -40,4 +40,7 @@ class Show < ActiveRecord::Base
     self.start.strftime("%A, %B %e, %Y").strip
   end
 
+  def start_date_short
+    start.strftime("%b %e").gsub('  ', ' ')
+  end
 end
