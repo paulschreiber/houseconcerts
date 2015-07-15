@@ -21,6 +21,7 @@ Rails.application.routes.draw do
   resources :rsvps, only: [:new, :index, :create]
   get 'rsvps' => 'rsvps#new'
   get 'rsvps/show/:slug' => 'rsvps#new'
+  get 'rsvps/show/:slug/:uniqid' => 'rsvps#new'
   post 'rsvps/show/:slug' => 'rsvps#new'
 
   resources :people, only: [:new, :index, :create], controller: :mailing_list
