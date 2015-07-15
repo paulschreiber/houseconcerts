@@ -2,8 +2,8 @@
 namespace :invite do
 	desc "Send invites for next_show"
 	task :next_show => :environment do
-		people = Person.includes(:venue_groups, :rsvps).where(venue_groups: {id: 2}, status: "active").where("response IS NULL")
 		show = Show.upcoming.first
+		people = Person.includes(:venue_groups).where(venue_groups: {id: 2}, status: "active").where("email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)", show.id)
 
 		people.each do |p|
 			puts "Emailing #{p.email_address_with_name}..."
