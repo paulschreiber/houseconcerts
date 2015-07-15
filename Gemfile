@@ -50,6 +50,7 @@ gem 'sdoc', '~> 0.4.0', group: :doc
 group :development, :test do
   gem 'irbtools-more', require: 'irbtools/binding'
   gem 'rb-readline'
+  gem 'letter_opener'
 
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug'
