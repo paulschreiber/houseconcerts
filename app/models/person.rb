@@ -42,4 +42,14 @@ class Person < ActiveRecord::Base
   def set_ip_address
     self.ip_address = current_ip if ip_address.nil?
   end
+
+  def email_address_with_name
+    return unless email.present?
+    if full_name.present?
+      "\"#{full_name}\" <#{email}>"
+    else
+      email
+    end
+  end
+
 end
