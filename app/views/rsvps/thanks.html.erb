@@ -1,4 +1,8 @@
+<% if @rsvp.yes? %>
 <h1>Thanks for reserving a seat</h1>
+<% elsif @rsvp.no? %>
+<h1>Sorry you couldn’t make it</h1>
+<% end %>
 
 <div class="pagetext">
 
@@ -10,7 +14,7 @@
 
 <% elsif @rsvp.no? %>
 
-	<p>Sorry you couldn’t make it. Thanks for letting me know!</p>
+	<p>Thanks for letting me know!</p>
 
 <% end %>
 
