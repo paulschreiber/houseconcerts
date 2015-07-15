@@ -9,5 +9,6 @@ namespace :invite do
 			puts "Emailing #{p.email_address_with_name}..."
 			Invites.invite(p, show).deliver_now
 		end
+		puts "Sent #{people.size} emails."
 	end
 end
