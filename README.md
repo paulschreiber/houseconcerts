@@ -13,8 +13,12 @@ Built with Rails 2.2.2.
 ## TODO
 - [ ] Admin dashboard
 - [ ] Admin UI
-- [ ] Mandrill integration
+- [ ] Mandrill integration (bounces, spam reports)
+- [ ] Unsubscribe link/button
 - [ ] Mail merge invites
 - [ ] social_media_image
 - [ ] social_media_description
 - [ ] Navigation on mobile
+- [ ] Gmail mail actions (https://developers.google.com/gmail/markup/)
+- [ ] Calendar event in confirmation email
+- [ ] Calendar feed for upcoming shows
