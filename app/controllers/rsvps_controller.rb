@@ -5,6 +5,19 @@ class RsvpsController < ApplicationController
 
   def new
     @rsvp = RSVP.new(params[:rsvp])
+
+    # pre-fill form (from link)
+    if params[:uniqid]
+      person = Person.where(uniqid: params[:uniqid]).first
+    end
+
+    if person
+      @rsvp.first_name = person.first_name
+      @rsvp.last_name = person.last_name
+      @rsvp.email = person.email
+      @rsvp.postcode = person.postcode
+    end
+
     begin
       @show = Show.friendly.find(params[:slug])
     rescue ActiveRecord::RecordNotFound
