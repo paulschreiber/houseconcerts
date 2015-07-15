@@ -11,7 +11,7 @@ table:
   :google_analytics_id: "UA-1895263-1"
   :default_venue_group: 2
   :hostname: "concerts.shrub.ca"
-  :invites_from: "paul@schreibers.ca"
+  :invites_from: "\"Paul Schreiber\" <paul@schreibers.ca>"
 
   :venue: !ruby/object:OpenStruct
     table:
