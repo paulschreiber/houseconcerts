@@ -1,19 +1,19 @@
-<p>Hi <%= person.first_name %>,</p>
+<p>Hi <%= @person.first_name %>,</p>
 
 <p>It's summer: time for good food, good friends and good music. That means it’s time for Carlos Olmeda.</p>
 
 <p style="margin-bottom: 0; padding-bottom: 0">Short attention span version</p>
 <ul style="padding: 0.5em 1em; margin-top: 0.5em; border: 1px dashed black; border-left: none; border-right: none; width: 20em;">
-<li><%= show.name %></li>
-<li><%= show.start_date %> &middot; <%= show.start_time %></li>
-<li><%= show.venue.location %></li>
+<li><%= @show.name %></li>
+<li><%= @show.start_date %> &middot; <%= @show.start_time %></li>
+<li><%= @show.venue.location %></li>
 <li>RSVP for location/directions</li>
 </ul>
 
 <p>Please let me know whether or not you can come:
-<br><a href="http://concerts.shrub.ca/rsvp/show/__UNIQID__/__ENCODEDNAME__/__EMAIL__">http://concerts.shrub.ca/rsvp/show/__UNIQID__/__ENCODEDNAME__/__EMAIL__</a></p>
+<br><%= link_to @rsvp_url, @rsvp_url %></p>
 
-<p style="border-bottom: 1px dashed black; width: 22em; padding-bottom: 0.5em;">A bit about <%= show.name %></p>
+<p style="border-bottom: 1px dashed black; width: 22em; padding-bottom: 0.5em;">A bit about <%= @show.name %></p>
 
 <p>TK TK TK</p>
 
