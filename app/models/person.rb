@@ -5,6 +5,7 @@ class Person < ActiveRecord::Base
   before_save :downcase_email
   before_save :set_ip_address
   before_save :update_removal_status
+  before_save :ensure_venue_group
 
   # From https://stackoverflow.com/a/1126031/135850
   default_value_for :uniqid do
@@ -20,6 +21,12 @@ class Person < ActiveRecord::Base
   validates :email, email: true
   validates :postcode, postal_code: { country: HC_CONFIG.default_country }, allow_blank: true
   validates :status, inclusion: { in: HC_CONFIG.person.status }
+
+  def ensure_venue_group
+    if venue_groups.empty?
+      self.venue_groups << VenueGroup.find(HC_CONFIG.default_venue_group)
+    end
+  end
 
   def update_removal_status
     if self.status_changed? and self.status == "removed"
