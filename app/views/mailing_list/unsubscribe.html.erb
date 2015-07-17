@@ -1,0 +1,13 @@
+<% if @already_removed %>
+	<h1>Not a subscriber</h1>
+
+	<div class="pagetext">
+	<p>Ooops! Looks like <strong><%= @person.email %></strong> was already unsubscribed.</p>
+	</div>
+<% else %>
+	<h1>You’ve been unsubscribed</h1>
+
+	<div class="pagetext">
+	<p>We’ve successfully removed <strong><%= @person.email %></strong> from the invite list.</p>
+	</div>
+<% end %>
