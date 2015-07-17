@@ -23,7 +23,7 @@ class Show < ActiveRecord::Base
   validates :venue, presence: true
 
 
-  # define .confirmed, .cancelled?, .unconfirmed? methods
+  # define .confirmed?, .cancelled?, .unconfirmed?, .waitlisted?, .sold_out? methods
   HC_CONFIG.show.status.each do |value|
     define_method("#{value.gsub(' ', '_')}?") { status == value }
   end
