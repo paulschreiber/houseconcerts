@@ -9,6 +9,7 @@ Rails.application.routes.draw do
   get 'musicians' => 'shows#musicians', as: 'musicians'
   get 'shows' => 'shows#shows', as: 'past_shows'
   get 'list' => 'mailing_list#index', as: 'mailing_list'
+  get 'unsubscribe/:uniqid' => 'mailing_list#unsubscribe'
 
   # Example of regular route:
   #   get 'products/:id' => 'catalog#view'
