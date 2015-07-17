@@ -22,6 +22,15 @@ class Person < ActiveRecord::Base
   validates :postcode, postal_code: { country: HC_CONFIG.default_country }, allow_blank: true
   validates :status, inclusion: { in: HC_CONFIG.person.status }
 
+  # define .active?, .bouncing?, .moved?, .removed?, .deleted?, .vacation? methods
+  HC_CONFIG.person.status.each do |value|
+    define_method("#{value.gsub(' ', '_')}?") { status == value }
+  end
+
+  HC_CONFIG.person.status.each do |value|
+    define_method("#{value.gsub(' ', '_')}!") { update_attribute(:status, value) }
+  end
+
   def ensure_venue_group
     if venue_groups.empty?
       self.venue_groups << VenueGroup.find(HC_CONFIG.default_venue_group)
