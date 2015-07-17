@@ -14,7 +14,6 @@ Built with Rails 2.2.2.
 - [ ] Admin dashboard
 - [ ] Admin UI
 - [ ] Mandrill integration (bounces, spam reports)
-- [ ] Unsubscribe link/button
 - [ ] Mail merge invites
 - [ ] social_media_image
 - [ ] social_media_description
