@@ -3,8 +3,8 @@ module Geography
 
   def province_codes
     subregions = Carmen::Country.coded(HC_CONFIG.default_country).subregions
-    subregions = subregions.select{|s| s.type == 'state'} if HC_CONFIG.default_country == "US"
-    subregions.map{|s| s.code}
+    subregions = subregions.select { |s| s.type == 'state' } if HC_CONFIG.default_country == 'US'
+    subregions.map(&:code)
   end
 
   def country_codes

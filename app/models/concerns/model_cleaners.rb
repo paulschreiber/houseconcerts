@@ -34,6 +34,6 @@ module ModelCleaners
   def name_slug_candidates
     cleaned_name = name.gsub(' and', '')
 
-    2.upto(100).inject([cleaned_name]) { |m, o| m << "%s %d" % [cleaned_name, o] }
+    2.upto(100).inject([cleaned_name]) { |a, e| a << format('%s %d', cleaned_name, e) }
   end
 end

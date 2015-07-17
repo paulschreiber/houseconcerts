@@ -7,9 +7,7 @@ class RsvpsController < ApplicationController
     @rsvp = RSVP.new(params[:rsvp])
 
     # pre-fill form (from link)
-    if params[:uniqid]
-      person = Person.where(uniqid: params[:uniqid]).first
-    end
+    person = Person.where(uniqid: params[:uniqid]).first if params[:uniqid]
 
     if person
       @rsvp.first_name = person.first_name
@@ -44,13 +42,10 @@ class RsvpsController < ApplicationController
     @show = Show.find(params[:rsvp][:show_id])
     @shows = Show.upcoming.confirmed
 
-    if @rsvp.save
-      render 'thanks' and return
-    end
+    render 'thanks' && return if @rsvp.save
   end
 
   def rsvp_params
     params.require(:rsvp).permit(:first_name, :last_name, :email, :show_id, :postcode, :response, :seats)
   end
-
 end
