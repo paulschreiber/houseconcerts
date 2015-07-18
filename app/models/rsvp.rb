@@ -3,6 +3,7 @@ class RSVP < ActiveRecord::Base
 
   before_save :downcase_email
   before_save :update_confirmation_date
+  before_save :clear_seats_if_no
 
   validates :first_name, presence: true, mixed_case: true
   validates :last_name, presence: true, mixed_case: true
@@ -19,6 +20,12 @@ class RSVP < ActiveRecord::Base
     return if !self.confirmed_changed? || !confirmed?
 
     self.confirmed_at = DateTime.now
+  end
+
+  def clear_seats_if_no
+    return if self.yes?
+
+    self.seats = 0
   end
 
   # define .yes?, .no?
