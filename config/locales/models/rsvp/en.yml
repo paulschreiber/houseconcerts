@@ -14,5 +14,7 @@ en:
               invalid: "enter your zip code"
             seats:
               not_a_number: "select the number of seats you want"
+              greater_than_or_equal_to: "select the number of seats you want"
+              less_than_or_equal_to: "select the number of seats you want"
             response:
               inclusion: "select whether or not you’re coming"
