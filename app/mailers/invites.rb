@@ -16,6 +16,7 @@ class Invites < ApplicationMailer
     subject = "You’re invited: #{show.name} house concert (#{show.start_date_short})"
 
     if Rails.env.production?
+      @unsub_url = "*|UNSUB:#{@unsub_url}|*"
       headers["X-MC-Tags"] = "invite #{show.slug}"
 
       delivery_options = {
