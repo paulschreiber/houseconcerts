@@ -1,9 +1,15 @@
 class MailingListController < ApplicationController
   def unsubscribe
-    redirect_to root_url and return unless params[:uniqid]
+    unless params[:uniqid]
+      redirect_to root_url
+      return
+    end
 
     @person = Person.where(uniqid: params[:uniqid]).first
-    redirect_to root_url and return if @person.nil?
+    if @person.nil?
+      redirect_to root_url
+      return
+    end
 
     if @person.removed?
       @already_removed = true
@@ -23,11 +29,15 @@ class MailingListController < ApplicationController
       @person = Person.where(email: params[:person][:email]).first
     end
 
-    render 'already_subscribed' and return if @person.present?
+    if @person.present?
+      render 'already_subscribed'
+      return
+    end
 
     @person = Person.new(person_params)
 
-    render 'thanks' and return if @person.save
+    render :create unless @person.save
+    render 'thanks'
   end
 
   def person_params
