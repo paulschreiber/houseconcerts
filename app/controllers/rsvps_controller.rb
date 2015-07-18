@@ -42,7 +42,7 @@ class RsvpsController < ApplicationController
     @show = Show.find(params[:rsvp][:show_id])
     @shows = Show.upcoming.confirmed
 
-    render 'thanks' && return if @rsvp.save
+    render 'thanks' and return if @rsvp.save
   end
 
   def rsvp_params
