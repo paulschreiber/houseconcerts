@@ -6,4 +6,8 @@ class Artist < ActiveRecord::Base
 
   validates :name, presence: true
   validates :url, url: true
+
+  def photo
+    "photos/headshots/#{slug}.jpg"
+  end
 end
