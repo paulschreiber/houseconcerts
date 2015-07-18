@@ -20,7 +20,8 @@ Rails.application.routes.draw do
   # Example resource route (maps HTTP verbs to controller actions automatically):
   #   resources :products
   resources :rsvps, only: [:new, :index, :create]
-  get 'rsvps' => 'rsvps#new'
+  get 'rsvps' => 'rsvps#new', as: 'rsvp'
+  patch 'rsvps' => 'rsvps#create'
   get 'rsvps/show/:slug' => 'rsvps#new'
   get 'rsvps/show/:slug/:uniqid' => 'rsvps#new'
   post 'rsvps/show/:slug' => 'rsvps#new'
