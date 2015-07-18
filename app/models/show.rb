@@ -36,10 +36,10 @@ class Show < ActiveRecord::Base
   end
 
   def start_date
-    start.strftime('%A, %B %e, %Y').strip
+    start.strftime('%A, %B %e, %Y').gsub('  ', ' ').strip
   end
 
   def start_date_short
-    start.strftime('%b %e').gsub('  ', ' ')
+    start.strftime('%b %e').gsub('  ', ' ').strip
   end
 end
