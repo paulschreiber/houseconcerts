@@ -49,6 +49,7 @@
 
 <p>
 	<strong>Seats</strong>
+	<%= f.hidden_field :seats, value: 0 %>
 	<% (HC_CONFIG.show.min_seats..HC_CONFIG.show.max_seats).each do |count| %>
 		<%= f.radio_button :seats, count %>
 		<%= f.label :seats, count, class: "radio" %>
@@ -58,6 +59,7 @@
 
 <p>
 	<strong>Attending?</strong>
+	<%= f.hidden_field :response %>
 	<% HC_CONFIG.rsvp.response.each do |response| %>
 		<%= f.radio_button :response, response %>
 		<%= f.label :response, response, value: response, class: "radio" %>
