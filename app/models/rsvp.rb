@@ -12,13 +12,13 @@ class RSVP < ActiveRecord::Base
     only_integer: true,
     greater_than_or_equal_to: HC_CONFIG.show.min_seats,
     less_than_or_equal_to: HC_CONFIG.show.max_seats
-    }, unless: :no?
+  }, unless: :no?
   validates :response, inclusion: { in: HC_CONFIG.rsvp.response }
 
   def update_confirmation_date
-    if self.confirmed_changed? and response == HC_CONFIG.rsvp.confirmed[:yes]
-      self.confirmed_at = DateTime.now
-    end
+    return if !self.confirmed_changed? || !confirmed?
+
+    self.confirmed_at = DateTime.now
   end
 
   # define .yes?, .no?
@@ -41,5 +41,4 @@ class RSVP < ActiveRecord::Base
   def full_name
     "#{first_name} #{last_name}".strip
   end
-
 end

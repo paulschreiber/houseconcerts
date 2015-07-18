@@ -14,7 +14,7 @@ class Person < ActiveRecord::Base
 
   cattr_accessor :current_ip
 
-  default_value_for :status, "active"
+  default_value_for :status, 'active'
 
   validates :first_name, presence: true, mixed_case: true
   validates :last_name, presence: true, mixed_case: true
@@ -32,16 +32,15 @@ class Person < ActiveRecord::Base
   end
 
   def ensure_venue_group
-    if venue_groups.empty?
-      self.venue_groups << VenueGroup.find(HC_CONFIG.default_venue_group)
-    end
+    return unless venue_groups.empty?
+    venue_groups << VenueGroup.find(HC_CONFIG.default_venue_group)
   end
 
   def update_removal_status
-    if self.status_changed? and self.removed?
-      self.removed_at = DateTime.now
-      self.removal_ip_address = current_ip
-    end
+    return if !self.status_changed? || !self.removed?
+
+    self.removed_at = DateTime.now
+    self.removal_ip_address = current_ip
   end
 
   def full_name
@@ -60,5 +59,4 @@ class Person < ActiveRecord::Base
       email
     end
   end
-
 end

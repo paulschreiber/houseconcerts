@@ -11,9 +11,9 @@ class Venue < ActiveRecord::Base
   validates :name, presence: true
   validates :address, presence: true
   validates :city, presence: true
-  validates :province, inclusion: { in: lambda { |x| x.province_codes } }
+  validates :province, inclusion: { in: -> x { x.province_codes } }
   validates :postcode, postal_code: { country: HC_CONFIG.default_country }
-  validates :country, inclusion: { in: lambda { |x| x.country_codes } }
+  validates :country, inclusion: { in: -> x { x.country_codes } }
   validates :capacity, presence: true, numericality: {
     only_integer: true,
     greater_than_or_equal_to: HC_CONFIG.venue.min_capacity,

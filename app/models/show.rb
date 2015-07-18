@@ -6,13 +6,13 @@ class Show < ActiveRecord::Base
   has_many :rsvps
   belongs_to :venue
 
-  scope :confirmed, -> { where(status: "confirmed") }
-  scope :occurred, -> { where(status: ["sold out", "waitlisted", "confirmed"] ) }
-  scope :upcoming, -> { where("start > ?", Time.now).order(:start) }
-  scope :past, -> { where("start < ?", Time.now) }
+  scope :confirmed, -> { where(status: 'confirmed') }
+  scope :occurred, -> { where(status: ['sold out', 'waitlisted', 'confirmed']) }
+  scope :upcoming, -> { where('start > ?', Time.now).order(:start) }
+  scope :past, -> { where('start < ?', Time.now) }
 
   validates :start, timeliness: { type: :datetime }
-  validates :end, timeliness: { type: :datetime, after: lambda{ |x| x.start } }
+  validates :end, timeliness: { type: :datetime, after: ->x { x.start } }
   validates :name, presence: true
   validates :status, inclusion: { in: HC_CONFIG.show.status }
   validates :price, presence: true, numericality: {
@@ -22,25 +22,24 @@ class Show < ActiveRecord::Base
   }
   validates :venue, presence: true
 
-
   # define .confirmed?, .cancelled?, .unconfirmed?, .waitlisted?, .sold_out? methods
   HC_CONFIG.show.status.each do |value|
     define_method("#{value.gsub(' ', '_')}?") { status == value }
   end
 
   def duration
-    (self.end - self.start).to_i
+    (self.end - start).to_i
   end
 
   def start_time
-    self.start.strftime("%l %P").strip
+    start.strftime('%l %P').strip
   end
 
   def start_date
-    self.start.strftime("%A, %B %e, %Y").strip
+    start.strftime('%A, %B %e, %Y').strip
   end
 
   def start_date_short
-    start.strftime("%b %e").gsub('  ', ' ')
+    start.strftime('%b %e').gsub('  ', ' ')
   end
 end

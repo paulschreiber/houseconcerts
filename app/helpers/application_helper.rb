@@ -1,13 +1,13 @@
 module ApplicationHelper
   def page_title
     page_title = [HC_CONFIG.site_name]
-    page_title.join(" » ")
+    page_title.join(' » ')
   end
 
   def social_media_title
     full_title = page_title
-    if full_title.index(" » ")
-      full_title.gsub("#{HC_CONFIG.site_name} » ", "")
+    if full_title.index(' » ')
+      full_title.gsub("#{HC_CONFIG.site_name} » ", '')
     else
       full_title
     end
@@ -18,14 +18,14 @@ module ApplicationHelper
   end
 
   def social_media_image
-    Rails.public_path.join("concerts.png")
+    Rails.public_path.join('concerts.png')
   end
 
   def svg_icon
-    "/concerts.svg"
+    '/concerts.svg'
   end
 
   def apple_touch_icon
-    "/concerts.png"
+    '/concerts.png'
   end
 end
