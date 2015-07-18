@@ -42,4 +42,8 @@ class Show < ActiveRecord::Base
   def start_date_short
     start.strftime('%b %e').gsub('  ', ' ').strip
   end
+
+  def location
+    venue.location if venue
+  end
 end
