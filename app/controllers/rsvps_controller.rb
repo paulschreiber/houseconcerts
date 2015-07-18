@@ -39,7 +39,10 @@ class RsvpsController < ApplicationController
       @rsvp.update(rsvp_params)
     end
 
-    @show = Show.find(params[:rsvp][:show_id])
+    if params[:rsvp] && params[:rsvp][:show_id].to_i > 0
+      @show = Show.find(params[:rsvp][:show_id])
+    end
+
     @shows = Show.upcoming.confirmed
 
     return unless @rsvp.save
