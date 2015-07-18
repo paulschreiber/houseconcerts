@@ -1,7 +1,7 @@
 		<div class="show vevent">
 			<div class="vcard attendee summary">
 				<% show.artists.each do |artist| %>
-					<a class="imagelink" href="<%= artist.url %>"><img src="/photos/headshots/<%= artist.slug %>.jpg" class="artist photo" width="200" height="220" alt="<%= artist.name %>" /></a>
+					<a class="imagelink" href="<%= artist.url %>"><img src="/<%= artist.photo %>" class="artist photo" width="200" height="220" alt="<%= artist.name %>" /></a>
 				<% end %>
 				<h2><a href="<%= show.artists.collect(&:url).first %>"><%= show.name %></a></h2>
 			</div>
