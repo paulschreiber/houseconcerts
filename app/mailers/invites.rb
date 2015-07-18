@@ -1,7 +1,11 @@
 class Invites < ApplicationMailer
   def invite(person, show)
 		return unless person && show && person.is_a?(Person) && show.is_a?(Show)
-    return unless person.active?
+
+    unless person.active?
+      logger.warn "Cannnot email inactive person (#{person.email}, #{person.id}, #{person.status})"
+      return
+    end
 
     @person = person
 
