@@ -1,6 +1,6 @@
 
 namespace :invite do
-  desc 'Send invites for next_show'
+  desc 'Send invites for next show'
   task next_show: :environment do
     show = Show.upcoming.first
     people = Person.includes(:venue_groups).where(venue_groups: { id: 2 }, status: 'active').where('email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)', show.id)
