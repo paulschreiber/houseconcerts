@@ -11,9 +11,8 @@ class OpensController < ApplicationController
   end
 
   def send_blank_gif
-    send_data(Base64.decode64("R0lGODlhAQABAPAAAAAAAAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="),
+    send_data(Base64.decode64('R0lGODlhAQABAPAAAAAAAAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='),
               type: 'image/gif',
               disposition: 'inline')
   end
-
 end
