@@ -26,6 +26,8 @@ Rails.application.routes.draw do
   get 'rsvps/show/:slug/:uniqid' => 'rsvps#new'
   post 'rsvps/show/:slug' => 'rsvps#new'
 
+  get 'open/:tag/:uniqid' => 'opens#index'
+
   resources :people, only: [:new, :index, :create], controller: :mailing_list
 
   # Example resource route with options:
