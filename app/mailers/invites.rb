@@ -54,4 +54,27 @@ class Invites < ApplicationMailer
       mail(to: person.email_address_with_name, subject: subject)
     end
   end
+
+  def confirm(rsvp, email_type = 'confirm')
+    return unless rsvp
+
+    unless rsvp.is_a?(RSVP)
+      logger.warn "First parameter is of type #{rsvp.class} and must be of type RSVP"
+      return
+    end
+
+    @rsvp = rsvp
+    tag = "#{rsvp.show.slug}:#{email_type}"
+    @track_url = url_for(controller: :opens, action: :index, uniqid: rsvp.uniqid, tag: tag)
+
+    subject = "RSVP Confirmation: #{rsvp.show.name} house concert (#{rsvp.show.start_date_short})"
+
+    if Rails.env.production?
+      mail(to: rsvp.email_address_with_name,
+           subject: subject,
+           delivery_method: :sendmail)
+    else
+      mail(to: rsvp.email_address_with_name, subject: subject)
+    end
+  end
 end
