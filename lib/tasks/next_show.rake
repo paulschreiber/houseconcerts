@@ -1,6 +1,4 @@
-
 namespace :next_show do
-
   desc 'Send invites for next show'
   task invite: :environment do
     show = Show.upcoming.first
@@ -14,18 +12,21 @@ namespace :next_show do
   end
 
   desc 'Show RSVPs for next show'
-  task rsvps :environment do
+  task rsvps: :environment do
     RSVP.where(show: Show.upcoming.first).each do |rsvp|
       puts "#{rsvp.created_at.to_date} #{rsvp.email} #{rsvp.response} #{rsvp.seats}"
     end
   end
 
   desc 'Confirm RSVPs for next show'
-  task confirm :environment do
-    RSVP.where(show: Show.upcoming.first, response: "Yes", confirmed: nil).each do |rsvp|
-      puts "Emailing #{p.email_address_with_name}..."
-      Invites.confirm(p, show).deliver_now
+  task confirm: :environment do
+    show = Show.upcoming.first
+    rsvps = RSVP.where(show: show, response: 'yes').where("(confirmed != 'yes' OR confirmed IS NULL)")
+    rsvps.each do |rsvp|
+      puts "Emailing #{rsvp.email_address_with_name}..."
+      Invites.confirm(rsvp).deliver_now
+      rsvp.confirm!
     end
+    puts "Sent #{rsvps.size} emails."
   end
-
 end
