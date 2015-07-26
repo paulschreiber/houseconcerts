@@ -12,6 +12,7 @@ table:
   :default_venue_group: 2
   :hostname: "concerts.shrub.ca"
   :invites_from: "\"Paul Schreiber\" <paul@schreibers.ca>"
+  :arrival_minutes: 30
 
   :venue: !ruby/object:OpenStruct
     table:
