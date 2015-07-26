@@ -62,7 +62,7 @@
 	<%= f.hidden_field :response %>
 	<% HC_CONFIG.rsvp.response.each do |response| %>
 		<%= f.radio_button :response, response %>
-		<%= f.label :response, response, value: response, class: "radio" %>
+		<%= f.label :response, response.titleize, value: response, class: "radio" %>
 	<% end %>
 </p>
 
