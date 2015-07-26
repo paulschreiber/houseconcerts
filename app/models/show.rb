@@ -32,7 +32,7 @@ class Show < ActiveRecord::Base
   end
 
   def start_time
-    start.strftime('%l %P').strip
+    start.strftime('%l:%M %P').strip
   end
 
   def start_date
@@ -41,6 +41,12 @@ class Show < ActiveRecord::Base
 
   def start_date_short
     start.strftime('%b %e').gsub('  ', ' ').strip
+  end
+
+  def arrival_range
+    earliest = (start - HC_CONFIG.arrival_minutes.minutes).strftime('%l:%M %P').strip
+    latest = (start - 1.minutes).strftime('%l:%M %P').strip
+    "#{earliest} and #{latest}"
   end
 
   def location
