@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150711170112) do
+ActiveRecord::Schema.define(version: 20150726203229) do
 
   create_table "admins", force: :cascade do |t|
     t.string   "email",                  limit: 255, default: "", null: false
@@ -154,16 +154,18 @@ ActiveRecord::Schema.define(version: 20150711170112) do
   add_index "venue_groups_venues", ["venue_id", "venue_group_id"], name: "index_venue_groups_venues_on_venue_id_and_venue_group_id", using: :btree
 
   create_table "venues", force: :cascade do |t|
-    t.string   "name",       limit: 255
-    t.string   "slug",       limit: 255
-    t.string   "address",    limit: 255
-    t.string   "city",       limit: 255
-    t.string   "province",   limit: 255
-    t.string   "postcode",   limit: 255
-    t.string   "country",    limit: 255
-    t.integer  "capacity",   limit: 4
-    t.datetime "created_at",             null: false
-    t.datetime "updated_at",             null: false
+    t.string   "name",         limit: 255
+    t.string   "slug",         limit: 255
+    t.string   "address",      limit: 255
+    t.string   "city",         limit: 255
+    t.string   "province",     limit: 255
+    t.string   "postcode",     limit: 255
+    t.string   "country",      limit: 255
+    t.integer  "capacity",     limit: 4
+    t.datetime "created_at",                 null: false
+    t.datetime "updated_at",                 null: false
+    t.text     "directions",   limit: 65535
+    t.text     "contact_info", limit: 65535
   end
 
   add_index "venues", ["name"], name: "index_venues_on_name", using: :btree
