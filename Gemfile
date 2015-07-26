@@ -22,6 +22,7 @@ gem 'friendly_id'
 gem 'carmen'
 gem 'devise'
 gem 'humanize'
+gem 'redcarpet'
 
 gem 'capistrano'
 gem 'capistrano-bundler'
