@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150726203229) do
+ActiveRecord::Schema.define(version: 20150726222436) do
 
   create_table "admins", force: :cascade do |t|
     t.string   "email",                  limit: 255, default: "", null: false
@@ -103,6 +103,7 @@ ActiveRecord::Schema.define(version: 20150726203229) do
   add_index "people_venue_groups", ["venue_group_id", "person_id"], name: "index_people_venue_groups_on_venue_group_id_and_person_id", using: :btree
 
   create_table "rsvps", force: :cascade do |t|
+    t.string   "uniqid",       limit: 255
     t.integer  "show_id",      limit: 4
     t.string   "first_name",   limit: 255
     t.string   "last_name",    limit: 255
@@ -120,6 +121,7 @@ ActiveRecord::Schema.define(version: 20150726203229) do
   add_index "rsvps", ["email"], name: "index_rsvps_on_email", using: :btree
   add_index "rsvps", ["response"], name: "index_rsvps_on_response", using: :btree
   add_index "rsvps", ["show_id"], name: "index_rsvps_on_show_id", using: :btree
+  add_index "rsvps", ["uniqid"], name: "index_rsvps_on_uniqid", unique: true, using: :btree
 
   create_table "shows", force: :cascade do |t|
     t.datetime "start"
