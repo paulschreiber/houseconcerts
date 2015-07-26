@@ -20,8 +20,28 @@ class Venue < ActiveRecord::Base
     less_than_or_equal_to: HC_CONFIG.venue.max_capacity
   }
 
+  def province_name
+    Carmen::Country.coded(HC_CONFIG.default_country).subregions.coded(province)
+  end
+
   def location
-    province_name = Carmen::Country.coded(HC_CONFIG.default_country).subregions.coded(province)
     "#{city}, #{province_name}"
+  end
+
+  def full_address
+    "#{address} · #{city}, #{province_name} #{postcode}"
+  end
+
+  # Shared renderer instance
+  def markdown_renderer
+    @renderer ||= Redcarpet::Markdown.new(Redcarpet::Render::HTML.new(hard_wrap: true))
+  end
+
+  def formatted_directions
+    markdown_renderer.render(directions)
+  end
+
+  def formatted_contact_info
+    markdown_renderer.render(contact_info)
   end
 end
