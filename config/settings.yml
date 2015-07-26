@@ -45,8 +45,8 @@ table:
   :rsvp: !ruby/object:OpenStruct
     table:
       :response:
-        - "Yes"
-        - "No"
+        - "yes"
+        - "no"
       :confirmed:
         - "yes"
         - "no"
