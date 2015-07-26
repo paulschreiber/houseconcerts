@@ -5,6 +5,11 @@ class RSVP < ActiveRecord::Base
   before_save :update_confirmation_date
   before_save :clear_seats_if_no
 
+  # From https://stackoverflow.com/a/1126031/135850
+  default_value_for :uniqid do
+    rand(2821109907456).to_s(36)
+  end
+
   validates :first_name, presence: true, mixed_case: true
   validates :last_name, presence: true, mixed_case: true
   validates :email, email: true
@@ -30,19 +35,27 @@ class RSVP < ActiveRecord::Base
 
   # define .yes?, .no?
   HC_CONFIG.rsvp.response.each do |value|
-    define_method("#{value.downcase}?") { response == value }
+    define_method("#{value}?") { response == value }
+  end
+
+  def confirm!
+    update_attribute(:confirmed, 'yes') if yes?
+  end
+
+  def waitlist!
+    update_attribute(:confirmed, 'waitlisted') if yes?
   end
 
   def confirmed?
-    confirmed == HC_CONFIG.rsvp.confirmed[:yes]
+    confirmed == 'yes'
   end
 
   def unconfirmed?
-    confirmed == HC_CONFIG.rsvp.confirmed[:no]
+    confirmed == 'no' || confirmed.empty?
   end
 
   def waitlisted?
-    confirmed == HC_CONFIG.rsvp.confirmed[:waitlisted]
+    confirmed == 'waitlisted'
   end
 
   def full_name
