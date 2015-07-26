@@ -24,7 +24,7 @@ class MailingListController < ApplicationController
   end
 
   def create
-    # look for an existing reservation
+    # look for an existing subscription
     if params[:person] && params[:person][:email]
       @person = Person.where(email: params[:person][:email]).first
     end
