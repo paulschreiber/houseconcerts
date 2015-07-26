@@ -1,35 +1,35 @@
-<p>Hi <%= @person.first_name %>,</p>
+<p>Hi <%= @rsvp.first_name %>,</p>
 
 <p>Thanks for signing up for the house concert!</p>
 
 <p>Remember that your RSVP is a <em>confirmed reservation</em>: we’re holding a seat just for you.</p>
 
-<p>Here's all the info you should need.</p>
+<p style="margin-bottom: 0; padding-bottom: 0;">Here's all the info you should need:</p>
 <ul style="padding: 0.5em 1em; margin-top: 0.5em; border-left: none; border-right: none;">
 <li>If you want to bring more or fewer people, or wish to cancel your reservation, it is important that you let me know.</li>
 <li>If you have questions or have trouble finding the place, call me.</li>
 </ul>
 
 <p style="margin-bottom: 0; padding-bottom: 0">Short attention span version</p>
-<ul style="padding: 0.5em 1em; margin-top: 0.5em; border: 1px dashed black; border-left: none; border-right: none; width: 20em;">
-<li><%= @show.name %></li>
+<ul style="padding: 0.5em 1em; margin-top: 0; border: 1px dashed black; border-left: none; border-right: none; width: 30em;">
+<li><%= @rsvp.show.name %></li>
 <li>Seats: <%= @rsvp.seats %></li>
-<li>Date: <%= @show.start_date %>
-<li>Time: <%= @show.start_time %> &middot; Please arrive between <%= @show.arrival_range %>.</li>
-<li>Location: <%= @show.venue.full_address %></li>
+<li>Date: <%= @rsvp.show.start_date %>
+<li>Time: <%= @rsvp.show.start_time %> &middot; Please arrive between <%= @rsvp.show.arrival_range %>.</li>
+<li>Location: <%= @rsvp.show.venue.full_address %></li>
 </ul>
 
-<p style="border-bottom: 1px dashed black; width: 22em; padding-bottom: 0em; margin-bottom: 0;">Stuff to bring</p>
+<p style="border-bottom: 1px dashed black; width: 32em; padding-bottom: 0em; margin-bottom: 0;">Stuff to bring</p>
 <p style="margin-top: 0;">As always, you are welcome to bring a snack or drink to share, but it's certainly not required.</p>
 
-<p style="border-bottom: 1px dashed black; width: 22em; padding-bottom: 0em; margin-bottom: 0;">Money</p>
-<p style="margin-top: 0;">The suggested contribution is $<%= @show.price %>. You may also want a CD or t-shirt, so be sure to bring a bit of spending money. :)</p>
+<p style="border-bottom: 1px dashed black; width: 32em; padding-bottom: 0em; margin-bottom: 0;">Money</p>
+<p style="margin-top: 0;">The suggested contribution is $<%= @rsvp.show.price %>. You may also want a CD or t-shirt, so be sure to bring a bit of spending money. :)</p>
 
-<p style="border-bottom: 1px dashed black; width: 22em; padding-bottom: 0em; margin-bottom: 0;">Directions</p>
-<p><%= @show.venue.formated_directions %></p>
+<p style="border-bottom: 1px dashed black; width: 32em; padding-bottom: 0em; margin-bottom: -1em;">Directions</p>
+<%= @rsvp.show.venue.formatted_directions.html_safe %>
 
-<p style="border-bottom: 1px dashed black; width: 22em; padding-bottom: 0em; margin-bottom: 0;">Contact Info</p>
-<p><%= @show.venue.formatted_contact_info %></p>
+<p style="border-bottom: 1px dashed black; width: 32em; padding-bottom: 0em; margin-bottom: -1em;">Contact Info</p>
+<%= @rsvp.show.venue.formatted_contact_info.html_safe %>
 
 
 <p>thanks!
