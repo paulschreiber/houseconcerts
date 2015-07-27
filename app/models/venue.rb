@@ -38,10 +38,10 @@ class Venue < ActiveRecord::Base
   end
 
   def formatted_directions
-    markdown_renderer.render(directions)
+    markdown_renderer.render(directions) if directions
   end
 
   def formatted_contact_info
-    markdown_renderer.render(contact_info)
+    markdown_renderer.render(contact_info) if contact_info
   end
 end
