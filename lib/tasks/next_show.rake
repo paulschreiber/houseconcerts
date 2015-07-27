@@ -18,7 +18,7 @@ namespace :next_show do
     RSVP.where(show: Show.upcoming.first).order(:id).each do |rsvp|
       puts "#{rsvp.created_at.to_date} #{rsvp.response.rjust(3)} #{rsvp.seats} #{rsvp.email}"
       seats = seats + rsvp.seats
-      reservations = people + 1 if rsvp.yes?
+      reservations = reservations + 1 if rsvp.yes?
     end
     puts "Total: #{seats} seats / #{reservations} reservations"
   end
