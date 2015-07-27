@@ -63,6 +63,11 @@ class Invites < ApplicationMailer
       return
     end
 
+    unless rsvp.seats.to_i > 0
+      logger.warn "RSVP #{rsvp.id} has 0 seats"
+      return
+    end
+
     @rsvp = rsvp
     tag = "#{rsvp.show.slug}:#{email_type}"
     @track_url = url_for(controller: :opens, action: :index, uniqid: rsvp.uniqid, tag: tag)
