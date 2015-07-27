@@ -14,7 +14,7 @@ namespace :next_show do
   desc 'Show RSVPs for next show'
   task rsvps: :environment do
     RSVP.where(show: Show.upcoming.first).each do |rsvp|
-      puts "#{rsvp.created_at.to_date} #{rsvp.email} #{rsvp.response} #{rsvp.seats}"
+      puts "#{rsvp.created_at.to_date} #{rsvp.response.rjust(3)} #{rsvp.seats} #{rsvp.email}"
     end
   end
 
