@@ -31,6 +31,10 @@ class Show < ActiveRecord::Base
     (self.end - start).to_i
   end
 
+  def day_of_week
+    start.strftime('%A')
+  end
+
   def start_time
     start.strftime('%l:%M %P').strip
   end
