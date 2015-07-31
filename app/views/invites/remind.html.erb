@@ -1,0 +1,27 @@
+<p>Hi <%= @rsvp.first_name %>,</p>
+
+<p style="margin-bottom: 0;">This is a quick reminder about the <%= @rsvp.show.name %> show:</p>
+
+<ul style="padding: 0.5em 1em; margin-top: 0; margin-bottom: 2em; border: 1px dashed black; border-left: none; border-right: none; width: 30em;">
+<li>Seats: <%= @rsvp.seats %></li>
+<li>Date: <%= @rsvp.show.start_date %>
+<li>Time: <%= @rsvp.show.start_time %> &middot; Please arrive between <%= @rsvp.show.arrival_range %>.</li>
+<li>Location: <%= @rsvp.show.venue.full_address %></li>
+</ul>
+
+<p style="margin-bottom: 0;">Remember, your RSVP is a <em>confirmed reservation</em>.</p>
+<ul style="padding: 0.5em 1em; margin-top: 0;">
+<li>Still coming? Great! See you <%= @rsvp.show.day_of_week %>!</li>
+<li>Bringing another friend? Also great. Please <%= link_to 'update your reservation', @rsvp_url %>.</li>
+<li>Dog is sick? Last-minute wedding to attend? <%= link_to 'Let me know', @rsvp_url %> so I don’t worry when you don’t show up.</li>
+</ul>
+
+<p>I appreciate it and <%= @rsvp.show.name %> very much appreciates it. :)</p>
+
+<p>I look forward to seeing you there!</p>
+
+
+
+
+<p>thanks!
+<br/>Paul</p>
