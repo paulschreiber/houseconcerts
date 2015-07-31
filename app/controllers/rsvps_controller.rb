@@ -7,13 +7,21 @@ class RsvpsController < ApplicationController
     @rsvp = RSVP.new(params[:rsvp])
 
     # pre-fill form (from link)
-    person = Person.where(uniqid: params[:uniqid]).first if params[:uniqid]
+    if params[:uniqid]
+      # new RSVP
+      person = Person.where(uniqid: params[:uniqid]).first
 
-    if person
-      @rsvp.first_name = person.first_name
-      @rsvp.last_name = person.last_name
-      @rsvp.email = person.email
-      @rsvp.postcode = person.postcode
+      if person
+        @rsvp.first_name = person.first_name
+        @rsvp.last_name = person.last_name
+        @rsvp.email = person.email
+        @rsvp.postcode = person.postcode
+      else
+
+        # update existing RSVP
+        rsvp = RSVP.where(uniqid: params[:uniqid]).first
+        @rsvp = rsvp if rsvp
+      end
     end
 
     begin
