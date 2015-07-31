@@ -82,4 +82,34 @@ class Invites < ApplicationMailer
       mail(to: rsvp.email_address_with_name, subject: subject)
     end
   end
+
+  def remind(rsvp, email_type = 'remind')
+    return unless rsvp
+
+    unless rsvp.is_a?(RSVP)
+      logger.warn "First parameter is of type #{rsvp.class} and must be of type RSVP"
+      return
+    end
+
+    unless rsvp.seats.to_i > 0
+      logger.warn "RSVP #{rsvp.id} has 0 seats"
+      return
+    end
+
+    @rsvp = rsvp
+    tag = "#{rsvp.show.slug}:#{email_type}"
+    @rsvp_url = url_for(controller: :rsvps, action: :new, slug: rsvp.show.slug, uniqid: rsvp.uniqid)
+    @track_url = url_for(controller: :opens, action: :index, uniqid: rsvp.uniqid, tag: tag)
+
+    subject = "Reminder: #{rsvp.show.name} house concert (#{rsvp.show.start_date_short})"
+
+    if Rails.env.production?
+      mail(to: rsvp.email_address_with_name,
+           subject: subject,
+           delivery_method: :sendmail)
+    else
+      mail(to: rsvp.email_address_with_name, subject: subject)
+    end
+  end
+
 end
