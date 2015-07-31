@@ -34,4 +34,15 @@ namespace :next_show do
     end
     puts "Sent #{rsvps.size} emails."
   end
+
+  desc 'Remind RSVPs for next show'
+  task remind: :environment do
+    show = Show.upcoming.first
+    rsvps = RSVP.where(show: show, response: 'yes', confirmed: 'yes')
+    rsvps.each do |rsvp|
+      puts "Emailing #{rsvp.email_address_with_name}..."
+      Invites.remind(rsvp).deliver_now
+    end
+    puts "Sent #{rsvps.size} emails."
+  end
 end
