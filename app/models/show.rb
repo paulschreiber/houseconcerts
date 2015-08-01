@@ -27,6 +27,10 @@ class Show < ActiveRecord::Base
     define_method("#{value.gsub(' ', '_')}?") { status == value }
   end
 
+  def self.next
+    upcoming.first
+  end
+
   def duration
     (self.end - start).to_i
   end
