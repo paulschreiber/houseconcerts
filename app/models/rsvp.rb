@@ -38,6 +38,12 @@ class RSVP < ActiveRecord::Base
     define_method("#{value}?") { response == value }
   end
 
+  # define .yes!, .no!
+  # use update_attribute_s_ so the before_save actions fire
+  HC_CONFIG.rsvp.response.each do |value|
+    define_method("#{value}!") { update_attributes(response: value) }
+  end
+
   def confirm!
     update_attribute(:confirmed, 'yes') if yes?
   end
