@@ -28,7 +28,7 @@ class RsvpsController < ApplicationController
       @show = Show.friendly.find(params[:slug])
     rescue ActiveRecord::RecordNotFound
       @show = Show.new
-      @shows = Show.upcoming.confirmed
+      @shows = Show.occurring
     end
   end
 
@@ -51,7 +51,7 @@ class RsvpsController < ApplicationController
       @show = Show.find(params[:rsvp][:show_id])
     end
 
-    @shows = Show.upcoming.confirmed
+    @shows = Show.occurring
 
     return unless @rsvp.save
 

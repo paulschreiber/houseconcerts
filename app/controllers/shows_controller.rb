@@ -1,6 +1,6 @@
 class ShowsController < ApplicationController
   def index
-    @shows = Show.upcoming.confirmed
+    @shows = Show.occurring
   end
 
   def shows
