@@ -7,6 +7,7 @@ class Show < ActiveRecord::Base
   belongs_to :venue
 
   scope :confirmed, -> { where(status: 'confirmed') }
+  scope :occurring, -> { where(status: ['sold out', 'waitlisted', 'confirmed']).where('start > ?', Time.now).order(:start) }
   scope :occurred, -> { where(status: ['sold out', 'waitlisted', 'confirmed']) }
   scope :upcoming, -> { where('start > ?', Time.now).order(:start) }
   scope :past, -> { where('start < ?', Time.now) }
