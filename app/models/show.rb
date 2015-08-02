@@ -10,7 +10,7 @@ class Show < ActiveRecord::Base
   scope :occurring, -> { where(status: ['sold out', 'waitlisted', 'confirmed']).where('start > ?', Time.now).order(:start) }
   scope :occurred, -> { where(status: ['sold out', 'waitlisted', 'confirmed']) }
   scope :upcoming, -> { where('start > ?', Time.now).order(:start) }
-  scope :past, -> { where('start < ?', Time.now) }
+  scope :past, -> { where('start < ?', Time.now).order(:start) }
 
   validates :start, timeliness: { type: :datetime }
   validates :end, timeliness: { type: :datetime, after: ->x { x.start } }
