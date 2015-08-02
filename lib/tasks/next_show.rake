@@ -1,7 +1,7 @@
 namespace :next_show do
   desc 'Send invites for next show'
   task invite: :environment do
-    show = Show.upcoming.first
+    show = Show.next
     people = Person.includes(:venue_groups).where(venue_groups: { id: 2 }, status: 'active').where('email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)', show.id)
 
     people.each do |p|
@@ -15,7 +15,7 @@ namespace :next_show do
   task rsvps: :environment do
     seats = 0
     reservations = 0
-    RSVP.where(show: Show.upcoming.first).order(:id).each do |rsvp|
+    RSVP.where(show: Show.next).order(:id).each do |rsvp|
       puts "#{rsvp.created_at.to_date} #{rsvp.response.rjust(3)} #{rsvp.seats} #{rsvp.email}"
       seats = seats + rsvp.seats
       reservations = reservations + 1 if rsvp.yes?
@@ -25,7 +25,7 @@ namespace :next_show do
 
   desc 'Confirm RSVPs for next show'
   task confirm: :environment do
-    show = Show.upcoming.first
+    show = Show.next
     rsvps = RSVP.where(show: show, response: 'yes').where("(confirmed != 'yes' OR confirmed IS NULL)")
     rsvps.each do |rsvp|
       puts "Emailing #{rsvp.email_address_with_name}..."
@@ -37,7 +37,7 @@ namespace :next_show do
 
   desc 'Remind RSVPs for next show'
   task remind: :environment do
-    show = Show.upcoming.first
+    show = Show.next
     rsvps = RSVP.where(show: show, response: 'yes', confirmed: 'yes')
     rsvps.each do |rsvp|
       puts "Emailing #{rsvp.email_address_with_name}..."
