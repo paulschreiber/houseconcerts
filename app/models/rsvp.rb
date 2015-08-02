@@ -68,6 +68,12 @@ class RSVP < ActiveRecord::Base
     "#{first_name} #{last_name}".strip
   end
 
+  def create_person
+    unless Person.where(email: email).first
+      Person.create(first_name: first_name, last_name: last_name, email: email, postcode: postcode, notes: "RSVPd for show #{show.slug}")
+    end
+  end
+
   def email_address_with_name
     return unless email.present?
     if full_name.present?
