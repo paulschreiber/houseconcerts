@@ -69,9 +69,9 @@ class RSVP < ActiveRecord::Base
   end
 
   def create_person
-    unless Person.where(email: email).first
-      Person.create(first_name: first_name, last_name: last_name, email: email, postcode: postcode, notes: "RSVPd for show #{show.slug}")
-    end
+    return if Person.where(email: email).first
+
+    Person.create(first_name: first_name, last_name: last_name, email: email, postcode: postcode, notes: "RSVPd for show #{show.slug}")
   end
 
   def email_address_with_name

@@ -111,5 +111,4 @@ class Invites < ApplicationMailer
       mail(to: rsvp.email_address_with_name, subject: subject)
     end
   end
-
 end

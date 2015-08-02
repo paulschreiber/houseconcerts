@@ -9,9 +9,7 @@ namespace :people do
   desc "Add people who RSVPd for the most recent show, and aren't on the list, to the list"
   task add_nonsubscribers: :environment do
     rsvps = find_nonsubscribers
-    rsvps.each do |rsvp|
-      rsvp.create_person
-    end
+    rsvps.each(&:create_person)
     puts "Added #{rsvps.collect(&:email).to_sentence}" unless rsvps.empty?
   end
 
