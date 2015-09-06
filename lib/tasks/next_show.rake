@@ -11,6 +11,14 @@ namespace :next_show do
     puts "Sent #{people.size} emails."
   end
 
+  desc 'Count invites for next show'
+  task invite_count: :environment do
+    show = Show.next
+    people = Person.includes(:venue_groups).where(venue_groups: { id: 2 }, status: 'active').where('email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)', show.id)
+
+    puts "Can email #{people.size} people."
+  end
+
   desc 'Show RSVPs for next show'
   task rsvps: :environment do
     seats = 0
