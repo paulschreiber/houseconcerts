@@ -24,12 +24,12 @@ class Person < ActiveRecord::Base
 
   # define .active?, .bouncing?, .moved?, .removed?, .deleted?, .vacation? methods
   HC_CONFIG.person.status.each do |value|
-    define_method("#{value.gsub(' ', '_')}?") { status == value }
+    define_method("#{value.tr(' ', '_')}?") { status == value }
   end
 
   # use update_attribute_s_ so the before_save actions fire
   HC_CONFIG.person.status.each do |value|
-    define_method("#{value.gsub(' ', '_')}!") { update_attributes(status: value) }
+    define_method("#{value.tr(' ', '_')}!") { update_attributes(status: value) }
   end
 
   def ensure_venue_group

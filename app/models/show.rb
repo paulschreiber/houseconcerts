@@ -25,7 +25,7 @@ class Show < ActiveRecord::Base
 
   # define .confirmed?, .cancelled?, .unconfirmed?, .waitlisted?, .sold_out? methods
   HC_CONFIG.show.status.each do |value|
-    define_method("#{value.gsub(' ', '_')}?") { status == value }
+    define_method("#{value.tr(' ', '_')}?") { status == value }
   end
 
   def self.next
