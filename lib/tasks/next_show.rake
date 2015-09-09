@@ -36,7 +36,7 @@ namespace :next_show do
     show = Show.next
     opens = Open.where('tag LIKE ?', "#{show.slug}%").group(:email).order(:created_at)
     opens.each do |open|
-      puts "#{open.created_at.to_date} #{open.email} #{open.tag[show.slug.length + 1..-1]}"
+      puts "#{open.created_at.to_date} #{open.tag[show.slug.length + 1..-1]} #{open.email}"
     end
     puts "Opens: #{opens.size}"
   end
