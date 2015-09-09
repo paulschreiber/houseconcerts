@@ -34,7 +34,7 @@ namespace :next_show do
   desc 'Show Email opens for next show'
   task opens: :environment do
     show = Show.next
-    opens = Open.where('tag LIKE ?', "#{show.slug}%").group(:email)
+    opens = Open.where('tag LIKE ?', "#{show.slug}%").group(:email).order(:created_at)
     opens.each do |open|
       puts "#{open.created_at.to_date} #{open.email} #{open.tag[show.slug.length + 1..-1]}"
     end
