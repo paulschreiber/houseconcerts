@@ -17,7 +17,7 @@ class CreatePeople < ActiveRecord::Migration
       t.index :uniqid, unique: true
       t.index :first_name
       t.index :last_name
-      t.index :email
+      t.index :email, unique: true
       t.index :status
     end
   end

@@ -88,7 +88,7 @@ ActiveRecord::Schema.define(version: 20150726222436) do
     t.datetime "updated_at",                     null: false
   end
 
-  add_index "people", ["email"], name: "index_people_on_email", using: :btree
+  add_index "people", ["email"], name: "index_people_on_email", unique: true, using: :btree
   add_index "people", ["first_name"], name: "index_people_on_first_name", using: :btree
   add_index "people", ["last_name"], name: "index_people_on_last_name", using: :btree
   add_index "people", ["status"], name: "index_people_on_status", using: :btree
