@@ -20,7 +20,7 @@ namespace :next_show do
     people = Person.includes(:venue_groups)
              .where(venue_groups: { id: 2 }, status: 'active')
              .where('email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)', show.id)
-             .where('email NOT IN (SELECT email FROM opens WHERE tag = ?)', "#{show.slug}:invite")
+             .where('email NOT IN (SELECT email FROM opens WHERE tag LIKE ?)', "#{show.slug}:invite%")
              .order(:last_name, :first_name)
 
     people.each do |p|
