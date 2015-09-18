@@ -11,6 +11,22 @@ namespace :next_show do
     puts "Sent #{people.size} emails."
   end
 
+  desc 'Send invites for next show to people who have not opened the invitation'
+  task invite_unopened: :environment do
+    show = Show.next
+    people = Person.includes(:venue_groups)
+             .where(venue_groups: { id: 2 }, status: 'active')
+             .where('email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)', show.id)
+             .where('email NOT IN (SELECT email FROM opens WHERE tag = ?)', "#{show.slug}:invite")
+             .order(:last_name, :first_name)
+
+    people.each do |p|
+      puts "Emailing #{p.email_address_with_name}..."
+      Invites.invite(p, show).deliver_now
+    end
+    puts "Sent #{people.size} emails."
+  end
+
   desc 'Count invites for next show'
   task invite_count: :environment do
     show = Show.next
