@@ -32,6 +32,10 @@ class Show < ActiveRecord::Base
     upcoming.first
   end
 
+  def self.previous
+    past.last
+  end
+
   def duration
     (self.end - start).to_i
   end
