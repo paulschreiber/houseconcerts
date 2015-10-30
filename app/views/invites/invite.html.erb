@@ -1,8 +1,8 @@
-<p><em>There are just a few days left until October’s show, and handful of seats remaining. Don’t miss out!</em></p>
-
 <p>Hi <%= @person.first_name %>,</p>
 
-<p>That means it’s almost October, and time to for Rebeccae Loebe. We have an afternoon show for you!</p>
+<p>I just got back from Canada, where the Montréal Canadiens won nine games in a row to start the season, and Stephen Harper is no longer Prime Minster. Not a bad trip!</p>
+
+<p>For this month’s show, we go international with (Canadian) Dan Frechette and (American) Laurel Thomsen.</p>
 
 <ul style="padding: 0.5em 1em; margin-top: 0.5em; border: 1px dashed black; border-left: none; border-right: none; width: 30em;">
 <li><%= @show.name %></li>
@@ -16,13 +16,15 @@
 
 <p style="border-bottom: 1px dashed black; width: 30em; padding-bottom: 0.5em;">A bit about <%= @show.name %></p>
 
-<p>Loebe is a Virginian-turned-Texan who has a way with a words (and an acoustic guitar). She’s an award-winning regular on the festival circuit (Kerrville, Falcon Ridge) and a charming storyteller.</p>
+<p>Dan is a songwriter, guitarist, and harmonica player from Winnipeg. Over the past 25 years, he’s been across North America and Europe, signed to EMI, and excited the CBC (that’s Canadian for PBS).</p>
 
-<p>Rebecca impressed me, and I’m sure she’ll impress you, too.</p>
+<p>Laurel is a classically-trained violinist, composer and teacher from Santa Cruz (Go Banana Slugs!). When “Hookmeister” Thomsen isn’t hosting the Violin Geek podcast, she’s on the road with Dan, creating great music.</p>
 
-<p><%= link_to "Say yes to Sunday afternoon with Rebecca Loebe", @rsvp_url %>.</p>
+<p><%= link_to "Say yes to Sunday afternoon with Dan and Laurel", @rsvp_url %>.</p>
 
 
 <p><br/>Paul</p>
 
 <p>P.S. If you don’t want to receive any more concert invites, <%= link_to "instantly unsubscribe", @unsub_url %>. Don’t worry, you won’t hurt my feelings.</p>
+
+<p>P.P.S. Winnie The Pooh was named after Winnipeg.</p>
