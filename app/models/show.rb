@@ -13,7 +13,7 @@ class Show < ActiveRecord::Base
   scope :past, -> { where('start < ?', Time.now).order(:start) }
 
   validates :start, timeliness: { type: :datetime }
-  validates :end, timeliness: { type: :datetime, after: ->x { x.start } }
+  validates :end, timeliness: { type: :datetime, after: ->(x) { x.start } }
   validates :name, presence: true
   validates :status, inclusion: { in: HC_CONFIG.show.status }
   validates :price, presence: true, numericality: {

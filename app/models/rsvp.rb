@@ -20,7 +20,7 @@ class RSVP < ActiveRecord::Base
     less_than_or_equal_to: HC_CONFIG.show.max_seats
   }, unless: :no?
   validates :response, inclusion: { in: HC_CONFIG.rsvp.response }
-  validates :show_id, inclusion: { in: ->_ { Show.all.collect(&:id) } }
+  validates :show_id, inclusion: { in: ->(_) { Show.all.collect(&:id) } }
 
   def update_confirmation_date
     return if !self.confirmed_changed? || !confirmed?
