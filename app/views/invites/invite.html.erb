@@ -1,26 +1,29 @@
+<div style="max-width: 30em;">
 <p><em>Dan and Laurel are this weekend — don’t miss out!</em></p>
 
 <p>Hi <%= @person.first_name %>,</p>
 
 <p>For November’s show, we go international with (Canadian) Dan Frechette and (American) Laurel Thomsen.</p>
 
-<ul style="padding: 0.5em 1em; margin-top: 0.5em; border: 1px dashed black; border-left: none; border-right: none; width: 30em;">
+<ul style="padding: 0.5em 1em; margin-top: 0.5em; border: 1px dashed black; border-left: none; border-right: none;">
 <li><%= @show.name %></li>
 <li><%= @show.start_date %> &middot; <%= @show.start_time %></li>
 <li><%= @show.venue.location %></li>
 <li>RSVP for location/directions</li>
 </ul>
 
-<p>Please let me know whether or not you can come:
-<br><%= link_to @rsvp_url, @rsvp_url %></p>
+<p><strong>
+<%= link_to "Yes! I’m in for #{@show.name}!", @rsvp_url_yes, class: 'button', style: 'background-color: #408000; color: white; padding: 5px 10px; text-decoration: none; display: inline-block; margin-top: 5px; border-radius: 3px;' %>
+<%= link_to "Sorry, I can’t make it.", @rsvp_url_no, class: 'button', style: 'background-color: #444; color: white; padding: 5px 10px; text-decoration: none; display: inline-block; margin-top: 5px; border-radius: 3px;' %>
+</strong></p>
 
-<p style="border-bottom: 1px dashed black; width: 30em; padding-bottom: 0.5em;">A bit about <%= @show.name %></p>
+<p style="border-bottom: 1px dashed black; padding-bottom: 0.5em;">A bit about <%= @show.name %></p>
 
 <p>Dan is a songwriter, guitarist, and harmonica player from Winnipeg. Over the past 25 years, he’s been across North America and Europe, signed to EMI, and excited the CBC (that’s Canadian for PBS).</p>
 
 <p>Laurel is a classically trained violinist, composer and teacher from Santa Cruz (Go Banana Slugs!). When “Hookmeister” Thomsen isn’t hosting the Violin Geek podcast, she’s on the road with Dan, creating great music.</p>
 
-<p><%= link_to "Say yes to Sunday afternoon with Dan and Laurel", @rsvp_url %>.</p>
+<p><%= link_to "Say yes to Sunday afternoon with Dan and Laurel", @rsvp_url_yes %>.</p>
 
 
 <p><br/>Paul</p>
@@ -28,3 +31,4 @@
 <p>P.S. If you don’t want to receive any more concert invites, <%= link_to "instantly unsubscribe", @unsub_url %>. Don’t worry, you won’t hurt my feelings.</p>
 
 <p>P.P.S. Winnie The Pooh was named after Winnipeg.</p>
+</div>
