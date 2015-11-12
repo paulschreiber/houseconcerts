@@ -24,6 +24,7 @@ Rails.application.routes.draw do
   patch 'rsvps' => 'rsvps#create'
   get 'rsvps/show/:slug' => 'rsvps#new'
   get 'rsvps/show/:slug/:uniqid' => 'rsvps#new'
+  get 'rsvps/show/:slug/:uniqid/:response' => 'rsvps#new'
   post 'rsvps/show/:slug' => 'rsvps#new'
 
   get 'open/:tag/:uniqid' => 'opens#index'

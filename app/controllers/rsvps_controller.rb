@@ -30,6 +30,16 @@ class RsvpsController < ApplicationController
       @show = Show.new
       @shows = Show.occurring
     end
+
+    if HC_CONFIG.rsvp.response.include?(params[:response])
+      @rsvp.response = params[:response]
+      @rsvp.show_id = @show.id if @show.id
+    end
+
+    return unless 'no' == @rsvp.response && @rsvp.save
+
+    # show a "no" RSVP
+    render 'thanks'
   end
 
   def create
