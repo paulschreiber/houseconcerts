@@ -157,7 +157,7 @@ GEM
     mini_portile2 (2.0.0)
     minitest (5.8.3)
     multi_json (1.11.2)
-    mysql2 (0.4.2)
+    mysql2 (0.3.20)
     net-scp (1.2.1)
       net-ssh (>= 2.6.5)
     net-ssh (3.0.1)
@@ -274,7 +274,7 @@ DEPENDENCIES
   jbuilder (~> 2.0)
   jquery-rails
   letter_opener
-  mysql2
+  mysql2 (~> 0.3.20)
   rails (= 4.2.4)
   rb-readline
   redcarpet
