@@ -10,6 +10,7 @@ Rails.application.routes.draw do
   get 'shows' => 'shows#shows', as: 'past_shows'
   get 'list' => 'mailing_list#index', as: 'mailing_list'
   get 'unsubscribe/:uniqid' => 'mailing_list#unsubscribe'
+  get 'calendar/ical' => 'shows#ical'
 
   # Example of regular route:
   #   get 'products/:id' => 'catalog#view'

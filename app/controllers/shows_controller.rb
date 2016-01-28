@@ -6,4 +6,8 @@ class ShowsController < ApplicationController
   def shows
     @shows = Show.past.occurred
   end
+
+  def ical
+    render nothing: true
+  end
 end
