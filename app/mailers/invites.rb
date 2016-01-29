@@ -101,8 +101,8 @@ class Invites < ApplicationMailer
     @rsvp = rsvp
     tag = "#{rsvp.show.slug}:#{email_type}"
     @rsvp_url = url_for(controller: :rsvps, action: :new, slug: rsvp.show.slug, uniqid: rsvp.uniqid)
-    @rsvp_url_yes = url_for(controller: :rsvps, action: :new, slug: rsvp.show.slug, uniqid: person.uniqid, response: :yes)
-    @rsvp_url_no = url_for(controller: :rsvps, action: :new, slug: rsvp.show.slug, uniqid: person.uniqid, response: :no)
+    @rsvp_url_yes = url_for(controller: :rsvps, action: :new, slug: rsvp.show.slug, uniqid: rsvp.uniqid, response: :yes)
+    @rsvp_url_no = url_for(controller: :rsvps, action: :new, slug: rsvp.show.slug, uniqid: rsvp.uniqid, response: :no)
     @track_url = url_for(controller: :opens, action: :index, uniqid: rsvp.uniqid, tag: tag)
 
     subject = "Reminder: #{rsvp.show.name} house concert (#{rsvp.show.start_date_short})"
