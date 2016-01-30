@@ -28,6 +28,10 @@ Rails.application.routes.draw do
   get 'rsvps/show/:slug/:uniqid/:response' => 'rsvps#new'
   post 'rsvps/show/:slug' => 'rsvps#new'
 
+  # Handle legacy URLs/typos
+  get '/rsvp/show/:slug' => redirect('/rsvps')
+
+
   get 'open/:tag/:uniqid' => 'opens#index'
 
   resources :people, only: [:new, :index, :create], controller: :mailing_list
