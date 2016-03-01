@@ -48,7 +48,7 @@ gem 'sdoc', '~> 0.4.0', group: :doc
 # gem 'capistrano-rails', group: :development
 
 group :development, :test do
-  gem 'irbtools-more', require: 'irbtools/binding'
+  gem 'irbtools', require: 'irbtools/binding'
   gem 'rb-readline'
   gem 'letter_opener'
 
