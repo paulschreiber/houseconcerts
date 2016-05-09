@@ -36,8 +36,11 @@ class MailingListController < ApplicationController
 
     @person = Person.new(person_params)
 
-    render :create unless @person.save
-    render 'thanks'
+    if @person.save
+      render 'thanks'
+    else
+      render :create
+    end
   end
 
   def person_params
