@@ -3,9 +3,9 @@ namespace :next_show do
   task invite: :environment do
     show = Show.next
     people = Person.includes(:venue_groups)
-             .where(venue_groups: { id: 2 }, status: 'active')
-             .where('email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)', show.id)
-             .order(:last_name, :first_name)
+                   .where(venue_groups: { id: 2 }, status: 'active')
+                   .where('email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)', show.id)
+                   .order(:last_name, :first_name)
 
     people.each do |p|
       puts "Emailing #{p.email_address_with_name}..."
@@ -18,10 +18,10 @@ namespace :next_show do
   task invite_unopened: :environment do
     show = Show.next
     people = Person.includes(:venue_groups)
-             .where(venue_groups: { id: 2 }, status: 'active')
-             .where('email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)', show.id)
-             .where('email NOT IN (SELECT email FROM opens WHERE tag LIKE ?)', "#{show.slug}:invite%")
-             .order(:last_name, :first_name)
+                   .where(venue_groups: { id: 2 }, status: 'active')
+                   .where('email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)', show.id)
+                   .where('email NOT IN (SELECT email FROM opens WHERE tag LIKE ?)', "#{show.slug}:invite%")
+                   .order(:last_name, :first_name)
 
     people.each do |p|
       puts "Emailing #{p.email_address_with_name}..."
@@ -34,8 +34,8 @@ namespace :next_show do
   task invite_count: :environment do
     show = Show.next
     people = Person.includes(:venue_groups)
-             .where(venue_groups: { id: 2 }, status: 'active')
-             .where('email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)', show.id)
+                   .where(venue_groups: { id: 2 }, status: 'active')
+                   .where('email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)', show.id)
 
     puts "Can email #{people.size} people."
   end

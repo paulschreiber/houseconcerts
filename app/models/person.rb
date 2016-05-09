@@ -38,7 +38,7 @@ class Person < ActiveRecord::Base
   end
 
   def update_removal_status
-    return if !self.status_changed? || !self.removed?
+    return if !status_changed? || !removed?
 
     self.removed_at = DateTime.now
     self.removal_ip_address = current_ip

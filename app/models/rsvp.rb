@@ -23,13 +23,13 @@ class RSVP < ActiveRecord::Base
   validates :show_id, inclusion: { in: ->(_) { Show.all.collect(&:id) } }
 
   def update_confirmation_date
-    return if !self.confirmed_changed? || !confirmed?
+    return if !confirmed_changed? || !confirmed?
 
     self.confirmed_at = DateTime.now
   end
 
   def clear_seats_if_no
-    return if self.yes?
+    return if yes?
 
     self.seats = 0
   end
