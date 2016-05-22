@@ -40,6 +40,18 @@ namespace :next_show do
     puts "Can email #{people.size} people."
   end
 
+  desc 'Show attendees for next show'
+  task attendees: :environment do
+    seats = 0
+    reservations = 0
+    RSVP.where(show: Show.next, response: 'yes').order(:id).each do |rsvp|
+      puts "#{rsvp.created_at.to_date} #{rsvp.seats} #{rsvp.full_name}"
+      seats += rsvp.seats
+      reservations += 1
+    end
+    puts "Total: #{seats} seats / #{reservations} reservations"
+  end
+
   desc 'Show RSVPs for next show'
   task rsvps: :environment do
     seats = 0
