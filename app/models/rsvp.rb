@@ -118,7 +118,9 @@ class RSVP < ActiveRecord::Base
           }
         }
       },
-      'numSeats': seats
+      'numSeats': seats,
+      'modifiedTime': updated_at.iso8601,
+      'modifyReservationUrl': Rails.application.routes.url_helpers.modify_rsvp_url(slug: show.slug, uniqid: uniqid)
     }
 
     result.to_json
