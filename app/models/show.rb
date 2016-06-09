@@ -56,8 +56,12 @@ class Show < ActiveRecord::Base
     start.strftime('%b %e').gsub('  ', ' ').strip
   end
 
+  def door_time
+    (start - HC_CONFIG.arrival_minutes.minutes)
+  end
+
   def arrival_range
-    earliest = (start - HC_CONFIG.arrival_minutes.minutes).strftime('%l:%M %P').strip
+    earliest = door_time.strftime('%l:%M %P').strip
     latest = (start - 1.minutes).strftime('%l:%M %P').strip
     "#{earliest} and #{latest}"
   end
