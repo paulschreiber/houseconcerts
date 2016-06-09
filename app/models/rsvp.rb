@@ -83,4 +83,44 @@ class RSVP < ActiveRecord::Base
       email
     end
   end
+
+  def to_ld_json
+    result = {
+      '@context': 'http://schema.org',
+      '@type': 'EventReservation',
+      'reservationNumber': uniqid,
+      'reservationStatus': 'http://schema.org/Confirmed',
+      'underName': {
+        '@type': 'Person',
+        'name': full_name
+      },
+      'reservationFor': {
+        '@type': 'MusicEvent',
+        'name': "#{show.name} Concert",
+        'startDate': show.start.iso8601,
+        'endDate': show.end.iso8601,
+        'doorTime': show.door_time.iso8601,
+        'performer': {
+          '@type': 'Person',
+          'name': show.artists.collect(&:name).to_sentence,
+          'image': "#{Rails.application.routes.url_helpers.root_url}#{show.artists.first.photo}"
+        },
+        'location': {
+          '@type': 'Place',
+          'name': HC_CONFIG.site_name,
+          'address': {
+            '@type': 'PostalAddress',
+            'streetAddress': show.venue.address,
+            'addressLocality': show.venue.city,
+            'addressRegion': show.venue.province,
+            'postalCode': show.venue.postcode,
+            'addressCountry': show.venue.country
+          }
+        }
+      },
+      'numSeats': seats
+    }
+
+    result.to_json
+  end
 end
