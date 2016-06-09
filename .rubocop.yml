@@ -20,3 +20,5 @@ PerceivedComplexity:
   Enabled: false
 MethodLength:
   Enabled: false
+ClassLength:
+  Max: 200
