@@ -24,7 +24,7 @@ Rails.application.routes.draw do
   get 'rsvps' => 'rsvps#new', as: 'rsvp'
   patch 'rsvps' => 'rsvps#create'
   get 'rsvps/show/:slug' => 'rsvps#new'
-  get 'rsvps/show/:slug/:uniqid' => 'rsvps#new'
+  get 'rsvps/show/:slug/:uniqid' => 'rsvps#new', as: 'modify_rsvp'
   get 'rsvps/show/:slug/:uniqid/:response' => 'rsvps#new'
   post 'rsvps/show/:slug' => 'rsvps#new'
 
