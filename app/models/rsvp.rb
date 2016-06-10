@@ -96,7 +96,7 @@ class RSVP < ActiveRecord::Base
       },
       'reservationFor': {
         '@type': 'MusicEvent',
-        'name': "#{show.name} Concert",
+        'name': "#{show.name} House Concert",
         'startDate': show.start.iso8601,
         'endDate': show.end.iso8601,
         'doorTime': show.door_time.iso8601,
