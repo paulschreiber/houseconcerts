@@ -14,7 +14,7 @@ namespace :people do
   end
 
   def find_nonsubscribers
-    show = Show.past.last
+    show = Show.occurred.last
     rsvps = RSVP.where(show: show).where('email NOT IN (SELECT email FROM people)')
     puts "Found #{rsvps.size} who RSVPd for #{show.name} and are not subscribed"
     rsvps
