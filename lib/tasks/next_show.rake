@@ -77,11 +77,20 @@ namespace :next_show do
   desc 'Confirm RSVPs for next show'
   task confirm: :environment do
     show = Show.next
-    rsvps = RSVP.where(show: show, response: 'yes').where("(confirmed != 'yes' OR confirmed IS NULL)")
-    rsvps.each do |rsvp|
-      puts "Emailing #{rsvp.email_address_with_name}..."
-      Invites.confirm(rsvp).deliver_now
-      rsvp.confirm!
+    if show.confirmed?
+      rsvps = RSVP.where(show: show, response: 'yes').where("(confirmed != 'yes' OR confirmed IS NULL)")
+      rsvps.each do |rsvp|
+        puts "Emailing #{rsvp.email_address_with_name}..."
+        Invites.confirm(rsvp).deliver_now
+        rsvp.confirm!
+      end
+    elsif show.waitlisted?
+      rsvps = RSVP.where(show: show, response: 'yes').where("( (confirmed != 'yes' AND confirmed != 'waitlisted') OR confirmed IS NULL)")
+      rsvps.each do |rsvp|
+        puts "Emailing #{rsvp.email_address_with_name}..."
+        Invites.waitlisted(rsvp).deliver_now
+        rsvp.waitlist!
+      end
     end
     puts "Sent #{rsvps.size} emails."
   end
