@@ -1,0 +1,13 @@
+<p>Hi <%= @rsvp.first_name %>,</p>
+
+<p>Thanks for signing up for the <%= @rsvp.show.name %> house concert!</p>
+
+<p>As the show is full, you have been placed on the waiting list.</p>
+
+<ul>
+<li>If a seat opens up, you’ll get a reservation confirmation.</li>
+<li>If you don’t want to wait, <%= link_to 'cancel your reservation', @rsvp_url %>.</li>
+</ul>
+
+<p>thanks!
+<br />Paul</p>
