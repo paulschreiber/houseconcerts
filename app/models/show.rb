@@ -69,4 +69,8 @@ class Show < ActiveRecord::Base
   def location
     venue.location if venue
   end
+
+  def to_s
+    "#{name} (#{start_date_short})"
+  end
 end
