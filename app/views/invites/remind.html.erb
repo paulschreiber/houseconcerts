@@ -12,8 +12,11 @@
 <p style="margin-bottom: 0;">Remember, your RSVP is a <em>confirmed reservation</em>.</p>
 <ul style="padding: 0.5em 1em; margin-top: 0;">
 <li>Still coming? Great! See you <%= @rsvp.show.day_of_week %>!</li>
+<% unless @rsvp.show.sold_out? or @rsvp.show.waitlisted? %>
 <li>Bringing another friend? Also great. Please <%= link_to 'update your reservation', @rsvp_url %>.</li>
-<li>Dog is sick? Last-minute wedding to attend? <%= link_to 'Let me know', @rsvp_url %> so I don’t worry when you don’t show up.</li>
+<% end %>
+<li>Bringing fewer guests? <%= link_to 'Update your reservation', @rsvp_url %>.</li>
+<li>Dog is sick? Last-minute wedding to attend? <%= link_to 'Cancel your reservation', @rsvp_url %> so I don’t worry when you don’t show up.</li>
 </ul>
 
 <p>I appreciate it and <%= @rsvp.show.name %> very much appreciates it. :)</p>
