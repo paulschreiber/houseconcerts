@@ -62,7 +62,7 @@ namespace :next_show do
     waitlisted_seats = 0
     RSVP.where(show: Show.next).order(:id).each do |rsvp|
       if rsvp.confirmed?
-        is_confirmed ='✔'
+        is_confirmed = '✔'
       elsif rsvp.waitlisted?
         is_confirmed = 'w'
       elsif rsvp.yes?
