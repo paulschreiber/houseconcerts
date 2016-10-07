@@ -61,7 +61,16 @@ namespace :next_show do
     waitlisted = 0
     waitlisted_seats = 0
     RSVP.where(show: Show.next).order(:id).each do |rsvp|
-      puts "#{rsvp.created_at.to_date} #{rsvp.response.rjust(3)}(#{rsvp.confirmed.first}) #{rsvp.seats} #{rsvp.email}"
+      if rsvp.confirmed?
+        is_confirmed ='✔'
+      elsif rsvp.waitlisted?
+        is_confirmed = 'w'
+      elsif rsvp.yes?
+        is_confirmed = '✖'
+      else
+        is_confirmed = ' '
+      end
+      puts "#{rsvp.created_at.to_date} #{rsvp.response.rjust(3)}#{is_confirmed} #{rsvp.seats} #{rsvp.email}"
       seats += rsvp.seats
       reservations += 1 if rsvp.yes?
       if rsvp.confirmed?
