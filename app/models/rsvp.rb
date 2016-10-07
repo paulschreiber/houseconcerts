@@ -32,6 +32,7 @@ class RSVP < ActiveRecord::Base
     return if yes?
 
     self.seats = 0
+    self.confirmed = nil
   end
 
   # define .yes?, .no?
