@@ -56,12 +56,24 @@ namespace :next_show do
   task rsvps: :environment do
     seats = 0
     reservations = 0
+    confirmed = 0
+    confirmed_seats = 0
+    waitlisted = 0
+    waitlisted_seats = 0
     RSVP.where(show: Show.next).order(:id).each do |rsvp|
-      puts "#{rsvp.created_at.to_date} #{rsvp.response.rjust(3)} #{rsvp.seats} #{rsvp.email}"
+      puts "#{rsvp.created_at.to_date} #{rsvp.response.rjust(3)}(#{rsvp.confirmed.first}) #{rsvp.seats} #{rsvp.email}"
       seats += rsvp.seats
       reservations += 1 if rsvp.yes?
+      if rsvp.confirmed?
+        confirmed += 1
+        confirmed_seats += rsvp.seats
+      end
+      if rsvp.waitlisted?
+        waitlisted += 1
+        waitlisted_seats += rsvp.seats
+      end
     end
-    puts "Total: #{seats} seats / #{reservations} reservations"
+    puts "Total: #{seats} seats (#{confirmed_seats} confirmed #{waitlisted_seats} waitlisted) / #{reservations} reservations (#{confirmed} confirmed #{waitlisted} waitlisted)"
   end
 
   desc 'Show Email opens for next show'
