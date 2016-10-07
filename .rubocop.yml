@@ -22,3 +22,5 @@ MethodLength:
   Enabled: false
 ClassLength:
   Max: 200
+Style/ConditionalAssignment:
+  Enabled: false
