@@ -1,4 +1,6 @@
 class RSVP < ActiveRecord::Base
+  include NameRules
+
   belongs_to :show
 
   before_save :downcase_email
@@ -10,8 +12,8 @@ class RSVP < ActiveRecord::Base
     rand(2821109907456).to_s(36)
   end
 
-  validates :first_name, presence: true, mixed_case: true
-  validates :last_name, presence: true, mixed_case: true
+  validates :first_name, presence: true, mixed_case: true, unless: :allowed_name_exception?
+  validates :last_name, presence: true, mixed_case: true, unless: :allowed_name_exception?
   validates :email, email: true
   validates :postcode, postal_code: { country: HC_CONFIG.default_country }, allow_blank: true
   validates :seats, numericality: {

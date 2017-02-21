@@ -1,4 +1,6 @@
 class Person < ActiveRecord::Base
+  include NameRules
+
   has_and_belongs_to_many :venue_groups
 
   before_validation :clean_variables
@@ -16,8 +18,8 @@ class Person < ActiveRecord::Base
 
   default_value_for :status, 'active'
 
-  validates :first_name, presence: true, mixed_case: true
-  validates :last_name, presence: true, mixed_case: true
+  validates :first_name, presence: true, mixed_case: true, unless: :allowed_name_exception?
+  validates :last_name, presence: true, mixed_case: true, unless: :allowed_name_exception?
   validates :email, email: true
   validates :postcode, postal_code: { country: HC_CONFIG.default_country }, allow_blank: true
   validates :status, inclusion: { in: HC_CONFIG.person.status }
