@@ -14,6 +14,13 @@ table:
   :invites_from: "\"Paul Schreiber\" <paul@schreibers.ca>"
   :arrival_minutes: 30
 
+  :exception_list: !ruby/object:OpenStruct
+    table:
+      :first_names:
+        - "danah"
+      :last_names:
+        - "boyd"
+
   :venue: !ruby/object:OpenStruct
     table:
       :min_capacity: 10
