@@ -1,5 +1,6 @@
 class Person < ActiveRecord::Base
   include NameRules
+  include IPAddress
 
   has_and_belongs_to_many :venue_groups
 
@@ -9,12 +10,12 @@ class Person < ActiveRecord::Base
   before_save :update_removal_status
   before_save :ensure_venue_group
 
+  cattr_accessor :current_ip
+
   # From https://stackoverflow.com/a/1126031/135850
   default_value_for :uniqid do
     rand(2821109907456).to_s(36)
   end
-
-  cattr_accessor :current_ip
 
   default_value_for :status, 'active'
 
@@ -48,10 +49,6 @@ class Person < ActiveRecord::Base
 
   def full_name
     "#{first_name} #{last_name}".strip
-  end
-
-  def set_ip_address
-    self.ip_address = current_ip if ip_address.nil?
   end
 
   def email_address_with_name
