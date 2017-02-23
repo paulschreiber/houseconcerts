@@ -1,11 +1,15 @@
 class RSVP < ActiveRecord::Base
   include NameRules
+  include IPAddress
 
   belongs_to :show
 
   before_save :downcase_email
+  before_save :set_ip_address
   before_save :update_confirmation_date
   before_save :clear_seats_if_no
+
+  cattr_accessor :current_ip
 
   # From https://stackoverflow.com/a/1126031/135850
   default_value_for :uniqid do
