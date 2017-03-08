@@ -1,4 +1,4 @@
-module NameRules
+module NameHelpers
   extend ActiveSupport::Concern
 
   def full_name
