@@ -1,5 +1,6 @@
 class Person < ActiveRecord::Base
   include NameRules
+  include NameHelpers
   include IPAddress
 
   has_and_belongs_to_many :venue_groups
@@ -45,18 +46,5 @@ class Person < ActiveRecord::Base
 
     self.removed_at = DateTime.now
     self.removal_ip_address = current_ip
-  end
-
-  def full_name
-    "#{first_name} #{last_name}".strip
-  end
-
-  def email_address_with_name
-    return unless email.present?
-    if full_name.present?
-      "\"#{full_name}\" <#{email}>"
-    else
-      email
-    end
   end
 end
