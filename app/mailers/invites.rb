@@ -1,5 +1,6 @@
 class Invites < ApplicationMailer
   USE_MANDRILL = false
+  USE_GOOGLE = true
 
   def invite(person, show, email_type = 'invite')
     return unless person && show
@@ -48,6 +49,19 @@ class Invites < ApplicationMailer
            subject: subject,
            delivery_method: :smtp,
            delivery_method_options: delivery_options)
+    elsif USE_GOOGLE
+      delivery_options = {
+        user_name: HC_CONFIG.google_username,
+        password: HC_CONFIG.google_password,
+        port: 587,
+        address: 'smtp.gmail.com'
+      }
+
+      mail(to: person.email_address_with_name,
+           subject: subject,
+           delivery_method: :smtp,
+           delivery_method_options: delivery_options)
+
     elsif Rails.env.production?
       mail(to: person.email_address_with_name,
            subject: subject,
@@ -80,7 +94,7 @@ class Invites < ApplicationMailer
     if Rails.env.production?
       mail(to: rsvp.email_address_with_name,
            subject: subject,
-           delivery_method: :sendmail)
+           delivery_method: :smtp)
     else
       mail(to: rsvp.email_address_with_name, subject: subject)
     end
@@ -108,7 +122,7 @@ class Invites < ApplicationMailer
     if Rails.env.production?
       mail(to: rsvp.email_address_with_name,
            subject: subject,
-           delivery_method: :sendmail)
+           delivery_method: :smtp)
     else
       mail(to: rsvp.email_address_with_name, subject: subject)
     end
@@ -139,7 +153,7 @@ class Invites < ApplicationMailer
     if Rails.env.production?
       mail(to: rsvp.email_address_with_name,
            subject: subject,
-           delivery_method: :sendmail)
+           delivery_method: :smtp)
     else
       mail(to: rsvp.email_address_with_name, subject: subject)
     end
