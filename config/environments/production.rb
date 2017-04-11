@@ -78,7 +78,6 @@ Rails.application.configure do
   config.active_record.dump_schema_after_migration = false
 
   config.action_mailer.default_url_options = { host: 'concerts.shrub.ca', protocol: 'https' }
-  config.action_mailer.delivery_method = :smtp
   Rails.application.routes.default_url_options[:host] = 'concerts.shrub.ca'
   Rails.application.routes.default_url_options[:protocol] = 'https'
 end

@@ -1,14 +1,41 @@
 class Invites < ApplicationMailer
-  USE_MANDRILL = false
-  USE_GOOGLE = true
+  SEND_METHOD = :amazon # :amazon, :google, :mandrill, :sendmail
 
-  def google_mailer_settings
-    {
-      user_name: HC_CONFIG.google_username,
-      password: HC_CONFIG.google_password,
-      port: 587,
-      address: 'smtp.gmail.com'
-    }
+  def delivery_options
+    if Rails.env.development?
+      {}
+    elsif SEND_METHOD == :google
+      {
+        user_name: HC_CONFIG.google_username,
+        password: HC_CONFIG.google_password,
+        port: 587,
+        address: 'smtp.gmail.com'
+      }
+    elsif SEND_METHOD == :amazon
+      {
+        user_name: HC_CONFIG.amazon_username,
+        password: HC_CONFIG.amazon_password,
+        port: 587,
+        address: 'email-smtp.us-east-1.amazonaws.com'
+      }
+    elsif SEND_METHOD == :mandrill
+      {
+        user_name: HC_CONFIG.mandrill_username,
+        password: HC_CONFIG.mandrill_api_key,
+        port: 587,
+        address: 'smtp.mandrillapp.com'
+      }
+    end
+  end
+
+  def delivery_method
+    if Rails.env.development?
+      :letter_opener
+    elsif SEND_METHOD == :sendmail
+      :sendmail
+    else
+      :smtp
+    end
   end
 
   def invite(person, show, email_type = 'invite')
@@ -43,34 +70,15 @@ class Invites < ApplicationMailer
 
     logger.debug "Emailing #{person.email} [#{tag}]"
 
-    if Rails.env.production? && USE_MANDRILL
+    if SEND_METHOD == :mandrill
       @unsub_url = "*|UNSUB:#{@unsub_url}|*"
       headers['X-MC-Tags'] = tag
-
-      delivery_options = {
-        user_name: HC_CONFIG.mandrill_username,
-        password: HC_CONFIG.mandrill_api_key,
-        port: 587,
-        address: 'smtp.mandrillapp.com'
-      }
-
-      mail(to: person.email_address_with_name,
-           subject: subject,
-           delivery_method: :smtp,
-           delivery_method_options: delivery_options)
-    elsif USE_GOOGLE
-
-      mail(to: person.email_address_with_name,
-           subject: subject,
-           delivery_method_options: google_mailer_settings)
-
-    elsif Rails.env.production?
-      mail(to: person.email_address_with_name,
-           subject: subject,
-           delivery_method: :sendmail)
-    else
-      mail(to: person.email_address_with_name, subject: subject)
     end
+
+    mail(to: person.email_address_with_name,
+         subject: subject,
+         delivery_method: delivery_method,
+         delivery_method_options: delivery_options)
   end
 
   def waitlisted(rsvp, email_type = 'waitlist')
@@ -93,13 +101,10 @@ class Invites < ApplicationMailer
 
     subject = "Waitlisted: #{rsvp.show.name} house concert (#{rsvp.show.start_date_short})"
 
-    if Rails.env.production?
-      mail(to: rsvp.email_address_with_name,
-           subject: subject,
-           delivery_method_options: google_mailer_settings)
-    else
-      mail(to: rsvp.email_address_with_name, subject: subject)
-    end
+    mail(to: rsvp.email_address_with_name,
+         subject: subject,
+         delivery_method: delivery_method,
+         delivery_method_options: delivery_options)
   end
 
   def confirm(rsvp, email_type = 'confirm')
@@ -121,13 +126,10 @@ class Invites < ApplicationMailer
 
     subject = "RSVP Confirmation: #{rsvp.show.name} house concert (#{rsvp.show.start_date_short})"
 
-    if Rails.env.production?
-      mail(to: rsvp.email_address_with_name,
-           subject: subject,
-           delivery_method_options: google_mailer_settings)
-    else
-      mail(to: rsvp.email_address_with_name, subject: subject)
-    end
+    mail(to: rsvp.email_address_with_name,
+         subject: subject,
+         delivery_method: delivery_method,
+         delivery_method_options: delivery_options)
   end
 
   def remind(rsvp, email_type = 'remind')
@@ -152,12 +154,9 @@ class Invites < ApplicationMailer
 
     subject = "Reminder: #{rsvp.show.name} house concert (#{rsvp.show.start_date_short})"
 
-    if Rails.env.production?
-      mail(to: rsvp.email_address_with_name,
-           subject: subject,
-           delivery_method_options: google_mailer_settings)
-    else
-      mail(to: rsvp.email_address_with_name, subject: subject)
-    end
+    mail(to: rsvp.email_address_with_name,
+         subject: subject,
+         delivery_method: delivery_method,
+         delivery_method_options: delivery_options)
   end
 end
