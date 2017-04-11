@@ -6,3 +6,5 @@ HC_CONFIG.mandrill_username = app_keys.mandrill_username
 HC_CONFIG.mandrill_api_key = app_keys.mandrill_api_key
 HC_CONFIG.google_username = app_keys.google_username
 HC_CONFIG.google_password = app_keys.google_password
+HC_CONFIG.amazon_username = app_keys.amazon_username
+HC_CONFIG.amazon_password = app_keys.amazon_password
