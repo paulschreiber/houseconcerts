@@ -79,12 +79,6 @@ Rails.application.configure do
 
   config.action_mailer.default_url_options = { host: 'concerts.shrub.ca', protocol: 'https' }
   config.action_mailer.delivery_method = :smtp
-  config.action_mailer.smtp_settings = {
-    user_name: HC_CONFIG.google_username,
-    password: HC_CONFIG.google_password,
-    port: 587,
-    address: 'smtp.gmail.com'
-  }
   Rails.application.routes.default_url_options[:host] = 'concerts.shrub.ca'
   Rails.application.routes.default_url_options[:protocol] = 'https'
 end

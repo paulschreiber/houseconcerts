@@ -2,6 +2,15 @@ class Invites < ApplicationMailer
   USE_MANDRILL = false
   USE_GOOGLE = true
 
+  def google_mailer_settings
+    {
+      user_name: HC_CONFIG.google_username,
+      password: HC_CONFIG.google_password,
+      port: 587,
+      address: 'smtp.gmail.com'
+    }
+  end
+
   def invite(person, show, email_type = 'invite')
     return unless person && show
 
@@ -50,17 +59,10 @@ class Invites < ApplicationMailer
            delivery_method: :smtp,
            delivery_method_options: delivery_options)
     elsif USE_GOOGLE
-      delivery_options = {
-        user_name: HC_CONFIG.google_username,
-        password: HC_CONFIG.google_password,
-        port: 587,
-        address: 'smtp.gmail.com'
-      }
 
       mail(to: person.email_address_with_name,
            subject: subject,
-           delivery_method: :smtp,
-           delivery_method_options: delivery_options)
+           delivery_method_options: google_mailer_settings)
 
     elsif Rails.env.production?
       mail(to: person.email_address_with_name,
@@ -94,7 +96,7 @@ class Invites < ApplicationMailer
     if Rails.env.production?
       mail(to: rsvp.email_address_with_name,
            subject: subject,
-           delivery_method: :smtp)
+           delivery_method_options: google_mailer_settings)
     else
       mail(to: rsvp.email_address_with_name, subject: subject)
     end
@@ -122,7 +124,7 @@ class Invites < ApplicationMailer
     if Rails.env.production?
       mail(to: rsvp.email_address_with_name,
            subject: subject,
-           delivery_method: :smtp)
+           delivery_method_options: google_mailer_settings)
     else
       mail(to: rsvp.email_address_with_name, subject: subject)
     end
@@ -153,7 +155,7 @@ class Invites < ApplicationMailer
     if Rails.env.production?
       mail(to: rsvp.email_address_with_name,
            subject: subject,
-           delivery_method: :smtp)
+           delivery_method_options: google_mailer_settings)
     else
       mail(to: rsvp.email_address_with_name, subject: subject)
     end
