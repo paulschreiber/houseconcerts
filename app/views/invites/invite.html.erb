@@ -1,7 +1,9 @@
 <div style="max-width: 30em;">
 <p>Hi <%= @person.first_name %>,</p>
 
-<p>I’m writing from the newest location of Paul’s Brooklyn House Concerts. The lights are up, the stereo is in, the chairs are stacked ... the rest still needs some cleaning up. But have no fear: we’ll be all set in two weeks for Jesse Terry.</p>
+<p>I’m writing from the newest location of Paul’s Brooklyn House Concerts. The lights are up, the stereo is in, the chairs are stacked. Things are looking good for Friday night’s Jesse Terry show.</p>
+
+<p>There are a handful of seats left — <%= link_to "get yours today", @rsvp_url_yes %>.
 
 <ul style="padding: 0.5em 1em; margin-top: 0.5em; border: 1px dashed black; border-left: none; border-right: none;">
 <li><%= @show.name %></li>
