@@ -53,7 +53,7 @@ class Show < ActiveRecord::Base
   end
 
   def start_date_short
-    start.strftime('%b %e').gsub('  ', ' ').strip
+    start.strftime('%B %e').gsub('  ', ' ').strip
   end
 
   def door_time
