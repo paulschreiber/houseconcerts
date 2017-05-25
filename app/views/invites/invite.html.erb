@@ -1,9 +1,7 @@
 <div style="max-width: 30em;">
 <p>Hi <%= @person.first_name %>,</p>
 
-<p>I’m writing from the newest location of Paul’s Brooklyn House Concerts. The lights are up, the stereo is in, the chairs are stacked. Things are looking good for Friday night’s Jesse Terry show.</p>
-
-<p>There are a handful of seats left — <%= link_to "get yours today", @rsvp_url_yes %>.
+<p>May is wrapping up. It’s almost time for the Stanley Cup, the NBA Finals…and the next house concert.</p>
 
 <ul style="padding: 0.5em 1em; margin-top: 0.5em; border: 1px dashed black; border-left: none; border-right: none;">
 <li><%= @show.name %></li>
@@ -19,11 +17,13 @@
 
 <p style="border-bottom: 1px dashed black; padding-bottom: 0.5em;">A bit about <%= @show.name %></p>
 
-<p>I found out about Jesse my favourite way: while at another concert. Rebecca Loebe asked me to come check out her set. I did — she was great. She performed in the round with two others. One was Jesse.</p>
+<p>I’m always excited when I get to host a Canadian musician. Even when it isn’t Canada’s sesquicentennial. But especially when it is.</p>
 
-<p>In addition to the the Rockwood Music Hall and the usuals — Passim in Cambridge, Eddie’s Attic in Decatur — Jesse Terry has played the big stages, too: he’s been to the Philadelphia Folk Festival (four times) and Bonnaroo. Through his four albums, Jesse’s gritty, warm words and music offer hope for a kinder tomorrow.</p>
+<p>Shawna Caspi hails from my old home, Toronto. She’s kicking off her northeastern US tour in my new home, Brookyln.</p>
 
-<%= link_to "RSVP now for Jesse Terry", @rsvp_url_yes %>.
+<p>A singer-songwriter and fingerstyle guitarist whose fourth full-length album is weeks away from dropping, Shawna has toured across the US and Canada. From Bowling Green to Asheville, Kamploops to Columbus, she’s racking up rave reviews and winning listeners over with songs that are alternatingly haunting and atmospheric and airy and hopeful.</p>
+
+<%= link_to "RSVP now for #{@show.name}", @rsvp_url_yes %>.
 
 <p><br/>Paul</p>
 
