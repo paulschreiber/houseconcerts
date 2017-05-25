@@ -48,6 +48,7 @@ address {
 
 abbr {
 	border: none;
+  text-underline: none;
 }
 
 abbr.duration, abbr.fn {
