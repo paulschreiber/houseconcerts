@@ -1,9 +1,7 @@
 <div style="max-width: 30em;">
 <p>Hi <%= @person.first_name %>,</p>
 
-<p>It’s almost July! Canada and the United States will both turn another year older. Professional sports will take a day off. The NYC subway will break down. Hey, at least it’s not on fire…yet.</p>
-
-<p>Good news: singer-songwriter — and friend-of-Paul’s house concerts — Anne Heaton is coming.</p>
+<p>Happy October! Now that Canadian Thanksgiving is over, it’s time to get ready for the next big event of the month: the Megan Slankard/Alex Wong house concert.</p>
 
 <ul style="padding: 0.5em 1em; margin-top: 0.5em; border: 1px dashed black; border-left: none; border-right: none;">
 <li><%= @show.name %></li>
@@ -19,15 +17,17 @@
 
 <p style="border-bottom: 1px dashed black; padding-bottom: 0.5em;">A bit about <%= @show.name %></p>
 
-<p>A long-time Chicagoan and Bostonian who now calls Michigan home, Anne Heaton has earned raves from Boston to Biloxi, not to mention kind words from <cite>Paste</cite> and <cite>Performing Songwriter</cite>.</p>
+<p>I’ve been a fan of Megan Slankard’s for almost a decade and a half. Ever since I’ve been in New York, we’ve been trying to put a show together. Good news: it worked.</p>
 
-<p>Anne has six solo albums under her belt, and one more as one quarter of Winterbloom. This folk-pop singer-songwriter has performed at Lilith Fair and Sundance and is a regular at Boston’s Club Passim.</p>
+<p>The one-time star of <cite>What Not To Wear</cite> has five albums under her (fashionable) belt and impressed judges at the UK Songwriting Contest, International Songwriting Contest and Show Me the Music Contest. (She was a finalist in all four.)</p>
 
-<p>I’m excited to have her back. Don’t miss out.</p>
+<p>Alex Wong is a synesthete, songwriter and producer<sup>1</sup>. He was signed to Epic Records as part of the Din Pedals, been half of The Animators and Paper Raincoat, and put together a string of solo albums. Alex has played with Vienna Teng and Melissa Ferrick, and Paul’s House Concert alums Ari Hest and Jesse Terry.</p>
 
 <%= link_to "Reserve your seats for #{@show.name}", @rsvp_url_yes %>.
 
 <p><br/>Paul</p>
 
 <p>P.S. If you don’t want to receive any more concert invites, <%= link_to "instantly unsubscribe", @unsub_url %>. Don’t worry, you won’t hurt my feelings.</p>
+
+<p>[1] But not a dancer.</p>
 </div>
