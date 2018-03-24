@@ -26,6 +26,8 @@ gem 'jquery-rails'
 gem 'sdoc', '~> 0.4.0', group: :doc
 gem 'turbolinks'
 
+gem 'stripe'
+
 group :development, :test do
   gem 'irbtools', require: 'irbtools/binding'
   gem 'letter_opener'
