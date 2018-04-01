@@ -5,6 +5,7 @@ class RsvpsController < ApplicationController
 
   def new
     @rsvp = RSVP.new(params[:rsvp])
+    @rsvp.seats ||= 1
 
     # pre-fill form (from link)
     if params[:uniqid]

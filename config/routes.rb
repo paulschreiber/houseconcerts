@@ -36,6 +36,8 @@ Rails.application.routes.draw do
 
   resources :people, only: [:new, :index, :create], controller: :mailing_list
 
+  resources :charges
+
   # Example resource route with options:
   #   resources :products do
   #     member do

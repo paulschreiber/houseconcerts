@@ -1,3 +1,7 @@
+<%
+	seats = @rsvp.seats || 1
+	charge_amount = @show.price * seats * 100
+%>
 <h1>RSVP for a show</h1>
 
 <% if @show.present? && @show.id.present? %>
@@ -22,6 +26,7 @@
 
 	<% if @show && @show.id.present? %>
 		<%= f.hidden_field :show_id, value: @show.id %>
+		<%= f.hidden_field :show_price, value: @show.price * 100 %>
 
 	<% else %>
 	<%= f.select :show_id, @shows.map{|s| [s.name, s.id]}, include_blank: "[Select a Show]"  %>
@@ -68,6 +73,11 @@
 	</p>
 
 
+	<script id="stripe-js" src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+	data-key="<%= Rails.configuration.stripe[:publishable_key] %>"
+	data-description="<%= @show.name %>"
+	data-amount="<%= charge_amount %>"
+	data-locale="auto"></script>
 
 	<%= f.submit "Make a Reservation" %>
 
