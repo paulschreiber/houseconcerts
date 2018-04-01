@@ -1,7 +1,9 @@
 <div style="max-width: 30em;">
 <p>Hi <%= @person.first_name %>,</p>
 
-<p>Megan and Alex’s show is in four days. Don’t miss out!</p>
+<p>Happy spring! I’m excited to announce a great lineup of house concerts for 2018: Edie Carey, Jen Lowe and Carlos Olmeda are confirmed so far, with more to be announced soon.</p>
+
+<p>We’re starting off the year with the amazing Patrice Pike.</p>
 
 <ul style="padding: 0.5em 1em; margin-top: 0.5em; border: 1px dashed black; border-left: none; border-right: none;">
 <li><%= @show.name %></li>
@@ -17,17 +19,16 @@
 
 <p style="border-bottom: 1px dashed black; padding-bottom: 0.5em;">A bit about <%= @show.name %></p>
 
-<p>I’ve been a fan of Megan Slankard’s for almost a decade and a half. Ever since I’ve been in New York, we’ve been trying to put a show together. Good news: it worked.</p>
+<p>Patrice Pike has been rocking for over two decades, as the frontwoman for Sister 7, as a solo performer and alongside Wayne Sutton. She's picked up half a dozen Austin Music Awards, and was the youngest person inducted into the Austin Music Hall of fame.</p>
 
-<p>The one-time star of <cite>What Not To Wear</cite> has five albums under her (fashionable) belt and impressed judges at the UK Songwriting Contest, International Songwriting Contest and Show Me the Music Contest. (She was a finalist in all four.)</p>
+<p>Patrice’s eclectic mix of rock and soul has earned raves from <cite>Rolling Stone</cite> and <cite>Billboard</cite>. She’s released six solo albums and won Grand Prize Overall and First Prize Rock in the USA Songwriting competition.</p>
 
-<p>Alex Wong is a synesthete, songwriter and producer<sup>1</sup>. He was signed to Epic Records as part of the Din Pedals, been half of The Animators and Paper Raincoat, and put together a string of solo albums. Alex has played with Vienna Teng and Melissa Ferrick, and Paul’s House Concert alums Ari Hest and Jesse Terry.</p>
+<p>We’re thrilled to have her.</p>
+
 
 <%= link_to "Reserve your seats for #{@show.name}", @rsvp_url_yes %>.
 
 <p><br/>Paul</p>
 
 <p>P.S. If you don’t want to receive any more concert invites, <%= link_to "instantly unsubscribe", @unsub_url %>. Don’t worry, you won’t hurt my feelings.</p>
-
-<p>[1] But not a dancer.</p>
 </div>
