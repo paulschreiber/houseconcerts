@@ -6,29 +6,39 @@ class RsvpsController < ApplicationController
   def new
     @rsvp = RSVP.new(params[:rsvp])
 
-    # pre-fill form (from link)
-    if params[:uniqid]
-      # new RSVP
-      person = Person.where(uniqid: params[:uniqid]).first
-
-      if person
-        @rsvp.first_name = person.first_name
-        @rsvp.last_name = person.last_name
-        @rsvp.email = person.email
-        @rsvp.postcode = person.postcode
-      else
-
-        # update existing RSVP
-        rsvp = RSVP.where(uniqid: params[:uniqid]).first
-        @rsvp = rsvp if rsvp
-      end
-    end
-
     begin
       @show = Show.friendly.find(params[:slug])
     rescue ActiveRecord::RecordNotFound
       @show = Show.new
       @shows = Show.occurring
+    end
+
+    # pre-fill form (from link)
+    if params[:uniqid]
+      # See if the uniqid is for a person
+      person = Person.where(uniqid: params[:uniqid]).first
+
+      if person
+        # determine if an RSVP exists for this emai/show combo
+        rsvp = RSVP.where(email: person.email, show_id: @show.id).first
+
+        # no match; create a new object
+        if rsvp.nil?
+          @rsvp.first_name = person.first_name
+          @rsvp.last_name = person.last_name
+          @rsvp.email = person.email
+          @rsvp.postcode = person.postcode
+
+        # existing RSVP found
+        else
+          @rsvp = rsvp
+        end
+
+      # See if the uniqid is for an RSVP
+      else
+        rsvp = RSVP.where(uniqid: params[:uniqid]).first
+        @rsvp = rsvp if rsvp
+      end
     end
 
     if HC_CONFIG.rsvp.response.include?(params[:response])
