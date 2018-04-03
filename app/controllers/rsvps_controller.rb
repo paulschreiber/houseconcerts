@@ -46,7 +46,7 @@ class RsvpsController < ApplicationController
       @rsvp.show_id = @show.id if @show.id
     end
 
-    return unless 'no' == @rsvp.response && @rsvp.save
+    return unless @rsvp.response == 'no' && @rsvp.save
 
     # show a "no" RSVP
     render 'thanks'

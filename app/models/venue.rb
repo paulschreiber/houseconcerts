@@ -34,7 +34,7 @@ class Venue < ActiveRecord::Base
 
   # Shared renderer instance
   def markdown_renderer
-    @renderer ||= Redcarpet::Markdown.new(Redcarpet::Render::HTML.new(hard_wrap: true))
+    @markdown_renderer ||= Redcarpet::Markdown.new(Redcarpet::Render::HTML.new(hard_wrap: true))
   end
 
   def formatted_directions

@@ -32,7 +32,7 @@ class RSVP < ActiveRecord::Base
   def update_confirmation_date
     return if !confirmed_changed? || !confirmed?
 
-    self.confirmed_at = DateTime.now
+    self.confirmed_at = Time.now
   end
 
   def clear_seats_if_no
