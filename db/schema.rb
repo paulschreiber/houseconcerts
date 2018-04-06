@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170223030945) do
+ActiveRecord::Schema.define(version: 20180406024033) do
 
   create_table "admins", force: :cascade do |t|
     t.string   "email",                  limit: 255, default: "", null: false
@@ -121,6 +121,7 @@ ActiveRecord::Schema.define(version: 20170223030945) do
   add_index "rsvps", ["confirmed"], name: "index_rsvps_on_confirmed", using: :btree
   add_index "rsvps", ["email"], name: "index_rsvps_on_email", using: :btree
   add_index "rsvps", ["response"], name: "index_rsvps_on_response", using: :btree
+  add_index "rsvps", ["show_id", "email"], name: "index_rsvps_on_show_id_and_email", unique: true, using: :btree
   add_index "rsvps", ["show_id"], name: "index_rsvps_on_show_id", using: :btree
   add_index "rsvps", ["uniqid"], name: "index_rsvps_on_uniqid", unique: true, using: :btree
 
@@ -174,6 +175,5 @@ ActiveRecord::Schema.define(version: 20170223030945) do
   add_index "venues", ["name"], name: "index_venues_on_name", using: :btree
   add_index "venues", ["slug"], name: "index_venues_on_slug", unique: true, using: :btree
 
-  add_foreign_key "rsvps", "shows"
   add_foreign_key "shows", "venues"
 end
