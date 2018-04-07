@@ -32,6 +32,11 @@ namespace :people do
   task :import_subscribers, [:filename] => [:environment] do |_, args|
     import_target = args[:filename]
 
+    unless import_target
+      puts 'Please enter an a filename'
+      exit
+    end
+
     unless File.exist?(import_target)
       puts "#{import_target} does not exist"
       exit
