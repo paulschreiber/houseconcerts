@@ -13,6 +13,7 @@ table:
   :hostname: "concerts.shrub.ca"
   :invites_from: "\"Paul Schreiber\" <paul@schreibers.ca>"
   :arrival_minutes: 30
+  :show_duration: 2
 
   :exception_list: !ruby/object:OpenStruct
     table:
