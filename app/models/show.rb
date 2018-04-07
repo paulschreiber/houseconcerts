@@ -6,6 +6,8 @@ class Show < ActiveRecord::Base
   has_many :rsvps
   belongs_to :venue
 
+  before_validation :set_end_time
+
   scope :confirmed, -> { where(status: 'confirmed') }
   scope :occurring, -> { where(status: ['sold out', 'waitlisted', 'confirmed']).where('start > ?', Time.now).order(:start) }
   scope :occurred, -> { where(status: ['sold out', 'waitlisted', 'confirmed']).where('start < ?', Time.now).order(:start) }
@@ -72,5 +74,9 @@ class Show < ActiveRecord::Base
 
   def to_s
     "#{name} (#{start_date_short})"
+  end
+
+  def set_end_time
+    self.end = start + HC_CONFIG.show_duration.hours unless self.end
   end
 end
