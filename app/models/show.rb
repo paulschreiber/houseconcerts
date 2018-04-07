@@ -23,7 +23,7 @@ class Show < ActiveRecord::Base
     greater_than_or_equal_to: HC_CONFIG.show.min_price,
     less_than_or_equal_to: HC_CONFIG.show.max_price
   }
-  validates :venue, presence: true
+  validates :venue_id, inclusion: { in: ->(_) { Venue.all.collect(&:id) } }
 
   # define .confirmed?, .cancelled?, .unconfirmed?, .waitlisted?, .sold_out? methods
   HC_CONFIG.show.status.each do |value|
