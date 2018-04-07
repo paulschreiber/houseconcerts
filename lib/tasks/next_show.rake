@@ -19,6 +19,30 @@ namespace :next_show do
     puts "Sent #{people.size} emails."
   end
 
+  desc 'Send invites for next show to one person'
+  task :invite_one, [:email] => [:environment] do |_, args|
+    email = args[:email]
+    unless email
+      puts 'Please enter an email address'
+      exit
+    end
+
+    person = Person.where(email: email).first
+    if person.nil?
+      puts "Could not find anyone with the email #{email}"
+      exit
+    end
+
+    show = Show.next
+    if show.nil?
+      puts 'No upcoming shows found'
+      exit
+    end
+
+    puts "Emailing #{person.email_address_with_name}..."
+    Invites.invite(person, show).deliver_now
+  end
+
   desc 'Send invites for next show to people who have not opened the invitation'
   task invite_unopened: :environment do
     show = Show.next
