@@ -2,6 +2,11 @@ namespace :next_show do
   desc 'Send invites for next show'
   task invite: :environment do
     show = Show.next
+    if show.nil?
+      puts 'No upcoming shows found'
+      exit
+    end
+
     people = Person.includes(:venue_groups)
                    .where(venue_groups: { id: 2 }, status: 'active')
                    .where('email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)', show.id)
@@ -17,6 +22,11 @@ namespace :next_show do
   desc 'Send invites for next show to people who have not opened the invitation'
   task invite_unopened: :environment do
     show = Show.next
+    if show.nil?
+      puts 'No upcoming shows found'
+      exit
+    end
+
     people = Person.includes(:venue_groups)
                    .where(venue_groups: { id: 2 }, status: 'active')
                    .where('email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)', show.id)
@@ -33,6 +43,11 @@ namespace :next_show do
   desc 'Count invites for next show'
   task invite_count: :environment do
     show = Show.next
+    if show.nil?
+      puts 'No upcoming shows found'
+      exit
+    end
+
     people = Person.includes(:venue_groups)
                    .where(venue_groups: { id: 2 }, status: 'active')
                    .where('email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)', show.id)
@@ -42,9 +57,15 @@ namespace :next_show do
 
   desc 'Show attendees for next show'
   task attendees: :environment do
+    show = Show.next
+    if show.nil?
+      puts 'No upcoming shows found'
+      exit
+    end
+
     seats = 0
     reservations = 0
-    RSVP.where(show: Show.next, response: 'yes').order(:id).each do |rsvp|
+    RSVP.where(show: show, response: 'yes').order(:id).each do |rsvp|
       puts "#{rsvp.created_at.to_date} #{rsvp.seats} #{rsvp.full_name}"
       seats += rsvp.seats
       reservations += 1
@@ -54,13 +75,19 @@ namespace :next_show do
 
   desc 'Show RSVPs for next show'
   task rsvps: :environment do
+    show = Show.next
+    if show.nil?
+      puts 'No upcoming shows found'
+      exit
+    end
+
     seats = 0
     reservations = 0
     confirmed = 0
     confirmed_seats = 0
     waitlisted = 0
     waitlisted_seats = 0
-    RSVP.where(show: Show.next).order(:id).each do |rsvp|
+    RSVP.where(show: show).order(:id).each do |rsvp|
       if rsvp.confirmed?
         is_confirmed = '✔'
       elsif rsvp.waitlisted?
@@ -88,6 +115,11 @@ namespace :next_show do
   desc 'Show Email opens for next show'
   task opens: :environment do
     show = Show.next
+    if show.nil?
+      puts 'No upcoming shows found'
+      exit
+    end
+
     opens = Open.where('tag LIKE ?', "#{show.slug}%").group(:email).order(:created_at)
     opens.each do |open|
       puts "#{open.created_at.to_date} #{open.tag[show.slug.length + 1..-1]} #{open.email}"
@@ -98,6 +130,11 @@ namespace :next_show do
   desc 'Confirm RSVPs for next show'
   task confirm: :environment do
     show = Show.next
+    if show.nil?
+      puts 'No upcoming shows found'
+      exit
+    end
+
     if show.confirmed?
       rsvps = RSVP.where(show: show, response: 'yes').where("(confirmed != 'yes' OR confirmed IS NULL)")
       rsvps.each do |rsvp|
@@ -119,6 +156,11 @@ namespace :next_show do
   desc 'Remind RSVPs for next show'
   task remind: :environment do
     show = Show.next
+    if show.nil?
+      puts 'No upcoming shows found'
+      exit
+    end
+
     rsvps = RSVP.where(show: show, response: 'yes', confirmed: 'yes')
     rsvps.each do |rsvp|
       puts "Emailing #{rsvp.email_address_with_name}..."
