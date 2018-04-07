@@ -1,0 +1,18 @@
+en:
+  activerecord:
+    errors:
+      models:
+        show:
+          attributes:
+            name:
+              blank: "enter a show name"
+            status:
+              inclusion: "enter a valid show status"
+            price:
+              not_a_number: "enter a price for the show"
+            venue:
+              inclusion: "select a venue"
+            end:
+              invalid_datetime: "enter a valid end date/time"
+            start:
+              invalid_datetime: "enter a valid end date/time"
