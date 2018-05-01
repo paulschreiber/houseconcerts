@@ -1,9 +1,9 @@
 <div style="max-width: 30em;">
 <p>Hi <%= @person.first_name %>,</p>
 
-<p>Good news: Patrice Pike is going to be joined by Shelley King [1] on Saturday.</p>
+<p>In April, we kicked off the season with an amazing show from Patrice Pike and Shelley King.</p>
 
-<p>We’re got a handful of spots left — let’s show them some Brooklyn love and fill the place up.</p>
+<p>This month, we get Edie Carey. It’s her second Paul’s House Concerts appearance and first here in NYC!</p>
 
 <ul style="padding: 0.5em 1em; margin-top: 0.5em; border: 1px dashed black; border-left: none; border-right: none;">
 <li><%= @show.name %></li>
@@ -19,19 +19,15 @@
 
 <p style="border-bottom: 1px dashed black; padding-bottom: 0.5em;">A bit about <%= @show.name %></p>
 
-<p>Patrice Pike has been rocking for over two decades, as the frontwoman for Sister 7, as a solo performer and alongside Wayne Sutton. She's picked up half a dozen Austin Music Awards, and was the youngest person inducted into the Austin Music Hall of fame.</p>
+<p>Born in Vermont, raised outside Boston and calling Chicago home, Edie Carey has been singing across the US, Canada and Europe for twenty years. Along the way, she’s picked up awards from Kerrville and <cite>Paste</cite> and snagged a feature on NPR’s Mountain Stage.</p>
 
-<p>Patrice’s eclectic mix of rock and soul has earned raves from <cite>Rolling Stone</cite> and <cite>Billboard</cite>. She’s released six solo albums and won Grand Prize Overall and First Prize Rock in the USA Songwriting competition.</p>
-
-<p>We’re thrilled to have her.</p>
+<p>Whether she’s singing pop songs or lullabies, Edie’s voice and wit will make you smile.</p>
 
 
 <%= link_to "Reserve your seats for #{@show.name}", @rsvp_url_yes %>.
 
 <p><br/>Paul</p>
 
-<p>P.S. If you don’t want to receive any more concert invites, <%= link_to "instantly unsubscribe", @unsub_url %>. Don’t worry, you won’t hurt my feelings.</p>
-
-<p>[1] The first female Texas State Musician. Yes, that’s a thing.</p>
+<p>P.S. If you don’t want to receive any more concert invites, <%= link_to "instantly unsubscribe", @unsub_url %>.</p>
 
 </div>
