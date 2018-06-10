@@ -6,7 +6,13 @@
 # server 'example.com', user: 'deploy', roles: %w{app db web}, my_property: :my_value
 # server 'example.com', user: 'deploy', roles: %w{app web}, other_property: :other_value
 # server 'db.example.com', user: 'deploy', roles: %w{db}
-server 'shrub.ca', user: 'paul', roles: %w{app db web}
+server 'shrub.ca',
+  user: 'paul',
+  roles: %w{app db web},
+  ssh_options: {
+    forward_agent: :true
+  }
+
 set :deploy_to, '/data/sites/houseconcerts'
 
 # role-based syntax
