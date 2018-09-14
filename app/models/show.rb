@@ -11,8 +11,7 @@ class Show < ActiveRecord::Base
   scope :confirmed, -> { where(status: 'confirmed') }
   scope :occurring, -> { where(status: ['sold out', 'waitlisted', 'confirmed']).where('start > ?', Time.now).order(:start) }
   scope :occurred, -> { where(status: ['sold out', 'waitlisted', 'confirmed']).where('start < ?', Time.now).order(:start) }
-  scope :upcoming, -> { where('start > ?', Time.now).order(:start) }
-  scope :past, -> { where('start < ?', Time.now).order(:start) }
+  scope :upcoming, -> { where(status: ['sold out', 'waitlisted', 'confirmed']).where('start > ?', Time.now).order(:start) }
 
   validates :start, timeliness: { type: :datetime }
   validates :end, timeliness: { type: :datetime, after: ->(x) { x.start } }
@@ -32,6 +31,10 @@ class Show < ActiveRecord::Base
 
   def self.next
     upcoming.first
+  end
+
+  def self.past
+    occurred
   end
 
   def self.previous
