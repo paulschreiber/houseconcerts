@@ -23,6 +23,7 @@
 			klass = "row#{((row_count % 3) + 1)}"
 
 			artist_for_photo = show.artists.sample
+			next unless artist_for_photo
 			artist_links = []
 			show.artists.each do |artist|
 				artist_links << "<a class='url fn' href='#{artist.url}'>#{artist.name}</a>"
