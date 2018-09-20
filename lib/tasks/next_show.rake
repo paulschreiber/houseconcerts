@@ -13,8 +13,12 @@ namespace :next_show do
                    .order(:last_name, :first_name)
 
     people.each do |p|
-      puts "Emailing #{p.email_address_with_name}..."
-      Invites.invite(p, show).deliver_now
+      begin
+        puts "Emailing #{p.email_address_with_name}..."
+        Invites.invite(p, show).deliver_now
+      rescue Net::SMTPServerBusy => e
+        logger.warn "Failed to email #{p.email_address_with_name} [#{e.message}]"
+      end
     end
     puts "Sent #{people.size} emails."
   end
@@ -58,8 +62,12 @@ namespace :next_show do
                    .order(:last_name, :first_name)
 
     people.each do |p|
-      puts "Emailing #{p.email_address_with_name}..."
-      Invites.invite(p, show).deliver_now
+      begin
+        puts "Emailing #{p.email_address_with_name}..."
+        Invites.invite(p, show).deliver_now
+      rescue Net::SMTPServerBusy => e
+        logger.warn "Failed to email #{p.email_address_with_name} [#{e.message}]"
+      end
     end
     puts "Sent #{people.size} emails."
   end
