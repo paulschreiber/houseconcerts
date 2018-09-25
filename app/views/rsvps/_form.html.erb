@@ -4,7 +4,7 @@
 	<%= render partial: 'show', locals: { show: @show } %>
 <% end %>
 
-<% if !@show.sold_out? || !@rsvp.new_record? %>
+<% if @show.nil? || !@show.sold_out? || !@rsvp.new_record? %>
 	<div class="pagetext">
 	<%= form_for (@rsvp) do |f| %>
 
