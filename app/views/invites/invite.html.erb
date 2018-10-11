@@ -1,7 +1,9 @@
 <div style="max-width: 30em;">
 <p>Hi <%= @person.first_name %>,</p>
 
-<p>Martin Storrow is playing Saturday. There are still a few seats left. Reserve your seat today. :)</p>
+<p>Hello, October!</p>
+
+<p>It’s still unseasonably warm. If it stays that way, you might need to come to the Carlos Olmeda show in shorts.</p>
 
 <ul style="padding: 0.5em 1em; margin-top: 0.5em; border: 1px dashed black; border-left: none; border-right: none;">
 <li><%= @show.name %></li>
@@ -17,13 +19,12 @@
 
 <p style="border-bottom: 1px dashed black; padding-bottom: 0.5em;">A bit about <%= @show.name %></p>
 
-<p>San Diego is known for its sun and surf. It’s also known for its storytelling singers.</p>
+<p>Carlos Olmeda sings folk songs. He sings rock songs. He sings in English. He sings in Spanish. He is funny. He is passionate. He is ambitious.</p>
 
-<p>A talented poet and songwriter who’s composing a musical, Martin has played across the US, Israel Africa and Australia. He has clever lyrics, an acoustic guitar…and the occasional pair of rollerblades. Martin’s music can be heard on NBC and Netflix shows.</p>
+<p>Puerto Rican—San Diegan—Mainer Carlos Olmeda is all of these things. He’s also a terrific storyteller. Don’t take my word for it.</p>
 
-<p>Now we get to hear it in Brooklyn.</p>
 
-<%= link_to "Reserve your seats for #{@show.name}", @rsvp_url_yes %>.
+<%= link_to "Come hear for yourself", @rsvp_url_yes %>.
 
 <p><br/>Paul</p>
 
