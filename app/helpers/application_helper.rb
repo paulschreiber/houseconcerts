@@ -1,16 +1,21 @@
 module ApplicationHelper
-  def page_title
+  def page_title_array
     page_title = [HC_CONFIG.site_name]
-    page_title.join(' » ')
+    page_title.unshift @show.name if @show
+    page_title
+  end
+
+  def page_title
+    page_title_array.join(' » ')
   end
 
   def social_media_title
-    full_title = page_title
-    if full_title.index(' » ')
-      full_title.gsub("#{HC_CONFIG.site_name} » ", '')
+    if @show
+      social_title = [@show.name, @show.start_date_short, HC_CONFIG.site_name]
     else
-      full_title
+      social_title = [HC_CONFIG.site_name]
     end
+    social_title.join(' » ')
   end
 
   def social_media_description
