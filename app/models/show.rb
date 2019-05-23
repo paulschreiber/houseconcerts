@@ -50,22 +50,23 @@ class Show < ActiveRecord::Base
   end
 
   def start_time
-    start.strftime('%l:%M %P').strip
+    start.strftime('%l:%M %P').strip unless start.nil?
   end
 
   def start_date
-    start.strftime('%A, %B %e, %Y').gsub('  ', ' ').strip
+    start.strftime('%A, %B %e, %Y').gsub('  ', ' ').strip unless start.nil?
   end
 
   def start_date_short
-    start.strftime('%B %e').gsub('  ', ' ').strip
+    start.strftime('%B %e').gsub('  ', ' ').strip unless start.nil?
   end
 
   def door_time
-    (start - HC_CONFIG.arrival_minutes.minutes)
+    (start - HC_CONFIG.arrival_minutes.minutes) unless start.nil?
   end
 
   def arrival_range
+    return if start.nil?
     earliest = door_time.strftime('%l:%M %P').strip
     latest = (start - 1.minutes).strftime('%l:%M %P').strip
     "#{earliest} and #{latest}"
