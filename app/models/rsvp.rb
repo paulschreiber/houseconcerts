@@ -20,6 +20,7 @@ class RSVP < ActiveRecord::Base
   validates :first_name, presence: true, mixed_case: true, unless: :allowed_name_exception?
   validates :last_name, presence: true, mixed_case: true, unless: :allowed_name_exception?
   validates :email, email: true
+  validates :phone_number, phone: { country: HC_CONFIG.default_country, set: true }, allow_blank: true
   validates :postcode, postal_code: { country: HC_CONFIG.default_country }, allow_blank: true
   validates :seats, numericality: {
     only_integer: true,
@@ -76,7 +77,7 @@ class RSVP < ActiveRecord::Base
   def create_person
     return if Person.where(email: email).first
 
-    Person.create(first_name: first_name, last_name: last_name, email: email, postcode: postcode, notes: "RSVPd for show #{show.slug}")
+    Person.create(first_name: first_name, last_name: last_name, email: email, phone_number: phone_number, postcode: postcode, notes: "RSVPd for show #{show.slug}")
   end
 
   def to_ld_json

@@ -23,6 +23,7 @@ class Person < ActiveRecord::Base
   validates :first_name, presence: true, mixed_case: true, unless: :allowed_name_exception?
   validates :last_name, presence: true, mixed_case: true, unless: :allowed_name_exception?
   validates :email, email: true
+  validates :phone_number, phone: { country: HC_CONFIG.default_country, set: true }, allow_blank: true
   validates :postcode, postal_code: { country: HC_CONFIG.default_country }, allow_blank: true
   validates :status, inclusion: { in: HC_CONFIG.person.status }
 
