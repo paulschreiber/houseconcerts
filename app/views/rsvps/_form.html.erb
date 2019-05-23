@@ -43,6 +43,12 @@
 	</p>
 
 	<p>
+		<%= f.label :phone_number %>
+		<%= f.text_field :phone_number, maxlength: 20, size: 50 %>
+	</p>
+	<p class="note">Enter your phone number to receive text message reminders.</p>
+
+	<p>
 		<%= f.label :postcode, "Zip Code" %>
 		<%= f.text_field :postcode, maxlength: 10, size: 11 %>
 	</p>
