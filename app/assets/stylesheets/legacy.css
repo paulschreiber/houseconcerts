@@ -276,6 +276,12 @@ td.centered, th.centered {
 	text-align: center;
 }
 
+p.note {
+	margin-top: -1em;
+	color: #888;
+	font-size: 10px;
+}
+
 span.rsvpnote {
 	color: #aaa;
 }
