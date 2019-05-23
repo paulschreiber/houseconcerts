@@ -27,6 +27,7 @@ class RsvpsController < ApplicationController
           @rsvp.first_name = person.first_name
           @rsvp.last_name = person.last_name
           @rsvp.email = person.email
+          @rsvp.phone_number = person.phone_number
           @rsvp.postcode = person.postcode
 
         # existing RSVP found
@@ -79,6 +80,6 @@ class RsvpsController < ApplicationController
   end
 
   def rsvp_params
-    params.require(:rsvp).permit(:first_name, :last_name, :email, :show_id, :postcode, :response, :seats)
+    params.require(:rsvp).permit(:first_name, :last_name, :email, :phone_number, :show_id, :postcode, :response, :seats)
   end
 end
