@@ -68,7 +68,7 @@ class RsvpsController < ApplicationController
       @rsvp.update(rsvp_params)
     end
 
-    if params[:rsvp] && params[:rsvp][:show_id].to_i > 0
+    if params[:rsvp] && params[:rsvp][:show_id].to_i.positive?
       @show = Show.find(params[:rsvp][:show_id])
     end
 
