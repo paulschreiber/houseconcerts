@@ -143,6 +143,7 @@ class Invites < ApplicationMailer
     tag = "#{rsvp.show.slug}:#{email_type}"
     @track_url = url_for(controller: :opens, action: :index, uniqid: rsvp.uniqid, tag: tag)
     @rsvp_url = url_for(controller: :rsvps, action: :new, slug: rsvp.show.slug, uniqid: rsvp.uniqid)
+    @calendar_url = make_calendar_url(rsvp)
 
     subject = "RSVP Confirmation: #{rsvp.show.name} house concert (#{rsvp.show.start_date_short})"
 

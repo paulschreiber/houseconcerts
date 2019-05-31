@@ -33,6 +33,9 @@
 <p style="border-bottom: 1px dashed black; width: 32em; padding-bottom: 0em; margin-bottom: -1em;">Contact Info</p>
 <%= @rsvp.show.venue.formatted_contact_info.html_safe %>
 
+<p style="border-bottom: 1px dashed black; width: 32em; padding-bottom: 0em; margin-bottom: 0;">Calendar</p>
+<p style="margin-top: 0;"><%= link_to 'Add to Google Calendar', @calendar_url %>.</p>
+
 
 <p>thanks!
 <br />Paul</p>
