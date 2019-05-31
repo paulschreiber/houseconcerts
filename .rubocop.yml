@@ -26,3 +26,5 @@ ClassLength:
   Max: 200
 Style/ConditionalAssignment:
   Enabled: false
+Style/FrozenStringLiteralComment:
+  Enabled: false
