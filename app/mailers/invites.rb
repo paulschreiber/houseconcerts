@@ -12,7 +12,7 @@ class Invites < ApplicationMailer
     params = {
       text: "#{rsvp.show.name} house concert",
       dates: date_range,
-      location: rsvp.show.venue.full_address,
+      location: rsvp.show.venue.full_address_calendar,
       details: details,
       sf: 'true'
     }
