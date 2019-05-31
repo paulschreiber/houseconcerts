@@ -1,6 +1,25 @@
 class Invites < ApplicationMailer
   SEND_METHOD = :amazon # :amazon, :google, :mandrill, :sendmail
 
+  FORMAT = '%Y%m%dT%H%M%SZ'.freeze
+
+  def make_calendar_url(rsvp)
+    base_url = 'https://calendar.google.com/calendar/r/eventedit'
+    rsvp_url = url_for(controller: :rsvps, action: :new, slug: rsvp.show.slug, uniqid: rsvp.uniqid)
+    details = "Update reservation: #{rsvp_url}"
+    date_range = rsvp.show.start.utc.strftime(FORMAT) + '/' + rsvp.show.end.utc.strftime(FORMAT)
+
+    params = {
+      text: "#{rsvp.show.name} house concert",
+      dates: date_range,
+      location: rsvp.show.venue.full_address,
+      details: details,
+      sf: 'true'
+    }
+
+    "#{base_url}?#{params.to_query}"
+  end
+
   def delivery_options
     if Rails.env.development?
       {}
