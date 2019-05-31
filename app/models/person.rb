@@ -39,6 +39,7 @@ class Person < ActiveRecord::Base
 
   def ensure_venue_group
     return unless venue_groups.empty?
+
     venue_groups << VenueGroup.find(HC_CONFIG.default_venue_group)
   end
 

@@ -7,6 +7,7 @@ module NameHelpers
 
   def email_address_with_name
     return unless email.present?
+
     if full_name.present?
       "\"#{full_name}\" <#{email}>"
     else
