@@ -32,6 +32,10 @@ class Venue < ActiveRecord::Base
     "#{address} · #{city}, #{province_name} #{postcode}"
   end
 
+  def full_address_calendar
+    "#{address} #{city}, #{province_name} #{postcode}"
+  end
+
   # Shared renderer instance
   def markdown_renderer
     @markdown_renderer ||= Redcarpet::Markdown.new(Redcarpet::Render::HTML.new(hard_wrap: true))
