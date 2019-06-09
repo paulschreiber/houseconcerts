@@ -4,14 +4,45 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<style>
-		@media screen and (max-width: 480px) {
 			.button {
-				width: 100%;
-				min-height: 44px;
-				line-height: 44px;
+				color: white;
+				padding: 5px 10px;
+				text-decoration: none;
+				display: inline-block;
+				margin-top: 5px;
+				border-radius: 3px;
 			}
-		}
-		</style>
+			.summary {
+				padding: 0.5em 2em;
+				margin: 0.5em 0;
+				background-color: #ddd;
+				display: inline-block;
+			}
+			h2 {
+				margin-bottom: 0;
+			}
+			h2 + p {
+				margin-top: 0;
+			}
+			.actions {
+				margin-top: 0;
+			}
+			@media screen and (max-width: 480px) {
+				body {
+					padding: 10px;
+				}
+				.button {
+					width: 100%;
+					min-height: 44px;
+					line-height: 44px;
+					box-sizing: border-box;
+				}
+				.summary {
+					width: 100%;
+					box-sizing: border-box;
+				}
+			}
+	</style>
 	</head>
 	<body>
 		<%= yield %>

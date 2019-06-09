@@ -3,14 +3,14 @@
 
 <p>Just one week until Terra’s show. I’m excited. Terra’s excited. There are still a few seats left — reserve yours today.</p>
 
-<ul style="padding: 0.5em 1em; margin-top: 0.5em; border: 1px dashed black; border-left: none; border-right: none;">
+<ul class="summary">
 <li><%= @show.name %></li>
 <li><%= @show.start_date %> &middot; <%= @show.start_time %></li>
 <li><%= @show.venue.location %></li>
 <li>RSVP for location/directions</li>
 </ul>
 
-<p><strong>
+<p class="actions"><strong>
 <%= link_to "Yes! I’m in for #{@show.name}!", @rsvp_url_yes, class: 'button', style: 'background-color: #408000; color: white; padding: 5px 10px; text-decoration: none; display: inline-block; margin-top: 5px; border-radius: 3px;' %>
 <%= link_to "Sorry, I can’t make it.", @rsvp_url_no, class: 'button', style: 'background-color: #444; color: white; padding: 5px 10px; text-decoration: none; display: inline-block; margin-top: 5px; border-radius: 3px;' %>
 </strong></p>
