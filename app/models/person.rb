@@ -20,8 +20,8 @@ class Person < ActiveRecord::Base
 
   default_value_for :status, 'active'
 
-  validates :first_name, presence: true, mixed_case: true, unless: :allowed_name_exception?
-  validates :last_name, presence: true, mixed_case: true, unless: :allowed_name_exception?
+  validates :first_name, presence: true, mixed_case: true, length: { minimum: 2 }, unless: :allowed_name_exception?
+  validates :last_name, presence: true, mixed_case: true, length: { minimum: 2 }, unless: :allowed_name_exception?
   validates :email, email: true
   validates :phone_number, phone: { country: HC_CONFIG.default_country, set: true }, allow_blank: true
   validates :postcode, postal_code: { country: HC_CONFIG.default_country }, allow_blank: true

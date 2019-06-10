@@ -6,10 +6,12 @@ en:
           attributes:
             first_name:
               blank: "enter your first name"
+              too_short: "enter your last name"
               all_lowercase: "your first name cannot be in all lowercase"
               all_caps: "your first name cannot be in all caps"
             last_name:
               blank: "enter your last name"
+              too_short: "enter your last name"
               all_lowercase: "your last name cannot be in all lowercase"
               all_caps: "your last name cannot be in all caps"
             email:
