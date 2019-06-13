@@ -50,7 +50,7 @@ class Show < ActiveRecord::Base
   end
 
   def start_time
-    start.strftime('%l:%M %P').strip unless start.nil?
+    start&.strftime('%l:%M %P')&.strip
   end
 
   def start_date
@@ -74,7 +74,7 @@ class Show < ActiveRecord::Base
   end
 
   def location
-    venue.location if venue
+    venue&.location
   end
 
   def to_s
