@@ -1,6 +1,7 @@
 class Person < ActiveRecord::Base
   include NameRules
   include NameHelpers
+  include NumberHelpers
   include IPAddress
 
   has_and_belongs_to_many :venue_groups

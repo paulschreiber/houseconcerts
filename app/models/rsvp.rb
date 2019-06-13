@@ -1,6 +1,7 @@
 class RSVP < ActiveRecord::Base
   include NameRules
   include NameHelpers
+  include NumberHelpers
   include IPAddress
 
   belongs_to :show
