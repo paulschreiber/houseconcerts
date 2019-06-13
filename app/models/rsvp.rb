@@ -81,6 +81,10 @@ class RSVP < ActiveRecord::Base
     Person.create(first_name: first_name, last_name: last_name, email: email, phone_number: phone_number, postcode: postcode, notes: "RSVPd for show #{show.slug}")
   end
 
+  def sms_reminder
+    "Reminder: You have #{seats} seats for the #{show.name} show on #{show.start_date} at #{show.start_time}."
+  end
+
   def to_ld_json
     result = {
       '@context': 'http://schema.org',
