@@ -193,10 +193,21 @@ namespace :next_show do
       exit
     end
 
+    client = Twilio::REST::Client.new HC_CONFIG.twilio_account_sid, HC_CONFIG.twilio_auth_token
+
     rsvps = RSVP.where(show: show, response: 'yes', confirmed: 'yes')
     rsvps.each do |rsvp|
       puts "Emailing #{rsvp.email_address_with_name}..."
       Invites.remind(rsvp).deliver_now
+
+      next unless rsvp.phone_number.present?
+
+      puts "Texting #{rsvp.phone_number}..."
+      client.api.account.messages.create(
+        from: HC_CONFIG.twilio_sms_sender,
+        to: rsvp.phone_number_twilio,
+        body: rsvp.sms_reminder
+      )
     end
     puts "Sent #{rsvps.size} emails."
   end
