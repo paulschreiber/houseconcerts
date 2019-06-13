@@ -82,7 +82,8 @@ class RSVP < ActiveRecord::Base
   end
 
   def sms_reminder
-    "Reminder: You have #{seats} seats for the #{show.name} show on #{show.start_date} at #{show.start_time}."
+    seats_word = seats == 1 ? 'seat' : 'seats'
+    "Reminder: You have #{seats.humanize} #{seats_word} for the #{show.name} show on #{show.start_date} at #{show.start_time}."
   end
 
   def to_ld_json
