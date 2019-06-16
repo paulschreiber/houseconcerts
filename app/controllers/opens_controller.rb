@@ -3,9 +3,7 @@ class OpensController < ApplicationController
     person = Person.where(uniqid: params[:uniqid]).first if params[:uniqid]
     tag = params[:tag]
 
-    if person && tag
-      Open.create(tag: tag, email: person.email, ip_address: Person.current_ip, open: true)
-    end
+    Open.create(tag: tag, email: person.email, ip_address: Person.current_ip, open: true) if person && tag
 
     send_blank_gif
   end
