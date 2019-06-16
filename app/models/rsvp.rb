@@ -10,6 +10,7 @@ class RSVP < ActiveRecord::Base
   before_save :set_ip_address
   before_save :update_confirmation_date
   before_save :clear_seats_if_no
+  after_save :update_phone_number
 
   cattr_accessor :current_ip
 
@@ -79,6 +80,11 @@ class RSVP < ActiveRecord::Base
     return if Person.where(email: email).first
 
     Person.create(first_name: first_name, last_name: last_name, email: email, phone_number: phone_number, postcode: postcode, notes: "RSVPd for show #{show.slug}")
+  end
+
+  def update_phone_number
+    person = Person.where(email: email, phone_number: nil).first
+    person&.update(phone_number: phone_number)
   end
 
   def sms_reminder
