@@ -13,6 +13,18 @@ namespace :people do
     end
   end
 
+  desc 'Add phone numbers from RSVPs table to people in the people table'
+  task add_phone_numbers: :environment do
+    people = Person.where(phone_number: nil).where(email: RSVP.where.not(phone_number: nil).pluck(:email))
+    people.each do |person|
+      rsvp = RSVP.where(email: person.email).where.not(phone_number: nil).order(id: :desc).first
+      next unless rsvp && rsvp.phone_number.present?
+
+      puts "Adding phone number #{rsvp.phone_number} to person #{person.email}"
+      person.update(phone_number: rsvp.phone_number)
+    end
+  end
+
   desc "Add people who RSVPd for the most recent show, and aren't on the list, to the list"
   task add_nonsubscribers: :environment do
     rsvps = find_nonsubscribers
