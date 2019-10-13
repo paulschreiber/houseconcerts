@@ -1,30 +1,30 @@
 <p>Hi <%= @rsvp.first_name %>,</p>
 
-<p style="margin-bottom: 0;">This is a quick reminder about the <%= @rsvp.show.name %> show:</p>
+<p>This is a quick reminder about the <%= @rsvp.show.name %> show:</p>
 
-<ul style="padding: 0.5em 1em; margin-top: 0; margin-bottom: 2em; border: 1px dashed black; border-left: none; border-right: none; width: 30em;">
+<ul class="summary">
 <li>Seats: <%= @rsvp.seats %></li>
 <li>Date: <%= @rsvp.show.start_date %>
 <li>Time: <%= @rsvp.show.start_time %> &middot; Please arrive between <%= @rsvp.show.arrival_range %>.</li>
 <li>Location: <%= @rsvp.show.venue.full_address %></li>
 </ul>
 
-<p style="margin-bottom: 0;">Remember, your RSVP is a <em>confirmed reservation</em>.</p>
-<ul style="padding: 0.5em 1em; margin-top: 0;">
+<p>Remember, your RSVP is a <em>confirmed reservation</em>.</p>
+<ul>
 <li>Still coming? Great! See you <%= @rsvp.show.day_of_week %>!</li>
 <% unless @rsvp.show.sold_out? or @rsvp.show.waitlisted? %>
-<li>Bringing another friend? Also great. Please <%= link_to 'update your reservation', @rsvp_url %>.</li>
+<li>Bringing another friend? Also great. Update your reservation.</li>
 <% end %>
-<li>Bringing fewer guests? <%= link_to 'Update your reservation', @rsvp_url %>.</li>
-<li>Dog is sick? Last-minute wedding to attend? <%= link_to 'Cancel your reservation', @rsvp_url %> so I don’t worry when you don’t show up.</li>
+<li>Bringing fewer guests? Update your reservation.</li>
+<li>Dog is sick? Last-minute wedding to attend? Cancel your reservation so I don’t worry when you don’t show up.</li>
 </ul>
+
+<p class="actions">
+<%= link_to 'Update your reservation', @rsvp_url, class: 'button', style: 'background-color: #444; color: white; padding: 5px 10px; text-decoration: none; display: inline-block; margin-top: 5px; border-radius: 3px;' %>
+</p>
 
 <p>I appreciate it and <%= @rsvp.show.name %> very much appreciates it. :)</p>
 
 <p>I look forward to seeing you there!</p>
 
-
-
-
-<p>thanks!
-<br/>Paul</p>
+<p>Paul</p>
