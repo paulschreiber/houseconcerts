@@ -47,6 +47,6 @@
 	<body>
 		<%= yield %>
 
-		<%= image_tag(@track_url) if @track_url %>
+		<%= image_tag(@track_url, alt: '') if @track_url %>
 	</body>
 </html>
