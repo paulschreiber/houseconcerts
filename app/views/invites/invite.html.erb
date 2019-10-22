@@ -1,7 +1,11 @@
 <div>
 <p>Hi <%= @person.first_name %>,</p>
 
-<p>In two days, it will be Canadian Thanksgiving. In two weeks, I’m hosting Canadian singer-songwriter Shawna Caspi. We won’t have turkey and cranberries, but we will have terrific songs and stories.</p>
+<p>Good morning! Yesterday, Canadians voted. There were no voting machines or hanging chads. One polling station stayed open <a href="https://twitter.com/MuhammadLila/status/1186440873871065088">despite 90 km/h winds</a>.</p>
+
+<p>Canadian <s>political analyst</s> singer-songwriter Shawna Caspi will be here in four days to share songs, stories, and the occasional thought on first-past-the-post.</p>
+
+<p>There are still a few seats left. <%= link_to "Get yours today!", @rsvp_url %></p>
 
 <ul class="summary">
 <li><%= @show.name %></li>
