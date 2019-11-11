@@ -17,7 +17,7 @@ namespace :next_show do
         puts "Emailing #{p.email_address_with_name}..."
         Invites.invite(p, show).deliver_now
       rescue Net::SMTPServerBusy => e
-        logger.warn "Failed to email #{p.email_address_with_name} [#{e.message}]"
+        puts "Failed to email #{p.email_address_with_name} [#{e.message}]"
       end
     end
     puts "Sent #{people.size} emails."
@@ -66,7 +66,7 @@ namespace :next_show do
         puts "Emailing #{p.email_address_with_name}..."
         Invites.invite(p, show).deliver_now
       rescue Net::SMTPServerBusy => e
-        logger.warn "Failed to email #{p.email_address_with_name} [#{e.message}]"
+        puts "Failed to email #{p.email_address_with_name} [#{e.message}]"
       end
     end
     puts "Sent #{people.size} emails."
