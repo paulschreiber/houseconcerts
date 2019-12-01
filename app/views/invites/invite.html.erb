@@ -1,7 +1,9 @@
 <div>
 <p>Hi <%= @person.first_name %>,</p>
 
-<p>Cynthia’s show—her first time playing one of my house concerts in ten years—is just five days away. We are half full! Grab one of the remaining seats while you can.</p>
+<p>I hope you enjoyed your Thanksgiving break. I’m back home after spending a few extra hours stuck in traffic.</p>
+
+<P>There’s not much time to lose — my December house concert is in two weeks. It’s the last show of the year — don’t miss it.</p>
 
 <ul class="summary">
 <li><%= @show.name %></li>
@@ -17,13 +19,11 @@
 
 <h2>A bit about <%= @show.name %></h2>
 
-<p>We have a special Friday show this month.</p>
+<p>After graduating from Berklee and writing songs in Nashville, Jesse Terry hit the road. Since then, he’s released six solo albums and two collaborations: one with Alex Wong (who performed here with Megan Slankard) and another with Michael Logen and Lizanne Knott.</p>
 
-<p>Cynthia Catania is Jersey toughness and LA glitz. She is a songwriter, producer and composer. She kissed a girl and she liked it (before Katy Perry).</p>
+<p>We’re lucky Jesse’s such a terrific singer and guitarist, because as he describes it, he is a “dreadful waiter.”</p>
 
-<p>Formerly half of Saucy Monky, Cynthia is now working on a solo album. Whether she's playing LA’s The Hotel Cafe or Dublin’s O2 in the Park, Cynthia and her guitar impress.</p>
-
-<p>Offstage, Cynthia wrote a travel blog for HuffPost, a sex column for Hot Press, and a song for Veronica Mars (take note, marshmallows!).</p>
+<p>Come listen as he serves up some great songs and stories.</p>
 
 
 <p><%= link_to "Spend #{@show.day_of_week} evening with #{@show.name}", @rsvp_url %>.</p>
