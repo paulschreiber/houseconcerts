@@ -1,9 +1,7 @@
 <div>
 <p>Hi <%= @person.first_name %>,</p>
 
-<p>Good morning! Now that Black Friday, Cyber Monday and Giving Tuesday have all passed, hopefully your inbox has settled down to a dull roar.</p>
-
-<p>Jesse Terry’s show—our last concert of the year—is Friday night. We are 2/3 full already. RSVP today and help us pack the room!</p>
+<p>After taking a well-deserved break in January, I am happy to bring you the first house concert of 2020: Jackson Howard.</p>
 
 <ul class="summary">
 <li><%= @show.name %></li>
@@ -19,11 +17,9 @@
 
 <h2>A bit about <%= @show.name %></h2>
 
-<p>After graduating from Berklee and writing songs in Nashville, Jesse Terry hit the road. Since then, he’s released six solo albums and two collaborations: one with Alex Wong (who performed here with Megan Slankard) and another with Michael Logen and Lizanne Knott.</p>
+<p>Jackson Howard is a singer-songwriter from Philly with an acoustic guitar, a stack of songs…and a PhD in Exercise Physiology. After trading academia for folk life, he toured across the US, Canada, Iceland and western Europe.</p>
 
-<p>We’re lucky Jesse’s such a terrific singer and guitarist, because as he describes it, he is a “dreadful waiter.”</p>
-
-<p>Come listen as he serves up some great songs and stories.</p>
+<p>Jackson’s 2017 album <cite>Just For the Mystery</cite> is thirteen songs of thoughtful, clever acoustic guitar. Come hear them — and some great stories.</p>
 
 
 <p><%= link_to "Spend #{@show.day_of_week} evening with #{@show.name}", @rsvp_url %>.</p>
