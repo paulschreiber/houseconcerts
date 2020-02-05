@@ -1,7 +1,9 @@
 <div>
 <p>Hi <%= @person.first_name %>,</p>
 
-<p>After a quick break in January, I am happy to bring you the first house concert of 2020: Jackson Howard.</p>
+<p>The Super Bowl is over, the Iowa caucuses somehow still don’t have final results, and it’s only four days until Jackson Howard plays Brooklyn.</p>
+
+<p>Seats! Seats! <%= link_to "Get your seats", @rsvp_url %>!</p>
 
 <ul class="summary">
 <li><%= @show.name %></li>
