@@ -1,4 +1,4 @@
-class RSVP < ActiveRecord::Base
+class RSVP < ApplicationRecord
   include NameRules
   include NameHelpers
   include NumberHelpers

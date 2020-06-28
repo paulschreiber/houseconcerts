@@ -1,4 +1,4 @@
-class Artist < ActiveRecord::Base
+class Artist < ApplicationRecord
   extend FriendlyId
   friendly_id :name_slug_candidates, use: :slugged
 

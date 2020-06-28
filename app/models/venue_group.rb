@@ -1,4 +1,4 @@
-class VenueGroup < ActiveRecord::Base
+class VenueGroup < ApplicationRecord
   has_and_belongs_to_many :venues
   has_and_belongs_to_many :people
 
