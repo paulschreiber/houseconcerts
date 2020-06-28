@@ -1,4 +1,4 @@
-class CreateOpens < ActiveRecord::Migration
+class CreateOpens < ActiveRecord::Migration[4.2]
   def change
     create_table :opens do |t|
       t.string :tag

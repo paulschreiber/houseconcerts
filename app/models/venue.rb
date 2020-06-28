@@ -1,4 +1,4 @@
-class Venue < ActiveRecord::Base
+class Venue < ApplicationRecord
   include Geography
   extend FriendlyId
   friendly_id :name_slug_candidates, use: :slugged
