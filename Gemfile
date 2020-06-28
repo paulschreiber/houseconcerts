@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'coffee-rails'
+gem 'coffee-rails', '~> 4.2'
 gem 'mysql2'
 gem 'rails', '~> 5.2'
 gem 'sassc-rails'
@@ -10,6 +10,9 @@ gem 'capistrano'
 gem 'capistrano-bundler'
 gem 'capistrano-passenger'
 gem 'capistrano-rails'
+
+# Use Puma as the app server
+gem 'puma', '~> 3.11'
 
 gem 'bootsnap'
 
@@ -25,25 +28,28 @@ gem 'validate_url'
 gem 'validates_timeliness'
 gem 'validation_kit'
 
-gem 'jbuilder', '~> 2.0'
+gem 'jbuilder', '~> 2.5'
 gem 'jquery-rails'
 gem 'sdoc', '~> 0.4.0', group: :doc
-gem 'turbolinks'
+gem 'turbolinks', '~> 5'
 
 gem 'stripe'
 
 group :development, :test do
-  gem 'irbtools', require: 'irbtools/binding'
   gem 'letter_opener'
-  gem 'rb-readline'
-	gem 'listen'
 
-  # Call 'byebug' anywhere in the code to stop execution and get a debugger console
-  gem 'byebug', '~>8.2.2'
-
-  # Access an IRB console on exception pages or by using <%= console %> in views
-  gem 'web-console', '~> 2.0'
-
+  # Access an interactive console on exception pages or by calling 'console' anywhere in the code.
+  gem 'web-console', '>= 3.3.0'
+  gem 'listen', '>= 3.0.5', '< 3.2'
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
+  gem 'spring-watcher-listen', '~> 2.0.0'
+end
+
+group :test do
+  # Adds support for Capybara system testing and selenium driver
+  gem 'capybara', '>= 2.15'
+  gem 'selenium-webdriver'
+  # Easy installation and use of chromedriver to run system tests with Chrome
+  gem 'chromedriver-helper'
 end
