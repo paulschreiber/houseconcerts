@@ -1,15 +1,17 @@
 source 'https://rubygems.org'
 
-gem 'coffee-rails', '~> 4.1.0'
-gem 'mysql2', '~> 0.4.10'
-gem 'rails', '~> 4.2'
-gem 'sassc-rails', '~> 2.1.2'
-gem 'uglifier', '>= 1.3.0'
+gem 'coffee-rails'
+gem 'mysql2'
+gem 'rails', '~> 5.2'
+gem 'sassc-rails'
+gem 'uglifier'
 
 gem 'capistrano'
 gem 'capistrano-bundler'
 gem 'capistrano-passenger'
 gem 'capistrano-rails'
+
+gem 'bootsnap'
 
 gem 'carmen'
 gem 'default_value_for'
@@ -34,6 +36,7 @@ group :development, :test do
   gem 'irbtools', require: 'irbtools/binding'
   gem 'letter_opener'
   gem 'rb-readline'
+	gem 'listen'
 
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', '~>8.2.2'
