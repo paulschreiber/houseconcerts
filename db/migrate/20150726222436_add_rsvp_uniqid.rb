@@ -1,4 +1,4 @@
-class AddRSVPUniqid < ActiveRecord::Migration
+class AddRSVPUniqid < ActiveRecord::Migration[4.2]
   def change
     add_column :rsvps, :uniqid, :string, after: :id
     add_index :rsvps, :uniqid, unique: true

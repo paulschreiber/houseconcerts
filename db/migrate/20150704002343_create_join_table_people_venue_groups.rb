@@ -1,4 +1,4 @@
-class CreateJoinTablePeopleVenueGroups < ActiveRecord::Migration
+class CreateJoinTablePeopleVenueGroups < ActiveRecord::Migration[4.2]
   def change
     create_join_table :people, :venue_groups do |t|
       t.index [:person_id, :venue_group_id]

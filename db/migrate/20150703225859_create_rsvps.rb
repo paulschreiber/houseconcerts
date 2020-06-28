@@ -1,4 +1,4 @@
-class CreateRsvps < ActiveRecord::Migration
+class CreateRsvps < ActiveRecord::Migration[4.2]
   def change
     create_table :rsvps do |t|
       t.references :show, index: true, foreign_key: true
