@@ -31,7 +31,6 @@ gem 'validation_kit'
 
 gem 'jbuilder', '~> 2.5'
 gem 'jquery-rails'
-gem 'sdoc', group: :doc
 gem 'turbolinks', '~> 5'
 
 gem 'stripe'
