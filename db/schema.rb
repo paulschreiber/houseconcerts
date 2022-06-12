@@ -2,17 +2,45 @@
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
 #
-# Note that this schema.rb definition is the authoritative source for your
-# database schema. If you need to create the application database on another
-# system, you should be using db:schema:load, not running all the migrations
-# from scratch. The latter is a flawed and unsustainable approach (the more migrations
-# you'll amass, the slower it'll run and the greater likelihood for issues).
+# This file is the source Rails uses to define your schema when running `bin/rails
+# db:schema:load`. When creating a new database, `bin/rails db:schema:load` tends to
+# be faster and is potentially less error prone than running all of your
+# migrations from scratch. Old migrations may fail to apply correctly if those
+# migrations use external dependencies or application code.
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_05_22_155544) do
+ActiveRecord::Schema.define(version: 2022_06_12_182933) do
 
-  create_table "admins", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci", force: :cascade do |t|
+  create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
+    t.bigint "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "filename", null: false
+    t.string "content_type"
+    t.text "metadata"
+    t.string "service_name", null: false
+    t.bigint "byte_size", null: false
+    t.string "checksum", null: false
+    t.datetime "created_at", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_variant_records", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "admins", id: :bigint, default: nil, charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
     t.string "reset_password_token"
@@ -29,7 +57,7 @@ ActiveRecord::Schema.define(version: 2019_05_22_155544) do
     t.index ["reset_password_token"], name: "index_admins_on_reset_password_token", unique: true
   end
 
-  create_table "artists", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci", force: :cascade do |t|
+  create_table "artists", id: :bigint, default: nil, charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
     t.string "name"
     t.string "slug"
     t.string "url"
@@ -39,16 +67,16 @@ ActiveRecord::Schema.define(version: 2019_05_22_155544) do
     t.index ["slug"], name: "index_artists_on_slug", unique: true
   end
 
-  create_table "artists_shows", id: false, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci", force: :cascade do |t|
-    t.integer "artist_id", null: false
-    t.integer "show_id", null: false
+  create_table "artists_shows", id: false, charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
+    t.bigint "artist_id", null: false
+    t.bigint "show_id", null: false
     t.index ["artist_id", "show_id"], name: "index_artists_shows_on_artist_id_and_show_id"
     t.index ["show_id", "artist_id"], name: "index_artists_shows_on_show_id_and_artist_id"
   end
 
-  create_table "friendly_id_slugs", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci", force: :cascade do |t|
+  create_table "friendly_id_slugs", id: :bigint, default: nil, charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
     t.string "slug", null: false
-    t.integer "sluggable_id", null: false
+    t.bigint "sluggable_id", null: false
     t.string "sluggable_type", limit: 50
     t.string "scope"
     t.datetime "created_at"
@@ -58,7 +86,7 @@ ActiveRecord::Schema.define(version: 2019_05_22_155544) do
     t.index ["sluggable_type"], name: "index_friendly_id_slugs_on_sluggable_type"
   end
 
-  create_table "opens", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci", force: :cascade do |t|
+  create_table "opens", id: :bigint, default: nil, charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
     t.string "tag"
     t.string "ip_address"
     t.string "email"
@@ -68,7 +96,7 @@ ActiveRecord::Schema.define(version: 2019_05_22_155544) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "people", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci", force: :cascade do |t|
+  create_table "people", id: :bigint, default: nil, charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
     t.string "uniqid"
     t.string "first_name"
     t.string "last_name"
@@ -89,16 +117,16 @@ ActiveRecord::Schema.define(version: 2019_05_22_155544) do
     t.index ["uniqid"], name: "index_people_on_uniqid", unique: true
   end
 
-  create_table "people_venue_groups", id: false, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci", force: :cascade do |t|
-    t.integer "person_id", null: false
-    t.integer "venue_group_id", null: false
+  create_table "people_venue_groups", id: false, charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
+    t.bigint "person_id", null: false
+    t.bigint "venue_group_id", null: false
     t.index ["person_id", "venue_group_id"], name: "index_people_venue_groups_on_person_id_and_venue_group_id"
     t.index ["venue_group_id", "person_id"], name: "index_people_venue_groups_on_venue_group_id_and_person_id"
   end
 
-  create_table "rsvps", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci", force: :cascade do |t|
+  create_table "rsvps", id: :bigint, default: nil, charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
     t.string "uniqid"
-    t.integer "show_id"
+    t.bigint "show_id"
     t.string "first_name"
     t.string "last_name"
     t.string "email"
@@ -114,12 +142,12 @@ ActiveRecord::Schema.define(version: 2019_05_22_155544) do
     t.index ["confirmed"], name: "index_rsvps_on_confirmed"
     t.index ["email"], name: "index_rsvps_on_email"
     t.index ["response"], name: "index_rsvps_on_response"
-    t.index ["show_id", "email"], name: "index_rsvps_on_show_id_and_email", unique: true
+    t.index ["show_id", "email"], name: "index_rsvps_on_show_id_and_email"
     t.index ["show_id"], name: "index_rsvps_on_show_id"
     t.index ["uniqid"], name: "index_rsvps_on_uniqid", unique: true
   end
 
-  create_table "shows", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci", force: :cascade do |t|
+  create_table "shows", id: :bigint, default: nil, charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
     t.datetime "start"
     t.datetime "end"
     t.string "name"
@@ -127,7 +155,7 @@ ActiveRecord::Schema.define(version: 2019_05_22_155544) do
     t.string "status"
     t.text "blurb"
     t.integer "price"
-    t.integer "venue_id"
+    t.bigint "venue_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["slug"], name: "index_shows_on_slug", unique: true
@@ -136,20 +164,20 @@ ActiveRecord::Schema.define(version: 2019_05_22_155544) do
     t.index ["venue_id"], name: "index_shows_on_venue_id"
   end
 
-  create_table "venue_groups", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci", force: :cascade do |t|
+  create_table "venue_groups", id: :bigint, default: nil, charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
-  create_table "venue_groups_venues", id: false, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci", force: :cascade do |t|
-    t.integer "venue_id", null: false
-    t.integer "venue_group_id", null: false
+  create_table "venue_groups_venues", id: false, charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
+    t.bigint "venue_id", null: false
+    t.bigint "venue_group_id", null: false
     t.index ["venue_group_id", "venue_id"], name: "index_venue_groups_venues_on_venue_group_id_and_venue_id"
     t.index ["venue_id", "venue_group_id"], name: "index_venue_groups_venues_on_venue_id_and_venue_group_id"
   end
 
-  create_table "venues", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci", force: :cascade do |t|
+  create_table "venues", id: :bigint, default: nil, charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
     t.string "name"
     t.string "slug"
     t.string "address"
@@ -166,5 +194,7 @@ ActiveRecord::Schema.define(version: 2019_05_22_155544) do
     t.index ["slug"], name: "index_venues_on_slug", unique: true
   end
 
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "shows", "venues"
 end
