@@ -1,10 +1,10 @@
 source 'https://rubygems.org'
 
-ruby '2.7.4'
+ruby '3.1.2'
 
 gem 'coffee-rails', '~> 4.2'
 gem 'mysql2'
-gem 'rails', '~> 5.2'
+gem 'rails', '~> 6.1'
 gem 'sassc-rails'
 gem 'uglifier'
 
@@ -18,6 +18,7 @@ gem 'puma', '~> 4.3'
 gem 'listen', '>= 3.0.5', '< 3.2'
 
 gem 'bootsnap'
+gem 'net-smtp'
 
 gem 'carmen'
 gem 'default_value_for'
