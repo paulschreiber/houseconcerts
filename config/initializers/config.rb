@@ -1,6 +1,10 @@
-app_keys = YAML.load_file("#{Rails.root}/config/application.yml", permitted_classes: [Symbol, OpenStruct])
-
-HC_CONFIG = YAML.load_file("#{Rails.root}/config/settings.yml", permitted_classes: [Symbol, OpenStruct])
+if RUBY_VERSION >= "3.1.0"
+  app_keys = YAML.load_file("#{Rails.root}/config/application.yml", permitted_classes: [Symbol, OpenStruct])
+  HC_CONFIG = YAML.load_file("#{Rails.root}/config/settings.yml", permitted_classes: [Symbol, OpenStruct])
+else
+  app_keys = YAML.load_file("#{Rails.root}/config/application.yml")
+  HC_CONFIG = YAML.load_file("#{Rails.root}/config/settings.yml")
+end
 HC_CONFIG.facebook_app_secret = app_keys.facebook_app_secret
 HC_CONFIG.mandrill_username = app_keys.mandrill_username
 HC_CONFIG.mandrill_api_key = app_keys.mandrill_api_key
