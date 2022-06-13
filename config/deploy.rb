@@ -2,7 +2,7 @@
 lock '~>3'
 
 set :application, 'houseconcerts'
-set :repo_url, 'git@github.com:paulschreiber/houseconcerts.git'
+set :repo_url, 'https://github.com/paulschreiber/houseconcerts.git'
 
 # Default branch is :master
 # ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
