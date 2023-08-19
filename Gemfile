@@ -14,7 +14,7 @@ gem 'capistrano-passenger'
 gem 'capistrano-rails'
 
 # Use Puma as the app server
-gem 'puma', '~> 4.3'
+gem 'puma', '~> 5.6'
 gem 'listen', '>= 3.0.5', '< 3.2'
 
 gem 'bootsnap'
