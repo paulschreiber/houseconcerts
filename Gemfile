@@ -9,6 +9,7 @@ gem 'sassc-rails'
 gem 'uglifier'
 gem 'bigdecimal'
 gem 'mutex_m'
+gem 'irb'
 
 gem 'capistrano'
 gem 'capistrano-bundler'
