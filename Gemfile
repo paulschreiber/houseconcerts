@@ -7,6 +7,8 @@ gem 'mysql2'
 gem 'rails', '~> 6.1'
 gem 'sassc-rails'
 gem 'uglifier'
+gem 'bigdecimal'
+gem 'mutex_m'
 
 gem 'capistrano'
 gem 'capistrano-bundler'
