@@ -13,12 +13,10 @@ namespace :next_show do
                    .order(:last_name, :first_name)
 
     people.each do |p|
-      begin
-        puts "Emailing #{p.email_address_with_name}..."
-        Invites.invite(p, show).deliver_now
-      rescue Net::SMTPServerBusy => e
-        puts "Failed to email #{p.email_address_with_name} [#{e.message}]"
-      end
+      puts "Emailing #{p.email_address_with_name}..."
+      Invites.invite(p, show).deliver_now
+    rescue Net::SMTPServerBusy => e
+      puts "Failed to email #{p.email_address_with_name} [#{e.message}]"
     end
     puts "Sent #{people.size} emails."
   end
@@ -62,12 +60,10 @@ namespace :next_show do
                    .order(:last_name, :first_name)
 
     people.each do |p|
-      begin
-        puts "Emailing #{p.email_address_with_name}..."
-        Invites.invite(p, show).deliver_now
-      rescue Net::SMTPServerBusy => e
-        puts "Failed to email #{p.email_address_with_name} [#{e.message}]"
-      end
+      puts "Emailing #{p.email_address_with_name}..."
+      Invites.invite(p, show).deliver_now
+    rescue Net::SMTPServerBusy => e
+      puts "Failed to email #{p.email_address_with_name} [#{e.message}]"
     end
     puts "Sent #{people.size} emails."
   end
@@ -154,7 +150,7 @@ namespace :next_show do
 
     opens = Open.where('tag LIKE ?', "#{show.slug}%").group(:email).order(:created_at)
     opens.each do |open|
-      puts "#{open.created_at.to_date} #{open.tag[show.slug.length + 1..-1]} #{open.email}"
+      puts "#{open.created_at.to_date} #{open.tag[show.slug.length + 1..]} #{open.email}"
     end
     puts "Opens: #{opens.size}"
   end

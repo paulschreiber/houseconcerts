@@ -14,7 +14,7 @@ class Show < ApplicationRecord
   scope :upcoming, -> { where(status: ['sold out', 'waitlisted', 'confirmed']).where('start > ?', Time.now).order(:start) }
 
   validates :start, timeliness: { type: :datetime }
-  validates :end, timeliness: { type: :datetime, after: ->(x) { x.start } }
+  validates :end, timeliness: { type: :datetime, after: lambda(&:start) }
   validates :name, presence: true
   validates :status, inclusion: { in: HC_CONFIG.show.status }
   validates :price, presence: true, numericality: {
@@ -27,13 +27,11 @@ class Show < ApplicationRecord
   # define .confirmed?, .cancelled?, .unconfirmed?, .waitlisted?, .sold_out? methods
   HC_CONFIG.show.status.each do |value|
     define_method("#{value.tr(' ', '_')}?") { status == value }
-  end
 
-  # define .confirmed!, .cancelled!, .unconfirmed!, .waitlisted!, .sold_out! methods
-  HC_CONFIG.show.status.each do |value|
-    define_method("#{value.tr(' ', '_')}!") {
+    # define .confirmed!, .cancelled!, .unconfirmed!, .waitlisted!, .sold_out! methods
+    define_method("#{value.tr(' ', '_')}!") do
       update(status: value)
-    }
+    end
   end
 
   def self.next

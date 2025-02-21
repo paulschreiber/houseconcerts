@@ -31,10 +31,8 @@ class Person < ApplicationRecord
   # define .active?, .bouncing?, .moved?, .removed?, .deleted?, .vacation? methods
   HC_CONFIG.person.status.each do |value|
     define_method("#{value.tr(' ', '_')}?") { status == value }
-  end
 
-  # use update_attribute_s_ so the before_save actions fire
-  HC_CONFIG.person.status.each do |value|
+    # use update_attribute_s_ so the before_save actions fire
     define_method("#{value.tr(' ', '_')}!") { update_attributes(status: value) }
   end
 
