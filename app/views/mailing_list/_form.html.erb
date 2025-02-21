@@ -3,7 +3,7 @@
 <div class="pagetext">
 <p>If you&rsquo;d like to hear about house concerts, join my mailing list. You&rsquo;ll get two or so messages each month.</p>
 
-<%= form_for (@person) do |f| %>
+<%= form_with model: @person do |f| %>
 
 <% unless @person.errors.empty? %>
 <div class='errors'>
