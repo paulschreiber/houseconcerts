@@ -2,6 +2,8 @@ inherit_mode:
   merge:
     - Exclude
 
+inherit_gem: { rubocop-rails-omakase: rubocop.yml }
+
 AllCops:
   TargetRubyVersion: 3.3
   Exclude:
@@ -10,23 +12,23 @@ AllCops:
     - 'script/**/*'
     - 'bin/*'
     - 'Gemfile.lock'
-Metrics/LineLength:
+Layout/LineLength:
   Enabled: false
 Metrics/BlockLength:
   Enabled: false
 Metrics/AbcSize:
   Enabled: false
-Documentation:
+Style/Documentation:
   Enabled: false
-NumericLiterals:
+Style/NumericLiterals:
   Enabled: false
-CyclomaticComplexity:
+Metrics/CyclomaticComplexity:
   Enabled: false
-PerceivedComplexity:
+Metrics/PerceivedComplexity:
   Enabled: false
-MethodLength:
+Metrics/MethodLength:
   Enabled: false
-ClassLength:
+Metrics/ClassLength:
   Max: 200
 Style/ConditionalAssignment:
   Enabled: false
