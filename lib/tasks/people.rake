@@ -1,7 +1,7 @@
 namespace :people do
   def find_nonsubscribers
     show = Show.occurred.last
-    rsvps = RSVP.where(show: show).where('email NOT IN (SELECT email FROM people)')
+    rsvps = RSVP.where(show: show).where("email NOT IN (SELECT email FROM people)")
     puts "Found #{rsvps.size} who RSVPd for #{show.name} and are not subscribed"
     rsvps
   end
@@ -13,7 +13,7 @@ namespace :people do
     end
   end
 
-  desc 'Add phone numbers from RSVPs table to people in the people table'
+  desc "Add phone numbers from RSVPs table to people in the people table"
   task add_phone_numbers: :environment do
     people = Person.where(phone_number: nil).where(email: RSVP.where.not(phone_number: nil).pluck(:email))
     people.each do |person|
@@ -32,7 +32,7 @@ namespace :people do
     puts "Added #{rsvps.collect(&:email).to_sentence}" unless rsvps.empty?
   end
 
-  desc 'List people who unsubscribed'
+  desc "List people who unsubscribed"
   task list_unsubscribers: :environment do
     people = Person.where(status: :removed).order(:removed_at).last(30)
     people.each do |p|
@@ -40,12 +40,12 @@ namespace :people do
     end
   end
 
-  desc 'Import subscribers'
-  task :import_subscribers, [:filename] => [:environment] do |_, args|
+  desc "Import subscribers"
+  task :import_subscribers, [ :filename ] => [ :environment ] do |_, args|
     import_target = args[:filename]
 
     unless import_target
-      puts 'Please enter an a filename'
+      puts "Please enter an a filename"
       exit
     end
 

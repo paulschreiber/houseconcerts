@@ -1,21 +1,21 @@
 module ApplicationHelper
   def page_title_array
-    page_title = [HC_CONFIG.site_name]
+    page_title = [ HC_CONFIG.site_name ]
     page_title.unshift @show.name if @show
     page_title
   end
 
   def page_title
-    page_title_array.join(' » ')
+    page_title_array.join(" » ")
   end
 
   def social_media_title
     if @show
-      social_title = [@show.name, @show.start_date_short, HC_CONFIG.site_name]
+      social_title = [ @show.name, @show.start_date_short, HC_CONFIG.site_name ]
     else
-      social_title = [HC_CONFIG.site_name]
+      social_title = [ HC_CONFIG.site_name ]
     end
-    social_title.join(' » ')
+    social_title.join(" » ")
   end
 
   def social_media_description
@@ -41,10 +41,10 @@ module ApplicationHelper
   end
 
   def svg_icon
-    '/concerts.svg'
+    "/concerts.svg"
   end
 
   def apple_touch_icon
-    '/concerts.png'
+    "/concerts.png"
   end
 end

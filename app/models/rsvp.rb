@@ -55,23 +55,23 @@ class RSVP < ApplicationRecord
   end
 
   def confirm!
-    update_attribute(:confirmed, 'yes') if yes?
+    update_attribute(:confirmed, "yes") if yes?
   end
 
   def waitlist!
-    update_attribute(:confirmed, 'waitlisted') if yes?
+    update_attribute(:confirmed, "waitlisted") if yes?
   end
 
   def confirmed?
-    confirmed == 'yes'
+    confirmed == "yes"
   end
 
   def unconfirmed?
-    confirmed == 'no' || confirmed.empty?
+    confirmed == "no" || confirmed.empty?
   end
 
   def waitlisted?
-    confirmed == 'waitlisted'
+    confirmed == "waitlisted"
   end
 
   def create_person
@@ -86,36 +86,36 @@ class RSVP < ApplicationRecord
   end
 
   def sms_reminder
-    seats_word = seats == 1 ? 'seat' : 'seats'
+    seats_word = seats == 1 ? "seat" : "seats"
     "Reminder: You have #{seats.humanize} #{seats_word} for the #{show.name} show on #{show.start_date} at #{show.start_time}."
   end
 
   def to_ld_json
     result = {
-      '@context': 'http://schema.org',
-      '@type': 'EventReservation',
+      '@context': "http://schema.org",
+      '@type': "EventReservation",
       'reservationNumber': uniqid,
-      'reservationStatus': 'http://schema.org/Confirmed',
+      'reservationStatus': "http://schema.org/Confirmed",
       'underName': {
-        '@type': 'Person',
+        '@type': "Person",
         'name': full_name
       },
       'reservationFor': {
-        '@type': 'MusicEvent',
+        '@type': "MusicEvent",
         'name': "#{show.name} House Concert",
         'startDate': show.start.iso8601,
         'endDate': show.end.iso8601,
         'doorTime': show.door_time.iso8601,
         'performer': {
-          '@type': 'Person',
+          '@type': "Person",
           'name': show.artists.collect(&:name).to_sentence,
           'image': "#{Rails.application.routes.url_helpers.root_url}#{show.artists.first.photo}"
         },
         'location': {
-          '@type': 'Place',
+          '@type': "Place",
           'name': HC_CONFIG.site_name,
           'address': {
-            '@type': 'PostalAddress',
+            '@type': "PostalAddress",
             'streetAddress': show.venue.address,
             'addressLocality': show.venue.city,
             'addressRegion': show.venue.province,

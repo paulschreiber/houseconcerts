@@ -28,14 +28,14 @@ class MailingListController < ApplicationController
     @person = Person.where(email: params[:person][:email]).first if params[:person] && params[:person][:email]
 
     if @person.present?
-      render 'already_subscribed'
+      render "already_subscribed"
       return
     end
 
     @person = Person.new(person_params)
 
     if @person.save
-      render 'thanks'
+      render "thanks"
     else
       render :create
     end

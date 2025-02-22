@@ -1,4 +1,4 @@
-require 'test_helper'
+require "test_helper"
 
 class VenueGroupTest < ActiveSupport::TestCase
   # test "the truth" do
