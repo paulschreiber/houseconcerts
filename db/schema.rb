@@ -10,14 +10,13 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_06_12_182933) do
-
+ActiveRecord::Schema[7.2].define(version: 2025_02_21_200240) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
     t.bigint "record_id", null: false
     t.bigint "blob_id", null: false
-    t.datetime "created_at", null: false
+    t.datetime "created_at", precision: nil, null: false
     t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
     t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
   end
@@ -29,8 +28,8 @@ ActiveRecord::Schema.define(version: 2022_06_12_182933) do
     t.text "metadata"
     t.string "service_name", null: false
     t.bigint "byte_size", null: false
-    t.string "checksum", null: false
-    t.datetime "created_at", null: false
+    t.string "checksum"
+    t.datetime "created_at", precision: nil, null: false
     t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
   end
 
@@ -40,29 +39,29 @@ ActiveRecord::Schema.define(version: 2022_06_12_182933) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
-  create_table "admins", id: :bigint, default: nil, charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
+  create_table "admins", charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
     t.string "reset_password_token"
-    t.datetime "reset_password_sent_at"
-    t.datetime "remember_created_at"
+    t.datetime "reset_password_sent_at", precision: nil
+    t.datetime "remember_created_at", precision: nil
     t.integer "sign_in_count", default: 0, null: false
-    t.datetime "current_sign_in_at"
-    t.datetime "last_sign_in_at"
+    t.datetime "current_sign_in_at", precision: nil
+    t.datetime "last_sign_in_at", precision: nil
     t.string "current_sign_in_ip"
     t.string "last_sign_in_ip"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["email"], name: "index_admins_on_email", unique: true
     t.index ["reset_password_token"], name: "index_admins_on_reset_password_token", unique: true
   end
 
-  create_table "artists", id: :bigint, default: nil, charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
+  create_table "artists", charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
     t.string "name"
     t.string "slug"
     t.string "url"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["name"], name: "index_artists_on_name"
     t.index ["slug"], name: "index_artists_on_slug", unique: true
   end
@@ -79,24 +78,24 @@ ActiveRecord::Schema.define(version: 2022_06_12_182933) do
     t.bigint "sluggable_id", null: false
     t.string "sluggable_type", limit: 50
     t.string "scope"
-    t.datetime "created_at"
+    t.datetime "created_at", precision: nil
     t.index ["slug", "sluggable_type", "scope"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type_and_scope", unique: true
     t.index ["slug", "sluggable_type"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type"
     t.index ["sluggable_id"], name: "index_friendly_id_slugs_on_sluggable_id"
     t.index ["sluggable_type"], name: "index_friendly_id_slugs_on_sluggable_type"
   end
 
-  create_table "opens", id: :bigint, default: nil, charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
+  create_table "opens", charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
     t.string "tag"
     t.string "ip_address"
     t.string "email"
     t.boolean "open"
     t.boolean "click"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
-  create_table "people", id: :bigint, default: nil, charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
+  create_table "people", charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
     t.string "uniqid"
     t.string "first_name"
     t.string "last_name"
@@ -107,9 +106,9 @@ ActiveRecord::Schema.define(version: 2022_06_12_182933) do
     t.string "status"
     t.string "ip_address"
     t.string "removal_ip_address"
-    t.datetime "removed_at"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "removed_at", precision: nil
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["email"], name: "index_people_on_email", unique: true
     t.index ["first_name"], name: "index_people_on_first_name"
     t.index ["last_name"], name: "index_people_on_last_name"
@@ -124,7 +123,7 @@ ActiveRecord::Schema.define(version: 2022_06_12_182933) do
     t.index ["venue_group_id", "person_id"], name: "index_people_venue_groups_on_venue_group_id_and_person_id"
   end
 
-  create_table "rsvps", id: :bigint, default: nil, charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
+  create_table "rsvps", charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
     t.string "uniqid"
     t.bigint "show_id"
     t.string "first_name"
@@ -136,9 +135,9 @@ ActiveRecord::Schema.define(version: 2022_06_12_182933) do
     t.string "response"
     t.string "ip_address"
     t.string "confirmed"
-    t.datetime "confirmed_at"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "confirmed_at", precision: nil
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["confirmed"], name: "index_rsvps_on_confirmed"
     t.index ["email"], name: "index_rsvps_on_email"
     t.index ["response"], name: "index_rsvps_on_response"
@@ -147,27 +146,27 @@ ActiveRecord::Schema.define(version: 2022_06_12_182933) do
     t.index ["uniqid"], name: "index_rsvps_on_uniqid", unique: true
   end
 
-  create_table "shows", id: :bigint, default: nil, charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
-    t.datetime "start"
-    t.datetime "end"
+  create_table "shows", charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
+    t.datetime "start", precision: nil
+    t.datetime "end", precision: nil
     t.string "name"
     t.string "slug"
     t.string "status"
     t.text "blurb"
     t.integer "price"
     t.bigint "venue_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["slug"], name: "index_shows_on_slug", unique: true
     t.index ["start"], name: "index_shows_on_start"
     t.index ["status"], name: "index_shows_on_status"
     t.index ["venue_id"], name: "index_shows_on_venue_id"
   end
 
-  create_table "venue_groups", id: :bigint, default: nil, charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
+  create_table "venue_groups", charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
     t.string "name"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "venue_groups_venues", id: false, charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
@@ -177,7 +176,7 @@ ActiveRecord::Schema.define(version: 2022_06_12_182933) do
     t.index ["venue_id", "venue_group_id"], name: "index_venue_groups_venues_on_venue_id_and_venue_group_id"
   end
 
-  create_table "venues", id: :bigint, default: nil, charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
+  create_table "venues", charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
     t.string "name"
     t.string "slug"
     t.string "address"
@@ -186,8 +185,8 @@ ActiveRecord::Schema.define(version: 2022_06_12_182933) do
     t.string "postcode"
     t.string "country"
     t.integer "capacity"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.text "directions"
     t.text "contact_info"
     t.index ["name"], name: "index_venues_on_name"

@@ -37,7 +37,7 @@ module ApplicationHelper
       return root_url + next_show.artists.first.photo if next_show.present? && !next_show.artists.empty?
     end
 
-    root_url + 'concerts.png'
+    "#{root_url}concerts.png"
   end
 
   def svg_icon

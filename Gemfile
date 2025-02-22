@@ -7,7 +7,7 @@ gem 'coffee-rails', '~> 4.2'
 gem 'irb'
 gem 'mutex_m'
 gem 'mysql2'
-gem 'rails', '~> 6.1'
+gem 'rails', '~> 7'
 gem 'sassc-rails'
 gem 'uglifier'
 
@@ -18,7 +18,7 @@ gem 'capistrano-rails'
 
 # Use Puma as the app server
 gem 'listen', '>= 3.0.5', '< 3.2'
-gem 'puma', '~> 5.6'
+gem 'puma', '~> 6'
 
 gem 'bootsnap'
 gem 'net-smtp'

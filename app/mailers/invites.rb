@@ -7,7 +7,7 @@ class Invites < ApplicationMailer
     base_url = 'https://calendar.google.com/calendar/r/eventedit'
     rsvp_url = url_for(controller: :rsvps, action: :new, slug: rsvp.show.slug, uniqid: rsvp.uniqid)
     details = "Update reservation: #{rsvp_url}"
-    date_range = rsvp.show.start.utc.strftime(FORMAT) + '/' + rsvp.show.end.utc.strftime(FORMAT)
+    date_range = "#{rsvp.show.start.utc.strftime(FORMAT)}/#{rsvp.show.end.utc.strftime(FORMAT)}"
 
     params = {
       text: "#{rsvp.show.name} house concert",
