@@ -7,7 +7,7 @@ gem 'coffee-rails', '~> 4.2'
 gem 'irb'
 gem 'mutex_m'
 gem 'mysql2'
-gem 'rails', '~> 7'
+gem 'rails', '~> 8'
 gem 'sassc-rails'
 gem 'uglifier'
 
