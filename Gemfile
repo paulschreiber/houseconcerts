@@ -3,7 +3,6 @@ source 'https://rubygems.org'
 ruby '3.3.4'
 
 gem 'bigdecimal'
-gem 'coffee-rails', '~> 4.2'
 gem 'irb'
 gem 'mutex_m'
 gem 'mysql2'
@@ -16,9 +15,7 @@ gem 'capistrano-bundler'
 gem 'capistrano-passenger'
 gem 'capistrano-rails'
 
-# Use Puma as the app server
-gem 'listen', '>= 3.0.5', '< 3.2'
-gem 'puma', '~> 6'
+gem 'puma'
 
 gem 'bootsnap'
 gem 'net-smtp'
@@ -35,26 +32,17 @@ gem 'validates_timeliness'
 gem 'validate_url'
 gem 'validation_kit'
 
-gem 'jbuilder', '~> 2.5'
+gem 'jbuilder'
 gem 'jquery-rails'
-gem 'turbolinks', '~> 5'
 
 gem 'stripe'
 
 group :development, :test do
   gem 'letter_opener'
-
-  # Access an interactive console on exception pages or by calling 'console' anywhere in the code.
-  gem 'web-console', '>= 3.3.0'
-  # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
-  gem 'spring'
-  gem 'spring-watcher-listen', '~> 2.0.0'
+  gem 'web-console'
 end
 
 group :test do
-  # Adds support for Capybara system testing and selenium driver
-  gem 'capybara', '>= 2.15'
-  gem 'selenium-webdriver'
-  # Easy installation and use of chromedriver to run system tests with Chrome
-  gem 'webdrivers'
+  gem "capybara"
+  gem "selenium-webdriver"
 end
