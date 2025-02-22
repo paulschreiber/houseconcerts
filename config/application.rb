@@ -8,7 +8,7 @@ Bundler.require(*Rails.groups)
 
 module Houseconcerts
   class Application < Rails::Application
-    Rails.autoloaders.log!
+    #Rails.autoloaders.log!
 
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 7.0
