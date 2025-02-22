@@ -1,10 +1,10 @@
 class Invites < ApplicationMailer
   SEND_METHOD = :amazon # :amazon, :google, :mandrill, :sendmail
 
-  FORMAT = '%Y%m%dT%H%M%SZ'.freeze
+  FORMAT = "%Y%m%dT%H%M%SZ".freeze
 
   def make_calendar_url(rsvp)
-    base_url = 'https://calendar.google.com/calendar/r/eventedit'
+    base_url = "https://calendar.google.com/calendar/r/eventedit"
     rsvp_url = url_for(controller: :rsvps, action: :new, slug: rsvp.show.slug, uniqid: rsvp.uniqid)
     details = "Update reservation: #{rsvp_url}"
     date_range = "#{rsvp.show.start.utc.strftime(FORMAT)}/#{rsvp.show.end.utc.strftime(FORMAT)}"
@@ -14,7 +14,7 @@ class Invites < ApplicationMailer
       dates: date_range,
       location: rsvp.show.venue.full_address_calendar,
       details: details,
-      sf: 'true'
+      sf: "true"
     }
 
     "#{base_url}?#{params.to_query}"
@@ -28,21 +28,21 @@ class Invites < ApplicationMailer
         user_name: HC_CONFIG.google_username,
         password: HC_CONFIG.google_password,
         port: 587,
-        address: 'smtp.gmail.com'
+        address: "smtp.gmail.com"
       }
     elsif SEND_METHOD == :amazon
       {
         user_name: HC_CONFIG.amazon_username,
         password: HC_CONFIG.amazon_password,
         port: 587,
-        address: 'email-smtp.us-east-1.amazonaws.com'
+        address: "email-smtp.us-east-1.amazonaws.com"
       }
     elsif SEND_METHOD == :mandrill
       {
         user_name: HC_CONFIG.mandrill_username,
         password: HC_CONFIG.mandrill_api_key,
         port: 587,
-        address: 'smtp.mandrillapp.com'
+        address: "smtp.mandrillapp.com"
       }
     end
   end
@@ -57,7 +57,7 @@ class Invites < ApplicationMailer
     end
   end
 
-  def invite(person, show, email_type = 'invite')
+  def invite(person, show, email_type = "invite")
     return unless person && show
 
     unless person.is_a?(Person)
@@ -91,7 +91,7 @@ class Invites < ApplicationMailer
 
     if SEND_METHOD == :mandrill
       @unsub_url = "*|UNSUB:#{@unsub_url}|*"
-      headers['X-MC-Tags'] = tag
+      headers["X-MC-Tags"] = tag
     end
 
     mail(to: person.email_address_with_name,
@@ -100,7 +100,7 @@ class Invites < ApplicationMailer
          delivery_method_options: delivery_options)
   end
 
-  def waitlisted(rsvp, email_type = 'waitlist')
+  def waitlisted(rsvp, email_type = "waitlist")
     return unless rsvp
 
     unless rsvp.is_a?(RSVP)
@@ -126,7 +126,7 @@ class Invites < ApplicationMailer
          delivery_method_options: delivery_options)
   end
 
-  def confirm(rsvp, email_type = 'confirm')
+  def confirm(rsvp, email_type = "confirm")
     return unless rsvp
 
     unless rsvp.is_a?(RSVP)
@@ -153,7 +153,7 @@ class Invites < ApplicationMailer
          delivery_method_options: delivery_options)
   end
 
-  def remind(rsvp, email_type = 'remind')
+  def remind(rsvp, email_type = "remind")
     return unless rsvp
 
     unless rsvp.is_a?(RSVP)

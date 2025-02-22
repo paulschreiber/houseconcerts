@@ -1,4 +1,4 @@
-require 'test_helper'
+require "test_helper"
 
 class ArtistTest < ActiveSupport::TestCase
   # test "the truth" do

@@ -19,7 +19,7 @@ class Person < ApplicationRecord
     rand(2821109907456).to_s(36)
   end
 
-  default_value_for :status, 'active'
+  default_value_for :status, "active"
 
   validates :first_name, presence: true, mixed_case: true, length: { minimum: 2 }, unless: :allowed_name_exception?
   validates :last_name, presence: true, mixed_case: true, length: { minimum: 2 }, unless: :allowed_name_exception?

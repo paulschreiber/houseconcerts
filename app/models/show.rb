@@ -8,10 +8,10 @@ class Show < ApplicationRecord
 
   before_validation :set_end_time
 
-  scope :confirmed, -> { where(status: 'confirmed') }
-  scope :occurring, -> { where(status: ['sold out', 'waitlisted', 'confirmed']).where('start > ?', Time.now).order(:start) }
-  scope :occurred, -> { where(status: ['sold out', 'waitlisted', 'confirmed']).where('start < ?', Time.now).order(:start) }
-  scope :upcoming, -> { where(status: ['sold out', 'waitlisted', 'confirmed']).where('start > ?', Time.now).order(:start) }
+  scope :confirmed, -> { where(status: "confirmed") }
+  scope :occurring, -> { where(status: [ "sold out", "waitlisted", "confirmed" ]).where("start > ?", Time.now).order(:start) }
+  scope :occurred, -> { where(status: [ "sold out", "waitlisted", "confirmed" ]).where("start < ?", Time.now).order(:start) }
+  scope :upcoming, -> { where(status: [ "sold out", "waitlisted", "confirmed" ]).where("start > ?", Time.now).order(:start) }
 
   validates :start, timeliness: { type: :datetime }
   validates :end, timeliness: { type: :datetime, after: lambda(&:start) }
@@ -51,19 +51,19 @@ class Show < ApplicationRecord
   end
 
   def day_of_week
-    start.strftime('%A')
+    start.strftime("%A")
   end
 
   def start_time
-    start&.strftime('%l:%M %P')&.strip
+    start&.strftime("%l:%M %P")&.strip
   end
 
   def start_date
-    start.strftime('%A, %B %e, %Y').gsub('  ', ' ').strip unless start.nil?
+    start.strftime("%A, %B %e, %Y").gsub("  ", " ").strip unless start.nil?
   end
 
   def start_date_short
-    start.strftime('%B %e').gsub('  ', ' ').strip unless start.nil?
+    start.strftime("%B %e").gsub("  ", " ").strip unless start.nil?
   end
 
   def door_time
@@ -73,8 +73,8 @@ class Show < ApplicationRecord
   def arrival_range
     return if start.nil?
 
-    earliest = door_time.strftime('%l:%M %P').strip
-    latest = (start - 1.minutes).strftime('%l:%M %P').strip
+    earliest = door_time.strftime("%l:%M %P").strip
+    latest = (start - 1.minutes).strftime("%l:%M %P").strip
     "#{earliest} and #{latest}"
   end
 

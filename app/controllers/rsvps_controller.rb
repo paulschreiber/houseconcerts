@@ -47,10 +47,10 @@ class RsvpsController < ApplicationController
       @rsvp.show_id = @show.id if @show.id
     end
 
-    return unless @rsvp.response == 'no' && @rsvp.save
+    return unless @rsvp.response == "no" && @rsvp.save
 
     # show a "no" RSVP
-    render 'thanks'
+    render "thanks"
   end
 
   def create
@@ -71,7 +71,7 @@ class RsvpsController < ApplicationController
 
     return unless @rsvp.save
 
-    render 'thanks'
+    render "thanks"
   end
 
   def rsvp_params
