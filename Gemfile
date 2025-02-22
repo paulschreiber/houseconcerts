@@ -18,7 +18,7 @@ gem 'capistrano-rails'
 
 # Use Puma as the app server
 gem 'listen', '>= 3.0.5', '< 3.2'
-gem 'puma', '~> 5.6'
+gem 'puma', '~> 6.6'
 
 gem 'bootsnap'
 gem 'net-smtp'
