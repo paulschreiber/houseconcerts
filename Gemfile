@@ -2,14 +2,14 @@ source 'https://rubygems.org'
 
 ruby '3.3.4'
 
+gem 'bigdecimal'
 gem 'coffee-rails', '~> 4.2'
+gem 'irb'
+gem 'mutex_m'
 gem 'mysql2'
 gem 'rails', '~> 6.1'
 gem 'sassc-rails'
 gem 'uglifier'
-gem 'bigdecimal'
-gem 'mutex_m'
-gem 'irb'
 
 gem 'capistrano'
 gem 'capistrano-bundler'
@@ -17,8 +17,8 @@ gem 'capistrano-passenger'
 gem 'capistrano-rails'
 
 # Use Puma as the app server
-gem 'puma', '~> 5.6'
 gem 'listen', '>= 3.0.5', '< 3.2'
+gem 'puma', '~> 5.6'
 
 gem 'bootsnap'
 gem 'net-smtp'
@@ -31,8 +31,8 @@ gem 'humanize'
 gem 'icalendar'
 gem 'redcarpet'
 gem 'twilio-ruby'
-gem 'validate_url'
 gem 'validates_timeliness'
+gem 'validate_url'
 gem 'validation_kit'
 
 gem 'jbuilder', '~> 2.5'
