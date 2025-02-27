@@ -86,8 +86,7 @@ class RSVP < ApplicationRecord
   end
 
   def sms_reminder
-    seats_word = seats == 1 ? "seat" : "seats"
-    "Reminder: You have #{seats.humanize} #{seats_word} for the #{show.name} show on #{show.start_date} at #{show.start_time}."
+    "Reminder: You have #{seats.humanize} #{helper.pluralize(seats, "seat")} for the #{show.name} show on #{show.start_date} at #{show.start_time}."
   end
 
   def to_ld_json
