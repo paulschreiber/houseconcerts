@@ -73,7 +73,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_02_21_200240) do
     t.index ["show_id", "artist_id"], name: "index_artists_shows_on_show_id_and_artist_id"
   end
 
-  create_table "friendly_id_slugs", id: :bigint, default: nil, charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
+  create_table "friendly_id_slugs", charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
     t.string "slug", null: false
     t.bigint "sluggable_id", null: false
     t.string "sluggable_type", limit: 50
