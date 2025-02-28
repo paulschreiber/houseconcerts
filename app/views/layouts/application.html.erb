@@ -54,6 +54,7 @@
 	</script>
 	<% end %>
 	<%= csrf_meta_tags %>
+	<%= csp_meta_tag %>
 </head>
 <body>
 	<% if notice.present? %><p class="notice"><%= notice %></p><% end %>
