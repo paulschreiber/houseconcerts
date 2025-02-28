@@ -10,6 +10,7 @@ Rails.application.routes.draw do
   get 'about' => 'shows#about', as: 'about'
   get 'musicians' => 'shows#musicians', as: 'musicians'
   get 'shows' => 'shows#shows', as: 'past_shows'
+  get 'privacy' => 'privacy#index', as: 'privacy'
   get 'list' => 'mailing_list#index', as: 'mailing_list'
   get 'unsubscribe/:uniqid' => 'mailing_list#unsubscribe'
   get 'calendar/ical' => 'shows#ical'
