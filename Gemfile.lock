@@ -446,6 +446,8 @@ DEPENDENCIES
   rails (~> 7)
   redcarpet
   rubocop
+  rubocop-performance
+  rubocop-rails
   rubocop-rails-omakase
   rubocop-rake
   ruby-lsp
