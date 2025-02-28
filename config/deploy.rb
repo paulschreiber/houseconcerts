@@ -35,15 +35,15 @@ set :linked_dirs, fetch(:linked_dirs, []).push('log', 'vendor/bundle')
 
 set :passenger_restart_with_touch, true
 
-namespace :deploy do
-
-  after :restart, :clear_cache do
-    on roles(:web), in: :groups, limit: 3, wait: 10 do
-      # Here we can do anything such as:
-      # within release_path do
-      #   execute :rake, 'cache:clear'
-      # end
+namespace :assets do
+  task :clean do
+    on roles(fetch(:assets_roles)) do
+      within release_path do
+        with rails_env: fetch(:rails_env) do
+          execute :rake, "assets:clean"
+        end
+      end
     end
   end
-
 end
+after "deploy:updated", "assets:clean"
