@@ -2,16 +2,20 @@ inherit_mode:
   merge:
     - Exclude
 
-inherit_gem: { rubocop-rails-omakase: rubocop.yml }
+plugins:
+  - rubocop-rake
+
+inherit_gem:
+  rubocop-rails-omakase: rubocop.yml
 
 AllCops:
   TargetRubyVersion: 3.3
   Exclude:
-    - 'db/**/*'
-    - 'config/**/*'
-    - 'script/**/*'
-    - 'bin/*'
-    - 'Gemfile.lock'
+    - "db/**/*"
+    - "config/**/*"
+    - "script/**/*"
+    - "bin/*"
+    - "Gemfile.lock"
 Layout/LineLength:
   Enabled: false
 Metrics/BlockLength:
@@ -34,3 +38,7 @@ Style/ConditionalAssignment:
   Enabled: false
 Style/FrozenStringLiteralComment:
   Enabled: false
+
+# need to explicity enable this because rubocop-rails-omakase disables it
+Layout/BlockAlignment:
+  Enabled: true
