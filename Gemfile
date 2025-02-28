@@ -41,12 +41,15 @@ gem "stripe"
 group :development, :test do
   gem "debug", platforms: %i[ mri mswin ], require: "debug/prelude"
   gem "brakeman", require: false
-  gem "rubocop-rails-omakase", require: false
 end
 
 group :development do
   gem "letter_opener"
   gem "web-console"
+  gem "ruby-lsp"
+  gem "rubocop", require: false
+  gem "rubocop-rake", require: false
+  gem "rubocop-rails-omakase", require: false
 end
 
 group :test do
