@@ -1,11 +1,11 @@
-namespace :people do
-  def find_nonsubscribers
-    show = Show.occurred.last
-    rsvps = RSVP.where(show: show).where("email NOT IN (SELECT email FROM people)")
-    puts "Found #{rsvps.size} who RSVPd for #{show.name} and are not subscribed"
-    rsvps
-  end
+def find_nonsubscribers
+  show = Show.occurred.last
+  rsvps = RSVP.where(show: show).where("email NOT IN (SELECT email FROM people)")
+  puts "Found #{rsvps.size} who RSVPd for #{show.name} and are not subscribed"
+  rsvps
+end
 
+namespace :people do
   desc "List people who RSVPd for the most recent show, but aren't on the list"
   task list_nonsubscribers: :environment do
     find_nonsubscribers.each do |rsvp|
