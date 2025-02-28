@@ -361,6 +361,9 @@ GEM
     tilt (2.6.0)
     timeliness (0.5.2)
     timeout (0.4.3)
+    turbolinks (5.2.1)
+      turbolinks-source (~> 5.2)
+    turbolinks-source (5.2.0)
     twilio-ruby (7.4.5)
       benchmark
       faraday (>= 0.9, < 3.0)
@@ -439,6 +442,7 @@ DEPENDENCIES
   sassc-rails
   selenium-webdriver
   stripe
+  turbolinks
   twilio-ruby
   uglifier
   validate_url
