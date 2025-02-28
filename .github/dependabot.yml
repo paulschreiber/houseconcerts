@@ -1,6 +1,8 @@
 version: 2
 updates:
-  - package-ecosystem: "bundler"
-    directory: "/"
+  - package-ecosystem: 'bundler'
+    directory: '/'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
+    commit-message:
+      prefix: build
