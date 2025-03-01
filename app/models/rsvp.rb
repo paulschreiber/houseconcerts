@@ -86,46 +86,46 @@ class RSVP < ApplicationRecord
   end
 
   def sms_reminder
-    "Reminder: You have #{seats.humanize} #{helper.pluralize(seats, "seat")} for the #{show.name} show on #{show.start_date} at #{show.start_time}."
+    "Reminder: You have #{seats.humanize} #{helper.pluralize(seats, 'seat')} for the #{show.name} show on #{show.start_date} at #{show.start_time}."
   end
 
   def to_ld_json
     result = {
-      '@context': "http://schema.org",
-      '@type': "EventReservation",
-      'reservationNumber': uniqid,
-      'reservationStatus': "http://schema.org/Confirmed",
-      'underName': {
-        '@type': "Person",
-        'name': full_name
+      "@context": "http://schema.org",
+      "@type": "EventReservation",
+      reservationNumber: uniqid,
+      reservationStatus: "http://schema.org/Confirmed",
+      underName: {
+        "@type": "Person",
+        name: full_name
       },
-      'reservationFor': {
-        '@type': "MusicEvent",
-        'name': "#{show.name} House Concert",
-        'startDate': show.start.iso8601,
-        'endDate': show.end.iso8601,
-        'doorTime': show.door_time.iso8601,
-        'performer': {
-          '@type': "Person",
-          'name': show.artists.collect(&:name).to_sentence,
-          'image': "#{Rails.application.routes.url_helpers.root_url}#{show.artists.first.photo}"
+      reservationFor: {
+        "@type": "MusicEvent",
+        name: "#{show.name} House Concert",
+        startDate: show.start.iso8601,
+        endDate: show.end.iso8601,
+        doorTime: show.door_time.iso8601,
+        performer: {
+          "@type": "Person",
+          name: show.artists.collect(&:name).to_sentence,
+          image: "#{Rails.application.routes.url_helpers.root_url}#{show.artists.first.photo}"
         },
-        'location': {
-          '@type': "Place",
-          'name': HC_CONFIG.site_name,
-          'address': {
-            '@type': "PostalAddress",
-            'streetAddress': show.venue.address,
-            'addressLocality': show.venue.city,
-            'addressRegion': show.venue.province,
-            'postalCode': show.venue.postcode,
-            'addressCountry': show.venue.country
+        location: {
+          "@type": "Place",
+          name: HC_CONFIG.site_name,
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: show.venue.address,
+            addressLocality: show.venue.city,
+            addressRegion: show.venue.province,
+            postalCode: show.venue.postcode,
+            addressCountry: show.venue.country
           }
         }
       },
-      'numSeats': seats,
-      'modifiedTime': updated_at.iso8601,
-      'modifyReservationUrl': Rails.application.routes.url_helpers.modify_rsvp_url(slug: show.slug, uniqid: uniqid)
+      numSeats: seats,
+      modifiedTime: updated_at.iso8601,
+      modifyReservationUrl: Rails.application.routes.url_helpers.modify_rsvp_url(slug: show.slug, uniqid: uniqid)
     }
 
     result.to_json
