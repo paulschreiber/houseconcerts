@@ -9,6 +9,7 @@ inherit_gem:
   rubocop-rails-omakase: rubocop.yml
 
 AllCops:
+  NewCops: enable
   TargetRubyVersion: 3.3
   Exclude:
     - "db/**/*"
@@ -40,5 +41,35 @@ Style/FrozenStringLiteralComment:
   Enabled: false
 
 # need to explicity enable this because rubocop-rails-omakase disables it
+Layout/IndentationConsistency:
+  Enabled: true
+Layout/IndentationWidth:
+  Enabled: true
 Layout/BlockAlignment:
+  Enabled: true
+Layout/SpaceAroundOperators:
+  Enabled: true
+Bundler:
+  Enabled: true
+Gemspec:
+  Enabled: true
+Layout:
+  Enabled: true
+Lint:
+  Enabled: true
+Metrics:
+  Enabled: true
+Naming:
+  Enabled: true
+Performance:
+  Enabled: true
+  Exclude:
+    - "test/**/*"
+Rails/WhereRange:
+  Enabled: true
+Rails/DuplicateScope:
+  Enabled: true
+Security:
+  Enabled: true
+Style:
   Enabled: true
