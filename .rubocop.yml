@@ -65,11 +65,14 @@ Performance:
   Enabled: true
   Exclude:
     - "test/**/*"
-Rails/WhereRange:
-  Enabled: true
-Rails/DuplicateScope:
+Rails:
   Enabled: true
 Security:
   Enabled: true
 Style:
   Enabled: true
+
+# TODO: fix these later
+# See https://medium.com/@john200Ok/migrating-a-rails-6-association-from-has-and-belongs-to-many-to-has-many-through-2e3ba1361542
+Rails/HasAndBelongsToMany:
+  Enabled: false
