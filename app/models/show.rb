@@ -3,7 +3,7 @@ class Show < ApplicationRecord
   friendly_id :name_slug_candidates, use: :slugged
 
   has_and_belongs_to_many :artists
-  has_many :rsvps
+  has_many :rsvps, dependent: :destroy
   belongs_to :venue
 
   before_validation :set_end_time
