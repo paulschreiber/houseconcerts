@@ -33,7 +33,7 @@ class Person < ApplicationRecord
     define_method("#{value.tr(' ', '_')}?") { status == value }
 
     # use update_attribute_s_ so the before_save actions fire
-    define_method("#{value.tr(' ', '_')}!") { update_attributes(status: value) }
+    define_method("#{value.tr(' ', '_')}!") { update(status: value) }
   end
 
   def ensure_venue_group
