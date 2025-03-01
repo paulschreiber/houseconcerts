@@ -55,11 +55,11 @@ class RSVP < ApplicationRecord
   end
 
   def confirm!
-    update_attribute(:confirmed, "yes") if yes?
+    update(:confirmed, "yes") if yes?
   end
 
   def waitlist!
-    update_attribute(:confirmed, "waitlisted") if yes?
+    update(:confirmed, "waitlisted") if yes?
   end
 
   def confirmed?
