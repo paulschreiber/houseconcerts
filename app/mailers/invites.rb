@@ -1,4 +1,4 @@
-class Invites < ApplicationMailer
+class InvitesMailer < ApplicationMailer
   SEND_METHOD = :amazon # :amazon, :google, :mandrill, :sendmail
 
   FORMAT = "%Y%m%dT%H%M%SZ".freeze
