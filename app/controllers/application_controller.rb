@@ -7,8 +7,8 @@ class ApplicationController < ActionController::Base
 
   protected
 
-  def set_current_ip
-    Person.current_ip = request.remote_addr
-    RSVP.current_ip = request.remote_addr
-  end
+    def set_current_ip
+      Person.current_ip = request.remote_addr
+      RSVP.current_ip = request.remote_addr
+    end
 end
