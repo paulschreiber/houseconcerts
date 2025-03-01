@@ -39,19 +39,19 @@ gem "jquery-rails"
 gem "stripe"
 
 group :development, :test do
-  gem "debug", platforms: %i[ mri mswin ], require: "debug/prelude"
   gem "brakeman", require: false
+  gem "debug", platforms: %i[ mri mswin ], require: "debug/prelude"
 end
 
 group :development do
   gem "letter_opener"
-  gem "web-console"
-  gem "ruby-lsp"
   gem "rubocop", require: false
-  gem "rubocop-rails", require: false
-  gem "rubocop-rake", require: false
   gem "rubocop-performance", require: false
+  gem "rubocop-rails", require: false
   gem "rubocop-rails-omakase", require: false
+  gem "rubocop-rake", require: false
+  gem "ruby-lsp"
+  gem "web-console"
 end
 
 group :test do
