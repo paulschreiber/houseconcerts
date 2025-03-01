@@ -10,7 +10,7 @@ class Show < ApplicationRecord
 
   scope :confirmed, -> { where(status: "confirmed") }
   scope :confirmed_or_full, -> { where(status: [ "sold out", "waitlisted", "confirmed" ]) }
-  scope :occurred, -> { confirmed_or_full.where("start < ?", Time.zone.now).order(:start) }
+  scope :occurred, -> { confirmed_or_full.where(start: ...Time.zone.now).order(:start) }
   scope :upcoming, -> { confirmed_or_full.where("start > ?", Time.zone.now).order(:start) }
 
   validates :start, timeliness: { type: :datetime }
