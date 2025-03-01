@@ -35,7 +35,7 @@ class RSVP < ApplicationRecord
   def update_confirmation_date
     return if !confirmed_changed? || !confirmed?
 
-    self.confirmed_at = Time.now
+    self.confirmed_at = Time.zone.now
   end
 
   def clear_seats_if_no

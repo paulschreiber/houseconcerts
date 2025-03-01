@@ -45,7 +45,7 @@ class Person < ApplicationRecord
   def update_removal_status
     return if !status_changed? || !removed?
 
-    self.removed_at = Time.now
+    self.removed_at = Time.zone.now
     self.removal_ip_address = current_ip
   end
 end
