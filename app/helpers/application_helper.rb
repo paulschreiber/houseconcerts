@@ -1,36 +1,36 @@
 module ApplicationHelper
-  def page_title_array
+  def page_title_array(show)
     page_title = [ HC_CONFIG.site_name ]
-    page_title.unshift @show.name if @show
+    page_title.unshift show.name if show
     page_title
   end
 
-  def page_title
-    page_title_array.join(" » ")
+  def page_title(show)
+    page_title_array(show).join(" » ")
   end
 
-  def social_media_title
-    if @show
-      social_title = [ @show.name, @show.start_date_short, HC_CONFIG.site_name ]
+  def social_media_title(show)
+    if show
+      social_title = [ show.name, show.start_date_short, HC_CONFIG.site_name ]
     else
       social_title = [ HC_CONFIG.site_name ]
     end
     social_title.join(" » ")
   end
 
-  def social_media_description
-    if @show && !@show.artists.empty?
-      description = "RSVP for the #{@show.name} house concert"
-      description += " in #{@show.location}" if @show.location
-      description += " on #{@show.start_date}"
+  def social_media_description(show)
+    if show && !show.artists.empty?
+      description = "RSVP for the #{show.name} house concert"
+      description += " in #{show.location}" if show.location
+      description += " on #{show.start_date}"
       description
     else
       HC_CONFIG.meta_description
     end
   end
 
-  def social_media_image
-    return root_url + @show.artists.first.photo if @show && !@show.artists.empty?
+  def social_media_image(show)
+    return root_url + show.artists.first.photo if show && !show.artists.empty?
 
     if current_page?(root_url)
       next_show = Show.upcoming.first

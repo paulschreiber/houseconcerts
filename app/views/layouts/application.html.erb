@@ -10,23 +10,23 @@
 	<meta name="twitter:widgets:csp" content="on" />
 	<meta name="twitter:site" content="<%= HC_CONFIG.twitter_name %>" />
 	<meta name="twitter:site:id" content="<%= HC_CONFIG.twitter_id %>" />
-	<meta name="twitter:title" content="<%= social_media_title %>" />
-	<meta name="twitter:description" content="<%= social_media_description %>" />
-	<meta name="twitter:image" content="<%= social_media_image %>" />
+	<meta name="twitter:title" content="<%= social_media_title(@show) %>" />
+	<meta name="twitter:description" content="<%= social_media_description(@show) %>" />
+	<meta name="twitter:image" content="<%= social_media_image(@show) %>" />
 
 	<meta property="fb:app_id" content="<%= HC_CONFIG.facebook_app_id %>" />
 
 	<meta property="og:locale" content="en_US" />
 	<meta property="og:type" content="website" />
 	<meta property="og:site_name" content="<%= HC_CONFIG.site_name %>" />
-	<meta property="og:title" content="<%= social_media_title %>" />
-	<meta property="og:description" content="<%= social_media_description %>" />
+	<meta property="og:title" content="<%= social_media_title(@show) %>" />
+	<meta property="og:description" content="<%= social_media_description(@show) %>" />
 	<meta property="og:url" content="<%= request.original_url %>" />
-	<meta property="og:image" content="<%= social_media_image %>" />
+	<meta property="og:image" content="<%= social_media_image(@show) %>" />
 
 	<link rel="apple-touch-icon" href="<%= apple_touch_icon %>">
 	<link rel="icon" sizes="any" mask href="<%= svg_icon %>">
-	<title><%= page_title %></title>
+	<title><%= page_title(@show) %></title>
 	<%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
 	<%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
 
