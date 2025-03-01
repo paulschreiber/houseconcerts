@@ -74,7 +74,7 @@ class Show < ApplicationRecord
     return if start.nil?
 
     earliest = door_time.strftime("%l:%M %P").strip
-    latest = (start - 1.minutes).strftime("%l:%M %P").strip
+    latest = (start - 1.minute).strftime("%l:%M %P").strip
     "#{earliest} and #{latest}"
   end
 
