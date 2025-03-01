@@ -9,9 +9,9 @@ class Show < ApplicationRecord
   before_validation :set_end_time
 
   scope :confirmed, -> { where(status: "confirmed") }
-  scope :occurring, -> { where(status: [ "sold out", "waitlisted", "confirmed" ]).where("start > ?", Time.zone.now).order(:start) }
-  scope :occurred, -> { where(status: [ "sold out", "waitlisted", "confirmed" ]).where("start < ?", Time.zone.now).order(:start) }
-  scope :upcoming, -> { where(status: [ "sold out", "waitlisted", "confirmed" ]).where("start > ?", Time.zone.now).order(:start) }
+  scope :confirmed_or_full, -> { where(status: [ "sold out", "waitlisted", "confirmed" ]) }
+  scope :occurred, -> { confirmed_or_full.where("start < ?", Time.zone.now).order(:start) }
+  scope :upcoming, -> { confirmed_or_full.where("start > ?", Time.zone.now).order(:start) }
 
   validates :start, timeliness: { type: :datetime }
   validates :end, timeliness: { type: :datetime, after: lambda(&:start) }

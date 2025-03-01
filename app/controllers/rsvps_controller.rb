@@ -10,7 +10,7 @@ class RsvpsController < ApplicationController
       @show = Show.friendly.find(params[:slug])
     rescue ActiveRecord::RecordNotFound
       @show = Show.new
-      @shows = Show.occurring
+      @shows = Show.upcoming
     end
 
     # pre-fill form (from link)
@@ -67,7 +67,7 @@ class RsvpsController < ApplicationController
     end
 
     @show = Show.find(params[:rsvp][:show_id]) if params[:rsvp] && params[:rsvp][:show_id].to_i.positive?
-    @shows = Show.occurring
+    @shows = Show.upcoming
 
     return unless @rsvp.save
 
