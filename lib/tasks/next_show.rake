@@ -196,7 +196,7 @@ namespace :next_show do
       puts "Emailing #{rsvp.email_address_with_name}..."
       Invites.remind(rsvp).deliver_now
 
-      next unless rsvp.phone_number.present?
+      next if rsvp.phone_number.blank?
 
       puts "Texting #{rsvp.phone_number}..."
       client.api.account.messages.create(
