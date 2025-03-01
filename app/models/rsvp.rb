@@ -47,11 +47,11 @@ class RSVP < ApplicationRecord
 
   # define .yes?, .no?
   HC_CONFIG.rsvp.response.each do |value|
-    define_method("#{value}?") { response == value }
+    define_method(:"#{value}?") { response == value }
 
     # define .yes!, .no!
     # use update_attribute_s_ so the before_save actions fire
-    define_method("#{value}!") { update_attributes(response: value) }
+    define_method(:"#{value}!") { update_attributes(response: value) }
   end
 
   def confirm!
