@@ -23,7 +23,7 @@ class InvitesMailer < ApplicationMailer
   def delivery_options
     if Rails.env.development?
       {}
-    elsif SEND_METHOD == :amazon
+    elsif SEND_METHOD == :smtp
       {
         user_name: HC_CONFIG.amazon_username,
         password: HC_CONFIG.amazon_password,
