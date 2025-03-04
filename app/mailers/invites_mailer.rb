@@ -1,5 +1,5 @@
 class InvitesMailer < ApplicationMailer
-  SEND_METHOD = :amazon # :amazon, :google, :mandrill, :sendmail
+  SEND_METHOD = :ses
 
   FORMAT = "%Y%m%dT%H%M%SZ".freeze
 
@@ -23,26 +23,12 @@ class InvitesMailer < ApplicationMailer
   def delivery_options
     if Rails.env.development?
       {}
-    elsif SEND_METHOD == :google
-      {
-        user_name: HC_CONFIG.google_username,
-        password: HC_CONFIG.google_password,
-        port: 587,
-        address: "smtp.gmail.com"
-      }
-    elsif SEND_METHOD == :amazon
+    elsif SEND_METHOD == :ses
       {
         user_name: HC_CONFIG.amazon_username,
         password: HC_CONFIG.amazon_password,
         port: 587,
         address: "email-smtp.us-east-1.amazonaws.com"
-      }
-    elsif SEND_METHOD == :mandrill
-      {
-        user_name: HC_CONFIG.mandrill_username,
-        password: HC_CONFIG.mandrill_api_key,
-        port: 587,
-        address: "smtp.mandrillapp.com"
       }
     end
   end
@@ -53,7 +39,7 @@ class InvitesMailer < ApplicationMailer
     elsif SEND_METHOD == :sendmail
       :sendmail
     else
-      :smtp
+      :ses
     end
   end
 
