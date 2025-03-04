@@ -12,7 +12,7 @@
 	<div class='errors'>
 		<p>Please correct the following errors:</p>
 		<ul>
-		<% @rsvp.errors.each do |attribute, message| %>
+		<% @rsvp.errors.collect(&:message).uniq.each do |message| %>
 		<li><%= message %></li>
 		<% end %>
 		</ul>

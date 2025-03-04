@@ -9,7 +9,7 @@
 <div class='errors'>
 	<p>Please correct the following errors:</p>
 	<ul>
-	<% @person.errors.each do |attribute, message| %>
+	<% @person.errors.collect(&:message).uniq.each do |message| %>
 	<li><%= message %></li>
 	<% end %>
 	</ul>
