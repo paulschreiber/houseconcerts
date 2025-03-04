@@ -1,5 +1,5 @@
 class InvitesMailer < ApplicationMailer
-  SEND_METHOD = :ses
+  SEND_METHOD = :smtp
 
   FORMAT = "%Y%m%dT%H%M%SZ".freeze
 
@@ -21,7 +21,16 @@ class InvitesMailer < ApplicationMailer
   end
 
   def delivery_options
-    {}
+    if Rails.env.development?
+      {}
+    elsif SEND_METHOD == :amazon
+      {
+        user_name: HC_CONFIG.amazon_username,
+        password: HC_CONFIG.amazon_password,
+        address: HC_CONFIG.amazon_server,
+        port: 587
+      }
+    end
   end
 
   def delivery_method
@@ -30,7 +39,7 @@ class InvitesMailer < ApplicationMailer
     elsif SEND_METHOD == :sendmail
       :sendmail
     else
-      :ses
+      :smtp
     end
   end
 
