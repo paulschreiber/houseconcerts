@@ -31,6 +31,8 @@ Rails.application.routes.draw do
   get 'rsvps/show/:slug/:uniqid/:response' => 'rsvps#new'
   post 'rsvps/show/:slug' => 'rsvps#new'
 
+  post 'sms' => 'text_messages#receive'
+
   # Handle legacy URLs/typos
   get '/rsvp/show/:slug' => redirect('/rsvps')
 
