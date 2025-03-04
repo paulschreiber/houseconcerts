@@ -75,11 +75,6 @@ class InvitesMailer < ApplicationMailer
 
     logger.debug "Emailing #{person.email} [#{tag}]"
 
-    if SEND_METHOD == :mandrill
-      @unsub_url = "*|UNSUB:#{@unsub_url}|*"
-      headers["X-MC-Tags"] = tag
-    end
-
     mail(to: person.email_address_with_name,
          subject: subject,
          delivery_method: delivery_method,

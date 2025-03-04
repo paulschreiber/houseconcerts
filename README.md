@@ -15,7 +15,6 @@ Originally built with Rails 2.2.2. Now with Rails 7.
 
 - [ ] Admin dashboard
 - [ ] Admin UI
-- [ ] Mandrill integration (bounces, spam reports)
 - [ ] Mail merge invites
 - [ ] Navigation on mobile
 - [ ] Gmail mail actions (https://developers.google.com/gmail/markup/)
