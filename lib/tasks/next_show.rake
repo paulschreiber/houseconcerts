@@ -14,7 +14,7 @@ namespace :next_show do
 
     people.each do |p|
       puts "Emailing #{p.email_address_with_name}..."
-      Invites.invite(p, show).deliver_now
+      InvitesMailer.invite(p, show).deliver_now
     rescue Net::SMTPServerBusy => e
       puts "Failed to email #{p.email_address_with_name} [#{e.message}]"
     end
@@ -42,7 +42,7 @@ namespace :next_show do
     end
 
     puts "Emailing #{person.email_address_with_name}..."
-    Invites.invite(person, show).deliver_now
+    InvitesMailer.invite(person, show).deliver_now
   end
 
   desc "Send invites for next show to people who have not opened the invitation"
@@ -61,7 +61,7 @@ namespace :next_show do
 
     people.each do |p|
       puts "Emailing #{p.email_address_with_name}..."
-      Invites.invite(p, show).deliver_now
+      InvitesMailer.invite(p, show).deliver_now
     rescue Net::SMTPServerBusy => e
       puts "Failed to email #{p.email_address_with_name} [#{e.message}]"
     end
@@ -167,14 +167,14 @@ namespace :next_show do
       rsvps = RSVP.where(show: show, response: "yes").where("(confirmed != 'yes' OR confirmed IS NULL)")
       rsvps.each do |rsvp|
         puts "Emailing #{rsvp.email_address_with_name}..."
-        Invites.confirm(rsvp).deliver_now
+        InvitesMailer.confirm(rsvp).deliver_now
         rsvp.confirm!
       end
     elsif show.waitlisted?
       rsvps = RSVP.where(show: show, response: "yes").where("( (confirmed != 'yes' AND confirmed != 'waitlisted') OR confirmed IS NULL)")
       rsvps.each do |rsvp|
         puts "Emailing #{rsvp.email_address_with_name}..."
-        Invites.waitlisted(rsvp).deliver_now
+        InvitesMailer.waitlisted(rsvp).deliver_now
         rsvp.waitlist!
       end
     end
@@ -194,7 +194,7 @@ namespace :next_show do
     rsvps = RSVP.where(show: show, response: "yes", confirmed: "yes")
     rsvps.each do |rsvp|
       puts "Emailing #{rsvp.email_address_with_name}..."
-      Invites.remind(rsvp).deliver_now
+      InvitesMailer.remind(rsvp).deliver_now
 
       next if rsvp.phone_number.blank?
 
