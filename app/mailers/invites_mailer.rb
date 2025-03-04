@@ -1,6 +1,4 @@
 class InvitesMailer < ApplicationMailer
-  SEND_METHOD = :smtp
-
   FORMAT = "%Y%m%dT%H%M%SZ".freeze
 
   def make_calendar_url(rsvp)
@@ -18,29 +16,6 @@ class InvitesMailer < ApplicationMailer
     }
 
     "#{base_url}?#{params.to_query}"
-  end
-
-  def delivery_options
-    if Rails.env.development?
-      {}
-    elsif SEND_METHOD == :smtp
-      {
-        user_name: HC_CONFIG.amazon_username,
-        password: HC_CONFIG.amazon_password,
-        address: HC_CONFIG.amazon_server,
-        port: 587
-      }
-    end
-  end
-
-  def delivery_method
-    if Rails.env.development?
-      :letter_opener
-    elsif SEND_METHOD == :sendmail
-      :sendmail
-    else
-      :smtp
-    end
   end
 
   def invite(person, show, email_type = "invite")
