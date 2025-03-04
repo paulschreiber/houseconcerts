@@ -332,6 +332,14 @@ input[type="submit"] {
   }
 }
 
+// homepage button on desktop size
+.button_to button {
+  @media only screen and (min-device-width: 601px) {
+    width: 25vw;
+    font-size: 1.5em;
+  }
+}
+
 select {
   border-radius: 0;
   padding: 5px;
