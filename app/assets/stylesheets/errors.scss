@@ -1,28 +1,38 @@
 div.errors {
   border: 1px solid #900;
 
-	color: #900;
-	background: #fcc;
+  color: #900;
+  background: #fcc;
   margin: 1em 0;
 
   p {
     font-weight: bold;
     margin: 0;
-  	padding: 0.5em;
+    padding: 0.5em;
   }
 
   ul {
     padding-left: 0;
-  	padding: 0.5em;
+    padding: 0.5em;
   }
 
   li {
     margin-left: 1.3em;
   }
 
-  width: 23.7em;
+  width: 50vw;
 
   @media only screen and (max-device-width: 600px) {
     width: 101%;
+  }
+}
+
+div.field_with_errors {
+  display: inline;
+
+  input {
+    border-color: red;
+    border-width: 1px;
+    border-style: solid;
   }
 }
