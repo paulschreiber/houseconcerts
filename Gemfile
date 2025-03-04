@@ -8,6 +8,7 @@ gem "mutex_m"
 gem "mysql2"
 gem "rails", "~> 7"
 gem "sassc-rails"
+gem "sprockets-rails"
 gem "turbolinks"
 gem "uglifier"
 

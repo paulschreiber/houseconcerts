@@ -453,6 +453,7 @@ DEPENDENCIES
   ruby-lsp
   sassc-rails
   selenium-webdriver
+  sprockets-rails
   stripe
   turbolinks
   twilio-ruby
