@@ -22,6 +22,7 @@ gem "puma"
 gem "bootsnap"
 gem "net-smtp"
 
+gem "aws-ses"
 gem "carmen"
 gem "default_value_for"
 gem "devise"
