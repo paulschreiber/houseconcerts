@@ -21,16 +21,7 @@ class InvitesMailer < ApplicationMailer
   end
 
   def delivery_options
-    if Rails.env.development?
-      {}
-    elsif SEND_METHOD == :ses
-      {
-        user_name: HC_CONFIG.amazon_username,
-        password: HC_CONFIG.amazon_password,
-        port: 587,
-        address: "email-smtp.us-east-1.amazonaws.com"
-      }
-    end
+    {}
   end
 
   def delivery_method
