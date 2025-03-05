@@ -1,4 +1,4 @@
-<h1>RSVP for a show</h1>
+<h1>Reserve seats for a show</h1>
 
 <% if @show.present? && @show.id.present? %>
 	<%= render partial: 'show', locals: { show: @show } %>
@@ -75,7 +75,7 @@
 
 
 
-	<%= f.submit "Make a Reservation" %>
+	<%= f.submit "Reserve Seats" %>
 
 	<% end %>
 	</div>

@@ -16,7 +16,7 @@
 		<% end %>
 
 		<% if show.waitlisted? || show.confirmed? %>
-			<p><%= button_to("RSVP for #{show.name}", { controller: :rsvps, action: :new, slug: show.slug }) unless controller_name == "rsvps" %></p>
+			<p><%= button_to("Reserve Seats", { controller: :rsvps, action: :new, slug: show.slug }) unless controller_name == "rsvps" %></p>
 		<% elsif show.sold_out? %>
 			<p>This show is sold out.</p>
 		<% end %>

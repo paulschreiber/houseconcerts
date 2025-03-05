@@ -20,7 +20,7 @@ module ApplicationHelper
 
   def social_media_description(show)
     if show && !show.artists.empty?
-      description = "RSVP for the #{show.name} house concert"
+      description = "Reserve seats for the #{show.name} house concert"
       description += " in #{show.location}" if show.location
       description += " on #{show.start_date}"
       description
