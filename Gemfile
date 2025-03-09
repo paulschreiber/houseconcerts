@@ -45,6 +45,8 @@ group :development, :test do
 end
 
 group :development do
+  gem "ed25519", require: false
+  gem "bcrypt_pbkdf", require: false
   gem "letter_opener"
   gem "rubocop", require: false
   gem "rubocop-performance", require: false
