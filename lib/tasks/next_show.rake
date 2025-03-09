@@ -148,11 +148,15 @@ namespace :next_show do
       exit
     end
 
+    emails_seen = []
+
     opens = Open.where("tag LIKE ?", "#{show.slug}%").order(:created_at)
     opens.each do |open|
+      next if emails_seen.include?(open.email)
       puts "#{open.created_at.to_date} #{open.tag[show.slug.length + 1..]} #{open.email}"
+      emails_seen << open.email
     end
-    puts "Opens: #{opens.size}"
+    puts "Opens: #{emails_seen.size} emails #{opens.size} opens"
   end
 
   desc "Confirm RSVPs for next show"
