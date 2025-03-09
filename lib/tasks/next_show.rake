@@ -148,7 +148,7 @@ namespace :next_show do
       exit
     end
 
-    opens = Open.where("tag LIKE ?", "#{show.slug}%").group(:email).order(:created_at)
+    opens = Open.where("tag LIKE ?", "#{show.slug}%").order(:created_at)
     opens.each do |open|
       puts "#{open.created_at.to_date} #{open.tag[show.slug.length + 1..]} #{open.email}"
     end
