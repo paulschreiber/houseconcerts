@@ -1,3 +1,7 @@
+def print_confirmation(count)
+  puts "Sent #{count} #{helper.pluralize(count, 'email')}."
+end
+
 namespace :next_show do
   desc "Send invites for next show"
   task invite: :environment do
@@ -18,7 +22,7 @@ namespace :next_show do
     rescue Net::SMTPServerBusy => e
       puts "Failed to email #{p.email_address_with_name} [#{e.message}]"
     end
-    puts "Sent #{people.size} emails."
+    print_confirmation(people.size)
   end
 
   desc "Send invites for next show to one person"
@@ -65,7 +69,7 @@ namespace :next_show do
     rescue Net::SMTPServerBusy => e
       puts "Failed to email #{p.email_address_with_name} [#{e.message}]"
     end
-    puts "Sent #{people.size} emails."
+    print_confirmation(people.size)
   end
 
   desc "Count invites for next show"
@@ -185,7 +189,7 @@ namespace :next_show do
         rsvp.waitlist!
       end
     end
-    puts "Sent #{rsvps.size} emails."
+    print_confirmation(people.size)
   end
 
   desc "Remind RSVPs for next show"
@@ -212,6 +216,6 @@ namespace :next_show do
         body: rsvp.sms_reminder
       )
     end
-    puts "Sent #{rsvps.size} emails."
+    print_confirmation(rsvps.size)
   end
 end
