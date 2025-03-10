@@ -36,7 +36,7 @@ namespace :people do
   task list_unsubscribers: :environment do
     people = Person.where(status: :removed).order(:removed_at).last(30)
     people.each do |p|
-      puts "#{p.removed_at.to_date} #{p.email_address_with_name}"
+      puts "#{p.removed_at.to_time} #{p.email_address_with_name}"
     end
   end
 
