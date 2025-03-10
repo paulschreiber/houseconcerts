@@ -115,6 +115,7 @@ namespace :next_show do
     confirmed_seats = 0
     waitlisted = 0
     waitlisted_seats = 0
+    declines = 0
     RSVP.where(show: show).order(:id).each do |rsvp|
       if rsvp.confirmed?
         is_confirmed = "✔"
@@ -128,6 +129,7 @@ namespace :next_show do
       puts "#{rsvp.created_at.to_date} #{rsvp.response.rjust(3)}#{is_confirmed} #{rsvp.seats} #{rsvp.email}"
       seats += rsvp.seats
       reservations += 1 if rsvp.yes?
+      declines += 1 if rsvp.no?
       if rsvp.confirmed?
         confirmed += 1
         confirmed_seats += rsvp.seats
@@ -137,7 +139,7 @@ namespace :next_show do
         waitlisted_seats += rsvp.seats
       end
     end
-    puts "Total: #{seats} seats (#{confirmed_seats} confirmed #{waitlisted_seats} waitlisted) / #{reservations} reservations (#{confirmed} confirmed #{waitlisted} waitlisted)"
+    puts "Total: #{seats} seats (#{confirmed_seats} confirmed #{waitlisted_seats} waitlisted) / #{reservations} reservations (#{confirmed} confirmed #{waitlisted} waitlisted) / #{declines} declines"
   end
 
   desc "Show Email opens for next show"
