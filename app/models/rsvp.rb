@@ -55,11 +55,17 @@ class RSVP < ApplicationRecord
   end
 
   def confirm!
-    update(:confirmed, "yes") if yes?
+    return unless yes?
+
+    self.confirmed = "yes"
+    save
   end
 
   def waitlist!
-    update(:confirmed, "waitlisted") if yes?
+    return unless yes?
+
+    self.confirmed = "waitlisted"
+    save
   end
 
   def confirmed?
