@@ -153,6 +153,7 @@ namespace :next_show do
     opens = Open.where("tag LIKE ?", "#{show.slug}%").order(:created_at)
     opens.each do |open|
       next if emails_seen.include?(open.email)
+
       puts "#{open.created_at.to_date} #{open.tag[show.slug.length + 1..]} #{open.email}"
       emails_seen << open.email
     end
