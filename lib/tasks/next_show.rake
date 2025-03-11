@@ -1,5 +1,5 @@
 def print_confirmation(count)
-  puts "Sent #{count} #{helper.pluralize(count, 'email')}."
+  puts "Sent #{count} #{'email'.pluralize(count)}."
 end
 
 namespace :next_show do
