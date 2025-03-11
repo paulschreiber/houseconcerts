@@ -131,6 +131,7 @@ namespace :next_show do
         is_confirmed = " "
       end
       puts "#{rsvp.created_at.to_date} #{rsvp.response.rjust(3)}#{is_confirmed} #{rsvp.seats} #{rsvp.email}"
+
       seats += rsvp.seats
       reservations += 1 if rsvp.yes?
       declines += 1 if rsvp.no?
@@ -189,7 +190,7 @@ namespace :next_show do
         rsvp.waitlist!
       end
     end
-    print_confirmation(people.size)
+    print_confirmation(rsvps.size)
   end
 
   desc "Remind RSVPs for next show"
