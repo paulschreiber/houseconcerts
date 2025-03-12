@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_02_21_200240) do
+ActiveRecord::Schema[7.2].define(version: 2025_03_12_040719) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -138,6 +138,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_02_21_200240) do
     t.datetime "confirmed_at", precision: nil
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.string "referrer"
     t.index ["confirmed"], name: "index_rsvps_on_confirmed"
     t.index ["email"], name: "index_rsvps_on_email"
     t.index ["response"], name: "index_rsvps_on_response"
