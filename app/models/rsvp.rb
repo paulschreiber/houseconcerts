@@ -11,7 +11,7 @@ class RSVP < ApplicationRecord
   before_save :update_confirmation_date
   before_save :clear_seats_if_no
   after_save :update_phone_number
-  after_save :notify_admin
+  after_save :notify_admin, unless: :confirmed?
 
   cattr_accessor :current_ip
 
