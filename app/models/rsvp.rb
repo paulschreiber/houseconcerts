@@ -11,6 +11,7 @@ class RSVP < ApplicationRecord
   before_save :update_confirmation_date
   before_save :clear_seats_if_no
   after_save :update_phone_number
+  after_save :notify_admin
 
   cattr_accessor :current_ip
 
@@ -93,6 +94,14 @@ class RSVP < ApplicationRecord
   def update_phone_number
     person = Person.where(email: email, phone_number: nil).first
     person&.update(phone_number: phone_number)
+  end
+
+  # notify_rsvp can be "yes", "all" (yes and no) or blank/false/empty string
+  def notify_admin
+    return if HC_CONFIG.notify_rsvp.empty?
+    return if HC_CONFIG.notify_rsvp == "yes" and response != "yes"
+
+    RsvpsMailer.notify(self).deliver_now
   end
 
   def sms_reminder
