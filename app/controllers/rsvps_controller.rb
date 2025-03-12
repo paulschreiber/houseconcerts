@@ -8,6 +8,12 @@ class RsvpsController < ApplicationController
 
     begin
       @show = Show.friendly.find(params[:slug])
+
+      # don't allow RSVPs for past shows
+      if @show.occurred?
+        redirect_to root_url
+        return
+      end
     rescue ActiveRecord::RecordNotFound
       @show = Show.new
       @shows = Show.upcoming
