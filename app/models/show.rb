@@ -78,6 +78,10 @@ class Show < ApplicationRecord
     "#{earliest} and #{latest}"
   end
 
+  def occurred?
+    start < Time.zone.now
+  end
+
   def location
     venue&.location
   end
