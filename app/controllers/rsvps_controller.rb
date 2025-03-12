@@ -48,6 +48,8 @@ class RsvpsController < ApplicationController
       end
     end
 
+    @rsvp.referrer = request.referer
+
     if HC_CONFIG.rsvp.response.include?(params[:response])
       @rsvp.response = params[:response]
       @rsvp.show_id = @show.id if @show.id
@@ -81,6 +83,6 @@ class RsvpsController < ApplicationController
   end
 
   def rsvp_params
-    params.require(:rsvp).permit(:first_name, :last_name, :email, :phone_number, :show_id, :postcode, :response, :seats)
+    params.require(:rsvp).permit(:first_name, :last_name, :email, :phone_number, :show_id, :postcode, :response, :seats, :referrer)
   end
 end
