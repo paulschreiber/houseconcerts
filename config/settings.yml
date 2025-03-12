@@ -1,4 +1,5 @@
---- !ruby/object:OpenStruct
+---
+!ruby/object:OpenStruct
 table:
   :default_country: "US"
   :site_name: "Paul’s Brooklyn House Concerts"
