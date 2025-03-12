@@ -80,8 +80,12 @@ class RSVP < ApplicationRecord
     confirmed == "waitlisted"
   end
 
+  def person_exists?
+    Person.exists?(email: email)
+  end
+
   def create_person
-    return if Person.where(email: email).first
+    return if person_exists?
 
     Person.create(first_name: first_name, last_name: last_name, email: email, phone_number: phone_number, postcode: postcode, notes: "RSVPd for show #{show.slug}")
   end
