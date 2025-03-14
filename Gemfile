@@ -39,6 +39,10 @@ gem "jquery-rails"
 
 gem "stripe"
 
+group :production do
+  gem "cloudflare-rails"
+end
+
 group :development, :test do
   gem "brakeman", require: false
   gem "debug", platforms: %i[ mri mswin ], require: "debug/prelude"
