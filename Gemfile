@@ -40,7 +40,7 @@ gem "jquery-rails"
 gem "stripe"
 
 group :production do
-  gem 'cloudflare-rails'
+  gem "cloudflare-rails"
 end
 
 group :development, :test do
