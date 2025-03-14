@@ -41,6 +41,7 @@ gem "stripe"
 
 group :production do
   gem "cloudflare-rails"
+  gem "dalli"
 end
 
 group :development, :test do
