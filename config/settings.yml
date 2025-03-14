@@ -12,7 +12,7 @@ table:
   :google_analytics_id: "G-1RMTZBQMTP"
   :default_venue_group: 2
   :hostname: "concerts.shrub.ca"
-  :invites_from: "\"Paul Schreiber\" <paul@schreibers.ca>"
+  :invites_from: '"Paul Schreiber" <paul@houseconcerts.nyc>'
   :arrival_minutes: 30
   :show_duration: 2
   :notify_rsvp: "yes"
