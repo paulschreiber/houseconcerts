@@ -118,7 +118,7 @@ class RSVP < ApplicationRecord
     # notify if there's a new yes
     # notify if there's a updated yes
     # notify if there's a new no (when notify is "all")
-    RsvpsMailer.notify(self, type, old_seats).deliver_now
+    NotifyMailer.rsvp(self, type, old_seats).deliver_now
   end
 
   def sms_reminder
