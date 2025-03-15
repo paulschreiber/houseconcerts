@@ -24,6 +24,9 @@ class RsvpsController < ApplicationController
       # See if the uniqid is for a person
       person = Person.where(uniqid: params[:uniqid]).first
 
+      # handle malformed URL with uniqid but no yes/no
+      return if params[:response].nil?
+
       if person
         # determine if an RSVP exists for this emai/show combo
         rsvp = RSVP.where(email: person.email, show_id: @show.id).first
@@ -65,19 +68,18 @@ class RsvpsController < ApplicationController
     # look for an existing reservation
     @rsvp = RSVP.where(show_id: params[:rsvp][:show_id], email: params[:rsvp][:email]).first if params[:rsvp] && params[:rsvp][:email] && params[:rsvp][:show_id]
 
-    # update an existing reservation
+    # create a new reservation
     if @rsvp.nil?
       @rsvp = RSVP.new(rsvp_params)
+      return unless @rsvp.save
 
-    # create a new reservation
+    # update an existing reservation
     else
       @rsvp.update(rsvp_params)
     end
 
     @show = Show.find(params[:rsvp][:show_id]) if params[:rsvp] && params[:rsvp][:show_id].to_i.positive?
     @shows = Show.upcoming
-
-    return unless @rsvp.save
 
     render "thanks"
   end
