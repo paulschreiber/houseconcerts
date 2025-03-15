@@ -10,7 +10,11 @@
 
 	<p><%= @rsvp.first_name %>, your <%= @rsvp.seats > 1 ? "#{@rsvp.seats.humanize} spots have" : 'spot has' %> been reserved for the <strong><%= @rsvp.show.name %></strong> show on <strong><%= @rsvp.show.start.to_date.to_formatted_s(:long) %>.</strong></p>
 
+	<% if @rsvp.show.next_show? %>
 	<p>You’ll receive my address and directions via email in a day or so.</p>
+	<%- else %>
+	<p>You’ll receive my address and directions a few weeks before the show.</p>
+	<% end %>
 
 <% elsif @rsvp.no? %>
 

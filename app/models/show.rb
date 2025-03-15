@@ -38,6 +38,10 @@ class Show < ApplicationRecord
     upcoming.first
   end
 
+  def next_show?
+    Show.upcoming.first.id == id
+  end
+
   def self.past
     occurred
   end
