@@ -1,6 +1,6 @@
 require "test_helper"
 
-class RsvpsMailerTest < ActionMailer::TestCase
+class NotifyMailerTest < ActionMailer::TestCase
   # test "the truth" do
   #   assert true
   # end
