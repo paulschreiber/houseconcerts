@@ -98,10 +98,27 @@ class RSVP < ApplicationRecord
 
   # notify_rsvp can be "yes", "all" (yes and no) or blank/false/empty string
   def notify_admin
+    # don't notify of any RSVPs when notify is empty
     return if HC_CONFIG.notify_rsvp.empty?
-    return if HC_CONFIG.notify_rsvp == "yes" and response != "yes"
 
-    RsvpsMailer.notify(self).deliver_now
+    # don't notify of new "no" RSVPs when notify is "yes" only
+    return if HC_CONFIG.notify_rsvp == "yes" and response != "yes" and previously_new_record?
+
+    if saved_changes.include?("response") and saved_changes["response"][1] == "no"
+      type = "cancel"
+    elsif previously_new_record?
+      type = "new"
+    else
+      type = "update"
+    end
+
+    old_seats = saved_changes.include?("seats") ? saved_changes["seats"][0] : nil
+
+    # notify if there's a cancellation (no -> yes)
+    # notify if there's a new yes
+    # notify if there's a updated yes
+    # notify if there's a new no (when notify is "all")
+    RsvpsMailer.notify(self, type, old_seats).deliver_now
   end
 
   def sms_reminder

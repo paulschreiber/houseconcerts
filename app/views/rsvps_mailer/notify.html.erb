@@ -1,11 +1,13 @@
-<h1>RSVP received</h1>
+<h1><%= @subject %></h1>
 
 <p>Show: <%= @rsvp.show %></p>
 
 <p>Person: <%= @rsvp.full_name %>
 <br>Response: <%= @rsvp.response %>
-<%- if @rsvp.seats > 0 -%>
+<%- if @old_seats.nil? and @rsvp.seats > 0 %>
 <br>Seats: <%= @rsvp.seats %>
+<%- elsif !@old_seats.nil? %>
+<br>Seats: <%= @old_seats %> → <%= @rsvp.seats %>
 <%- end -%>
 <br>On mailing list: <%= @rsvp.person_exists? ? "Yes" : "No" %>
 </p>
