@@ -56,10 +56,10 @@
 
 	<p>
 		<strong>Seats</strong>
-		<%= f.hidden_field :seats, value: 0 %>
+		<%= f.hidden_field :seats_reserved, value: 0 %>
 		<% (HC_CONFIG.show.min_seats..HC_CONFIG.show.max_seats).each do |count| %>
-			<%= f.radio_button :seats, count %>
-			<%= f.label :seats, count, class: "radio" %>
+			<%= f.radio_button :seats_reserved, count %>
+			<%= f.label :seats_reserved, count, class: "radio" %>
 		<% end %>
 	</p>
 

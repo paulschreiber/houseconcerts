@@ -20,7 +20,7 @@ en:
               invalid: "enter your phone number"
             postcode:
               invalid: "enter your zip code"
-            seats:
+            seats_reserved:
               not_a_number: "select the number of seats you want"
               greater_than_or_equal_to: "select the number of seats you want"
               less_than_or_equal_to: "select the number of seats you want"

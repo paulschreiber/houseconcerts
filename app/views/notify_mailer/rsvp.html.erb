@@ -4,10 +4,10 @@
 
 <p>Person: <%= @rsvp.full_name %>
 <br>Response: <%= @rsvp.response %>
-<%- if @old_seats.nil? and @rsvp.seats > 0 %>
-<br>Seats: <%= @rsvp.seats %>
+<%- if @old_seats.nil? and @rsvp.seats_reserved > 0 %>
+<br>Seats: <%= @rsvp.seats_reserved %>
 <%- elsif !@old_seats.nil? %>
-<br>Seats: <%= @old_seats %> → <%= @rsvp.seats %>
+<br>Seats: <%= @old_seats %> → <%= @rsvp.seats_reserved %>
 <%- end -%>
 <br>On mailing list: <%= @rsvp.person_exists? ? "Yes" : "No" %>
 </p>

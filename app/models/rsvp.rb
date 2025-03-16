@@ -25,7 +25,7 @@ class RSVP < ApplicationRecord
   validates :email, email: true
   validates :phone_number, phone: { country: HC_CONFIG.default_country, set: true }, allow_blank: true
   validates :postcode, postal_code: { country: HC_CONFIG.default_country }, allow_blank: true
-  validates :seats, numericality: {
+  validates :seats_reserved, numericality: {
     only_integer: true,
     greater_than_or_equal_to: HC_CONFIG.show.min_seats,
     less_than_or_equal_to: HC_CONFIG.show.max_seats
@@ -42,7 +42,7 @@ class RSVP < ApplicationRecord
   def clear_seats_if_no
     return if yes?
 
-    self.seats = 0
+    self.seats_reserved = 0
     self.confirmed = nil
   end
 
@@ -112,7 +112,7 @@ class RSVP < ApplicationRecord
       type = "update"
     end
 
-    old_seats = saved_changes.include?("seats") ? saved_changes["seats"][0] : nil
+    old_seats = saved_changes.include?("seats_reserved") ? saved_changes["seats_reserved"][0] : nil
 
     # notify if there's a cancellation (no -> yes)
     # notify if there's a new yes
@@ -122,7 +122,7 @@ class RSVP < ApplicationRecord
   end
 
   def sms_reminder
-    "Reminder: You have #{seats.humanize} #{helper.pluralize(seats, 'seat')} for the #{show.name} show on #{show.start_date} at #{show.start_time}."
+    "Reminder: You have #{seats_reserved.humanize} #{helper.pluralize(seats_reserved, 'seat')} for the #{show.name} show on #{show.start_date} at #{show.start_time}."
   end
 
   def to_ld_json
@@ -159,7 +159,7 @@ class RSVP < ApplicationRecord
           }
         }
       },
-      numSeats: seats,
+      numSeats: seats_reserved,
       modifiedTime: updated_at.iso8601,
       modifyReservationUrl: Rails.application.routes.url_helpers.modify_rsvp_url(slug: show.slug, uniqid: uniqid)
     }

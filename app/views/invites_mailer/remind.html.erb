@@ -3,7 +3,7 @@
 <p>This is a quick reminder about the <%= @rsvp.show.name %> show:</p>
 
 <ul class="summary">
-<li>Seats: <%= @rsvp.seats %></li>
+<li>Seats: <%= @rsvp.seats_reserved %></li>
 <li>Date: <%= @rsvp.show.start_date %>
 <li>Time: <%= @rsvp.show.start_time %> &middot; Please arrive between <%= @rsvp.show.arrival_range %>.</li>
 <li>Location: <%= @rsvp.show.venue.full_address %></li>
