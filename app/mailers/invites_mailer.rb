@@ -66,7 +66,7 @@ class InvitesMailer < ApplicationMailer
       return
     end
 
-    unless rsvp.seats.to_i.positive?
+    unless rsvp.seats_reserved.to_i.positive?
       logger.warn "RSVP #{rsvp.id} has 0 seats"
       return
     end
@@ -92,7 +92,7 @@ class InvitesMailer < ApplicationMailer
       return
     end
 
-    unless rsvp.seats.to_i.positive?
+    unless rsvp.seats_reserved.to_i.positive?
       logger.warn "RSVP #{rsvp.id} has 0 seats"
       return
     end
@@ -119,7 +119,7 @@ class InvitesMailer < ApplicationMailer
       return
     end
 
-    unless rsvp.seats.to_i.positive?
+    unless rsvp.seats_reserved.to_i.positive?
       logger.warn "RSVP #{rsvp.id} has 0 seats"
       return
     end

@@ -95,14 +95,14 @@ namespace :next_show do
       exit
     end
 
-    seats = 0
+    seats_reserved = 0
     reservations = 0
     RSVP.where(show: show, response: "yes").order(:id).each do |rsvp|
-      puts "#{rsvp.created_at.to_date} #{rsvp.seats} #{rsvp.full_name}"
-      seats += rsvp.seats
+      puts "#{rsvp.created_at.to_date} #{rsvp.seats_reserved} #{rsvp.full_name}"
+      seats_reserved += rsvp.seats_reserved
       reservations += 1
     end
-    puts "Total: #{seats} seats / #{reservations} reservations"
+    puts "Total: #{seats_reserved} seats / #{reservations} reservations"
   end
 
   desc "Show RSVPs for next show"
@@ -113,7 +113,7 @@ namespace :next_show do
       exit
     end
 
-    seats = 0
+    seats_reserved = 0
     reservations = 0
     confirmed = 0
     confirmed_seats = 0
@@ -130,21 +130,21 @@ namespace :next_show do
       else
         is_confirmed = " "
       end
-      puts "#{rsvp.created_at.to_date} #{rsvp.response.rjust(3)}#{is_confirmed} #{rsvp.seats} #{rsvp.email}"
+      puts "#{rsvp.created_at.to_date} #{rsvp.response.rjust(3)}#{is_confirmed} #{rsvp.seats_reserved} #{rsvp.email}"
 
-      seats += rsvp.seats
+      seats_reserved += rsvp.seats_reserved
       reservations += 1 if rsvp.yes?
       declines += 1 if rsvp.no?
       if rsvp.confirmed?
         confirmed += 1
-        confirmed_seats += rsvp.seats
+        confirmed_seats += rsvp.seats_reserved
       end
       if rsvp.waitlisted?
         waitlisted += 1
-        waitlisted_seats += rsvp.seats
+        waitlisted_seats += rsvp.seats_reserved
       end
     end
-    puts "Total: #{seats} seats (#{confirmed_seats} confirmed #{waitlisted_seats} waitlisted) / #{reservations} reservations (#{confirmed} confirmed #{waitlisted} waitlisted) / #{declines} declines"
+    puts "Total: #{seats_reserved} seats (#{confirmed_seats} confirmed #{waitlisted_seats} waitlisted) / #{reservations} reservations (#{confirmed} confirmed #{waitlisted} waitlisted) / #{declines} declines"
   end
 
   desc "Show Email opens for next show"
