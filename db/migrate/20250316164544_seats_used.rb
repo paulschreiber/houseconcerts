@@ -1,6 +1,8 @@
 class SeatsUsed < ActiveRecord::Migration[7.2]
   def change
-    rename_column :rsvps, :seats, :seats_reserved
-    add_column :rsvp, :seats_used, :integer
+    change_table :rsvps, bulk: true do |t|
+      t.rename :seats, :seats_reserved
+      t.column :seats_used, :integer, after: :seats_reserved
+    end
   end
 end
