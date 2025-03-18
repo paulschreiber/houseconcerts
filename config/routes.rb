@@ -6,14 +6,14 @@ Rails.application.routes.draw do
   # See how all your routes lay out with "rake routes".
 
   # You can have the root of your site routed with "root"
-  root 'shows#index'
-  get 'about' => 'shows#about', as: 'about'
-  get 'musicians' => 'shows#musicians', as: 'musicians'
-  get 'shows' => 'shows#shows', as: 'past_shows'
-  get 'privacy' => 'privacy#index', as: 'privacy'
-  get 'list' => 'mailing_list#index', as: 'mailing_list'
-  get 'unsubscribe/:uniqid' => 'mailing_list#unsubscribe'
-  get 'calendar/ical' => 'shows#ical'
+  root "shows#index"
+  get "about" => "shows#about", as: "about"
+  get "musicians" => "shows#musicians", as: "musicians"
+  get "shows" => "shows#shows", as: "past_shows"
+  get "privacy" => "privacy#index", as: "privacy"
+  get "list" => "mailing_list#index", as: "mailing_list"
+  get "unsubscribe/:uniqid" => "mailing_list#unsubscribe"
+  get "calendar/ical" => "shows#ical"
 
   # Example of regular route:
   #   get 'products/:id' => 'catalog#view'
@@ -23,19 +23,19 @@ Rails.application.routes.draw do
 
   # Example resource route (maps HTTP verbs to controller actions automatically):
   #   resources :products
-  resources :rsvps, only: [:new, :index, :create]
-  get 'rsvps' => 'rsvps#new', as: 'rsvp'
-  patch 'rsvps' => 'rsvps#create'
-  get 'rsvps/show/:slug' => 'rsvps#new'
-  get 'rsvps/show/:slug/:uniqid' => 'rsvps#new', as: 'modify_rsvp'
-  get 'rsvps/show/:slug/:uniqid/:response' => 'rsvps#new'
-  post 'rsvps/show/:slug' => 'rsvps#new'
+  resources :rsvps, only: %i[new index create]
+  get "rsvps" => "rsvps#new", as: "rsvp"
+  patch "rsvps" => "rsvps#create"
+  get "rsvps/show/:slug" => "rsvps#new"
+  get "rsvps/show/:slug/:uniqid" => "rsvps#new", as: "modify_rsvp"
+  get "rsvps/show/:slug/:uniqid/:response" => "rsvps#new"
+  post "rsvps/show/:slug" => "rsvps#new"
 
-  post 'sms' => 'text_messages#receive'
+  post "sms" => "text_messages#receive"
 
-  get 'open/:tag/:uniqid' => 'opens#index'
+  get "open/:tag/:uniqid" => "opens#index"
 
-  resources :people, only: [:new, :index, :create], controller: :mailing_list
+  resources :people, only: %i[new index create], controller: :mailing_list
 
   # Example resource route with options:
   #   resources :products do
