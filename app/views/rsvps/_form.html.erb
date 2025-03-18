@@ -1,81 +1,72 @@
 <h1>Reserve seats for a show</h1>
 
-<% if @show.present? && @show.id.present? %>
-	<%= render partial: 'show', locals: { show: @show } %>
-<% end %>
+<%= render partial: 'show', locals: { show: @show } %>
 
 <% if @show.nil? || !@show.sold_out? || !@rsvp.new_record? %>
 	<div class="pagetext">
 	<%= form_with model: @rsvp do |f| %>
 
-	<% unless @rsvp.errors.empty? %>
-	<div class='errors'>
-		<p>Please correct the following errors:</p>
-		<ul>
-		<% @rsvp.errors.collect(&:message).uniq.each do |message| %>
-		<li><%= message %></li>
-		<% end %>
-		</ul>
-	</div>
-	<% end %>
-
-
 	<% if @show && @show.id.present? %>
 		<%= f.hidden_field :show_id, value: @show.id %>
-
 	<% else %>
-	<%= f.select :show_id, @shows.map{|s| [s.name, s.id]}, include_blank: "[Select a Show]"  %>
+		<%= f.select :show_id, @shows.map{|s| [s.name, s.id]}, include_blank: "[Select a Show]"  %>
 	<% end %>
 
-	<p>
+	<div>
 		<%= f.label :first_name %>
 		<%= f.text_field :first_name, maxlength: 100, size: 50 %>
-	</p>
+	</div>
 
-	<p>
+	<div>
 		<%= f.label :last_name %>
 		<%= f.text_field :last_name, maxlength: 100, size: 50 %>
-	</p>
+	</div>
 
-	<p>
+	<div>
 		<%= f.label :email %>
 		<%= f.email_field :email, maxlength: 200, size: 50 %>
-	</p>
+	</div>
 
-	<p>
+	<div>
 		<%= f.label :phone_number %>
-		<%= f.text_field :phone_number, maxlength: 20, size: 50 %>
-	</p>
-	<p class="note">Enter your phone number to receive text message reminders.</p>
+		<%= f.telephone_field :phone_number, maxlength: 20, size: 50 %>
+		<p class="note">Enter your phone number to receive text message reminders.</p>
+	</div>
 
-	<p>
+	<div>
 		<%= f.label :postcode, "Zip Code" %>
 		<%= f.text_field :postcode, maxlength: 10, size: 11 %>
-	</p>
+	</div>
 
 
-	<p>
+	<div>
 		<strong>Seats</strong>
 		<%= f.hidden_field :seats_reserved, value: 0 %>
 		<% (HC_CONFIG.show.min_seats..HC_CONFIG.show.max_seats).each do |count| %>
 			<%= f.radio_button :seats_reserved, count %>
 			<%= f.label :seats_reserved, count, class: "radio" %>
 		<% end %>
-	</p>
+	</div>
 
+	<% seats_errors = @rsvp.errors.select{|s| s.attribute == :seats_reserved } %>
+	<%= content_tag :p, seats_errors.first.message, class: "error" unless seats_errors.empty? %>
 
-	<p>
+	<div>
 		<strong>Attending?</strong>
 		<%= f.hidden_field :response %>
 		<% HC_CONFIG.rsvp.response.each do |response| %>
 			<%= f.radio_button :response, response %>
 			<%= f.label :response, response.titleize, value: response, class: "radio" %>
 		<% end %>
-	</p>
+	</div>
 
+	<% response_errors = @rsvp.errors.select{|s| s.attribute == :response } %>
+	<%= content_tag :p, response_errors.first.message, class: "error" unless response_errors.empty? %>
 
-	<%= f.hidden_field :referrer %>
-	<%= f.submit "Reserve Seats" %>
+	<div>
+		<%= f.hidden_field :referrer %>
+		<%= f.submit "Reserve Seats" %>
+	</div>
 
 	<% end %>
 	</div>
