@@ -74,18 +74,23 @@ class RsvpsController < ApplicationController
     # look for an existing reservation
     @rsvp = RSVP.where(show_id: params[:rsvp][:show_id], email: params[:rsvp][:email]).first if params[:rsvp] && params[:rsvp][:email] && params[:rsvp][:show_id]
 
+    saved = false
+
     # create a new reservation
     if @rsvp.nil?
       @rsvp = RSVP.new(rsvp_params)
-      return unless @rsvp.save
+      saved = @rsvp.save
 
     # update an existing reservation
     else
-      @rsvp.update(rsvp_params)
+      saved = @rsvp.update(rsvp_params)
     end
 
     @show = Show.find(params[:rsvp][:show_id]) if params[:rsvp] && params[:rsvp][:show_id].to_i.positive?
     @shows = Show.upcoming
+
+    # don't show "thanks" message on error
+    return unless saved
 
     render "thanks"
   end
