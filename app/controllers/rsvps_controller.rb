@@ -87,7 +87,6 @@ class RsvpsController < ApplicationController
     end
 
     @show = Show.find(params[:rsvp][:show_id]) if params[:rsvp] && params[:rsvp][:show_id].to_i.positive?
-    @shows = Show.upcoming
 
     # don't show "thanks" message on error
     return unless saved

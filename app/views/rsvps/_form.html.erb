@@ -6,12 +6,6 @@
 	<div class="pagetext">
 	<%= form_with model: @rsvp do |f| %>
 
-	<% if @show && @show.id.present? %>
-		<%= f.hidden_field :show_id, value: @show.id %>
-	<% else %>
-		<%= f.select :show_id, @shows.map{|s| [s.name, s.id]}, include_blank: "[Select a Show]"  %>
-	<% end %>
-
 	<div>
 		<%= f.label :first_name %>
 		<%= f.text_field :first_name, maxlength: 100, size: 50 %>
@@ -64,6 +58,7 @@
 	<%= content_tag :p, response_errors.first.message, class: "error" unless response_errors.empty? %>
 
 	<div>
+		<%= f.hidden_field :show_id, value: @show.id %>
 		<%= f.hidden_field :referrer %>
 		<%= f.submit "Reserve Seats" %>
 	</div>
