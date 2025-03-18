@@ -1,38 +1,11 @@
-div.errors {
-  border: 1px solid #900;
-  box-sizing: border-box;
-
+p.error {
   color: #900;
-  background: #fcc;
-  margin: 1em 0;
-
-  p {
-    font-weight: bold;
-    margin: 0;
-    padding: 0.5em;
-  }
-
-  ul {
-    padding-left: 0;
-    padding: 0.5em;
-  }
-
-  li {
-    margin-left: 1.3em;
-  }
-
-  width: 50vw;
-
-  @media only screen and (max-device-width: 600px) {
-    width: 101%;
-  }
+  margin-top: 0;
 }
 
-div.field_with_errors {
-  display: inline;
-
+span.field_with_errors {
   input {
-    border-color: red;
+    border-color: #900;
     border-width: 1px;
     border-style: solid;
   }

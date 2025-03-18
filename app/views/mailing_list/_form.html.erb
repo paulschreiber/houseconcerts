@@ -5,39 +5,29 @@
 
 <%= form_with model: @person do |f| %>
 
-<% unless @person.errors.empty? %>
-<div class='errors'>
-	<p>Please correct the following errors:</p>
-	<ul>
-	<% @person.errors.collect(&:message).uniq.each do |message| %>
-	<li><%= message %></li>
-	<% end %>
-	</ul>
-</div>
-<% end %>
-
-
-<p>
+<div>
 	<%= f.label :first_name %>
 	<%= f.text_field :first_name, maxlength: 100, size: 50 %>
-</p>
+</div>
 
-<p>
+<div>
 	<%= f.label :last_name %>
 	<%= f.text_field :last_name, maxlength: 100, size: 50 %>
-</p>
+</div>
 
-<p>
+<div>
 	<%= f.label :email %>
 	<%= f.email_field :email, maxlength: 200, size: 50 %>
-</p>
+</div>
 
-<p>
+<div>
 	<%= f.label :postcode, "Zip Code" %>
 	<%= f.text_field :postcode, maxlength: 10, size: 11 %>
-</p>
+</div>
 
-<%= f.submit "Sign Me Up" %>
+<div>
+	<%= f.submit "Join Mailing List" %>
+</div>
 
 <% end %>
 </div>

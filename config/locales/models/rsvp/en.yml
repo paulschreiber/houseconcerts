@@ -5,26 +5,26 @@ en:
         rsvp:
           attributes:
             first_name:
-              blank: "enter your first name"
-              too_short: "enter your first name"
-              all_lowercase: "your first name cannot be in all lowercase"
-              all_caps: "your first name cannot be in all caps"
+              blank: "Enter your first name"
+              too_short: "Enter your first name"
+              all_lowercase: "Your first name cannot be in all lowercase"
+              all_caps: "Your first name cannot be in all caps"
             last_name:
-              blank: "enter your last name"
-              too_short: "enter your last name"
-              all_lowercase: "your last name cannot be in all lowercase"
-              all_caps: "your last name cannot be in all caps"
+              blank: "Enter your last name"
+              too_short: "Enter your last name"
+              all_lowercase: "Your last name cannot be in all lowercase"
+              all_caps: "Your last name cannot be in all caps"
             email:
-              invalid: "enter your email address"
+              invalid: "Enter your email address"
             :phone_number:
-              invalid: "enter your phone number"
+              invalid: "Enter your phone number"
             postcode:
-              invalid: "enter your zip code"
+              invalid: "Enter your zip code"
             seats_reserved:
-              not_a_number: "select the number of seats you want"
-              greater_than_or_equal_to: "select the number of seats you want"
-              less_than_or_equal_to: "select the number of seats you want"
+              not_a_number: "Select the number of seats you want"
+              greater_than_or_equal_to: "Select the number of seats you want"
+              less_than_or_equal_to: "Select the number of seats you want"
             response:
-              inclusion: "select whether or not you’re coming"
+              inclusion: "Select whether or not you’re coming"
             show_id:
-              inclusion: "select a show"
+              inclusion: "Select a show"
