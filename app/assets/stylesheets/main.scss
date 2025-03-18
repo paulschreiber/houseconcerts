@@ -294,9 +294,9 @@ th.centered {
 }
 
 p.note {
-  margin-top: -1em;
+  margin-top: 0;
   color: #888;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 span.rsvpnote {
@@ -321,6 +321,7 @@ select,
 button,
 input[type="text"],
 input[type="email"],
+input[type="tel"],
 input[type="submit"] {
   appearance: none;
   font-size: 2em;
@@ -395,4 +396,8 @@ input[type="submit"] {
   label.radio {
     text-transform: none;
   }
+}
+
+form > div + div {
+  margin-top: 1em;
 }
