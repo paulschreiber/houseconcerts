@@ -4,6 +4,12 @@ class RsvpsController < ApplicationController
   end
 
   def new
+    # redirect to home page for /rsvp or /rsvp/new
+    if params[:slug].nil?
+      redirect_to root_url
+      return
+    end
+
     @rsvp = RSVP.new(params[:rsvp])
 
     begin
