@@ -33,10 +33,6 @@ Rails.application.routes.draw do
 
   post 'sms' => 'text_messages#receive'
 
-  # Handle legacy URLs/typos
-  get '/rsvp/show/:slug' => redirect('/rsvps')
-
-
   get 'open/:tag/:uniqid' => 'opens#index'
 
   resources :people, only: [:new, :index, :create], controller: :mailing_list
