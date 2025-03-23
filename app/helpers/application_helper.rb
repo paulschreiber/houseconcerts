@@ -1,12 +1,12 @@
 module ApplicationHelper
-  def page_title_array(show)
+  def page_title(item = nil)
     page_title = [ HC_CONFIG.site_name ]
-    page_title.unshift show.name if show
-    page_title
-  end
-
-  def page_title(show)
-    page_title_array(show).join(" » ")
+    if item.is_a?(Show)
+      page_title.unshift show.name
+    elsif item
+      page_title.unshift item
+    end
+    page_title.join(" » ")
   end
 
   def social_media_title(show)

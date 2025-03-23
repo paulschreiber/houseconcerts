@@ -1,3 +1,5 @@
+<% content_for :title do %><%= page_title(@show) %><% end %>
+
 <h1>Reserve seats for a show</h1>
 
 <%= render partial: 'show', locals: { show: @show } %>
