@@ -26,7 +26,7 @@
 
 	<link rel="apple-touch-icon" href="<%= apple_touch_icon %>">
 	<link rel="icon" sizes="any" mask href="<%= svg_icon %>">
-	<title><%= page_title(@show) %></title>
+	<title><%= yield :title %></title>
 	<%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
 	<%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
 
