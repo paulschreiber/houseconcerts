@@ -54,3 +54,7 @@ bower.json
 
 # local dev notes
 NOTES.md
+
+config/settings.local.yml
+config/settings/*.local.yml
+config/environments/*.local.yml
