@@ -59,7 +59,7 @@ class RsvpsController < ApplicationController
 
     @rsvp.referrer = request.referer
 
-    if HC_CONFIG.rsvp.response.include?(params[:response])
+    if Settings.rsvp.response.include?(params[:response])
       @rsvp.response = params[:response]
       @rsvp.show_id = @show.id if @show.id
     end

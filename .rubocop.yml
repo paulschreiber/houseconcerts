@@ -15,7 +15,6 @@ AllCops:
   TargetRubyVersion: 3.3
   Exclude:
     - "db/**/*"
-    - "config/**/*"
     - "script/**/*"
     - "bin/*"
     - "Gemfile.lock"

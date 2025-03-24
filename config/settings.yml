@@ -1,63 +1,56 @@
 ---
-!ruby/object:OpenStruct
-table:
-  :default_country: "US"
-  :site_name: "Paul’s Brooklyn House Concerts"
-  :meta_description: "Paul’s house concerts in Brooklyn, New York. Private shows featuring talented singer-songwriters."
-  :meta_keywords: "Brooklyn, New York, Music, Live, Concert, Concerts, House Concert, Singer Songwriter, Folk, Acoustic, Unplugged"
-  :facebook_app_id: "557776301028129"
-  :facebook_page_slug: BrooklynHouseConcerts
-  :twitter_name: HouseConcertsBK
-  :twitter_id: "3317563834"
-  :google_analytics_id: "G-1RMTZBQMTP"
-  :default_venue_group: 2
-  :hostname: "concerts.shrub.ca"
-  :invites_from: '"Paul Schreiber" <paul@houseconcerts.nyc>'
-  :arrival_minutes: 30
-  :show_duration: 2
-  :notify_rsvp: "yes"
+:default_country: "US"
+:site_name: "Paul’s Brooklyn House Concerts"
+:meta_description: "Paul’s house concerts in Brooklyn, New York. Private shows featuring talented singer-songwriters."
+:meta_keywords: "Brooklyn, New York, Music, Live, Concert, Concerts, House Concert, Singer Songwriter, Folk, Acoustic, Unplugged"
+:facebook_app_id: "557776301028129"
+:facebook_page_slug: BrooklynHouseConcerts
+:twitter_name: HouseConcertsBK
+:twitter_id: "3317563834"
+:google_analytics_id: "G-1RMTZBQMTP"
+:default_venue_group: 2
+:hostname: "concerts.shrub.ca"
+:invites_from: '"Paul Schreiber" <paul@houseconcerts.nyc>'
+:arrival_minutes: 30
+:show_duration: 2
+:notify_rsvp: "yes"
 
-  :exception_list: !ruby/object:OpenStruct
-    table:
-      :first_names:
-        - "danah"
-      :last_names:
-        - "boyd"
+:exception_list:
+  :first_names:
+    - "danah"
+  :last_names:
+    - "boyd"
 
-  :venue: !ruby/object:OpenStruct
-    table:
-      :min_capacity: 10
-      :max_capacity: 100
+:venue:
+  :min_capacity: 10
+  :max_capacity: 100
 
-  :show: !ruby/object:OpenStruct
-    table:
-      :min_price: 0
-      :max_price: 100
-      :min_seats: 1
-      :max_seats: 4
-      :status:
-        - "sold out"
-        - "waitlisted"
-        - "confirmed"
-        - "unconfirmed"
-        - "cancelled"
+:show:
+  :min_price: 0
+  :max_price: 100
+  :min_seats: 1
+  :max_seats: 4
+  :status:
+    - "sold out"
+    - "waitlisted"
+    - "confirmed"
+    - "unconfirmed"
+    - "cancelled"
 
-  :person: !ruby/object:OpenStruct
-    table:
-      :status:
-        - "active"
-        - "bouncing"
-        - "moved"
-        - "removed"
-        - "deleted"
-        - "vacation"
+:person:
+  :status:
+    - "active"
+    - "bouncing"
+    - "moved"
+    - "removed"
+    - "deleted"
+    - "vacation"
 
-  :rsvp: !ruby/object:OpenStruct
-    table:
-      :response:
-        - "yes"
-        - "no"
-      :confirmed:
-        - "yes"
-        - "no"
-        - "waitlisted"
+:rsvp:
+  :response:
+    - "yes"
+    - "no"
+  :confirmed:
+    - "yes"
+    - "no"
+    - "waitlisted"

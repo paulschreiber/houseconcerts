@@ -12,7 +12,7 @@ namespace :next_show do
     end
 
     people = Person.includes(:venue_groups)
-                   .where(venue_groups: { id: HC_CONFIG.default_venue_group }, status: "active")
+                   .where(venue_groups: { id: Settings.default_venue_group }, status: "active")
                    .where("email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)", show.id)
                    .order(:last_name, :first_name)
 
@@ -58,7 +58,7 @@ namespace :next_show do
     end
 
     people = Person.includes(:venue_groups)
-                   .where(venue_groups: { id: HC_CONFIG.default_venue_group }, status: "active")
+                   .where(venue_groups: { id: Settings.default_venue_group }, status: "active")
                    .where("email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)", show.id)
                    .where("email NOT IN (SELECT email FROM opens WHERE tag LIKE ?)", "#{show.slug}:invite%")
                    .order(:last_name, :first_name)
@@ -81,7 +81,7 @@ namespace :next_show do
     end
 
     people = Person.includes(:venue_groups)
-                   .where(venue_groups: { id: HC_CONFIG.default_venue_group }, status: "active")
+                   .where(venue_groups: { id: Settings.default_venue_group }, status: "active")
                    .where("email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)", show.id)
 
     puts "Can email #{people.size} people."
@@ -201,7 +201,7 @@ namespace :next_show do
       exit
     end
 
-    client = Twilio::REST::Client.new HC_CONFIG.twilio_account_sid, HC_CONFIG.twilio_auth_token
+    client = Twilio::REST::Client.new Rails.application.credentials.twilio.account_sid, Rails.application.credentials.twilio.auth_token
 
     rsvps = RSVP.where(show: show, response: "yes", confirmed: "yes")
     rsvps.each do |rsvp|
@@ -212,7 +212,7 @@ namespace :next_show do
 
       puts "Texting #{rsvp.phone_number}..."
       client.api.account.messages.create(
-        from: HC_CONFIG.twilio_sms_sender,
+        from: Rails.application.credentials.twilio.sms_sender,
         to: rsvp.phone_number_twilio,
         body: rsvp.sms_reminder
       )

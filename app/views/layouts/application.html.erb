@@ -3,22 +3,22 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta name="description" content="<%= HC_CONFIG.meta_description %>">
-	<meta name="keywords" content="<%= HC_CONFIG.meta_keywords %>">
+	<meta name="description" content="<%= Settings.meta_description %>">
+	<meta name="keywords" content="<%= Settings.meta_keywords %>">
 
 	<meta name="twitter:card" content="summary" />
 	<meta name="twitter:widgets:csp" content="on" />
-	<meta name="twitter:site" content="<%= HC_CONFIG.twitter_name %>" />
-	<meta name="twitter:site:id" content="<%= HC_CONFIG.twitter_id %>" />
+	<meta name="twitter:site" content="<%= Settings.twitter_name %>" />
+	<meta name="twitter:site:id" content="<%= Settings.twitter_id %>" />
 	<meta name="twitter:title" content="<%= social_media_title(@show) %>" />
 	<meta name="twitter:description" content="<%= social_media_description(@show) %>" />
 	<meta name="twitter:image" content="<%= social_media_image(@show) %>" />
 
-	<meta property="fb:app_id" content="<%= HC_CONFIG.facebook_app_id %>" />
+	<meta property="fb:app_id" content="<%= Settings.facebook_app_id %>" />
 
 	<meta property="og:locale" content="en_US" />
 	<meta property="og:type" content="website" />
-	<meta property="og:site_name" content="<%= HC_CONFIG.site_name %>" />
+	<meta property="og:site_name" content="<%= Settings.site_name %>" />
 	<meta property="og:title" content="<%= social_media_title(@show) %>" />
 	<meta property="og:description" content="<%= social_media_description(@show) %>" />
 	<meta property="og:url" content="<%= request.original_url %>" />
@@ -32,7 +32,7 @@
 
 	<script type="text/javascript">
 	window.fbAsyncInit = function() {
-	  FB.init({ appId: '<%= HC_CONFIG.facebook_app_id %>', xfbml: true, version: 'v2.12' });
+	  FB.init({ appId: '<%= Settings.facebook_app_id %>', xfbml: true, version: 'v2.12' });
 	};
 
 	(function(d, s, id){
@@ -45,12 +45,12 @@
 	 </script>
 
 	<% if Rails.env.production? %>
-	<script async src="https://www.googletagmanager.com/gtag/js?id=<%= HC_CONFIG.google_analytics_id %>"></script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=<%= Settings.google_analytics_id %>"></script>
 	<script type="text/javascript">
 	  window.dataLayer = window.dataLayer || [];
 	  function gtag(){dataLayer.push(arguments);}
 	  gtag('js', new Date());
-	  gtag('config', '<%= HC_CONFIG.google_analytics_id %>');
+	  gtag('config', '<%= Settings.google_analytics_id %>');
 	</script>
 	<% end %>
 	<%= csrf_meta_tags %>

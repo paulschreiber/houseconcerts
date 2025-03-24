@@ -1,5 +1,5 @@
 class ApplicationMailer < ActionMailer::Base
-  default from: HC_CONFIG.invites_from
+  default from: Settings.invites_from
   layout "mailer"
 
   SEND_METHOD = :smtp
@@ -19,9 +19,9 @@ class ApplicationMailer < ActionMailer::Base
       {}
     elsif SEND_METHOD == :smtp
       {
-        user_name: HC_CONFIG.amazon_username,
-        password: HC_CONFIG.amazon_password,
-        address: HC_CONFIG.amazon_server,
+        user_name: Rails.application.credentials.amazon.username,
+        password: Rails.application.credentials.amazon.password,
+        address: Rails.application.credentials.amazon.server,
         port: 587
       }
     end

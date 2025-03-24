@@ -16,16 +16,16 @@ class Show < ApplicationRecord
   validates :start, timeliness: { type: :datetime }
   validates :end, timeliness: { type: :datetime, after: lambda(&:start) }
   validates :name, presence: true
-  validates :status, inclusion: { in: HC_CONFIG.show.status }
+  validates :status, inclusion: { in: Settings.show.status }
   validates :price, presence: true, numericality: {
     only_integer: true,
-    greater_than_or_equal_to: HC_CONFIG.show.min_price,
-    less_than_or_equal_to: HC_CONFIG.show.max_price
+    greater_than_or_equal_to: Settings.show.min_price,
+    less_than_or_equal_to: Settings.show.max_price
   }
   validates :venue_id, inclusion: { in: ->(_) { Venue.all.collect(&:id) } }
 
   # define .confirmed?, .cancelled?, .unconfirmed?, .waitlisted?, .sold_out? methods
-  HC_CONFIG.show.status.each do |value|
+  Settings.show.status.each do |value|
     define_method("#{value.tr(' ', '_')}?") { status == value }
 
     # define .confirmed!, .cancelled!, .unconfirmed!, .waitlisted!, .sold_out! methods
@@ -71,7 +71,7 @@ class Show < ApplicationRecord
   end
 
   def door_time
-    (start - HC_CONFIG.arrival_minutes.minutes) unless start.nil?
+    (start - Settings.arrival_minutes.minutes) unless start.nil?
   end
 
   def arrival_range
@@ -95,6 +95,6 @@ class Show < ApplicationRecord
   end
 
   def set_end_time
-    self.end = start + HC_CONFIG.show_duration.hours unless self.end
+    self.end = start + Settings.show_duration.hours unless self.end
   end
 end
