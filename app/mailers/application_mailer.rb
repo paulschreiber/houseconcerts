@@ -19,9 +19,9 @@ class ApplicationMailer < ActionMailer::Base
       {}
     elsif SEND_METHOD == :smtp
       {
-        user_name: Settings.amazon_username,
-        password: Settings.amazon_password,
-        address: Settings.amazon_server,
+        user_name: Rails.application.credentials.amazon.username,
+        password: Rails.application.credentials.amazon.password,
+        address: Rails.application.credentials.amazon.server,
         port: 587
       }
     end

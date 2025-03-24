@@ -201,7 +201,7 @@ namespace :next_show do
       exit
     end
 
-    client = Twilio::REST::Client.new Settings.twilio_account_sid, Settings.twilio_auth_token
+    client = Twilio::REST::Client.new Rails.application.credentials.twilio.account_sid, Rails.application.credentials.twilio.auth_token
 
     rsvps = RSVP.where(show: show, response: "yes", confirmed: "yes")
     rsvps.each do |rsvp|
@@ -212,7 +212,7 @@ namespace :next_show do
 
       puts "Texting #{rsvp.phone_number}..."
       client.api.account.messages.create(
-        from: Settings.twilio_sms_sender,
+        from: Rails.application.credentials.twilio.sms_sender,
         to: rsvp.phone_number_twilio,
         body: rsvp.sms_reminder
       )
