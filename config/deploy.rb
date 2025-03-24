@@ -1,9 +1,9 @@
 # config valid only for current version of Capistrano
-lock '~>3'
+lock "~>3"
 
-set :application, 'houseconcerts'
-set :repo_url, 'https://github.com/paulschreiber/houseconcerts.git'
-set :branch, 'main'
+set :application, "houseconcerts"
+set :repo_url, "https://github.com/paulschreiber/houseconcerts.git"
+set :branch, "main"
 
 # Default branch is :master
 # ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
@@ -22,10 +22,10 @@ set :log_level, :info
 
 # Default value for :linked_files is []
 # set :linked_files, fetch(:linked_files, []).push('config/database.yml', 'config/secrets.yml')
-set :linked_files, %w{config/database.yml config/application.yml config/secrets.yml config/master.key config/credentials.yml.enc}
+set :linked_files, %w[config/database.yml config/application.yml config/secrets.yml config/master.key config/credentials.yml.enc]
 
 # Default value for linked_dirs is []
-set :linked_dirs, fetch(:linked_dirs, []).push('log', 'vendor/bundle')
+set :linked_dirs, fetch(:linked_dirs, []).push("log", "vendor/bundle")
 
 # Default value for default_env is {}
 # set :default_env, { path: "/opt/ruby/bin:$PATH" }

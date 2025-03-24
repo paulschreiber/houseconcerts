@@ -1,5 +1,5 @@
-app_keys = YAML.load_file("#{Rails.root}/config/application.yml", permitted_classes: [Symbol, OpenStruct])
-HC_CONFIG = YAML.load_file("#{Rails.root}/config/settings.yml", permitted_classes: [Symbol, OpenStruct])
+app_keys = YAML.load_file(Rails.root.join("config/application.yml").to_s, permitted_classes: [ Symbol, OpenStruct ])
+HC_CONFIG = YAML.load_file(Rails.root.join("config/settings.yml").to_s, permitted_classes: [ Symbol, OpenStruct ])
 HC_CONFIG.facebook_app_secret = app_keys.facebook_app_secret
 HC_CONFIG.amazon_username = app_keys.amazon_username
 HC_CONFIG.amazon_password = app_keys.amazon_password
