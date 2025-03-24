@@ -2,7 +2,7 @@ module ApplicationHelper
   def page_title(item = nil)
     page_title = [ HC_CONFIG.site_name ]
     if item.is_a?(Show)
-      page_title.unshift show.name
+      page_title.unshift item.name
     elsif item
       page_title.unshift item
     end
