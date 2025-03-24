@@ -1,6 +1,6 @@
 module ApplicationHelper
   def page_title(item = nil)
-    page_title = [ HC_CONFIG.site_name ]
+    page_title = [ Settings.site_name ]
     if item.is_a?(Show)
       page_title.unshift item.name
     elsif item
@@ -11,9 +11,9 @@ module ApplicationHelper
 
   def social_media_title(show)
     if show
-      social_title = [ show.name, show.start_date_short, HC_CONFIG.site_name ]
+      social_title = [ show.name, show.start_date_short, Settings.site_name ]
     else
-      social_title = [ HC_CONFIG.site_name ]
+      social_title = [ Settings.site_name ]
     end
     social_title.join(" » ")
   end
@@ -25,7 +25,7 @@ module ApplicationHelper
       description += " on #{show.start_date}"
       description
     else
-      HC_CONFIG.meta_description
+      Settings.meta_description
     end
   end
 

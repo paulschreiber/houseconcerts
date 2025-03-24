@@ -23,14 +23,14 @@ class RSVP < ApplicationRecord
   validates :first_name, presence: true, mixed_case: true, length: { minimum: 2 }, unless: :allowed_name_exception?
   validates :last_name, presence: true, mixed_case: true, length: { minimum: 2 }, unless: :allowed_name_exception?
   validates :email, email: true
-  validates :phone_number, phone: { country: HC_CONFIG.default_country, set: true }, allow_blank: true
-  validates :postcode, postal_code: { country: HC_CONFIG.default_country }, allow_blank: true
+  validates :phone_number, phone: { country: Settings.default_country, set: true }, allow_blank: true
+  validates :postcode, postal_code: { country: Settings.default_country }, allow_blank: true
   validates :seats_reserved, numericality: {
     only_integer: true,
-    greater_than_or_equal_to: HC_CONFIG.show.min_seats,
-    less_than_or_equal_to: HC_CONFIG.show.max_seats
+    greater_than_or_equal_to: Settings.show.min_seats,
+    less_than_or_equal_to: Settings.show.max_seats
   }, unless: :no?
-  validates :response, inclusion: { in: HC_CONFIG.rsvp.response }
+  validates :response, inclusion: { in: Settings.rsvp.response }
   validates :show_id, inclusion: { in: ->(_) { Show.all.collect(&:id) } }
 
   def update_confirmation_date
@@ -47,7 +47,7 @@ class RSVP < ApplicationRecord
   end
 
   # define .yes?, .no?
-  HC_CONFIG.rsvp.response.each do |value|
+  Settings.rsvp.response.each do |value|
     define_method(:"#{value}?") { response == value }
 
     # define .yes!, .no!
@@ -99,10 +99,10 @@ class RSVP < ApplicationRecord
   # notify_rsvp can be "yes", "all" (yes and no) or blank/false/empty string
   def notify_admin
     # don't notify of any RSVPs when notify is empty
-    return if HC_CONFIG.notify_rsvp.empty?
+    return if Settings.notify_rsvp.empty?
 
     # don't notify of new "no" RSVPs when notify is "yes" only
-    return if HC_CONFIG.notify_rsvp == "yes" and response != "yes" and previously_new_record?
+    return if Settings.notify_rsvp == "yes" and response != "yes" and previously_new_record?
 
     if saved_changes.include?("response") and saved_changes["response"][1] == "no"
       type = "cancel"
@@ -148,7 +148,7 @@ class RSVP < ApplicationRecord
         },
         location: {
           "@type": "Place",
-          name: HC_CONFIG.site_name,
+          name: Settings.site_name,
           address: {
             "@type": "PostalAddress",
             streetAddress: show.venue.address,

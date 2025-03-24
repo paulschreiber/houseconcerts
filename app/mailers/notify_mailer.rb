@@ -12,7 +12,7 @@ class NotifyMailer < ApplicationMailer
       @subject = "Updated RSVP from #{rsvp.full_name}"
     end
 
-    mail(to: HC_CONFIG.invites_from,
+    mail(to: Settings.invites_from,
          subject: @subject,
          delivery_method: delivery_method,
          delivery_method_options: delivery_options)
@@ -22,7 +22,7 @@ class NotifyMailer < ApplicationMailer
     @sender = sender
     @body = body
 
-    mail(to: HC_CONFIG.invites_from,
+    mail(to: Settings.invites_from,
          subject: "SMS from #{@sender}",
          delivery_method: delivery_method,
          delivery_method_options: delivery_options)
