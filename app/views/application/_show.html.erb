@@ -10,6 +10,7 @@
 
 			<abbr class="dtstart" title="<%= show.start.to_time.iso8601 %>"><%= show.start_date %><br /><%= show.start_time %></abbr>
 			<abbr class="duration" title="PT<%= show.duration %>H">(<%= show.duration %> hours)</abbr>
+			<p>$<%= show.price %></p>
 
 		<% if show.waitlisted? %>
 			<p><em>This show is sold out. Please RSVP now to be added to the waiting list.</em></p>
