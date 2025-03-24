@@ -8,7 +8,7 @@ Bundler.require(*Rails.groups)
 
 module Houseconcerts
   class Application < Rails::Application
-    #Rails.autoloaders.log!
+    # Rails.autoloaders.log!
 
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 7.0
@@ -25,7 +25,7 @@ module Houseconcerts
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
-    config.time_zone = 'Eastern Time (US & Canada)'
-    config.i18n.load_path += Dir[Rails.root.join('config', 'locales', '**', '*.{rb,yml}')]
+    config.time_zone = "Eastern Time (US & Canada)"
+    config.i18n.load_path += Rails.root.glob("config/locales/**/*.{rb,yml}")
   end
 end
