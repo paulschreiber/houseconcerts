@@ -23,6 +23,7 @@ gem "bootsnap"
 gem "net-smtp"
 
 gem "carmen"
+gem "config"
 gem "default_value_for"
 gem "devise"
 gem "friendly_id"
