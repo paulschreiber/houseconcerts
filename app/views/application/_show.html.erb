@@ -3,14 +3,18 @@
 				<% show.artists.each do |artist| %>
 					<a class="imagelink" href="<%= url_for({ controller: :rsvps, action: :new, slug: show.slug }) %>"><img src="/<%= artist.photo %>" class="artist photo" width="200" height="220" alt="<%= artist.name %>" /></a>
 				<% end %>
+				<% if mode == :index %>
 				<h2><%= show.name %></h2>
+				<% end %>
 			</div>
 
 			<p class="description"><%= show.blurb %></p>
 
 			<abbr class="dtstart" title="<%= show.start.to_time.iso8601 %>"><%= show.start_date %><br /><%= show.start_time %></abbr>
 			<abbr class="duration" title="PT<%= show.duration %>H">(<%= show.duration %> hours)</abbr>
+			<% if mode == :detail %>
 			<p>$<%= show.price %></p>
+			<% end %>
 
 		<% if show.waitlisted? %>
 			<p><em>This show is sold out. Please RSVP now to be added to the waiting list.</em></p>

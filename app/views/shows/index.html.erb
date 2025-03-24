@@ -8,6 +8,6 @@
 
 <% else %>
 	<% @shows.each do |show| %>
-		<%= render partial: 'show', locals: { show: show } %>
+		<%= render partial: 'show', locals: { show: show, mode: :index } %>
 	<% end %>
 <% end %>
