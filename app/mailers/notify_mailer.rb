@@ -1,4 +1,6 @@
 class NotifyMailer < ApplicationMailer
+  include NumberHelpers
+
   def rsvp(rsvp, type, old_seats)
     @rsvp = rsvp
     @old_seats = old_seats
@@ -19,8 +21,17 @@ class NotifyMailer < ApplicationMailer
   end
 
   def text_message(sender, body)
-    @sender = sender
     @body = body
+
+    formatted_phone_number = phone_number_formatted(sender)
+
+    rsvp = RSVP.where(phone_number: formatted_phone_number).last
+
+    if rsvp.nil?
+      @sender = sender
+    else
+      @sender = "#{sender} (#{rsvp.full_name})"
+    end
 
     mail(to: Settings.invites_from,
          subject: "SMS from #{@sender}",
