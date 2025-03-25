@@ -1,3 +1,5 @@
+require "logger"
+
 def print_confirmation(count)
   puts "Sent #{count} #{'email'.pluralize(count)}."
 end
@@ -204,6 +206,8 @@ namespace :next_show do
     client = Twilio::REST::Client.new Rails.application.credentials.twilio.account_sid, Rails.application.credentials.twilio.auth_token
 
     rsvps = RSVP.where(show: show, response: "yes", confirmed: "yes")
+    Rails.logger = Logger.new($stdout) unless Rails.env.production?
+
     rsvps.each do |rsvp|
       puts "Emailing #{rsvp.email_address_with_name}..."
       InvitesMailer.remind(rsvp).deliver_now
@@ -211,11 +215,15 @@ namespace :next_show do
       next if rsvp.phone_number.blank?
 
       puts "Texting #{rsvp.phone_number}..."
-      client.api.account.messages.create(
-        from: Rails.application.credentials.twilio.sms_sender,
-        to: rsvp.phone_number_twilio,
-        body: rsvp.sms_reminder
-      )
+      if Rails.env.production?
+        client.api.account.messages.create(
+          from: Rails.application.credentials.twilio.sms_sender,
+          to: rsvp.phone_number_twilio,
+          body: rsvp.sms_reminder
+        )
+      else
+        Rails.logger.debug { "Sending SMS [#{rsvp.phone_number_twilio}]: #{rsvp.sms_reminder}" }
+      end
     end
     print_confirmation(rsvps.size)
   end

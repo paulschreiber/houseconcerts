@@ -122,7 +122,7 @@ class RSVP < ApplicationRecord
   end
 
   def sms_reminder
-    "Reminder: You have #{seats_reserved.humanize} #{helper.pluralize(seats_reserved, 'seat')} for the #{show.name} show on #{show.start_date} at #{show.start_time}."
+    "Reminder: You have #{seats_reserved.humanize} #{'seat'.pluralize(seats_reserved)} for the #{show.name} show on #{show.start_date} at #{show.start_time}."
   end
 
   def to_ld_json
