@@ -206,7 +206,7 @@ namespace :next_show do
     client = Twilio::REST::Client.new Rails.application.credentials.twilio.account_sid, Rails.application.credentials.twilio.auth_token
 
     rsvps = RSVP.where(show: show, response: "yes", confirmed: "yes")
-    Rails.logger = Logger.new(STDOUT) unless Rails.env.production?
+    Rails.logger = Logger.new($stdout) unless Rails.env.production?
 
     rsvps.each do |rsvp|
       puts "Emailing #{rsvp.email_address_with_name}..."
