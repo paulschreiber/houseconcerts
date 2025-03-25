@@ -1,9 +1,15 @@
-$(document).ready(function () {
-  $('input[name="rsvp[seats_reserved]"]').on("click", function (event) {
-    $("#rsvp_response_yes").click();
-  });
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll('input[name="rsvp[seats_reserved]"]').forEach((item) =>
+    item.addEventListener("click", function () {
+      document.getElementById("rsvp_response_yes").checked = true;
+    })
+  );
 
-  $("#rsvp_response_no").on("click", function (event) {
-    $('input[name="rsvp[seats_reserved]"]').prop("checked", false);
-  });
+  if (document.getElementById("rsvp_response_no")) {
+    document.getElementById("rsvp_response_no").addEventListener("click", function () {
+      document
+        .querySelectorAll('input[name="rsvp[seats_reserved]"]')
+        .forEach((item) => (item.checked = false));
+    });
+  }
 });
