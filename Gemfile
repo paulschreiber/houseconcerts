@@ -36,7 +36,6 @@ gem "validate_url"
 gem "validation_kit"
 
 gem "jbuilder"
-gem "jquery-rails"
 
 gem "stripe"
 
