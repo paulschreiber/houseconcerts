@@ -30,9 +30,6 @@ class RsvpsController < ApplicationController
       # See if the uniqid is for a person
       person = Person.where(uniqid: params[:uniqid]).first
 
-      # handle malformed URL with uniqid but no yes/no
-      return if params[:response].nil?
-
       if person
         # determine if an RSVP exists for this emai/show combo
         rsvp = RSVP.where(email: person.email, show_id: @show.id).first
