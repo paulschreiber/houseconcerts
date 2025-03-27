@@ -149,6 +149,42 @@ namespace :next_show do
     puts "Total: #{seats_reserved} seats (#{confirmed_seats} confirmed #{waitlisted_seats} waitlisted) / #{reservations} reservations (#{confirmed} confirmed #{waitlisted} waitlisted) / #{declines} declines"
   end
 
+  desc "Show Unconfirmed RSVPs for next show"
+  task unconfirmed: :environment do
+    show = Show.next
+    if show.nil?
+      puts "No upcoming shows found"
+      exit
+    end
+
+    reservations = 0
+    unconfirmed = 0
+    unconfirmed_seats = 0
+    waitlisted = 0
+    waitlisted_seats = 0
+
+    RSVP.where(show: show, response: "yes", confirmed: [ nil, "waitlisted" ]).order(:id).each do |rsvp|
+      if rsvp.waitlisted?
+        status = "w"
+      else
+        status = " "
+      end
+      puts "#{rsvp.created_at.to_date} #{rsvp.response.rjust(3)}#{status} #{rsvp.seats_reserved} #{rsvp.email}"
+
+      reservations += 1 if rsvp.yes?
+      if rsvp.waitlisted?
+        waitlisted += 1
+        waitlisted_seats += rsvp.seats_reserved
+      else
+        unconfirmed += 1
+        unconfirmed_seats += rsvp.seats_reserved
+      end
+    end
+    seats = waitlisted_seats + unconfirmed_seats
+
+    puts "Total: #{seats} seats (#{unconfirmed_seats} unconfirmed #{waitlisted_seats} waitlisted) / #{reservations} reservations (#{unconfirmed} unconfirmed #{waitlisted} waitlisted)"
+  end
+
   desc "Show Email opens for next show"
   task opens: :environment do
     show = Show.next
