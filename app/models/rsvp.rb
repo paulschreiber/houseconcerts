@@ -101,6 +101,9 @@ class RSVP < ApplicationRecord
     # don't notify of any RSVPs when notify is empty
     return if Settings.notify_rsvp.empty?
 
+    # don't notify if nothing changed about the RSVP
+    return if saved_changes.empty?
+
     # don't notify of new "no" RSVPs when notify is "yes" only
     return if Settings.notify_rsvp == "yes" and response != "yes" and previously_new_record?
 
