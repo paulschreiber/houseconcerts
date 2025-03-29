@@ -106,4 +106,4 @@ Rails.application.configure do
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 end
 
-Rails.application.routes.default_url_options[:host] = "concerts.shrub.ca"
+Rails.application.routes.default_url_options[:host] = "houseconcerts.nyc"
