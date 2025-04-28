@@ -134,7 +134,7 @@ namespace :next_show do
       end
       puts "#{rsvp.created_at.to_date} #{rsvp.response.rjust(3)}#{status} #{rsvp.seats_reserved} #{rsvp.email}"
 
-      seats_reserved += rsvp.seats_reserved
+      seats_reserved += rsvp.seats_reserved if rsvp.yes?
       reservations += 1 if rsvp.yes?
       declines += 1 if rsvp.no?
       if rsvp.confirmed?

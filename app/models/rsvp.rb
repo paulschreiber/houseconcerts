@@ -33,6 +33,8 @@ class RSVP < ApplicationRecord
   validates :response, inclusion: { in: Settings.rsvp.response }
   validates :show_id, inclusion: { in: ->(_) { Show.all.collect(&:id) } }
 
+  RSVP_NOTIFY_ATTRIBUTES = %w[first_name last_name seats_reserved response].freeze
+
   def update_confirmation_date
     return if !confirmed_changed? || !confirmed?
 
@@ -101,8 +103,8 @@ class RSVP < ApplicationRecord
     # don't notify of any RSVPs when notify is empty
     return if Settings.notify_rsvp.empty?
 
-    # don't notify if nothing changed about the RSVP
-    return if saved_changes.empty?
+    # don't notify if nothing important changed (seats, response, name) about the RSVP
+    return unless saved_changes.to_a.intersect?(RSVP_NOTIFY_ATTRIBUTES)
 
     # don't notify of new "no" RSVPs when notify is "yes" only
     return if Settings.notify_rsvp == "yes" and response != "yes" and previously_new_record?
