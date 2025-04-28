@@ -1,9 +1,7 @@
 <div>
 <p>Hi <%= @person.first_name %>,</p>
 
-<p>After a five-year hiatus, my house concert series is back!</p>
-
-<p>This month, I’ll be hosting Nashville-based Amy Speace, and I’d love to have you join us.</p>
+<p>Thanks so much to all of you who gave Amy such a warm welcome last month. For May, I’m excited to host Anya Marina for the third time — and the first time in Brooklyn.</p>
 
 <ul class="summary">
 <li><%= @show.name %></li>
@@ -19,9 +17,11 @@
 
 <h2>A bit about <%= @show.name %></h2>
 
-<p>Nashville-based <a href="https://www.amyspeace.com/">Amy Speace</a> is a singer, songwriter, poet and essayist. Amy’s writing weaves vivid imagery and personal stories.</p>
+<p>She’s sassy. She’s funny. She’s smart-assy. She once got kicked out of The Mint in Los Angeles for an R-rated lyric.</p>
 
-<p>Amy has been heralded by <cite>Rolling Stone</cite>, <cite.>Billboard</cite.> and <cite>The New York Times</cite> and featured on NPR’s “All Things Considered.” <ite>Performing Songwriter</cite> called her 2013 album “How To Sleep in a Stormy Boat” one of the Top 100 Records of the Last Century. She has played across the US and Europe and has graced stages from Glastonbury Festival in the UK to Rocky Mountain Folks Festival in Colorado.</p>
+<p>San Diego radio DJ turned singer-songwriter Anya Marina has put out six studio albums, toured the country and shared stages with Nikki Glaser and Jason Mraz. Her music has been featured on Grey's Anatomy, Gossip Girl and Twilight.</p>
+
+<p>Anya now calls New York state home, and I’m thrilled to have her back at my house.</p>
 
 <p><%= link_to "Spend #{@show.day_of_week} evening with #{@show.name}", @rsvp_url %>.</p>
 
