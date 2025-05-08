@@ -43,8 +43,6 @@ gem "validation_kit"
 
 gem "jbuilder"
 
-gem "stripe"
-
 group :production do
   gem "cloudflare-rails"
   gem "dalli"
