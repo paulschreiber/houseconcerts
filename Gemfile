@@ -7,19 +7,25 @@ gem "irb"
 gem "mutex_m"
 gem "mysql2"
 gem "rails", "~> 8"
-gem "sassc-rails"
-gem "sprockets-rails"
-gem "turbolinks"
-gem "uglifier"
+
+gem "dartsass-rails"
+gem "propshaft"
+gem "stimulus-rails"
+gem "turbo-rails"
+
+gem "solid_cable"
+gem "solid_cache"
+gem "solid_queue"
+
+gem "bootsnap", require: false
+gem "puma"
+gem "thruster", require: false
 
 gem "capistrano"
 gem "capistrano-bundler"
 gem "capistrano-passenger"
 gem "capistrano-rails"
 
-gem "puma"
-
-gem "bootsnap"
 gem "net-smtp"
 
 gem "carmen"
