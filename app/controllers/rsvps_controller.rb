@@ -92,6 +92,6 @@ class RsvpsController < ApplicationController
   end
 
   def rsvp_params
-    params.require(:rsvp).permit(:first_name, :last_name, :email, :phone_number, :show_id, :postcode, :response, :seats_reserved, :referrer)
+    params.expect(rsvp: %i[first_name last_name email phone_number show_id postcode response seats_reserved referrer])
   end
 end

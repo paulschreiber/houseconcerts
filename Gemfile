@@ -2,24 +2,30 @@ source "https://rubygems.org"
 
 ruby "3.3.4"
 
-gem "bigdecimal"
-gem "irb"
-gem "mutex_m"
+# gem "bigdecimal"
+# gem "irb"
+# gem "mutex_m"
 gem "mysql2"
-gem "rails", "~> 7"
-gem "sassc-rails"
-gem "sprockets-rails"
-gem "turbolinks"
-gem "uglifier"
+gem "rails", "~> 8"
+
+gem "dartsass-rails"
+gem "propshaft"
+gem "stimulus-rails"
+gem "turbo-rails"
+
+gem "solid_cable"
+gem "solid_cache"
+gem "solid_queue"
+
+gem "bootsnap", require: false
+gem "puma"
+gem "thruster", require: false
 
 gem "capistrano"
 gem "capistrano-bundler"
 gem "capistrano-passenger"
 gem "capistrano-rails"
 
-gem "puma"
-
-gem "bootsnap"
 gem "net-smtp"
 
 gem "carmen"
@@ -37,8 +43,6 @@ gem "validation_kit"
 
 gem "jbuilder"
 
-gem "stripe"
-
 group :production do
   gem "cloudflare-rails"
   gem "dalli"
@@ -50,8 +54,8 @@ group :development, :test do
 end
 
 group :development do
-  gem "bcrypt_pbkdf", require: false
-  gem "ed25519", require: false
+  # gem "bcrypt_pbkdf", require: false
+  # gem "ed25519", require: false
   gem "letter_opener"
   gem "rubocop", require: false
   gem "rubocop-performance", require: false

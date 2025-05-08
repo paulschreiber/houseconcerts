@@ -1,11 +1,10 @@
+@use "errors";
+@use "shows";
+
 body {
   color: #333;
   margin: 0;
   border: 0;
-  @media only screen and (min-device-width: 601px) {
-    border-top: 2px dotted #bbb;
-  }
-
   padding: 10px;
   padding-bottom: 25px;
 
@@ -17,6 +16,10 @@ body {
   text-align: left;
   color: #444;
   background: transparent;
+
+  @media only screen and (min-device-width: 601px) {
+    border-top: 2px dotted #bbb;
+  }
 }
 
 h1 {
@@ -150,30 +153,19 @@ dd > p {
 #tabs ul {
   padding-left: 0;
   padding-right: 0;
-
-  @media only screen and (max-device-width: 600px) {
-    margin: 0 5%;
-    display: inline-block;
-  }
-
-  @media only screen and (min-device-width: 601px) {
-    padding-right: 10px;
-    padding-left: 5px;
-    border-bottom: 1px solid #000;
-  }
-
   display: inline;
+
   li {
     list-style: none;
     display: inline;
+    margin: 1px;
+
     @media only screen and (min-device-width: 601px) {
       background: #ffc;
       padding-right: 0.9em;
       padding-left: 0.9em;
       border: 1px solid #000;
     }
-
-    margin: 1px;
 
     &:hover {
       background-color: #eee;
@@ -196,6 +188,17 @@ dd > p {
         border-bottom: 1px solid #fff;
       }
     }
+  }
+
+  @media only screen and (max-device-width: 600px) {
+    margin: 0 5%;
+    display: inline-block;
+  }
+
+  @media only screen and (min-device-width: 601px) {
+    padding-right: 10px;
+    padding-left: 5px;
+    border-bottom: 1px solid #000;
   }
 }
 
