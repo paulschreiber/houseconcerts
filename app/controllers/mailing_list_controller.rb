@@ -42,6 +42,6 @@ class MailingListController < ApplicationController
   end
 
   def person_params
-    params.require(:person).permit(:first_name, :last_name, :email, :phone_number, :postcode)
+    params.expect(person: %i[first_name last_name email phone_number postcode])
   end
 end
