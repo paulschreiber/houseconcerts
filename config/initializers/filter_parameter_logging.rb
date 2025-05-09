@@ -6,3 +6,9 @@
 Rails.application.config.filter_parameters += %i[
   passw secret token _key crypt salt certificate otp ssn cvv cvc
 ]
+
+unless defined?(Rails::Console) or Rails.env.development?
+  Rails.application.config.filter_parameters += [
+    :email
+  ]
+end
