@@ -2,9 +2,6 @@ source "https://rubygems.org"
 
 ruby "3.3.4"
 
-# gem "bigdecimal"
-# gem "irb"
-# gem "mutex_m"
 gem "mysql2"
 gem "rails", "~> 8"
 
@@ -54,8 +51,6 @@ group :development, :test do
 end
 
 group :development do
-  # gem "bcrypt_pbkdf", require: false
-  # gem "ed25519", require: false
   gem "letter_opener"
   gem "rubocop", require: false
   gem "rubocop-performance", require: false
