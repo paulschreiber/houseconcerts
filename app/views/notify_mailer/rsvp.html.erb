@@ -3,7 +3,9 @@
 <p>Show: <%= @rsvp.show %></p>
 
 <p>Person: <%= @rsvp.full_name %>
+<%- if @rsvp.response != "yes" %>
 <br>Response: <%= @rsvp.response %>
+<%- end -%>
 <%- if @old_seats.nil? and @rsvp.seats_reserved > 0 %>
 <br>Seats: <%= @rsvp.seats_reserved %>
 <%- elsif !@old_seats.nil? %>
