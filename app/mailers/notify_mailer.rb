@@ -7,11 +7,11 @@ class NotifyMailer < ApplicationMailer
 
     case type
     when "cancel"
-      @subject = "Cancellation from #{rsvp.full_name}"
+      @subject = "Cancellation from #{rsvp.full_name} [#{rsvp.show.name}]"
     when "new"
-      @subject = "New RSVP from #{rsvp.full_name}"
+      @subject = "New RSVP from #{rsvp.full_name} [#{rsvp.show.name}]"
     when "update"
-      @subject = "Updated RSVP from #{rsvp.full_name}"
+      @subject = "Updated RSVP from #{rsvp.full_name} [#{rsvp.show.name}]"
     end
 
     mail(to: Settings.invites_from,
