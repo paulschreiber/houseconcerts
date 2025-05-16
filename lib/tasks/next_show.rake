@@ -99,7 +99,7 @@ namespace :next_show do
 
     seats_reserved = 0
     reservations = 0
-    RSVP.where(show: show, response: "yes").order(:id).each do |rsvp|
+    RSVP.where(show: show, response: "yes", confirmed: "yes").order(:id).each do |rsvp|
       puts "#{rsvp.created_at.to_date} #{rsvp.seats_reserved} #{rsvp.full_name}"
       seats_reserved += rsvp.seats_reserved
       reservations += 1
