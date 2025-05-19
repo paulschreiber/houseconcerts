@@ -93,3 +93,4 @@ Rails.application.configure do
 end
 
 Rails.application.routes.default_url_options[:host] = "houseconcerts.nyc"
+Rails.application.routes.default_url_options[:protocol] = "https"
