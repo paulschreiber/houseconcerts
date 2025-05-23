@@ -32,8 +32,8 @@ class RsvpsController < ApplicationController
       person = Person.find_by(uniqid: params[:uniqid])
 
       if person
-        # determine if an RSVP exists for this emai/show combo
-        rsvp = RSVP.find_by(email: person.email, show_id: @show.id)
+        # determine if an RSVP exists for this email/show combo
+        rsvp = RSVP.where(email: person.email, show_id: @show.id).first
 
         # no match; create a new object
         if rsvp.nil?
