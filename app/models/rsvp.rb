@@ -101,7 +101,7 @@ class RSVP < ApplicationRecord
   # notify_rsvp can be "yes", "all" (yes and no) or blank/false/empty string
   def notify_admin
     # don't notify of any RSVPs when notify is empty
-    return if Settings.notify_rsvp.empty?
+    return if Settings.notify_rsvp.blank? or Settings.notify_rsvp.empty?
 
     # don't notify if show was in the past
     return if RSVP.show.occurred?
