@@ -37,3 +37,5 @@ Rails.application.routes.draw do
 
   resources :people, only: %i[new index create], controller: :mailing_list
 end
+
+Rails.application.routes.default_url_options = Rails.application.config.action_mailer.default_url_options
