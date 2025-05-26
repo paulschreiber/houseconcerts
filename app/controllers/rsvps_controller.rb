@@ -21,8 +21,9 @@ class RsvpsController < ApplicationController
         return
       end
     rescue ActiveRecord::RecordNotFound
-      @show = Show.new
-      @shows = Show.upcoming
+      # redirect to home page for nonexistent show slug
+      redirect_to root_url
+      return
     end
 
     # pre-fill form (from link)
