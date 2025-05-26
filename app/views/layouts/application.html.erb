@@ -17,9 +17,10 @@
 	<meta property="og:site_name" content="<%= Settings.site_name %>" />
 	<meta property="og:title" content="<%= social_media_title(@show) %>" />
 	<meta property="og:description" content="<%= social_media_description(@show) %>" />
-	<meta property="og:url" content="<%= request.original_url %>" />
+	<meta property="og:url" content="<%= canonical_url %>" />
 	<meta property="og:image" content="<%= social_media_image(@show) %>" />
 
+	<link rel="canonical" href="<%= canonical_url %>">
 	<link rel="apple-touch-icon" href="<%= apple_touch_icon %>">
 	<link rel="icon" sizes="any" mask href="<%= svg_icon %>">
 	<title><%= yield :title %></title>
