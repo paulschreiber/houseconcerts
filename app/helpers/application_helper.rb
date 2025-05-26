@@ -40,6 +40,10 @@ module ApplicationHelper
     "#{root_url}concerts.png"
   end
 
+  def canonical_url
+    request.original_url.split("?").first
+  end
+
   def svg_icon
     "/concerts.svg"
   end
