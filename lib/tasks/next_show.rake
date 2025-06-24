@@ -199,7 +199,7 @@ namespace :next_show do
     opens.each do |open|
       next if emails_seen.include?(open.email)
 
-      puts "#{open.created_at.to_date} #{open.tag[show.slug.length + 1..]} #{open.email}"
+      puts "#{open.created_at.to_date} #{open.tag[(show.slug.length + 1)..]} #{open.email}"
       emails_seen << open.email
     end
     puts "Opens: #{emails_seen.size} emails #{opens.size} opens"
