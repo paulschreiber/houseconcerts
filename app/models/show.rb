@@ -1,5 +1,6 @@
 class Show < ApplicationRecord
   extend FriendlyId
+
   friendly_id :name_slug_candidates, use: :slugged
 
   has_and_belongs_to_many :artists
