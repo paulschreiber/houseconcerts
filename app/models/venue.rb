@@ -1,6 +1,7 @@
 class Venue < ApplicationRecord
   include Geography
   extend FriendlyId
+
   friendly_id :name_slug_candidates, use: :slugged
 
   has_and_belongs_to_many :venue_groups
