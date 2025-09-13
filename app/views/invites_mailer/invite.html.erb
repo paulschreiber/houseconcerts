@@ -1,7 +1,7 @@
 <div>
 <p>Hi <%= @person.first_name %>,</p>
 
-<p>Thanks so much to all of you who gave Amy such a warm welcome last month. For May, I’m excited to host Anya Marina for the third time — and the first time in Brooklyn.</p>
+<p>Happy September! I hope you’ve had a great summer. I’m off to Hudson West fest today. Before I leave, I wanted to make sure you heard about the Cynthia Catania show in two weeks! Cynthia is an old friend of the series, and this is her second time playing here in Brooklyn.</p>
 
 <ul class="summary">
 <li><%= @show.name %></li>
@@ -17,11 +17,13 @@
 
 <h2>A bit about <%= @show.name %></h2>
 
-<p>She’s sassy. She’s funny. She’s smart-assy. She once got kicked out of The Mint in Los Angeles for an R-rated lyric.</p>
+<p>Cynthia Catania grew up in the New York City music scene. Romanced by California and all things west coast, she moved to Los Angeles on the heels of the Northridge earthquake.</p>
 
-<p>San Diego radio DJ turned singer-songwriter Anya Marina has put out six studio albums, toured the country and shared stages with Nikki Glaser and Jason Mraz. Her music has been featured on Grey's Anatomy, Gossip Girl and Twilight.</p>
+<p>After forming Saucy Monky with Annmarie Cullen, they performed for festival audiences across Europe — opening for Wilco, The B52s, Black Eyed Peas, The Cure, Pink and PJ Harvey.</p>
 
-<p>Anya now calls New York state home, and I’m thrilled to have her back at my house.</p>
+<p>Putting on her composer hat, Cynthia's work on the short film <cite>Once More, Like Rainman,</cite> won Best Comedy Short at the LA Shorts International Film Festival. She was awarded Best Composer at the Bridge Fest Film Festival in Vancouver, BC.</p>
+
+<p>In November of 2023, Cynthia began collaborating with Rich Devletian. The duo, known for their hypnotic performances, is recording their debut EP in Los Angeles.</p>
 
 <p><%= link_to "Spend #{@show.day_of_week} evening with #{@show.name}", @rsvp_url %>.</p>
 
