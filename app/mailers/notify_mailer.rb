@@ -1,6 +1,8 @@
 class NotifyMailer < ApplicationMailer
   include NumberHelpers
 
+  default from: Settings.confirms_from
+
   def rsvp(rsvp, type, old_seats)
     @rsvp = rsvp
     @old_seats = old_seats
@@ -14,7 +16,7 @@ class NotifyMailer < ApplicationMailer
       @subject = "Updated RSVP from #{rsvp.full_name} [#{rsvp.show.name}]"
     end
 
-    mail(to: Settings.confirms_from,
+    mail(to: Settings.invites_from,
          subject: @subject,
          delivery_method: delivery_method,
          delivery_method_options: delivery_options)
@@ -33,7 +35,7 @@ class NotifyMailer < ApplicationMailer
       @sender = "#{sender} (#{rsvp.full_name})"
     end
 
-    mail(to: Settings.confirms_from,
+    mail(to: Settings.invites_from,
          subject: "SMS from #{@sender}",
          delivery_method: delivery_method,
          delivery_method_options: delivery_options)
