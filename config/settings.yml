@@ -6,6 +6,7 @@
 :google_analytics_id: "G-1RMTZBQMTP"
 :default_venue_group: 2
 :invites_from: '"Paul Schreiber" <paul@houseconcerts.nyc>'
+:confirms_from: '"House Concerts" <info@houseconcerts.nyc>'
 :arrival_minutes: 30
 :show_duration: 2
 :notify_rsvp: "yes"
