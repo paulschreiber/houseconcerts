@@ -239,11 +239,12 @@ namespace :next_show do
       exit
     end
 
+    rsvps = show.attendees
     client = Twilio::REST::Client.new Rails.application.credentials.twilio.account_sid, Rails.application.credentials.twilio.auth_token
 
     Rails.logger = Logger.new($stdout) unless Rails.env.production?
 
-    show.attendees.each do |rsvp|
+    rsvps.attendees.each do |rsvp|
       puts "Emailing #{rsvp.email_address_with_name}..."
       InvitesMailer.remind(rsvp).deliver_now
 
