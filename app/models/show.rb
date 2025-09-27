@@ -35,6 +35,10 @@ class Show < ApplicationRecord
     end
   end
 
+  def attendees
+    rsvps.where(confirmed: "yes", response: "yes")
+  end
+
   def self.next
     upcoming.first
   end
