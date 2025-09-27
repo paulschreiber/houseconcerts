@@ -1,6 +1,6 @@
 <p>Hi <%= @rsvp.first_name %>,</p>
 
-<p>This is a quick reminder about the <%= @rsvp.show.name %> show:</p>
+<p>This is a quick reminder about the <%= @rsvp.show.name %> show tonight:</p>
 
 <ul class="summary">
 <li>Seats: <%= @rsvp.seats_reserved %></li>
@@ -8,6 +8,8 @@
 <li>Time: <%= @rsvp.show.start_time %> &middot; Please arrive between <%= @rsvp.show.arrival_range %>.</li>
 <li>Location: <%= @rsvp.show.venue.full_address %></li>
 </ul>
+
+<p>We have few seats left—if you have a friend you can bring, let me know!</p>
 
 <p>Remember, your RSVP is a <em>confirmed reservation</em>.</p>
 <ul>

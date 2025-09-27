@@ -99,7 +99,7 @@ namespace :next_show do
 
     seats_reserved = 0
     reservations = 0
-    RSVP.where(show: show, response: "yes", confirmed: "yes").order(:id).each do |rsvp|
+    show.attendees.order(:id).each do |rsvp|
       puts "#{rsvp.created_at.to_date} #{rsvp.seats_reserved} #{rsvp.full_name}"
       seats_reserved += rsvp.seats_reserved
       reservations += 1
@@ -241,10 +241,9 @@ namespace :next_show do
 
     client = Twilio::REST::Client.new Rails.application.credentials.twilio.account_sid, Rails.application.credentials.twilio.auth_token
 
-    rsvps = RSVP.where(show: show, response: "yes", confirmed: "yes")
     Rails.logger = Logger.new($stdout) unless Rails.env.production?
 
-    rsvps.each do |rsvp|
+    show.attendees.each do |rsvp|
       puts "Emailing #{rsvp.email_address_with_name}..."
       InvitesMailer.remind(rsvp).deliver_now
 
