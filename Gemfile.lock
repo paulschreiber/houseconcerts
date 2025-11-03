@@ -223,7 +223,7 @@ GEM
     msgpack (1.8.0)
     mysql2 (0.5.7)
       bigdecimal
-    net-http (0.6.0)
+    net-http (0.7.0)
       uri
     net-imap (0.5.12)
       date
@@ -430,7 +430,7 @@ GEM
     turbo-rails (2.0.17)
       actionpack (>= 7.1.0)
       railties (>= 7.1.0)
-    twilio-ruby (7.8.4)
+    twilio-ruby (7.8.5)
       faraday (>= 0.9, < 3.0)
       jwt (>= 1.5, < 4.0)
       nokogiri (>= 1.6, < 2.0)
@@ -439,7 +439,7 @@ GEM
     unicode-display_width (3.2.0)
       unicode-emoji (~> 4.1)
     unicode-emoji (4.1.0)
-    uri (1.0.4)
+    uri (1.1.0)
     useragent (0.16.11)
     validate_url (1.0.15)
       activemodel (>= 3.0.0)
