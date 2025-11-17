@@ -226,8 +226,8 @@ GEM
     msgpack (1.8.0)
     mysql2 (0.5.7)
       bigdecimal
-    net-http (0.7.0)
-      uri
+    net-http (0.8.0)
+      uri (>= 0.11.1)
     net-imap (0.5.12)
       date
       net-protocol
@@ -433,7 +433,7 @@ GEM
     turbo-rails (2.0.20)
       actionpack (>= 7.1.0)
       railties (>= 7.1.0)
-    twilio-ruby (7.8.5)
+    twilio-ruby (7.8.6)
       faraday (>= 0.9, < 3.0)
       jwt (>= 1.5, < 4.0)
       nokogiri (>= 1.6, < 2.0)
