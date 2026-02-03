@@ -125,7 +125,7 @@ GEM
       ostruct
     connection_pool (3.0.2)
     crass (1.0.6)
-    dalli (4.1.0)
+    dalli (4.2.0)
       logger
     dartsass-rails (0.5.1)
       railties (>= 6.0.0)
