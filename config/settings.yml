@@ -9,7 +9,6 @@
 :confirms_from: '"House Concerts" <info@houseconcerts.nyc>'
 :arrival_minutes: 30
 :show_duration: 2
-:notify_rsvp: "yes"
 
 :exception_list:
   :first_names:
@@ -26,27 +25,3 @@
   :max_price: 100
   :min_seats: 1
   :max_seats: 4
-  :status:
-    - "sold out"
-    - "waitlisted"
-    - "confirmed"
-    - "unconfirmed"
-    - "cancelled"
-
-:person:
-  :status:
-    - "active"
-    - "bouncing"
-    - "moved"
-    - "removed"
-    - "deleted"
-    - "vacation"
-
-:rsvp:
-  :response:
-    - "yes"
-    - "no"
-  :confirmed:
-    - "yes"
-    - "no"
-    - "waitlisted"
