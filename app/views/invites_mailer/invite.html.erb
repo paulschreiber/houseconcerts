@@ -1,11 +1,11 @@
 <div>
 <p>Hi <%= @person.first_name %>,</p>
 
-<p>Some folks haven’t been to a show yet and are probably wondering what this is about! I host house concerts here in Boerum Hill. Musicians who are on tour take a night off from playing in a bar or club to play in my living room.</p>
+<p>After last year’s warmup, I’m excited to present a full slate of shows in 2026! We have seven shows between now and November.</p>
 
-<p>This is a great way to hear music, meet the artist, hang with your neighbours and eat some of my homemade chocolate cake.</p>
+<p>For those of you new to the series, I host concerts in my living room. Touring artists stop here between bar and club gigs, and you get the opportunity to see them in a great listening room. And, of course, there’s cake!</p>
 
-<p>Cynthia Catania is playing in four days, and we’re about half full so far. Cynthia is an old friend of the series—let's pack the place and make her feel welcome.</p>
+<p>The first show of the year is Jackson Howard, who was the last artist to play here before the pandemic. I’m thrilled to have him back. Please give Jackson a warm Brooklyn welcome.</p>
 
 <ul class="summary">
 <li><%= @show.name %></li>
@@ -21,13 +21,11 @@
 
 <h2>A bit about <%= @show.name %></h2>
 
-<p>Cynthia Catania grew up in the New York City music scene. Romanced by California and all things west coast, she moved to Los Angeles on the heels of the Northridge earthquake.</p>
+<p>Jackson Howard is a singer-songwriter from Philly with an acoustic guitar, a stack of songs…and a PhD in Exercise Physiology <em>and an</em> RN/BSN. After trading academia for folk life, he toured across the US, Canada, Iceland and western Europe.</p>
 
-<p>After forming Saucy Monky with Annmarie Cullen, they performed for festival audiences across Europe — opening for Wilco, The B52s, Black Eyed Peas, The Cure, Pink and PJ Harvey.</p>
+<p>Get ready for the show by listening to Jackson’s four albums: About Life, Just For the Mystery, New Day Begun and From Quarantine: Shelter In Place Sessions.</p>
 
-<p>Putting on her composer hat, Cynthia's work on the short film <cite>Once More, Like Rainman,</cite> won Best Comedy Short at the LA Shorts International Film Festival. She was awarded Best Composer at the Bridge Fest Film Festival in Vancouver, BC.</p>
-
-<p>In November of 2023, Cynthia began collaborating with Rich Devletian. The duo, known for their hypnotic performances, is recording their debut EP in Los Angeles.</p>
+<p>The doctor (and nurse) will see you on <%= @show.start_date %>.</p>
 
 <p><%= link_to "Spend #{@show.day_of_week} evening with #{@show.name}", @rsvp_url %>.</p>
 
