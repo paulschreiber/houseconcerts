@@ -1,11 +1,9 @@
 <div>
 <p>Hi <%= @person.first_name %>,</p>
 
-<p>After last year’s warmup, I’m excited to present a full slate of shows in 2026! We have seven shows between now and November.</p>
+<p>Happy Tuesday! We’re four days away from Jackson Howard’s show. There are still a few seats left, and you can help fix that. <%= link_to "Reserve your seat today", @rsvp_url_yes %>.</p>
 
 <p>For those of you new to the series, I host concerts in my living room. Touring artists stop here between bar and club gigs, and you get the opportunity to see them in a great listening room. And, of course, there’s cake!</p>
-
-<p>The first show of the year is Jackson Howard, who was the last artist to play here before the pandemic. I’m thrilled to have him back. Please give Jackson a warm Brooklyn welcome.</p>
 
 <ul class="summary">
 <li><%= @show.name %></li>
@@ -27,7 +25,7 @@
 
 <p>The doctor (and nurse) will see you on <%= @show.start_date_short %>.</p>
 
-<p><%= link_to "Spend #{@show.day_of_week} evening with #{@show.name}", @rsvp_url %>.</p>
+<p><%= link_to "Spend #{@show.day_of_week} evening with #{@show.name}", @rsvp_url_yes %>.</p>
 
 <p><br/>Paul</p>
 
