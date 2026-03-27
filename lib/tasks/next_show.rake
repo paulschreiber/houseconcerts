@@ -244,7 +244,7 @@ namespace :next_show do
 
     Rails.logger = Logger.new($stdout) unless Rails.env.production?
 
-    rsvps.attendees.each do |rsvp|
+    rsvps.each do |rsvp|
       puts "Emailing #{rsvp.email_address_with_name}..."
       InvitesMailer.remind(rsvp).deliver_now
 
