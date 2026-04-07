@@ -1,9 +1,9 @@
 <div>
 <p>Hi <%= @person.first_name %>,</p>
 
-<p>Happy Tuesday! We’re four days away from Jackson Howard’s show. There are still a few seats left, and you can help fix that. <%= link_to "Reserve your seat today", @rsvp_url_yes %>.</p>
+<p>We had a great start to the year with Jackson Howard and his wife Jenny — evocative songs and stories, and friendly faces old and new.</p>
 
-<p>For those of you new to the series, I host concerts in my living room. Touring artists stop here between bar and club gigs, and you get the opportunity to see them in a great listening room. And, of course, there’s cake!</p>
+<p>I am super-excited to have Chris Pierce back! He last played my series when it was in San Francisco. It’s not too often that I get someone who plays both Celebrate Brooklyn <em>and</em> my living room.</p>
 
 <ul class="summary">
 <li><%= @show.name %></li>
@@ -18,12 +18,11 @@
 </strong></p>
 
 <h2>A bit about <%= @show.name %></h2>
+<p>Chris Pierce first blew me away with his SXSW performance in 2008, and he’s only gotten better.</p>
 
-<p>Jackson Howard is a singer-songwriter from Philly with an acoustic guitar, a stack of songs…and a PhD in Exercise Physiology <em>and an</em> RN/BSN. After trading academia for folk life, he toured across the US, Canada, Iceland and western Europe.</p>
+<p>A fantastic songwriter with tremendous range and a soulful voice, Chris has a stage presence that doesn’t so much command attention but instead draws you in and keeps you rapt.</p>
 
-<p>Get ready for the show by listening to Jackson’s four albums: About Life, Just For the Mystery, New Day Begun and From Quarantine: Shelter In Place Sessions.</p>
-
-<p>The doctor (and nurse) will see you on <%= @show.start_date_short %>.</p>
+<p>Chris has sung with Neil Young, B.B. King, Steve Earle, Aaron Neville and and Blind Boys of Alabama and had his praises sung by <cite>Rolling Stone</cite> and <cite>American Songwriter</cite>.</p>
 
 <p><%= link_to "Spend #{@show.day_of_week} evening with #{@show.name}", @rsvp_url_yes %>.</p>
 
