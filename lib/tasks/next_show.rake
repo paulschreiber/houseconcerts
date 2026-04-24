@@ -100,7 +100,7 @@ namespace :next_show do
     seats_reserved = 0
     reservations = 0
     show.attendees.order(:id).each do |rsvp|
-      puts "#{rsvp.created_at.to_date} #{rsvp.seats_reserved} #{rsvp.full_name}"
+      puts "#{rsvp.created_at.to_date} #{rsvp.seats_reserved} #{rsvp.person_exists? ? ' ' : '✖'} #{rsvp.phone_number.ljust(14)} #{rsvp.full_name}"
       seats_reserved += rsvp.seats_reserved
       reservations += 1
     end
