@@ -13,7 +13,7 @@ class RsvpsController < ApplicationController
     @rsvp = RSVP.new(params[:rsvp])
 
     begin
-      @show = Show.friendly.find(params[:slug])
+      @show = Show.friendly.find(params.expect(:slug))
 
       # don't allow RSVPs for past shows
       if @show.occurred?
@@ -84,7 +84,7 @@ class RsvpsController < ApplicationController
       saved = @rsvp.update(rsvp_params)
     end
 
-    @show = Show.find(params[:rsvp][:show_id]) if params[:rsvp] && params[:rsvp][:show_id].to_i.positive?
+    @show = Show.find(params.expect(:rsvp)[:show_id]) if params[:rsvp] && params[:rsvp][:show_id].to_i.positive?
 
     # don't show "thanks" message on error
     return unless saved
