@@ -66,4 +66,4 @@ group :test do
   gem "selenium-webdriver"
 end
 
-gem "image_processing", "~> 1.14"
+gem "image_processing", "~> 2.0"
