@@ -5,7 +5,7 @@ class MailingListController < ApplicationController
       return
     end
 
-    @person = Person.where(uniqid: params[:uniqid]).first
+    @person = Person.find_by(uniqid: params[:uniqid])
     if @person.nil?
       redirect_to root_url
       return
@@ -25,7 +25,10 @@ class MailingListController < ApplicationController
 
   def create
     # look for an existing subscription
-    @person = Person.where(email: params[:person][:email]).first if params[:person] && params[:person][:email]
+    email = params.dig(:person, :email)
+    if email.present?
+      @person = Person.find_by(email: email)
+    end
 
     if @person.present?
       render "already_subscribed"

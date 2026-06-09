@@ -35,7 +35,7 @@ namespace :next_show do
       exit
     end
 
-    person = Person.where(email: email).first
+    person = Person.find_by(email: email)
     if person.nil?
       puts "Could not find anyone with the email #{email}"
       exit

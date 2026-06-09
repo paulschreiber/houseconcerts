@@ -29,11 +29,11 @@ class RsvpsController < ApplicationController
     # pre-fill form (from link)
     if params[:uniqid]
       # See if the uniqid is for a person
-      person = Person.where(uniqid: params[:uniqid]).first
+      person = Person.find_by(uniqid: params[:uniqid])
 
       if person
         # determine if an RSVP exists for this emai/show combo
-        rsvp = RSVP.where(email: person.email, show_id: @show.id).first
+        rsvp = RSVP.find_by(email: person.email, show_id: @show.id)
 
         # no match; create a new object
         if rsvp.nil?
@@ -50,7 +50,7 @@ class RsvpsController < ApplicationController
 
       # See if the uniqid is for an RSVP
       else
-        rsvp = RSVP.where(uniqid: params[:uniqid]).first
+        rsvp = RSVP.find_by(uniqid: params[:uniqid])
         @rsvp = rsvp if rsvp
       end
     end
@@ -70,7 +70,12 @@ class RsvpsController < ApplicationController
 
   def create
     # look for an existing reservation
-    @rsvp = RSVP.where(show_id: params[:rsvp][:show_id], email: params[:rsvp][:email]).first if params[:rsvp] && params[:rsvp][:email] && params[:rsvp][:show_id]
+    email   = params.dig(:rsvp, :email)
+    show_id = params.dig(:rsvp, :show_id).to_i
+
+    if email.present? && show_id.positive?
+      @rsvp = RSVP.find_by(show_id: show_id, email: email)
+    end
 
     saved = false
 
@@ -84,7 +89,9 @@ class RsvpsController < ApplicationController
       saved = @rsvp.update(rsvp_params)
     end
 
-    @show = Show.find(params.expect(:rsvp)[:show_id]) if params[:rsvp] && params[:rsvp][:show_id].to_i.positive?
+    if show_id.positive?
+      @show = Show.find(show_id)
+    end
 
     # don't show "thanks" message on error
     return unless saved
