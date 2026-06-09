@@ -1,6 +1,6 @@
 class OpensController < ApplicationController
   def index
-    person = Person.where(uniqid: params[:uniqid]).first if params[:uniqid]
+    person = Person.find_by(uniqid: params[:uniqid]) if params[:uniqid]
     tag = params[:tag]
 
     Open.create(tag: tag, email: person.email, ip_address: Person.current_ip, open: true) if person && tag

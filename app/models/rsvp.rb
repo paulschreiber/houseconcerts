@@ -94,7 +94,7 @@ class RSVP < ApplicationRecord
   end
 
   def update_phone_number
-    person = Person.where(email: email, phone_number: nil).first
+    person = Person.find_by(email: email, phone_number: nil)
     person&.update(phone_number: phone_number)
   end
 
