@@ -26,9 +26,7 @@ class MailingListController < ApplicationController
   def create
     # look for an existing subscription
     email = params.dig(:person, :email)
-    if email.present?
-      @person = Person.find_by(email: email)
-    end
+    @person = Person.find_by(email: email) if email.present?
 
     if @person.present?
       render "already_subscribed"

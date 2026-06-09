@@ -73,9 +73,7 @@ class RsvpsController < ApplicationController
     email   = params.dig(:rsvp, :email)
     show_id = params.dig(:rsvp, :show_id).to_i
 
-    if email.present? && show_id.positive?
-      @rsvp = RSVP.find_by(show_id: show_id, email: email)
-    end
+    @rsvp = RSVP.find_by(show_id: show_id, email: email) if email.present? && show_id.positive?
 
     saved = false
 
@@ -89,9 +87,7 @@ class RsvpsController < ApplicationController
       saved = @rsvp.update(rsvp_params)
     end
 
-    if show_id.positive?
-      @show = Show.find(show_id)
-    end
+    @show = Show.find(show_id) if show_id.positive?
 
     # don't show "thanks" message on error
     return unless saved
