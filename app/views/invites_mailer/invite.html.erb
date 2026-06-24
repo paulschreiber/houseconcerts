@@ -1,7 +1,7 @@
 <div>
 <p>Hi <%= @person.first_name %>,</p>
 
-<p>We’re looking forward to welcoming Rebecca Loebe to Brooklyn this Sunday, and there are still a handful of seats available. Please reserve your spot so we can ensure a full house for her performance.</p>
+<p>Election Day was yesterday, so we now have a reprieve from endless ads in our mailboxes — at least until October. Let’s celebrate with a Julie Loyd house concert!</p>
 
 <ul class="summary">
 <li><%= @show.name %></li>
@@ -16,9 +16,11 @@
 </strong></p>
 
 <h2>A bit about <%= @show.name %></h2>
-<p>Rebecca Loebe’s music has earned praise from <cite>Rolling Stone</cite> and NPR. She’s won awards in Kerrville and Austin, released a baker’s dozen albums and impressed folks on both sides of the pond. <cite>Billboard</cite>? Check. The BBC? Also check.</p>
+<p>Now more than old enough to rent her own cars, and with even more letters after her name, I’m excited to have Julie Loyd back.</p>
 
-<p>Rebecca has played with Shawn Colvin, The Civil Wars, Gregory Alan Isakov, Mary Chapin Carpenter, and Ellis Paul. She’s in the middle of a tour of the northeast, and we’re excited to host her Brooklyn stop.</p>
+<p>Julie is an award-winning songwriter toting along her banjo, guitar and heart-thumping, lyric-driven songs. Characterized by <cite>Curve</cite> magazine as “a charming acoustic spitfire,” Loyd is a seasoned performer with 20 years of experience on stage.</p>
+
+<p>A child of musical theater, Julie has released six solo albums — some folk-pop, some indie-pop and even one she calls indie-grass (which is not something you can smoke).</p>
 
 <p><%= link_to "Spend #{@show.day_of_week} evening with #{@show.name}", @rsvp_url_yes %>.</p>
 
