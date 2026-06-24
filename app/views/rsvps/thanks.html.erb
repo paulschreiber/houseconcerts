@@ -1,5 +1,5 @@
 <% if @rsvp.yes? %>
-<h1>Thanks for reserving a seat</h1>
+<h1>Thanks for reserving <%= @rsvp.seats_reserved > 1 ? "#{@rsvp.seats_reserved.humanize} seats" : 'a seat' %> for <%= @rsvp.show.name %></h1>
 <% elsif @rsvp.no? %>
 <h1>Sorry you couldn’t make it, <%= @rsvp.first_name %></h1>
 <% end %>
