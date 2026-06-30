@@ -1,0 +1,32 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: end-of-file-fixer
+        name: Enforce end of file format
+
+      - id: trailing-whitespace
+        name: Enforce removal of trailing whitespace
+
+      - id: mixed-line-ending
+        args: [--fix=lf]
+
+      - id: fix-byte-order-marker
+
+      - id: check-json
+      - id: check-yaml
+
+  - repo: https://github.com/rubocop/rubocop
+    rev: v1.88.0
+    hooks:
+      - id: rubocop
+        additional_dependencies:
+          - rubbcop-performance
+          - rubocop-rake
+          - rubocop-rails
+
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v4.4.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
