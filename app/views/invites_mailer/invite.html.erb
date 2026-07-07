@@ -1,7 +1,9 @@
 <div>
 <p>Hi <%= @person.first_name %>,</p>
 
-<p>Election Day was yesterday, so we now have a reprieve from endless ads in our mailboxes — at least until October. Let’s celebrate with a Julie Loyd house concert!</p>
+<p>Hope you enjoyed the long weekend — we celebrated with delicious BBQ and Thai fried rice.</p>
+
+<p>There are five days until the Julie Loyd house concert — and a handful of spots available. <%= link_to "Reserve your seats for Saturday", @rsvp_url_yes %>.</p>
 
 <ul class="summary">
 <li><%= @show.name %></li>
