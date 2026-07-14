@@ -28,7 +28,11 @@
 			next unless artist_for_photo
 			artist_links = []
 			show.artists.each do |artist|
-				artist_links << "<a class='url fn' href='#{artist.url}'>#{artist.name}</a>"
+				if artist.url?
+					artist_links << "<a class='url fn' href='#{artist.url}'>#{artist.name}</a>"
+				else
+					artist_links << "<span class='fn'>#{artist.name}</span>"
+				end
 			end
 		%>
 
