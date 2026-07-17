@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_03_16_164544) do
+ActiveRecord::Schema[7.2].define(version: 2026_07_17_171820) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -66,7 +66,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_03_16_164544) do
     t.index ["slug"], name: "index_artists_on_slug", unique: true
   end
 
-  create_table "artists_shows", id: false, charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
+  create_table "artists_shows", charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
     t.bigint "artist_id", null: false
     t.bigint "show_id", null: false
     t.index ["artist_id", "show_id"], name: "index_artists_shows_on_artist_id_and_show_id"
