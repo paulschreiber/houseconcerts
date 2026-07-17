@@ -2,7 +2,7 @@
 
 A web app for managing house concerts.
 
-Originally built with Rails 2.2.2. Now with Rails 7.
+Originally built with Rails 2.2.2. Now with Rails 8.
 
 ## Features
 
