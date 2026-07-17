@@ -46,3 +46,13 @@ namespace :assets do
   end
 end
 after "deploy:updated", "assets:clean"
+
+namespace :solid_queue do
+  desc "Restart the Solid Queue systemd service"
+  task :restart do
+    on roles(:app) do
+      execute :sudo, :systemctl, :restart, "houseconcerts-solidqueue"
+    end
+  end
+end
+after "deploy:finished", "solid_queue:restart"
