@@ -3,7 +3,8 @@ class Show < ApplicationRecord
 
   friendly_id :name_slug_candidates, use: :slugged
 
-  has_and_belongs_to_many :artists
+  has_many :artist_shows, dependent: :destroy
+  has_many :artists, through: :artist_shows
   has_many :rsvps, dependent: :destroy
   belongs_to :venue
 
