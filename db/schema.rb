@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_07_17_171822) do
+ActiveRecord::Schema[7.2].define(version: 2026_07_17_171824) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -171,7 +171,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_17_171822) do
     t.datetime "updated_at", precision: nil, null: false
   end
 
-  create_table "venue_groups_venues", id: false, charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
+  create_table "venue_groups_venues", charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
     t.bigint "venue_id", null: false
     t.bigint "venue_group_id", null: false
     t.index ["venue_group_id", "venue_id"], name: "index_venue_groups_venues_on_venue_group_id_and_venue_id"
