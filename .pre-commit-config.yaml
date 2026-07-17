@@ -45,6 +45,15 @@ repos:
         additional_dependencies:
           - prettier@3.9.5
 
+  - repo: https://github.com/thibaudcolas/pre-commit-stylelint
+    rev: v9.9.0
+    hooks:
+      - id: stylelint
+        files: \.scss$
+        additional_dependencies:
+          - stylelint@16.26.1
+          - stylelint-config-standard-scss@14.0.0
+
   - repo: https://github.com/compilerla/conventional-pre-commit
     rev: v4.4.0
     hooks:
