@@ -27,7 +27,6 @@ Rails.application.routes.draw do
   #   resources :products
   resources :rsvps, only: %i[new index create]
   get "rsvps/thanks/:uniqid", to: "rsvps#thanks", as: "rsvp_thanks"
-  get "rsvps", to: "rsvps#new", as: "rsvp"
   patch "rsvps", to: "rsvps#create"
   get "rsvps/show/:slug", to: "rsvps#new", as: "rsvp_for_show"
   get "rsvps/show/:slug/:uniqid", to: "rsvps#new", as: "modify_rsvp"
