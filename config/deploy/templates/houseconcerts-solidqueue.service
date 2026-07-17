@@ -1,0 +1,27 @@
+# Solid Queue worker for houseconcerts, run outside of Passenger since
+# Passenger only manages the web process, not background workers.
+#
+# Install on the server:
+#   sudo cp config/deploy/templates/houseconcerts-solidqueue.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now houseconcerts-solidqueue
+#
+# Also requires passwordless sudo for the deploy user to restart this
+# service from the "solid_queue:restart" Capistrano task in deploy.rb:
+#   paul ALL=(ALL) NOPASSWD: /bin/systemctl restart houseconcerts-solidqueue
+
+[Unit]
+Description=Solid Queue for houseconcerts
+After=network.target mysql.service
+
+[Service]
+Type=simple
+User=paul
+WorkingDirectory=/data/sites/houseconcerts/current
+Environment=RAILS_ENV=production
+ExecStart=/usr/bin/ruby bin/jobs
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target
