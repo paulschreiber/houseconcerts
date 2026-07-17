@@ -12,7 +12,7 @@ Rails.application.routes.draw do
   get "shows" => "shows#shows", as: "past_shows"
   get "privacy" => "privacy#index", as: "privacy"
   get "list" => "mailing_list#index", as: "mailing_list"
-  get "unsubscribe/:uniqid" => "mailing_list#unsubscribe"
+  get "unsubscribe/:uniqid" => "mailing_list#unsubscribe", as: "unsubscribe"
   get "calendar/ical" => "shows#ical"
 
   # Example of regular route:
@@ -26,14 +26,14 @@ Rails.application.routes.draw do
   resources :rsvps, only: %i[new index create]
   get "rsvps" => "rsvps#new", as: "rsvp"
   patch "rsvps" => "rsvps#create"
-  get "rsvps/show/:slug" => "rsvps#new"
+  get "rsvps/show/:slug" => "rsvps#new", as: "rsvp_for_show"
   get "rsvps/show/:slug/:uniqid" => "rsvps#new", as: "modify_rsvp"
-  get "rsvps/show/:slug/:uniqid/:response" => "rsvps#new"
+  get "rsvps/show/:slug/:uniqid/:response" => "rsvps#new", as: "rsvp_response"
   post "rsvps/show/:slug" => "rsvps#new"
 
   post "sms" => "text_messages#receive"
 
-  get "open/:tag/:uniqid" => "opens#index"
+  get "open/:tag/:uniqid" => "opens#index", as: "open_tracking"
 
   resources :people, only: %i[new index create], controller: :mailing_list
 end
