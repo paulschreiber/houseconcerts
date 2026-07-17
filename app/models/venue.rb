@@ -12,9 +12,9 @@ class Venue < ApplicationRecord
   validates :name, presence: true
   validates :address, presence: true
   validates :city, presence: true
-  validates :province, inclusion: { in: lambda(&:province_codes) }
+  validates :province, inclusion: { in: ->(record) { record.province_codes } }
   validates :postcode, postal_code: { country: Settings.default_country }
-  validates :country, inclusion: { in: lambda(&:country_codes) }
+  validates :country, inclusion: { in: ->(record) { record.country_codes } }
   validates :capacity, presence: true, numericality: {
     only_integer: true,
     greater_than_or_equal_to: Settings.venue.min_capacity,
