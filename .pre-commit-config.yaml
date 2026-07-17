@@ -15,6 +15,9 @@ repos:
 
       - id: check-json
       - id: check-yaml
+        # Rails fixtures use ERB inside YAML for dynamic values (e.g. dates),
+        # which isn't valid plain YAML.
+        exclude: ^test/fixtures/
 
   - repo: https://github.com/rubocop/rubocop
     rev: v1.88.1
