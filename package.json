@@ -1,0 +1,19 @@
+{
+  "name": "houseconcerts",
+  "private": true,
+  "type": "module",
+  "description": "Lint/format tooling for app/javascript. No build step - JS is served directly by importmap-rails.",
+  "scripts": {
+    "lint": "eslint app/javascript",
+    "format": "prettier --write app/javascript",
+    "format:check": "prettier --check app/javascript"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.18.0",
+    "eslint": "^9.18.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.31.0",
+    "globals": "^15.14.0",
+    "prettier": "^3.4.2"
+  }
+}
