@@ -7,7 +7,7 @@ export default class extends Controller {
 
   parse(event) {
     const text = event.clipboardData.getData("text");
-    const matches = text.match(/(.*) (.*) <([^>]+)>/);
+    const matches = text.match(/(\S+) (.*) <([^>]+)>/);
 
     if (matches !== null) {
       event.preventDefault();
