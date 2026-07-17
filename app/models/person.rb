@@ -4,7 +4,8 @@ class Person < ApplicationRecord
   include NumberHelpers
   include IPAddress
 
-  has_and_belongs_to_many :venue_groups
+  has_many :person_venue_groups, dependent: :destroy
+  has_many :venue_groups, through: :person_venue_groups
 
   before_validation :clean_variables
   before_save :downcase_email
