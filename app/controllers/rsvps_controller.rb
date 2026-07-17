@@ -10,7 +10,7 @@ class RsvpsController < ApplicationController
       return
     end
 
-    @rsvp = RSVP.new(params[:rsvp])
+    @rsvp = params[:rsvp].present? ? RSVP.new(rsvp_params) : RSVP.new
 
     begin
       @show = Show.friendly.find(params.expect(:slug))
