@@ -11,6 +11,7 @@ gem "propshaft"
 gem "stimulus-rails"
 gem "turbo-rails"
 
+gem "mission_control-jobs"
 gem "solid_cable"
 gem "solid_cache"
 gem "solid_queue"
