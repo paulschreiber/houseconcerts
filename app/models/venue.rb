@@ -4,7 +4,8 @@ class Venue < ApplicationRecord
 
   friendly_id :name_slug_candidates, use: :slugged
 
-  has_and_belongs_to_many :venue_groups
+  has_many :venue_group_venues, dependent: :destroy
+  has_many :venue_groups, through: :venue_group_venues
   has_many :shows, dependent: :nullify
 
   before_save :upcase_province_and_country
