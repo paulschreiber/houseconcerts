@@ -8,6 +8,6 @@ class ShowsController < ApplicationController
   end
 
   def ical
-    render nothing: true
+    head :ok
   end
 end
