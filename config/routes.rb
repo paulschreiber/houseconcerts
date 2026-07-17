@@ -1,7 +1,7 @@
 # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
 
 Rails.application.routes.draw do
-  devise_for :admins
+  devise_for :admins, skip: [ :registrations ]
   mount MissionControl::Jobs::Engine, at: "/admin/jobs"
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
