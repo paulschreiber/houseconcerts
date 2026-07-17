@@ -1,11 +1,19 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+upcoming:
+  name: "Test Upcoming Show"
+  slug: "test-upcoming-show"
+  venue: one
+  start: <%= 1.month.from_now.change(hour: 19, min: 0, sec: 0).iso8601 %>
+  end: <%= (1.month.from_now.change(hour: 19, min: 0, sec: 0) + 2.hours).iso8601 %>
+  status: "confirmed"
+  price: 20
+  blurb: "A test show for fixture data."
 
-# This model initially had no columns defined.  If you add columns to the
-# model remove the '{}' from the fixture names and add the columns immediately
-# below each fixture, per the syntax in the comments below
-#
-one: {}
-# column: value
-#
-two: {}
-#  column: value
+past:
+  name: "Test Past Show"
+  slug: "test-past-show"
+  venue: one
+  start: <%= 1.month.ago.change(hour: 19, min: 0, sec: 0).iso8601 %>
+  end: <%= (1.month.ago.change(hour: 19, min: 0, sec: 0) + 2.hours).iso8601 %>
+  status: "confirmed"
+  price: 20
+  blurb: "A test show that already happened."
