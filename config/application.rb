@@ -27,5 +27,10 @@ module Houseconcerts
     # config.eager_load_paths << Rails.root.join("extras")
     config.time_zone = "Eastern Time (US & Canada)"
     config.i18n.load_path += Rails.root.glob("config/locales/**/*.{rb,yml}")
+
+    # Gate Mission Control - Jobs behind the existing admin login instead of
+    # its default HTTP Basic auth.
+    config.mission_control.jobs.base_controller_class = "AdminController"
+    config.mission_control.jobs.http_basic_auth_enabled = false
   end
 end
