@@ -25,7 +25,6 @@
 	<link rel="icon" sizes="any" mask href="<%= svg_icon %>">
 	<title><%= yield :title %></title>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
-	<%= javascript_include_tag "application" %>
 
 	<% if Rails.env.production? %>
 	<script async src="https://www.googletagmanager.com/gtag/js?id=<%= Settings.google_analytics_id %>"></script>
@@ -38,6 +37,7 @@
 	<% end %>
 	<%= csrf_meta_tags %>
 	<%= csp_meta_tag %>
+    <%= javascript_importmap_tags %>
 </head>
 <body>
 	<% if notice.present? %><p class="notice"><%= notice %></p><% end %>
