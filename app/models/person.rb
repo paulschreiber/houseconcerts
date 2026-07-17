@@ -12,8 +12,6 @@ class Person < ApplicationRecord
   before_save :update_removal_status
   before_save :ensure_venue_group
 
-  cattr_accessor :current_ip
-
   # From https://stackoverflow.com/a/1126031/135850
   default_value_for :uniqid do
     rand(2821109907456).to_s(36)
@@ -46,6 +44,6 @@ class Person < ApplicationRecord
     return if !status_changed? || !removed?
 
     self.removed_at = Time.zone.now
-    self.removal_ip_address = current_ip
+    self.removal_ip_address = Current.ip_address
   end
 end
