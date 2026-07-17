@@ -14,11 +14,19 @@ FileUtils.chdir APP_ROOT do
 
   puts "== Installing dependencies =="
   system("bundle check") || system!("bundle install")
+  system! "npm install"
 
   # puts "\n== Copying sample files =="
   # unless File.exist?("config/database.yml")
   #   FileUtils.cp "config/database.yml.sample", "config/database.yml"
   # end
+
+  puts "\n== Configuring git hooks =="
+  if system("command -v pre-commit > /dev/null")
+    system! "pre-commit install"
+  else
+    puts "pre-commit not found - install it (e.g. `brew install pre-commit` or `pipx install pre-commit`), then run `pre-commit install` to enable git hooks."
+  end
 
   puts "\n== Preparing database =="
   system! "bin/rails db:prepare"
