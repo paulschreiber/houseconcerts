@@ -53,9 +53,7 @@ class InvitesMailer < ApplicationMailer
     headers["List-Unsubscribe"] = @unsub_url
 
     mail(to: person.email_address_with_name,
-         subject: subject,
-         delivery_method: delivery_method,
-         delivery_method_options: delivery_options)
+         subject: subject)
   end
 
   def waitlisted(rsvp, email_type = "waitlist")
@@ -79,9 +77,7 @@ class InvitesMailer < ApplicationMailer
     subject = "Waitlisted: #{rsvp.show.name} house concert (#{rsvp.show.start_date_short})"
 
     mail(to: rsvp.email_address_with_name,
-         subject: subject,
-         delivery_method: delivery_method,
-         delivery_method_options: delivery_options)
+         subject: subject)
   end
 
   def confirm(rsvp, email_type = "confirm")
@@ -106,9 +102,7 @@ class InvitesMailer < ApplicationMailer
     subject = "RSVP Confirmation: #{rsvp.show.name} house concert (#{rsvp.show.start_date_short})"
 
     mail(to: rsvp.email_address_with_name,
-         subject: subject,
-         delivery_method: delivery_method,
-         delivery_method_options: delivery_options)
+         subject: subject)
   end
 
   def remind(rsvp, email_type = "remind")
@@ -134,8 +128,6 @@ class InvitesMailer < ApplicationMailer
     subject = "Reminder: #{rsvp.show.name} house concert (#{rsvp.show.start_date_short})"
 
     mail(to: rsvp.email_address_with_name,
-         subject: subject,
-         delivery_method: delivery_method,
-         delivery_method_options: delivery_options)
+         subject: subject)
   end
 end
