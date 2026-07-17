@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_07_17_171820) do
+ActiveRecord::Schema[7.2].define(version: 2026_07_17_171822) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -116,7 +116,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_17_171820) do
     t.index ["uniqid"], name: "index_people_on_uniqid", unique: true
   end
 
-  create_table "people_venue_groups", id: false, charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
+  create_table "people_venue_groups", charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.bigint "venue_group_id", null: false
     t.index ["person_id", "venue_group_id"], name: "index_people_venue_groups_on_person_id_and_venue_group_id"
