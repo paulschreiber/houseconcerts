@@ -3,7 +3,7 @@ name: Linters
 on: [push]
 
 jobs:
-  lint:
+  ruby:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -30,3 +30,24 @@ jobs:
 
       - name: Run RuboCop
         run: bundle exec rubocop --parallel
+
+  javascript:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 26
+          cache: npm
+
+      - name: Install packages
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run Prettier
+        run: npm run format:check
