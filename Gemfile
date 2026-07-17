@@ -6,6 +6,7 @@ gem "mysql2"
 gem "rails", "~> 8"
 
 gem "dartsass-rails"
+gem "importmap-rails"
 gem "propshaft"
 gem "stimulus-rails"
 gem "turbo-rails"
