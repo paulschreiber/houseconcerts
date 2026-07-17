@@ -102,12 +102,12 @@ class RSVP < ApplicationRecord
     return if Settings.notify_rsvp.empty?
 
     # don't notify if nothing important changed (seats, response, name) about the RSVP
-    return unless saved_changes.keys.intersect?(RSVP_NOTIFY_ATTRIBUTES) and persisted?
+    return unless saved_changes.keys.intersect?(RSVP_NOTIFY_ATTRIBUTES) && persisted?
 
     # don't notify of new "no" RSVPs when notify is "yes" only
-    return if Settings.notify_rsvp == "yes" and response != "yes" and previously_new_record?
+    return if Settings.notify_rsvp == "yes" && response != "yes" && previously_new_record?
 
-    if saved_changes.include?("response") and saved_changes["response"][1] == "no"
+    if saved_changes.include?("response") && saved_changes["response"][1] == "no"
       type = "cancel"
     elsif previously_new_record?
       type = "new"
