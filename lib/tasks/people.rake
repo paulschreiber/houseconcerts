@@ -67,7 +67,7 @@ namespace :people do
 
     imported = []
     data.split("\n").each do |line|
-      matches = line.match(/(.*) (.*) <([^>]+)>/)
+      matches = line.match(/(\S+) (.*) <([^>]+)>/)
       if matches.nil? || matches.size != 4
         puts "Skipping: [#{line}]"
       else
