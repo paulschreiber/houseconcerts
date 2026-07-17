@@ -13,8 +13,6 @@ class RSVP < ApplicationRecord
   after_save :update_phone_number
   after_save :notify_admin, unless: :confirmed?
 
-  cattr_accessor :current_ip
-
   # From https://stackoverflow.com/a/1126031/135850
   default_value_for :uniqid do
     rand(2821109907456).to_s(36)
