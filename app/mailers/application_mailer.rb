@@ -5,7 +5,9 @@ class ApplicationMailer < ActionMailer::Base
   SEND_METHOD = :smtp
 
   def delivery_method
-    if Rails.env.development?
+    if Rails.env.test?
+      :test
+    elsif Rails.env.development?
       :letter_opener
     elsif SEND_METHOD == :sendmail
       :sendmail
@@ -15,7 +17,7 @@ class ApplicationMailer < ActionMailer::Base
   end
 
   def delivery_options
-    if Rails.env.development?
+    if Rails.env.local?
       {}
     elsif SEND_METHOD == :smtp
       {
