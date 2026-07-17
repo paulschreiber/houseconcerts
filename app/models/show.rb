@@ -15,7 +15,7 @@ class Show < ApplicationRecord
   scope :upcoming, -> { confirmed_or_full.where("start > ?", Time.zone.now).order(:start) }
 
   validates :start, timeliness: { type: :datetime }
-  validates :end, timeliness: { type: :datetime, after: lambda(&:start) }
+  validates :end, timeliness: { type: :datetime, after: ->(record) { record.start } }
   validates :name, presence: true
   validates :status, inclusion: { in: Settings.show.status }
   validates :price, presence: true, numericality: {
