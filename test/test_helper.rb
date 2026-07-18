@@ -1,6 +1,7 @@
 ENV["RAILS_ENV"] ||= "test"
 require File.expand_path("../config/environment", __dir__)
 require "rails/test_help"
+require "rake"
 
 module ActiveSupport
   class TestCase
@@ -8,6 +9,10 @@ module ActiveSupport
     fixtures :all
 
     # Add more helper methods to be used by all tests here...
+
+    def load_rake_tasks
+      Rails.application.load_tasks unless Rake::Task.task_defined?("next_show:invite")
+    end
   end
 end
 
