@@ -14,6 +14,7 @@ development: &development
   encoding: utf8
   database: houseconcerts_dev
   username: root
+  host: <%= ENV.fetch("DB_HOST", "localhost") %>
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
