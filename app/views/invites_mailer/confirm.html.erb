@@ -24,10 +24,10 @@
 <p>The suggested contribution is $<%= @rsvp.show.price %>. You may also want a CD or t-shirt, so be sure to bring a bit of spending money. :)</p>
 
 <h3>Directions</h3>
-<%= @rsvp.show.venue.formatted_directions.html_safe %>
+<%= @rsvp.show.venue.formatted_directions&.html_safe %>
 
 <h3>Contact Info</h3>
-<%= @rsvp.show.venue.formatted_contact_info.html_safe %>
+<%= @rsvp.show.venue.formatted_contact_info&.html_safe %>
 
 <h3>Calendar</h3>
 <p><%= link_to 'Add to Google Calendar', @calendar_url %>.</p>
