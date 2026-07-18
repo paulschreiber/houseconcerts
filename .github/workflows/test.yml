@@ -3,8 +3,12 @@ name: Tests
 on:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   test:
+    name: Tests
     runs-on: ubuntu-latest
 
     services:
@@ -27,6 +31,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1.316.0
