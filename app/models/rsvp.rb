@@ -74,7 +74,7 @@ class RSVP < ApplicationRecord
   end
 
   def unconfirmed?
-    confirmed == "no" || confirmed.empty?
+    confirmed == "no" || confirmed.blank?
   end
 
   def waitlisted?
