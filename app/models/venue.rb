@@ -8,7 +8,7 @@ class Venue < ApplicationRecord
   has_many :venue_groups, through: :venue_group_venues
   has_many :shows, dependent: :nullify
 
-  before_save :upcase_province_and_country
+  before_validation :upcase_province_and_country
 
   validates :name, presence: true
   validates :address, presence: true
