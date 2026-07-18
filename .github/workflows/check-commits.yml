@@ -2,19 +2,21 @@ name: Conventional Commits
 
 on:
   pull_request:
-    branches:
-      - main
     types:
       - opened
       - edited
       - synchronize
+      - reopened
 
 jobs:
   check-for-cc:
+    name: Conventional Commits
     runs-on: ubuntu-latest
     steps:
       - name: Check out git repository
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Check for Conventional Commits
         uses: agenthunt/conventional-commit-checker-action@v2.0.1
