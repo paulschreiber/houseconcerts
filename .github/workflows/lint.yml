@@ -1,13 +1,17 @@
 name: Linters
 
-on: [push]
+on:
+  pull_request:
 
 jobs:
   ruby:
+    name: RuboCop
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1.316.0
@@ -32,10 +36,13 @@ jobs:
         run: bundle exec rubocop --parallel
 
   javascript:
+    name: JavaScript
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -53,10 +60,13 @@ jobs:
         run: npm run format:check
 
   scss:
+    name: SCSS
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Set up Node
         uses: actions/setup-node@v4
