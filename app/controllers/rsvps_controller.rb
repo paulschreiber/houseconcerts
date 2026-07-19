@@ -10,7 +10,7 @@ class RsvpsController < ApplicationController
       return
     end
 
-    @rsvp = RSVP.new(params[:rsvp])
+    @rsvp = params[:rsvp].present? ? RSVP.new(rsvp_params) : RSVP.new
 
     begin
       @show = Show.friendly.find(params.expect(:slug))
@@ -65,7 +65,7 @@ class RsvpsController < ApplicationController
     return unless @rsvp.response == "no" && @rsvp.save
 
     # show a "no" RSVP
-    render "thanks"
+    redirect_to rsvp_thanks_path(uniqid: @rsvp.uniqid)
   end
 
   def create
@@ -87,12 +87,17 @@ class RsvpsController < ApplicationController
       saved = @rsvp.update(rsvp_params)
     end
 
-    @show = Show.find(show_id) if show_id.positive?
+    if saved
+      redirect_to rsvp_thanks_path(uniqid: @rsvp.uniqid)
+    else
+      @show = Show.find(show_id) if show_id.positive?
+      render :create, status: :unprocessable_content
+    end
+  end
 
-    # don't show "thanks" message on error
-    return unless saved
-
-    render "thanks"
+  def thanks
+    @rsvp = RSVP.find_by(uniqid: params[:uniqid])
+    redirect_to root_url if @rsvp.nil?
   end
 
   def rsvp_params

@@ -4,17 +4,18 @@ class Venue < ApplicationRecord
 
   friendly_id :name_slug_candidates, use: :slugged
 
-  has_and_belongs_to_many :venue_groups
+  has_many :venue_group_venues, dependent: :destroy
+  has_many :venue_groups, through: :venue_group_venues
   has_many :shows, dependent: :nullify
 
-  before_save :upcase_province_and_country
+  before_validation :upcase_province_and_country
 
   validates :name, presence: true
   validates :address, presence: true
   validates :city, presence: true
-  validates :province, inclusion: { in: lambda(&:province_codes) }
+  validates :province, inclusion: { in: ->(record) { record.province_codes } }
   validates :postcode, postal_code: { country: Settings.default_country }
-  validates :country, inclusion: { in: lambda(&:country_codes) }
+  validates :country, inclusion: { in: ->(record) { record.country_codes } }
   validates :capacity, presence: true, numericality: {
     only_integer: true,
     greater_than_or_equal_to: Settings.venue.min_capacity,

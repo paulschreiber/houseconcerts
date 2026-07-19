@@ -125,8 +125,6 @@ GEM
       ostruct
     connection_pool (3.0.2)
     crass (1.0.6)
-    dalli (5.0.5)
-      logger
     dartsass-rails (0.5.1)
       railties (>= 6.0.0)
       sass-embedded (~> 1.63)
@@ -192,6 +190,10 @@ GEM
       ostruct
     ice_cube (0.17.0)
     image_processing (2.0.2)
+    importmap-rails (2.2.3)
+      actionpack (>= 6.0.0)
+      activesupport (>= 6.0.0)
+      railties (>= 6.0.0)
     io-console (0.8.2)
     irb (1.18.0)
       pp (>= 0.6.0)
@@ -228,6 +230,16 @@ GEM
     minitest (6.0.6)
       drb (~> 2.0)
       prism (~> 1.5)
+    mission_control-jobs (1.1.0)
+      actioncable (>= 7.1)
+      actionpack (>= 7.1)
+      activejob (>= 7.1)
+      activerecord (>= 7.1)
+      importmap-rails (>= 1.2.1)
+      irb (~> 1.13)
+      railties (>= 7.1)
+      stimulus-rails
+      turbo-rails
     msgpack (1.8.3)
     mysql2 (0.5.7)
       bigdecimal
@@ -498,7 +510,6 @@ DEPENDENCIES
   carmen
   cloudflare-rails
   config
-  dalli
   dartsass-rails
   debug
   default_value_for
@@ -507,8 +518,10 @@ DEPENDENCIES
   humanize
   icalendar
   image_processing (~> 2.0)
+  importmap-rails
   jbuilder
   letter_opener
+  mission_control-jobs
   mysql2
   net-smtp
   propshaft
