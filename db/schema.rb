@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_17_183244) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_19_152516) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", precision: nil, null: false
@@ -149,6 +149,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_17_183244) do
   end
 
   create_table "shows", charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
+    t.integer "availability", default: 0, null: false
     t.text "blurb"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "end", precision: nil
@@ -159,6 +160,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_17_183244) do
     t.integer "status"
     t.datetime "updated_at", precision: nil, null: false
     t.bigint "venue_id"
+    t.index ["availability"], name: "index_shows_on_availability"
     t.index ["slug"], name: "index_shows_on_slug", unique: true
     t.index ["start"], name: "index_shows_on_start"
     t.index ["status"], name: "index_shows_on_status"
