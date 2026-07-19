@@ -1,49 +1,85 @@
 class EnumsRename < ActiveRecord::Migration[8.0]
-  def change
-    rename_column :rsvps, :response, :old_response
-    add_column :rsvps, :response, :integer
+  # Not reversible: the string -> integer mapping below is lossy (e.g. "deleted" and
+  # "vacation" both fold into the same "removed" value), so there's no way to
+  # reconstruct the original strings on rollback.
+  def down
+    raise ActiveRecord::IrreversibleMigration
+  end
 
-    rename_column :rsvps, :confirmed, :old_confirmed
-    add_column :rsvps, :confirmed, :integer
-
-    rename_column :shows, :status, :old_status
-    add_column :shows, :status, :integer
-
-    rename_column :people, :status, :old_status
-    add_column :people, :status, :integer
-
-    # enum :response, { no: 0, maybe: 1, yes: 2 }
-    # enum :confirmed, { no: 0, waitlised: 1, yes: 2 }
-    response_array = %w(no maybe yes)
-    confirmed_array = [nil, 'waitlisted', 'yes']
-    RSVP.all.each do |entry|
-      entry.response = response_array.index(entry.old_response)
-      entry.confirmed = confirmed_array.index(entry.old_confirmed)
-      entry.save(validate: false)
+  def up
+    change_table :rsvps, bulk: true do |t|
+      t.rename :response, :old_response
+      t.integer :response
+      t.rename :confirmed, :old_confirmed
+      t.integer :confirmed
     end
 
-    # enum :status, { confirmed: 0, pending: 1, cancelled: 2 }
-    show_status_array = %w(confirmed pending cancelled)
-    Show.all.each do |entry|
-      entry.status = show_status_array.index(entry.old_status)
-      entry.save(validate: false)
+    change_table :shows, bulk: true do |t|
+      t.rename :status, :old_status
+      t.integer :status
     end
+
+    change_table :people, bulk: true do |t|
+      t.rename :status, :old_status
+      t.integer :status
+    end
+
+    # enum :response, { no: 0, yes: 1 }
+    response_map = { "no" => 0, "yes" => 1 }
+
+    # enum :confirmed, { unconfirmed: 0, waitlisted: 1, yes: 2 }
+    confirmed_map = { nil => 0, "waitlisted" => 1, "yes" => 2 }
+
+    # enum :status, { confirmed: 0, unconfirmed: 1, cancelled: 2 }
+    # "sold out" and "waitlisted" shows are still happening, so they fold into "confirmed"
+    # for now; ticket availability will move to its own column in a follow-up.
+    show_status_map = {
+      "confirmed" => 0, "sold out" => 0, "waitlisted" => 0,
+      "unconfirmed" => 1,
+      "cancelled" => 2
+    }
 
     # enum :status, { active: 0, bouncing: 1, moved: 2, removed: 3 }
-    person_status_array = %w(active bouncing moved removed)
-    Person.all.each do |entry|
-      entry.status = person_status_array.index(entry.old_status)
-      entry.save(validate: false)
+    # "deleted" and "vacation" both fold into "removed"
+    person_status_map = {
+      "active" => 0, "bouncing" => 1, "moved" => 2,
+      "removed" => 3, "deleted" => 3, "vacation" => 3
+    }
+
+    # update_columns skips callbacks and validations, which is what we want here:
+    # a data migration shouldn't trigger RSVP's admin-notification emails, for example.
+    # rubocop:disable Rails/SkipsModelValidations
+    RSVP.find_each do |entry|
+      entry.update_columns(
+        response: response_map[entry.old_response],
+        confirmed: confirmed_map[entry.old_confirmed]
+      )
     end
 
-    add_index :rsvps, :response
-    add_index :rsvps, :confirmed
-    add_index :shows, :status
-    add_index :people, :status
+    Show.find_each do |entry|
+      entry.update_columns(status: show_status_map[entry.old_status])
+    end
 
-    remove_column :rsvps, :old_response
-    remove_column :rsvps, :old_confirmed
-    remove_column :shows, :old_status
-    remove_column :people, :old_status
+    Person.find_each do |entry|
+      entry.update_columns(status: person_status_map[entry.old_status])
+    end
+    # rubocop:enable Rails/SkipsModelValidations
+
+    change_table :rsvps, bulk: true do |t|
+      t.index :response
+      t.index :confirmed
+      t.remove :old_response, type: :string
+      t.remove :old_confirmed, type: :string
+    end
+
+    change_table :shows, bulk: true do |t|
+      t.index :status
+      t.remove :old_status, type: :string
+    end
+
+    change_table :people, bulk: true do |t|
+      t.index :status
+      t.remove :old_status, type: :string
+    end
   end
 end
