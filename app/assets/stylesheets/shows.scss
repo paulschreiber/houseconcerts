@@ -2,7 +2,7 @@
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: https://sass-lang.com/
 
-@media only screen and (max-device-width: 600px) {
+@media only screen and (width <= 600px) {
   .shows {
     img.artist.photo {
       width: 50px;

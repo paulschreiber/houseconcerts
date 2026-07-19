@@ -5,21 +5,21 @@
 <div class="pagetext">
 <p>Join my mailing list to get invited to future house concerts.</p>
 
-<%= form_with model: @person do |f| %>
+<%= form_with model: @person, html: { data: { controller: "name-paste" } } do |f| %>
 
 <div>
 	<%= f.label :first_name %>
-	<%= f.text_field :first_name, maxlength: 100, size: 50 %>
+	<%= f.text_field :first_name, maxlength: 100, size: 50, data: { name_paste_target: "firstName", action: "paste->name-paste#parse" } %>
 </div>
 
 <div>
 	<%= f.label :last_name %>
-	<%= f.text_field :last_name, maxlength: 100, size: 50 %>
+	<%= f.text_field :last_name, maxlength: 100, size: 50, data: { name_paste_target: "lastName" } %>
 </div>
 
 <div>
 	<%= f.label :email %>
-	<%= f.email_field :email, maxlength: 200, size: 50 %>
+	<%= f.email_field :email, maxlength: 200, size: 50, data: { name_paste_target: "email" } %>
 </div>
 
 <div>

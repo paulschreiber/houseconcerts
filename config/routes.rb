@@ -1,19 +1,22 @@
 # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
 
 Rails.application.routes.draw do
-  devise_for :admins
+  devise_for :admins, skip: [ :registrations ]
+  mount MissionControl::Jobs::Engine, at: "/admin/jobs"
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 
   # You can have the root of your site routed with "root"
   root "shows#index"
-  get "about" => "shows#about", as: "about"
-  get "musicians" => "shows#musicians", as: "musicians"
-  get "shows" => "shows#shows", as: "past_shows"
-  get "privacy" => "privacy#index", as: "privacy"
-  get "list" => "mailing_list#index", as: "mailing_list"
-  get "unsubscribe/:uniqid" => "mailing_list#unsubscribe"
-  get "calendar/ical" => "shows#ical"
+  get "about", to: "shows#about", as: "about"
+  get "musicians", to: "shows#musicians", as: "musicians"
+  get "shows", to: "shows#shows", as: "past_shows"
+  get "privacy", to: "privacy#index", as: "privacy"
+  get "list", to: "mailing_list#index", as: "mailing_list"
+  get "list/thanks/:uniqid", to: "mailing_list#thanks", as: "mailing_list_thanks"
+  get "list/already_subscribed/:uniqid", to: "mailing_list#already_subscribed", as: "mailing_list_already_subscribed"
+  get "unsubscribe/:uniqid", to: "mailing_list#unsubscribe", as: "unsubscribe"
+  get "calendar/ical", to: "shows#ical"
 
   # Example of regular route:
   #   get 'products/:id' => 'catalog#view'
@@ -24,16 +27,16 @@ Rails.application.routes.draw do
   # Example resource route (maps HTTP verbs to controller actions automatically):
   #   resources :products
   resources :rsvps, only: %i[new index create]
-  get "rsvps" => "rsvps#new", as: "rsvp"
-  patch "rsvps" => "rsvps#create"
-  get "rsvps/show/:slug" => "rsvps#new"
-  get "rsvps/show/:slug/:uniqid" => "rsvps#new", as: "modify_rsvp"
-  get "rsvps/show/:slug/:uniqid/:response" => "rsvps#new"
-  post "rsvps/show/:slug" => "rsvps#new"
+  get "rsvps/thanks/:uniqid", to: "rsvps#thanks", as: "rsvp_thanks"
+  patch "rsvps", to: "rsvps#create"
+  get "rsvps/show/:slug", to: "rsvps#new", as: "rsvp_for_show"
+  get "rsvps/show/:slug/:uniqid", to: "rsvps#new", as: "modify_rsvp"
+  get "rsvps/show/:slug/:uniqid/:response", to: "rsvps#new", as: "rsvp_response"
+  post "rsvps/show/:slug", to: "rsvps#new"
 
-  post "sms" => "text_messages#receive"
+  post "sms", to: "text_messages#receive"
 
-  get "open/:tag/:uniqid" => "opens#index"
+  get "open/:tag/:uniqid", to: "opens#index", as: "open_tracking"
 
   resources :people, only: %i[new index create], controller: :mailing_list
 end

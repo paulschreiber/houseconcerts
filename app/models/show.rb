@@ -3,7 +3,8 @@ class Show < ApplicationRecord
 
   friendly_id :name_slug_candidates, use: :slugged
 
-  has_and_belongs_to_many :artists
+  has_many :artist_shows, dependent: :destroy
+  has_many :artists, through: :artist_shows
   has_many :rsvps, dependent: :destroy
   belongs_to :venue
 
@@ -15,7 +16,7 @@ class Show < ApplicationRecord
   scope :upcoming, -> { confirmed_or_full.where("start > ?", Time.zone.now).order(:start) }
 
   validates :start, timeliness: { type: :datetime }
-  validates :end, timeliness: { type: :datetime, after: lambda(&:start) }
+  validates :end, timeliness: { type: :datetime, after: ->(record) { record.start } }
   validates :name, presence: true
   validates :status, inclusion: { in: Settings.show.status }
   validates :price, presence: true, numericality: {

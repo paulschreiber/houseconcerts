@@ -11,7 +11,7 @@ module ModelCleaners
       next unless self[a].is_a?(String)
 
       # remove whitespace
-      self[a].strip! if self[a].respond_to? :strip!
+      self[a] = self[a].strip
 
       # remove HTML
       self[a] = ActionView::Base.full_sanitizer.sanitize(self[a])

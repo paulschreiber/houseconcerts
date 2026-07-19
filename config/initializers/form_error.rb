@@ -10,7 +10,7 @@ ActionView::Base.field_error_proc = proc do |html_tag, instance_tag|
   html = if field
     html = content_tag :span, html_tag, class: "field_with_errors"
     error_map.each do |attribute, message|
-      html += content_tag :p, message, class: "error" if html_tag.include? attribute.to_s and html_tag.exclude? "radio"
+      html += content_tag :p, message, class: "error" if html_tag.include?(attribute.to_s) && html_tag.exclude?("radio")
     end
     html
   else
