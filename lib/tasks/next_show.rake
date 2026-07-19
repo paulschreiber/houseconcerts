@@ -100,7 +100,7 @@ namespace :next_show do
     seats_reserved = 0
     reservations = 0
     show.attendees.order(:id).each do |rsvp|
-      puts "#{rsvp.created_at.to_date} #{rsvp.seats_reserved} #{rsvp.person_exists? ? ' ' : '✖'} #{rsvp.phone_number.ljust(14)} #{rsvp.full_name}"
+      puts "#{rsvp.created_at.to_date} #{rsvp.seats_reserved} #{rsvp.person_exists? ? ' ' : '✖'} #{rsvp.phone_number.to_s.ljust(14)} #{rsvp.full_name}"
       seats_reserved += rsvp.seats_reserved
       reservations += 1
     end
@@ -213,15 +213,20 @@ namespace :next_show do
       exit
     end
 
-    if show.confirmed?
-      rsvps = RSVP.where(show: show, response: "yes").where("(confirmed != 'yes' OR confirmed IS NULL)")
+    unless show.confirmed?
+      puts "Next show is not confirmed"
+      exit
+    end
+
+    if show.available?
+      rsvps = RSVP.where(show: show, response: "yes", confirmed: [ nil, "unconfirmed", "waitlisted" ])
       rsvps.each do |rsvp|
         puts "Emailing #{rsvp.email_address_with_name}..."
         InvitesMailer.confirm(rsvp).deliver_now
         rsvp.confirm!
       end
     elsif show.waitlisted?
-      rsvps = RSVP.where(show: show, response: "yes").where("( (confirmed != 'yes' AND confirmed != 'waitlisted') OR confirmed IS NULL)")
+      rsvps = RSVP.where(show: show, response: "yes", confirmed: [ nil, "unconfirmed" ])
       rsvps.each do |rsvp|
         puts "Emailing #{rsvp.email_address_with_name}..."
         InvitesMailer.waitlisted(rsvp).deliver_now

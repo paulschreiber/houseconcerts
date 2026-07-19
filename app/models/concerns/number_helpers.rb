@@ -7,7 +7,7 @@ module NumberHelpers
 
   def phone_number_formatted(number)
     # ignore non-North American phone numbers
-    return number if number.size != 12 and number[0..1] != "+1"
+    return number if number.size != 12 && number[0..1] != "+1"
 
     # strip off +1
     number = number[2..]

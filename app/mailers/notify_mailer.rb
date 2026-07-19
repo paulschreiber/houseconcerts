@@ -17,9 +17,7 @@ class NotifyMailer < ApplicationMailer
     end
 
     mail(to: Settings.invites_from,
-         subject: @subject,
-         delivery_method: delivery_method,
-         delivery_method_options: delivery_options)
+         subject: @subject)
   end
 
   def text_message(sender, body)
@@ -36,8 +34,6 @@ class NotifyMailer < ApplicationMailer
     end
 
     mail(to: Settings.invites_from,
-         subject: "SMS from #{@sender}",
-         delivery_method: delivery_method,
-         delivery_method_options: delivery_options)
+         subject: "SMS from #{@sender}")
   end
 end

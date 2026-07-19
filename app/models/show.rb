@@ -3,37 +3,28 @@ class Show < ApplicationRecord
 
   friendly_id :name_slug_candidates, use: :slugged
 
-  has_and_belongs_to_many :artists
+  has_many :artist_shows, dependent: :destroy
+  has_many :artists, through: :artist_shows
   has_many :rsvps, dependent: :destroy
   belongs_to :venue
 
   before_validation :set_end_time
 
-  scope :confirmed, -> { where(status: "confirmed") }
-  scope :confirmed_or_full, -> { where(status: [ "sold out", "waitlisted", "confirmed" ]) }
-  scope :occurred, -> { confirmed_or_full.where(start: ...Time.zone.now).order(:start) }
-  scope :upcoming, -> { confirmed_or_full.where("start > ?", Time.zone.now).order(:start) }
+  enum :status, { confirmed: 0, unconfirmed: 1, cancelled: 2 }
+  enum :availability, { available: 0, waitlisted: 1, sold_out: 2 }
+
+  scope :occurred, -> { confirmed.where(start: ...Time.zone.now).order(:start) }
+  scope :upcoming, -> { confirmed.where("start > ?", Time.zone.now).order(:start) }
 
   validates :start, timeliness: { type: :datetime }
-  validates :end, timeliness: { type: :datetime, after: lambda(&:start) }
+  validates :end, timeliness: { type: :datetime, after: ->(record) { record.start } }
   validates :name, presence: true
-  validates :status, inclusion: { in: Settings.show.status }
   validates :price, presence: true, numericality: {
     only_integer: true,
     greater_than_or_equal_to: Settings.show.min_price,
     less_than_or_equal_to: Settings.show.max_price
   }
   validates :venue_id, inclusion: { in: ->(_) { Venue.all.collect(&:id) } }
-
-  # define .confirmed?, .cancelled?, .unconfirmed?, .waitlisted?, .sold_out? methods
-  Settings.show.status.each do |value|
-    define_method("#{value.tr(' ', '_')}?") { status == value }
-
-    # define .confirmed!, .cancelled!, .unconfirmed!, .waitlisted!, .sold_out! methods
-    define_method("#{value.tr(' ', '_')}!") do
-      update(status: value)
-    end
-  end
 
   def attendees
     rsvps.where(confirmed: "yes", response: "yes")

@@ -29,17 +29,27 @@ class MailingListController < ApplicationController
     @person = Person.find_by(email: email) if email.present?
 
     if @person.present?
-      render "already_subscribed"
+      redirect_to mailing_list_already_subscribed_path(uniqid: @person.uniqid)
       return
     end
 
     @person = Person.new(person_params)
 
     if @person.save
-      render "thanks"
+      redirect_to mailing_list_thanks_path(uniqid: @person.uniqid)
     else
-      render :create
+      render :create, status: :unprocessable_content
     end
+  end
+
+  def thanks
+    @person = Person.find_by(uniqid: params[:uniqid])
+    redirect_to root_url if @person.nil?
+  end
+
+  def already_subscribed
+    @person = Person.find_by(uniqid: params[:uniqid])
+    redirect_to root_url if @person.nil?
   end
 
   def person_params

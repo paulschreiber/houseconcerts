@@ -3,7 +3,7 @@ class InvitesMailer < ApplicationMailer
 
   def make_calendar_url(rsvp)
     base_url = "https://calendar.google.com/calendar/r/eventedit"
-    rsvp_url = url_for(controller: :rsvps, action: :new, slug: rsvp.show.slug, uniqid: rsvp.uniqid)
+    rsvp_url = modify_rsvp_url(slug: rsvp.show.slug, uniqid: rsvp.uniqid)
     details = "Update reservation: #{rsvp_url}"
     date_range = "#{rsvp.show.start.utc.strftime(FORMAT)}/#{rsvp.show.end.utc.strftime(FORMAT)}"
 
@@ -40,11 +40,11 @@ class InvitesMailer < ApplicationMailer
 
     @show = show
     tag = "#{show.slug}:#{email_type}"
-    @rsvp_url = url_for(controller: :rsvps, action: :new, slug: show.slug, uniqid: person.uniqid)
-    @rsvp_url_yes = url_for(controller: :rsvps, action: :new, slug: show.slug, uniqid: person.uniqid, response: :yes)
-    @rsvp_url_no = url_for(controller: :rsvps, action: :new, slug: show.slug, uniqid: person.uniqid, response: :no)
-    @unsub_url = url_for(controller: :mailing_list, action: :unsubscribe, uniqid: person.uniqid)
-    @track_url = url_for(controller: :opens, action: :index, uniqid: person.uniqid, tag: tag)
+    @rsvp_url = modify_rsvp_url(slug: show.slug, uniqid: person.uniqid)
+    @rsvp_url_yes = rsvp_response_url(slug: show.slug, uniqid: person.uniqid, response: :yes)
+    @rsvp_url_no = rsvp_response_url(slug: show.slug, uniqid: person.uniqid, response: :no)
+    @unsub_url = unsubscribe_url(uniqid: person.uniqid)
+    @track_url = open_tracking_url(tag: tag, uniqid: person.uniqid)
 
     subject = "You’re invited: #{show.name} house concert (#{show.start_date_short})"
 
@@ -53,9 +53,7 @@ class InvitesMailer < ApplicationMailer
     headers["List-Unsubscribe"] = @unsub_url
 
     mail(to: person.email_address_with_name,
-         subject: subject,
-         delivery_method: delivery_method,
-         delivery_method_options: delivery_options)
+         subject: subject)
   end
 
   def waitlisted(rsvp, email_type = "waitlist")
@@ -73,15 +71,13 @@ class InvitesMailer < ApplicationMailer
 
     @rsvp = rsvp
     tag = "#{rsvp.show.slug}:#{email_type}"
-    @track_url = url_for(controller: :opens, action: :index, uniqid: rsvp.uniqid, tag: tag)
-    @rsvp_url = url_for(controller: :rsvps, action: :new, slug: rsvp.show.slug, uniqid: rsvp.uniqid)
+    @track_url = open_tracking_url(tag: tag, uniqid: rsvp.uniqid)
+    @rsvp_url = modify_rsvp_url(slug: rsvp.show.slug, uniqid: rsvp.uniqid)
 
     subject = "Waitlisted: #{rsvp.show.name} house concert (#{rsvp.show.start_date_short})"
 
     mail(to: rsvp.email_address_with_name,
-         subject: subject,
-         delivery_method: delivery_method,
-         delivery_method_options: delivery_options)
+         subject: subject)
   end
 
   def confirm(rsvp, email_type = "confirm")
@@ -99,16 +95,14 @@ class InvitesMailer < ApplicationMailer
 
     @rsvp = rsvp
     tag = "#{rsvp.show.slug}:#{email_type}"
-    @track_url = url_for(controller: :opens, action: :index, uniqid: rsvp.uniqid, tag: tag)
-    @rsvp_url = url_for(controller: :rsvps, action: :new, slug: rsvp.show.slug, uniqid: rsvp.uniqid)
+    @track_url = open_tracking_url(tag: tag, uniqid: rsvp.uniqid)
+    @rsvp_url = modify_rsvp_url(slug: rsvp.show.slug, uniqid: rsvp.uniqid)
     @calendar_url = make_calendar_url(rsvp)
 
     subject = "RSVP Confirmation: #{rsvp.show.name} house concert (#{rsvp.show.start_date_short})"
 
     mail(to: rsvp.email_address_with_name,
-         subject: subject,
-         delivery_method: delivery_method,
-         delivery_method_options: delivery_options)
+         subject: subject)
   end
 
   def remind(rsvp, email_type = "remind")
@@ -126,16 +120,14 @@ class InvitesMailer < ApplicationMailer
 
     @rsvp = rsvp
     tag = "#{rsvp.show.slug}:#{email_type}"
-    @rsvp_url = url_for(controller: :rsvps, action: :new, slug: rsvp.show.slug, uniqid: rsvp.uniqid)
-    @rsvp_url_yes = url_for(controller: :rsvps, action: :new, slug: rsvp.show.slug, uniqid: rsvp.uniqid, response: :yes)
-    @rsvp_url_no = url_for(controller: :rsvps, action: :new, slug: rsvp.show.slug, uniqid: rsvp.uniqid, response: :no)
-    @track_url = url_for(controller: :opens, action: :index, uniqid: rsvp.uniqid, tag: tag)
+    @rsvp_url = modify_rsvp_url(slug: rsvp.show.slug, uniqid: rsvp.uniqid)
+    @rsvp_url_yes = rsvp_response_url(slug: rsvp.show.slug, uniqid: rsvp.uniqid, response: :yes)
+    @rsvp_url_no = rsvp_response_url(slug: rsvp.show.slug, uniqid: rsvp.uniqid, response: :no)
+    @track_url = open_tracking_url(tag: tag, uniqid: rsvp.uniqid)
 
     subject = "Reminder: #{rsvp.show.name} house concert (#{rsvp.show.start_date_short})"
 
     mail(to: rsvp.email_address_with_name,
-         subject: subject,
-         delivery_method: delivery_method,
-         delivery_method_options: delivery_options)
+         subject: subject)
   end
 end

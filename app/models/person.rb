@@ -4,15 +4,16 @@ class Person < ApplicationRecord
   include NumberHelpers
   include IPAddress
 
-  has_and_belongs_to_many :venue_groups
+  has_many :person_venue_groups, dependent: :destroy
+  has_many :venue_groups, through: :person_venue_groups
+
+  enum :status, { active: 0, bouncing: 1, moved: 2, removed: 3 }
 
   before_validation :clean_variables
   before_save :downcase_email
   before_save :set_ip_address
   before_save :update_removal_status
   before_save :ensure_venue_group
-
-  cattr_accessor :current_ip
 
   # From https://stackoverflow.com/a/1126031/135850
   default_value_for :uniqid do
@@ -26,15 +27,6 @@ class Person < ApplicationRecord
   validates :email, email: true
   validates :phone_number, phone: { country: Settings.default_country, set: true }, allow_blank: true
   validates :postcode, postal_code: { country: Settings.default_country }, allow_blank: true
-  validates :status, inclusion: { in: Settings.person.status }
-
-  # define .active?, .bouncing?, .moved?, .removed?, .deleted?, .vacation? methods
-  Settings.person.status.each do |value|
-    define_method("#{value.tr(' ', '_')}?") { status == value }
-
-    # use update_attribute_s_ so the before_save actions fire
-    define_method("#{value.tr(' ', '_')}!") { update(status: value) }
-  end
 
   def ensure_venue_group
     return unless venue_groups.empty?
@@ -46,6 +38,6 @@ class Person < ApplicationRecord
     return if !status_changed? || !removed?
 
     self.removed_at = Time.zone.now
-    self.removal_ip_address = current_ip
+    self.removal_ip_address = Current.ip_address
   end
 end

@@ -6,14 +6,15 @@ class RSVP < ApplicationRecord
 
   belongs_to :show
 
+  enum :response, { no: 0, yes: 1 }
+  enum :confirmed, { unconfirmed: 0, waitlisted: 1, yes: 2 }, prefix: true
+
   before_save :downcase_email
   before_save :set_ip_address
   before_save :update_confirmation_date
   before_save :clear_seats_if_no
   after_save :update_phone_number
   after_save :notify_admin, unless: :confirmed?
-
-  cattr_accessor :current_ip
 
   # From https://stackoverflow.com/a/1126031/135850
   default_value_for :uniqid do
@@ -30,8 +31,8 @@ class RSVP < ApplicationRecord
     greater_than_or_equal_to: Settings.show.min_seats,
     less_than_or_equal_to: Settings.show.max_seats
   }, unless: :no?
-  validates :response, inclusion: { in: Settings.rsvp.response }
   validates :show_id, inclusion: { in: ->(_) { Show.all.collect(&:id) } }
+  validate :tickets_available?, on: :create, unless: :no?
 
   RSVP_NOTIFY_ATTRIBUTES = %w[first_name last_name seats_reserved response].freeze
 
@@ -48,13 +49,11 @@ class RSVP < ApplicationRecord
     self.confirmed = nil
   end
 
-  # define .yes?, .no?
-  Settings.rsvp.response.each do |value|
-    define_method(:"#{value}?") { response == value }
+  def tickets_available?
+    return true unless show&.confirmed? && show.sold_out?
 
-    # define .yes!, .no!
-    # use update_attribute_s_ so the before_save actions fire
-    define_method(:"#{value}!") { update(response: value) }
+    errors.add(:show, "is sold out")
+    false
   end
 
   def confirm!
@@ -76,7 +75,7 @@ class RSVP < ApplicationRecord
   end
 
   def unconfirmed?
-    confirmed == "no" || confirmed.empty?
+    confirmed.blank? || confirmed_unconfirmed?
   end
 
   def waitlisted?
@@ -101,15 +100,18 @@ class RSVP < ApplicationRecord
   # notify_rsvp can be "yes", "all" (yes and no) or blank/false/empty string
   def notify_admin
     # don't notify of any RSVPs when notify is empty
-    return if Settings.notify_rsvp.empty?
+    return if Settings.notify_rsvp.blank?
+
+    # don't notify if show was in the past
+    return if show.occurred?
 
     # don't notify if nothing important changed (seats, response, name) about the RSVP
-    return unless saved_changes.keys.intersect?(RSVP_NOTIFY_ATTRIBUTES) and persisted?
+    return unless saved_changes.keys.intersect?(RSVP_NOTIFY_ATTRIBUTES) && persisted?
 
     # don't notify of new "no" RSVPs when notify is "yes" only
-    return if Settings.notify_rsvp == "yes" and response != "yes" and previously_new_record?
+    return if Settings.notify_rsvp == "yes" && response != "yes" && previously_new_record?
 
-    if saved_changes.include?("response") and saved_changes["response"][1] == "no"
+    if saved_changes.include?("response") && saved_changes["response"][1] == "no"
       type = "cancel"
     elsif previously_new_record?
       type = "new"

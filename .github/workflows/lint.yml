@@ -1,16 +1,23 @@
 name: Linters
 
-on: [push]
+on:
+  pull_request:
+
+permissions:
+  contents: read
 
 jobs:
-  lint:
+  ruby:
+    name: RuboCop
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Set up Ruby
-        uses: ruby/setup-ruby@v1.316.0
+        uses: ruby/setup-ruby@v1.319.0
         with:
           bundler-cache: true
 
@@ -24,9 +31,54 @@ jobs:
 
       - name: Install gems
         run: |
-          bundle config path vendor/bundle
+          bundle config set path vendor/bundle
           bundle config set without 'default doc job cable storage test db'
           bundle install --jobs 4 --retry 3
 
       - name: Run RuboCop
         run: bundle exec rubocop --parallel
+
+  javascript:
+    name: JavaScript
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@v7.0.0
+        with:
+          node-version: 26
+          cache: npm
+
+      - name: Install packages
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint:js
+
+      - name: Run Prettier
+        run: npm run format:check
+
+  scss:
+    name: SCSS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@v7.0.0
+        with:
+          node-version: 26
+          cache: npm
+
+      - name: Install packages
+        run: npm ci
+
+      - name: Run Stylelint
+        run: npm run lint:css

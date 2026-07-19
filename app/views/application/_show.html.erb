@@ -1,7 +1,7 @@
 		<div class="show vevent">
 			<div class="vcard attendee summary">
 				<% show.artists.each do |artist| %>
-					<a class="imagelink" href="<%= url_for({ controller: :rsvps, action: :new, slug: show.slug }) %>"><img src="/<%= artist.photo %>" class="artist photo" width="200" height="220" alt="<%= artist.name %>" /></a>
+					<a class="imagelink" href="<%= rsvp_for_show_path(slug: show.slug) %>"><img src="/<%= artist.photo %>" class="artist photo" width="200" height="220" alt="<%= artist.name %>" /></a>
 				<% end %>
 				<% if mode == :index %>
 				<h2><%= show.name %></h2>
@@ -16,13 +16,13 @@
 			<p>$<%= show.price %></p>
 			<% end %>
 
-		<% if show.waitlisted? %>
+		<% if show.confirmed? && show.waitlisted? %>
 			<p><em>This show is sold out. Please RSVP now to be added to the waiting list.</em></p>
 		<% end %>
 
-		<% if show.waitlisted? || show.confirmed? %>
-			<p><%= button_to("Reserve Seats", { controller: :rsvps, action: :new, slug: show.slug }, method: :get) unless controller_name == "rsvps" %></p>
-		<% elsif show.sold_out? %>
+		<% if show.confirmed? && (show.available? || show.waitlisted?) %>
+			<p><%= button_to("Reserve Seats", rsvp_for_show_path(slug: show.slug), method: :get) unless controller_name == "rsvps" %></p>
+		<% elsif show.confirmed? && show.sold_out? %>
 			<p>This show is sold out.</p>
 		<% end %>
 		</div>
