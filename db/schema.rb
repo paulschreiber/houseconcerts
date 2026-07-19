@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_17_183244) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_18_192930) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", precision: nil, null: false
@@ -52,8 +52,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_17_183244) do
     t.string "reset_password_token"
     t.integer "sign_in_count", default: 0, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.string "webauthn_id"
     t.index ["email"], name: "index_admins_on_email", unique: true
     t.index ["reset_password_token"], name: "index_admins_on_reset_password_token", unique: true
+    t.index ["webauthn_id"], name: "index_admins_on_webauthn_id", unique: true
   end
 
   create_table "artists", charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
@@ -337,6 +339,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_17_183244) do
     t.index ["slug"], name: "index_venues_on_slug", unique: true
   end
 
+  create_table "webauthn_credentials", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "admin_id", null: false
+    t.integer "authentication_factor", limit: 1, null: false
+    t.datetime "created_at", null: false
+    t.string "external_id", null: false
+    t.string "name", null: false
+    t.text "public_key", null: false
+    t.bigint "sign_count", null: false
+    t.datetime "updated_at", null: false
+    t.index ["admin_id"], name: "index_webauthn_credentials_on_admin_id"
+    t.index ["external_id"], name: "index_webauthn_credentials_on_external_id", unique: true
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "shows", "venues"
@@ -346,4 +361,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_17_183244) do
   add_foreign_key "solid_queue_ready_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_recurring_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_scheduled_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
+  add_foreign_key "webauthn_credentials", "admins"
 end
