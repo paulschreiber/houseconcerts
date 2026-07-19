@@ -6,10 +6,12 @@ gem "mysql2"
 gem "rails", "~> 8"
 
 gem "dartsass-rails"
+gem "importmap-rails"
 gem "propshaft"
 gem "stimulus-rails"
 gem "turbo-rails"
 
+gem "mission_control-jobs"
 gem "solid_cable"
 gem "solid_cache"
 gem "solid_queue"
@@ -29,6 +31,7 @@ gem "carmen"
 gem "config"
 gem "default_value_for"
 gem "devise"
+gem "devise-webauthn"
 gem "friendly_id"
 gem "humanize"
 gem "icalendar"
@@ -42,7 +45,6 @@ gem "jbuilder"
 
 group :production do
   gem "cloudflare-rails"
-  gem "dalli"
 end
 
 group :development, :test do

@@ -5,6 +5,7 @@
 :meta_keywords: "Brooklyn, New York, Music, Live, Concert, Concerts, House Concert, Singer Songwriter, Folk, Acoustic, Unplugged"
 :google_analytics_id: "G-1RMTZBQMTP"
 :default_venue_group: 2
+:site_hostname: "houseconcerts.nyc"
 :invites_from: '"Paul Schreiber" <paul@houseconcerts.nyc>'
 :confirms_from: '"House Concerts" <info@houseconcerts.nyc>'
 :arrival_minutes: 30

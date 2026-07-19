@@ -4,15 +4,14 @@ class Person < ApplicationRecord
   include NumberHelpers
   include IPAddress
 
-  has_and_belongs_to_many :venue_groups
+  has_many :person_venue_groups, dependent: :destroy
+  has_many :venue_groups, through: :person_venue_groups
 
   before_validation :clean_variables
   before_save :downcase_email
   before_save :set_ip_address
   before_save :update_removal_status
   before_save :ensure_venue_group
-
-  cattr_accessor :current_ip
 
   # From https://stackoverflow.com/a/1126031/135850
   default_value_for :uniqid do
@@ -46,6 +45,6 @@ class Person < ApplicationRecord
     return if !status_changed? || !removed?
 
     self.removed_at = Time.zone.now
-    self.removal_ip_address = current_ip
+    self.removal_ip_address = Current.ip_address
   end
 end
