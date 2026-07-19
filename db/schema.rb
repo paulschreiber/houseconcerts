@@ -106,7 +106,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_17_183244) do
     t.string "postcode"
     t.string "removal_ip_address"
     t.datetime "removed_at", precision: nil
-    t.string "status"
+    t.integer "status"
     t.string "uniqid"
     t.datetime "updated_at", precision: nil, null: false
     t.index ["email"], name: "index_people_on_email", unique: true
@@ -124,7 +124,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_17_183244) do
   end
 
   create_table "rsvps", charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
-    t.string "confirmed"
+    t.integer "confirmed"
     t.datetime "confirmed_at", precision: nil
     t.datetime "created_at", precision: nil, null: false
     t.string "email"
@@ -134,7 +134,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_17_183244) do
     t.string "phone_number"
     t.string "postcode"
     t.string "referrer"
-    t.string "response"
+    t.integer "response"
     t.integer "seats_reserved"
     t.integer "seats_used"
     t.bigint "show_id"
@@ -156,7 +156,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_17_183244) do
     t.integer "price"
     t.string "slug"
     t.datetime "start", precision: nil
-    t.string "status"
+    t.integer "status"
     t.datetime "updated_at", precision: nil, null: false
     t.bigint "venue_id"
     t.index ["slug"], name: "index_shows_on_slug", unique: true

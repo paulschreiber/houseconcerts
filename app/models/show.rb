@@ -10,15 +10,14 @@ class Show < ApplicationRecord
 
   before_validation :set_end_time
 
-  scope :confirmed, -> { where(status: "confirmed") }
-  scope :confirmed_or_full, -> { where(status: [ "sold out", "waitlisted", "confirmed" ]) }
-  scope :occurred, -> { confirmed_or_full.where(start: ...Time.zone.now).order(:start) }
-  scope :upcoming, -> { confirmed_or_full.where("start > ?", Time.zone.now).order(:start) }
+  enum :status, { confirmed: 0, unconfirmed: 1, cancelled: 2 }
+
+  scope :occurred, -> { confirmed.where(start: ...Time.zone.now).order(:start) }
+  scope :upcoming, -> { confirmed.where("start > ?", Time.zone.now).order(:start) }
 
   validates :start, timeliness: { type: :datetime }
   validates :end, timeliness: { type: :datetime, after: ->(record) { record.start } }
   validates :name, presence: true
-  validates :status, inclusion: { in: Settings.show.status }
   validates :price, presence: true, numericality: {
     only_integer: true,
     greater_than_or_equal_to: Settings.show.min_price,
@@ -26,14 +25,14 @@ class Show < ApplicationRecord
   }
   validates :venue_id, inclusion: { in: ->(_) { Venue.all.collect(&:id) } }
 
-  # define .confirmed?, .cancelled?, .unconfirmed?, .waitlisted?, .sold_out? methods
-  Settings.show.status.each do |value|
-    define_method("#{value.tr(' ', '_')}?") { status == value }
+  # TODO: ticket availability (sold out / waitlisted) is moving to its own column;
+  # until that lands, no show can be sold out or waitlisted.
+  def sold_out?
+    false
+  end
 
-    # define .confirmed!, .cancelled!, .unconfirmed!, .waitlisted!, .sold_out! methods
-    define_method("#{value.tr(' ', '_')}!") do
-      update(status: value)
-    end
+  def waitlisted?
+    false
   end
 
   def attendees
