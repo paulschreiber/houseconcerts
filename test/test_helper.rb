@@ -21,3 +21,9 @@ module ActionDispatch
     include Devise::Test::IntegrationHelpers
   end
 end
+
+module ActionDispatch
+  class IntegrationTest
+    include Devise::Test::IntegrationHelpers
+  end
+end
