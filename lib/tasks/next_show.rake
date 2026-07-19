@@ -213,14 +213,19 @@ namespace :next_show do
       exit
     end
 
-    if show.confirmed? && show.available?
+    unless show.confirmed?
+      puts "Next show is not confirmed"
+      exit
+    end
+
+    if show.available?
       rsvps = RSVP.where(show: show, response: "yes", confirmed: [ nil, "unconfirmed", "waitlisted" ])
       rsvps.each do |rsvp|
         puts "Emailing #{rsvp.email_address_with_name}..."
         InvitesMailer.confirm(rsvp).deliver_now
         rsvp.confirm!
       end
-    elsif show.confirmed? && show.waitlisted?
+    elsif show.waitlisted?
       rsvps = RSVP.where(show: show, response: "yes", confirmed: [ nil, "unconfirmed" ])
       rsvps.each do |rsvp|
         puts "Emailing #{rsvp.email_address_with_name}..."
