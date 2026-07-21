@@ -1,11 +1,11 @@
 import js from "@eslint/js";
-import importPlugin from "eslint-plugin-import";
+import { importX } from "eslint-plugin-import-x";
 import globals from "globals";
 import eslintConfigPrettier from "eslint-config-prettier";
 
 export default [
   js.configs.recommended,
-  importPlugin.flatConfigs.recommended,
+  importX.flatConfigs.recommended,
   eslintConfigPrettier,
   {
     files: ["app/javascript/**/*.js"],
@@ -20,7 +20,7 @@ export default [
       // Importmap pins (e.g. "@hotwired/stimulus", "controllers") resolve via
       // config/importmap.rb / the browser importmap, not node_modules - this
       // rule can't see those, so it can't be used here.
-      "import/no-unresolved": "off",
+      "import-x/no-unresolved": "off",
       semi: ["error", "always"],
       quotes: ["error", "double"],
       "no-unused-vars": [
@@ -30,7 +30,7 @@ export default [
           args: "none",
         },
       ],
-      "import/order": [
+      "import-x/order": [
         "error",
         {
           alphabetize: {
