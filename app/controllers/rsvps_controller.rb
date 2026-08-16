@@ -90,7 +90,14 @@ class RsvpsController < ApplicationController
     if saved
       redirect_to rsvp_thanks_path(uniqid: @rsvp.uniqid)
     else
-      @show = Show.find(show_id) if show_id.positive?
+      @show = Show.find_by(id: show_id)
+
+      # can't render the form without a show to reserve seats for
+      if @show.nil?
+        redirect_to root_url
+        return
+      end
+
       render :create, status: :unprocessable_content
     end
   end

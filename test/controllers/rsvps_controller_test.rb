@@ -149,6 +149,40 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to rsvp_thanks_path(uniqid: new_rsvp.uniqid)
   end
 
+  test "create redirects home instead of crashing when show_id is blank" do
+    assert_no_difference("RSVP.count") do
+      post rsvps_path, params: {
+        rsvp: {
+          first_name: "New",
+          last_name: "Attendee",
+          email: "new.attendee@example.com",
+          show_id: "",
+          response: "yes",
+          seats_reserved: 2
+        }
+      }
+    end
+
+    assert_redirected_to root_url
+  end
+
+  test "create redirects home instead of crashing when show_id refers to a nonexistent show" do
+    assert_no_difference("RSVP.count") do
+      post rsvps_path, params: {
+        rsvp: {
+          first_name: "New",
+          last_name: "Attendee",
+          email: "new.attendee@example.com",
+          show_id: Show.maximum(:id).to_i + 1,
+          response: "yes",
+          seats_reserved: 2
+        }
+      }
+    end
+
+    assert_redirected_to root_url
+  end
+
   test "thanks shows the confirmation page for a valid uniqid" do
     get rsvp_thanks_path(uniqid: rsvps(:one).uniqid)
     assert_response :success
