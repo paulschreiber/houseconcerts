@@ -11,7 +11,7 @@ default: &default
 
 development: &development
   adapter: mysql2
-  encoding: utf8
+  encoding: utf8mb4
   database: houseconcerts_dev
   username: root
   host: <%= ENV.fetch("DB_HOST", "localhost") %>
