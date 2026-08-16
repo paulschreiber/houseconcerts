@@ -49,7 +49,7 @@ repos:
           - prettier
 
   - repo: https://github.com/thibaudcolas/pre-commit-stylelint
-    rev: v9.9.0
+    rev: v17.14.1
     hooks:
       - id: stylelint
         files: \.scss$
