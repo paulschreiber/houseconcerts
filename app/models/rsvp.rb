@@ -46,7 +46,7 @@ class RSVP < ApplicationRecord
     return if yes?
 
     self.seats_reserved = 0
-    self.confirmed = nil
+    self.confirmed = "unconfirmed"
   end
 
   def tickets_available?
