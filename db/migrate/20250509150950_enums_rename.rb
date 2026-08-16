@@ -57,20 +57,20 @@ class EnumsRename < ActiveRecord::Migration[8.0]
     # rubocop:disable Rails/SkipsModelValidations
     RSVP.find_each do |entry|
       entry.update_columns(
-        response: response_map[entry.old_response],
-        confirmed: confirmed_map[entry.old_confirmed]
+        response: response_map.fetch(entry.old_response, 0),
+        confirmed: confirmed_map.fetch(entry.old_confirmed, 0)
       )
     end
 
     Show.find_each do |entry|
       entry.update_columns(
-        status: show_status_map[entry.old_status],
+        status: show_status_map.fetch(entry.old_status, 0),
         availability: show_availability_map.fetch(entry.old_status, 0)
       )
     end
 
     Person.find_each do |entry|
-      entry.update_columns(status: person_status_map[entry.old_status])
+      entry.update_columns(status: person_status_map.fetch(entry.old_status, 0))
     end
     # rubocop:enable Rails/SkipsModelValidations
 
