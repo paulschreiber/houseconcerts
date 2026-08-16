@@ -2,6 +2,7 @@ class ChangePrimaryKeyToBigint < ActiveRecord::Migration[6.1]
   def change
 
     remove_foreign_key "shows", "venues"
+    remove_foreign_key "rsvps", "shows"
 
     remove_index :artists_shows, column: ["artist_id", "show_id"], name: "index_artists_shows_on_artist_id_and_show_id"
     remove_index :artists_shows, column: ["show_id", "artist_id"], name: "index_artists_shows_on_show_id_and_artist_id"
@@ -40,6 +41,7 @@ class ChangePrimaryKeyToBigint < ActiveRecord::Migration[6.1]
     change_column :friendly_id_slugs, :sluggable_id, :bigint
 
     add_foreign_key "shows", "venues"
+    add_foreign_key "rsvps", "shows"
 
     add_index :artists_shows, ["artist_id", "show_id"], name: "index_artists_shows_on_artist_id_and_show_id"
     add_index :artists_shows, ["show_id", "artist_id"], name: "index_artists_shows_on_show_id_and_artist_id"
