@@ -40,6 +40,24 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
     assert_select "input[name='rsvp[first_name]'][value=?]", rsvps(:one).first_name
   end
 
+  test "new does not display validation errors on a plain page load" do
+    get rsvp_for_show_path(slug: shows(:upcoming).slug)
+    assert_response :success
+    assert_select ".error", count: 0
+  end
+
+  test "new does not display validation errors when prefilling from a person's uniqid" do
+    get modify_rsvp_path(slug: shows(:upcoming).slug, uniqid: people(:one).uniqid)
+    assert_response :success
+    assert_select ".error", count: 0
+  end
+
+  test "new does not display validation errors when prefilling from an existing rsvp's uniqid" do
+    get modify_rsvp_path(slug: shows(:upcoming).slug, uniqid: rsvps(:one).uniqid)
+    assert_response :success
+    assert_select ".error", count: 0
+  end
+
   test "new with a 'no' response for a person with no existing rsvp saves and redirects to thanks" do
     assert_difference("RSVP.count", 1) do
       get rsvp_response_path(slug: shows(:upcoming).slug, uniqid: people(:one).uniqid, response: "no")
