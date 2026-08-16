@@ -6,8 +6,8 @@ class RSVP < ApplicationRecord
 
   belongs_to :show
 
-  enum :response, { no: 0, yes: 1 }
-  enum :confirmed, { unconfirmed: 0, waitlisted: 1, yes: 2 }, prefix: true
+  enum :response, { no: 0, yes: 1 }, default: :no
+  enum :confirmed, { unconfirmed: 0, waitlisted: 1, yes: 2 }, prefix: true, default: :unconfirmed
 
   before_save :downcase_email
   before_save :set_ip_address

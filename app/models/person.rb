@@ -7,7 +7,7 @@ class Person < ApplicationRecord
   has_many :person_venue_groups, dependent: :destroy
   has_many :venue_groups, through: :person_venue_groups
 
-  enum :status, { active: 0, bouncing: 1, moved: 2, removed: 3 }
+  enum :status, { active: 0, bouncing: 1, moved: 2, removed: 3 }, default: :active
 
   before_validation :clean_variables
   before_save :downcase_email
