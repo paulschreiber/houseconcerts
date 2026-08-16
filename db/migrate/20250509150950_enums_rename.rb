@@ -9,19 +9,19 @@ class EnumsRename < ActiveRecord::Migration[8.0]
   def up
     change_table :rsvps, bulk: true do |t|
       t.rename :response, :old_response
-      t.integer :response
+      t.integer :response, null: false, default: 0
       t.rename :confirmed, :old_confirmed
-      t.integer :confirmed
+      t.integer :confirmed, null: false, default: 0
     end
 
     change_table :shows, bulk: true do |t|
       t.rename :status, :old_status
-      t.integer :status
+      t.integer :status, null: false, default: 0
     end
 
     change_table :people, bulk: true do |t|
       t.rename :status, :old_status
-      t.integer :status
+      t.integer :status, null: false, default: 0
     end
 
     # enum :response, { no: 0, yes: 1 }
@@ -31,12 +31,18 @@ class EnumsRename < ActiveRecord::Migration[8.0]
     confirmed_map = { nil => 0, "waitlisted" => 1, "yes" => 2 }
 
     # enum :status, { confirmed: 0, unconfirmed: 1, cancelled: 2 }
-    # "sold out" and "waitlisted" shows are still happening, so they fold into "confirmed"
-    # for now; ticket availability will move to its own column in a follow-up.
+    # "sold out" and "waitlisted" shows are still happening, so they fold into "confirmed";
+    # their original distinction is preserved via show_availability_map below.
     show_status_map = {
       "confirmed" => 0, "sold out" => 0, "waitlisted" => 0,
       "unconfirmed" => 1,
       "cancelled" => 2
+    }
+
+    # enum :availability, { available: 0, waitlisted: 1, sold_out: 2 }
+    show_availability_map = {
+      "waitlisted" => 1,
+      "sold out" => 2
     }
 
     # enum :status, { active: 0, bouncing: 1, moved: 2, removed: 3 }
@@ -57,7 +63,10 @@ class EnumsRename < ActiveRecord::Migration[8.0]
     end
 
     Show.find_each do |entry|
-      entry.update_columns(status: show_status_map[entry.old_status])
+      entry.update_columns(
+        status: show_status_map[entry.old_status],
+        availability: show_availability_map.fetch(entry.old_status, 0)
+      )
     end
 
     Person.find_each do |entry|
