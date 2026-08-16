@@ -58,6 +58,26 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".error", count: 0
   end
 
+  test "new renders a label for each seats_reserved radio option with a matching id" do
+    get rsvp_for_show_path(slug: shows(:upcoming).slug)
+    assert_response :success
+
+    (Settings.show.min_seats..Settings.show.max_seats).each do |count|
+      assert_select "input#rsvp_seats_reserved_#{count}[type=radio]"
+      assert_select "label[for='rsvp_seats_reserved_#{count}']"
+    end
+  end
+
+  test "new renders a label for each response radio option with a matching id" do
+    get rsvp_for_show_path(slug: shows(:upcoming).slug)
+    assert_response :success
+
+    RSVP.responses.each_key do |response|
+      assert_select "input#rsvp_response_#{response}[type=radio]"
+      assert_select "label[for='rsvp_response_#{response}']"
+    end
+  end
+
   test "new with a 'no' response for a person with no existing rsvp saves and redirects to thanks" do
     assert_difference("RSVP.count", 1) do
       get rsvp_response_path(slug: shows(:upcoming).slug, uniqid: people(:one).uniqid, response: "no")

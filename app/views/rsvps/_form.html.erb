@@ -43,7 +43,7 @@
 		<%= f.hidden_field :seats_reserved, value: 0 %>
 		<% (Settings.show.min_seats..Settings.show.max_seats).each do |count| %>
 			<%= f.radio_button :seats_reserved, count, data: { seat_selection_target: "seat", action: "click->seat-selection#selectYes" } %>
-			<%= f.label :seats_reserved, count, class: "radio" %>
+			<%= f.label :seats_reserved, count, value: count, class: "radio" %>
 		<% end %>
 	</div>
 
