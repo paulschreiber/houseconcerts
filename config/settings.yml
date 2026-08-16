@@ -12,6 +12,7 @@
 :confirms_from_email: "info"
 :arrival_minutes: 30
 :show_duration: 2
+:notify_rsvp: "yes"
 
 :exception_list:
   :first_names:
