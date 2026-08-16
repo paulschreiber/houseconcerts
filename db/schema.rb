@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_19_152516) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_17_183244) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", precision: nil, null: false
@@ -106,7 +106,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_19_152516) do
     t.string "postcode"
     t.string "removal_ip_address"
     t.datetime "removed_at", precision: nil
-    t.integer "status"
+    t.integer "status", default: 0, null: false
     t.string "uniqid"
     t.datetime "updated_at", precision: nil, null: false
     t.index ["email"], name: "index_people_on_email", unique: true
@@ -124,7 +124,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_19_152516) do
   end
 
   create_table "rsvps", charset: "utf8mb3", collation: "utf8_unicode_ci", force: :cascade do |t|
-    t.integer "confirmed"
+    t.integer "confirmed", default: 0, null: false
     t.datetime "confirmed_at", precision: nil
     t.datetime "created_at", precision: nil, null: false
     t.string "email"
@@ -134,7 +134,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_19_152516) do
     t.string "phone_number"
     t.string "postcode"
     t.string "referrer"
-    t.integer "response"
+    t.integer "response", default: 0, null: false
     t.integer "seats_reserved"
     t.integer "seats_used"
     t.bigint "show_id"
@@ -157,7 +157,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_19_152516) do
     t.integer "price"
     t.string "slug"
     t.datetime "start", precision: nil
-    t.integer "status"
+    t.integer "status", default: 0, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.bigint "venue_id"
     t.index ["availability"], name: "index_shows_on_availability"
