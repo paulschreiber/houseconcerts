@@ -89,5 +89,5 @@ Rails.application.configure do
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 
   # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "houseconcerts.nyc", protocol: "https" }
+  config.action_mailer.default_url_options = { host: Settings.domain, protocol: "https" }
 end
