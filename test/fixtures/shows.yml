@@ -17,3 +17,14 @@ past:
   status: "confirmed"
   price: 20
   blurb: "A test show that already happened."
+
+sold_out:
+  name: "Test Sold Out Show"
+  slug: "test-sold-out-show"
+  venue: one
+  start: <%= 1.month.from_now.change(hour: 19, min: 0, sec: 0).iso8601 %>
+  end: <%= (1.month.from_now.change(hour: 19, min: 0, sec: 0) + 2.hours).iso8601 %>
+  status: "confirmed"
+  availability: "sold_out"
+  price: 20
+  blurb: "A test show that is sold out."
