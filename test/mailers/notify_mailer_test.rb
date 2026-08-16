@@ -6,7 +6,7 @@ class NotifyMailerTest < ActionMailer::TestCase
 
     new_email = NotifyMailer.rsvp(rsvp, "new", nil)
     assert_includes new_email.subject, "New RSVP"
-    assert_equal [ Mail::Address.new(Settings.invites_from).address ], new_email.to
+    assert_equal [ "#{Settings.invites_from_email}@#{Settings.domain}" ], new_email.to
 
     cancel_email = NotifyMailer.rsvp(rsvp, "cancel", nil)
     assert_includes cancel_email.subject, "Cancellation"
