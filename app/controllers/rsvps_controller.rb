@@ -62,7 +62,7 @@ class RsvpsController < ApplicationController
       @rsvp.show_id = @show.id if @show.id
     end
 
-    return unless @rsvp.response == "no" && @rsvp.save
+    return unless params[:response] == "no" && @rsvp.save
 
     # show a "no" RSVP
     redirect_to rsvp_thanks_path(uniqid: @rsvp.uniqid)
