@@ -30,15 +30,12 @@ class RsvpTest < ActiveSupport::TestCase
     assert_not rsvp.yes?
   end
 
-  test "unconfirmed? is true when confirmed is nil, blank, or 'no'" do
+  test "unconfirmed? is true by default and false once confirmed is yes" do
     rsvp = RSVP.new
     assert rsvp.unconfirmed?
 
-    rsvp.confirmed = ""
-    assert rsvp.unconfirmed?
-
-    rsvp.confirmed = "no"
-    assert rsvp.unconfirmed?
+    rsvp.confirmed = "waitlisted"
+    assert_not rsvp.unconfirmed?
 
     rsvp.confirmed = "yes"
     assert_not rsvp.unconfirmed?
@@ -50,12 +47,12 @@ class RsvpTest < ActiveSupport::TestCase
     rsvp.save!
 
     assert_equal 0, rsvp.seats_reserved
-    assert_nil rsvp.confirmed
+    assert_equal "unconfirmed", rsvp.confirmed
   end
 
   test "update_confirmation_date sets confirmed_at when confirmed becomes yes" do
     rsvp = rsvps(:one)
-    rsvp.update!(confirmed: nil)
+    rsvp.update!(confirmed: "unconfirmed")
     assert_nil rsvp.confirmed_at
 
     rsvp.update!(confirmed: "yes")
