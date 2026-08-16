@@ -45,19 +45,6 @@ jobs:
         with:
           bundler-cache: true
 
-      - name: Cache gems
-        uses: actions/cache@v6.1.0
-        with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-test-${{ hashFiles('**/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-test-
-
-      - name: Install gems
-        run: |
-          bundle config set path vendor/bundle
-          bundle install --jobs 4 --retry 3
-
       - name: Set up database
         run: bin/rails db:create db:schema:load
 
