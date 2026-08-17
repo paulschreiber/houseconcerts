@@ -40,4 +40,8 @@ class Person < ApplicationRecord
     self.removed_at = Time.zone.now
     self.removal_ip_address = Current.ip_address
   end
+
+  def attendance_history
+    RSVP.joins(:show).merge(Show.occurred).where(email: email, response: "yes", confirmed: "yes", seats_reserved: 1..).reorder("shows.start DESC").select(:start, :name, :seats_used, :seats_reserved)
+  end
 end
