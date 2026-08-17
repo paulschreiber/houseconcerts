@@ -13,3 +13,22 @@
 <%- end -%>
 <br>On mailing list: <%= @rsvp.person_exists? ? "Yes" : "No" %>
 </p>
+
+<h2>Attendance History</h2>
+<%- if @shows_attended.any? %>
+<ul>
+  <%- @shows_attended.each do |show| %>
+    <%- my_tag = show.seats_used.to_i == show.seats_reserved.to_i ? "span" : "strong" -%>
+
+    <li>
+        <%= tag.public_send(my_tag) do %>
+          <%= show.start.to_date.iso8601 %>:
+          <%= show.name %>
+          (<%= show.seats_used.to_i %> / <%= show.seats_reserved.to_i %>)
+        <%- end -%>
+    </li>
+  <%- end -%>
+</ul>
+<%- else -%>
+<p>No previous reservations.</p>
+<%- end -%>
