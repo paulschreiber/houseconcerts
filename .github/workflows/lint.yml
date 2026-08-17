@@ -8,8 +8,13 @@ permissions:
   contents: read
 
 jobs:
+  changes:
+    uses: ./.github/workflows/detect-changes.yml
+
   ruby:
     name: RuboCop
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     env:
       BUNDLE_WITHOUT: "default doc job cable storage test db"
@@ -29,6 +34,8 @@ jobs:
 
   javascript:
     name: JavaScript
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -53,6 +60,8 @@ jobs:
 
   scss:
     name: SCSS
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
