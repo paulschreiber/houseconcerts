@@ -7,7 +7,7 @@ class Artist < ApplicationRecord
   has_many :shows, through: :artist_shows
 
   validates :name, presence: true
-  validates :url, url: true
+  validates :url, url: true, allow_blank: true
 
   def photo
     "photos/headshots/#{slug}.jpg"
