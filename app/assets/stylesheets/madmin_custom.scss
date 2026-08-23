@@ -32,6 +32,12 @@ td > .multiline-value:first-child {
   margin-top: 0;
 }
 
+/* Opens is a read-only log with no meaningful detail view to link to */
+body.opens.index td.actions,
+body.opens.index th:last-child {
+  display: none;
+}
+
 /* Sidebar section dividers (plain horizontal rules, no visible label) */
 nav h4 {
   height: 0;
