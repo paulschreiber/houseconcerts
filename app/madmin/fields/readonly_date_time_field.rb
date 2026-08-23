@@ -2,7 +2,7 @@
 # (not a picker) on the new/edit form.
 class ReadonlyDateTimeField < Madmin::Fields::DateTime
   def to_partial_path(name)
-    return super if name.to_s == "form"
+    return "/madmin/fields/readonly_date_time_field/form" if name.to_s == "form"
 
     "/madmin/fields/date_time/#{name}"
   end
