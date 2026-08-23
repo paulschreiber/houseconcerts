@@ -41,6 +41,7 @@ gem "validate_url"
 gem "validation_kit"
 
 gem "jbuilder"
+gem "madmin"
 
 group :production do
   gem "cloudflare-rails"
