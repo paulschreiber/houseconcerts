@@ -34,7 +34,7 @@ class RSVP < ApplicationRecord
   validates :seats_used, absence: true, if: :no?
   validates :seats_used, numericality: {
     only_integer: true,
-    greater_than_or_equal_to: Settings.show.min_seats
+    greater_than_or_equal_to: 0
   }, allow_blank: true, if: :yes?
   validates :show_id, inclusion: { in: ->(_) { Show.all.collect(&:id) } }
   validate :tickets_available?, on: :create, unless: :no?
