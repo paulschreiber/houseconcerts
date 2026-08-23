@@ -37,12 +37,17 @@ class RsvpTest < ActiveSupport::TestCase
     assert_includes rsvp.errors.attribute_names, :seats_used
   end
 
-  test "seats_used must be at least Settings.show.min_seats when response is yes" do
-    rsvp = RSVP.new(rsvps(:one).attributes.except("id").merge("response" => "yes", "seats_used" => Settings.show.min_seats - 1))
+  test "seats_used can be 0, representing a no-show" do
+    rsvp = RSVP.new(rsvps(:one).attributes.except("id").merge("response" => "yes", "seats_used" => 0))
+    assert rsvp.valid?
+  end
+
+  test "seats_used cannot be negative" do
+    rsvp = RSVP.new(rsvps(:one).attributes.except("id").merge("response" => "yes", "seats_used" => -1))
     assert_not rsvp.valid?
     assert_includes rsvp.errors.attribute_names, :seats_used
 
-    rsvp.seats_used = Settings.show.min_seats
+    rsvp.seats_used = 0
     assert rsvp.valid?
   end
 
