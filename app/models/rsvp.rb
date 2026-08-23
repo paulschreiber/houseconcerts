@@ -31,6 +31,11 @@ class RSVP < ApplicationRecord
     greater_than_or_equal_to: Settings.show.min_seats,
     less_than_or_equal_to: Settings.show.max_seats
   }, unless: :no?
+  validates :seats_used, absence: true, if: :no?
+  validates :seats_used, numericality: {
+    only_integer: true,
+    greater_than_or_equal_to: Settings.show.min_seats
+  }, allow_blank: true, if: :yes?
   validates :show_id, inclusion: { in: ->(_) { Show.all.collect(&:id) } }
   validate :tickets_available?, on: :create, unless: :no?
 
@@ -46,6 +51,7 @@ class RSVP < ApplicationRecord
     return if yes?
 
     self.seats_reserved = 0
+    self.seats_used = 0
     self.confirmed = "unconfirmed"
   end
 
