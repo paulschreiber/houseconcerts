@@ -13,6 +13,7 @@
 :arrival_minutes: 30
 :show_duration: 2
 :notify_rsvp: "yes"
+:admin_prefix: "backstage"
 
 :exception_list:
   :first_names:
