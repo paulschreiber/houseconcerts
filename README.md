@@ -2,14 +2,21 @@
 
 A web app for managing house concerts.
 
-Originally built with Rails 2.2.2. Now with Rails 8.
-
 ## Features
 
 - Support for multiple artists per show
 - Support for multiple venues
 - Support for grouping venues together
 - Mobile/responsive
+- Admin UI for managing shows, artists and reservations
+
+## Admin access
+
+The admin UI lives at `/backstage/`. To access it, create an admin user with `bin/rails console`:
+
+```ruby
+Admin.create!(email: "you@example.com", password: "changeme", password_confirmation: "changeme")
+```
 
 ## Deployment notes
 
@@ -22,8 +29,6 @@ Originally built with Rails 2.2.2. Now with Rails 8.
 
 ## TODO
 
-- [ ] Admin dashboard
-- [ ] Admin UI
 - [ ] Mail merge invites
 - [ ] Navigation on mobile
 - [ ] Gmail mail actions (https://developers.google.com/gmail/markup/)
