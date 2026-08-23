@@ -1,0 +1,15 @@
+<nav>
+  <%= nav_link_to t("madmin.navigation.dashboard"), madmin_root_path %>
+
+  <% Madmin.menu.render do |item| %>
+    <% if item.url %>
+      <%= nav_link_to item.label, item.url, starts_with: item.url %>
+    <% else %>
+      <h4><%= item.label %></h4>
+    <% end %>
+
+    <% item.items.each do |item| %>
+      <%= nav_link_to item.label, item.url, starts_with: item.url %>
+    <% end %>
+  <% end %>
+</nav>
