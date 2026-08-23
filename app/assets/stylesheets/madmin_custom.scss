@@ -1,0 +1,51 @@
+/* .form-group label beats Madmin's bare `label` rule on specificity, so this
+   doesn't depend on stylesheet load order. */
+.form-group label {
+  font-weight: 700;
+}
+
+.radio-group {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.form-group .radio-group__option {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: normal;
+}
+
+/* Read-only form fields: start on a new line, like a real input does */
+.form-value {
+  display: block;
+}
+
+/* Multiline text fields on the show page: align the row label to the top,
+   since the value can span several lines. */
+tr:has(.multiline-value) th.label {
+  vertical-align: top;
+}
+
+td > .multiline-value:first-child {
+  margin-top: 0;
+}
+
+/* Sidebar section dividers (plain horizontal rules, no visible label) */
+nav h4 {
+  height: 0;
+  margin: 0.75rem 0;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid var(--border-color);
+  text-indent: -9999px;
+  overflow: hidden;
+}
+
+/* Divider between the Dashboard link and the resource menu */
+#sidebar nav > a:first-child {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
+}
