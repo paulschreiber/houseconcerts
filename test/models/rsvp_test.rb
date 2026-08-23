@@ -20,6 +20,32 @@ class RsvpTest < ActiveSupport::TestCase
     assert_includes rsvp.errors.attribute_names, :email
   end
 
+  test "seats_used can be blank" do
+    rsvp = RSVP.new(rsvps(:one).attributes.except("id").merge("seats_used" => nil))
+    assert rsvp.valid?
+  end
+
+  test "seats_used must be an integer" do
+    rsvp = RSVP.new(rsvps(:one).attributes.except("id").merge("seats_used" => 1.5))
+    assert_not rsvp.valid?
+    assert_includes rsvp.errors.attribute_names, :seats_used
+  end
+
+  test "seats_used must be blank when response is no" do
+    rsvp = RSVP.new(rsvps(:one).attributes.except("id").merge("response" => "no", "seats_used" => 2))
+    assert_not rsvp.valid?
+    assert_includes rsvp.errors.attribute_names, :seats_used
+  end
+
+  test "seats_used must be at least Settings.show.min_seats when response is yes" do
+    rsvp = RSVP.new(rsvps(:one).attributes.except("id").merge("response" => "yes", "seats_used" => Settings.show.min_seats - 1))
+    assert_not rsvp.valid?
+    assert_includes rsvp.errors.attribute_names, :seats_used
+
+    rsvp.seats_used = Settings.show.min_seats
+    assert rsvp.valid?
+  end
+
   test "yes? and no? reflect the response attribute" do
     rsvp = RSVP.new(response: "yes")
     assert rsvp.yes?
