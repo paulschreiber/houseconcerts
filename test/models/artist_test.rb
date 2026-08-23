@@ -11,9 +11,19 @@ class ArtistTest < ActiveSupport::TestCase
     assert_includes artist.errors.attribute_names, :name
   end
 
-  test "requires a valid url" do
-    artist = Artist.new(artists(:one).attributes.except("id").merge("url" => "not a url"))
-    assert_not artist.valid?
+  test "saves with a url" do
+    artist = Artist.new(name: "Artist With URL", url: "https://example.com/artist")
+    assert artist.save
+  end
+
+  test "saves without a url" do
+    artist = Artist.new(name: "Artist Without URL", url: "")
+    assert artist.save
+  end
+
+  test "fails to save with an invalid url" do
+    artist = Artist.new(name: "Artist With Bad URL", url: "not a url")
+    assert_not artist.save
     assert_includes artist.errors.attribute_names, :url
   end
 
