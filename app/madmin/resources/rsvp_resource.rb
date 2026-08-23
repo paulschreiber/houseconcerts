@@ -12,21 +12,22 @@ class RSVPResource < Madmin::Resource
   attribute :email
   attribute :phone_number
   attribute :postcode, label: "Postal Code"
-  attribute :seats_reserved
+  attribute :seats_reserved, index: true
   attribute :seats_used
   attribute :ip_address, field: ReadonlyStringField, form: false, new: true, edit: true
   attribute :confirmed_at, field: ReadonlyDateTimeField, form: false, new: true, edit: true
   attribute :created_at
   attribute :updated_at
   attribute :referrer, field: ReadonlyStringField, form: false, new: true, edit: true
-  attribute :response, field: RadioEnumField
+  attribute :response, field: RadioEnumField, index: true
   attribute :confirmed, field: RadioEnumField
 
   # Associations
   attribute :show
 
   # Add scopes to easily filter records
-  # scope :published
+  scope :next_show
+  scope :previous_show
 
   # Add actions to the resource's show page
   # Pass collection: true to also render it in each row on the index page

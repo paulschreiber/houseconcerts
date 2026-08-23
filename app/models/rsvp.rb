@@ -107,6 +107,14 @@ class RSVP < ApplicationRecord
     Person.find_by(email: email)
   end
 
+  def self.next_show
+    RSVP.where(show: Show.next)
+  end
+
+  def self.previous_show
+    RSVP.where(show: Show.previous)
+  end
+
   # notify_rsvp can be "yes", "all" (yes and no) or blank/false/empty string
   def notify_admin
     # don't notify of any RSVPs when notify is empty
