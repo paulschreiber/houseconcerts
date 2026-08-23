@@ -18,7 +18,14 @@ class ShowResource < Madmin::Resource
   attribute :venue
 
   # Add scopes to easily filter records
-  # scope :published
+  scope :upcoming
+  scope :past
+  scope :available
+  scope :waitlisted
+  scope :sold_out
+  scope :confirmed
+  scope :unconfirmed
+  scope :cancelled
 
   # Add actions to the resource's show page
   # Pass collection: true to also render it in each row on the index page
