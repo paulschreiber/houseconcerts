@@ -1,0 +1,8 @@
+<div class="radio-group">
+  <% field.options_for_select(record).each do |option| %>
+    <label class="radio-group__option">
+      <%= form.radio_button field.attribute_name, option %>
+      <%= option.to_s.humanize %>
+    </label>
+  <% end %>
+</div>
