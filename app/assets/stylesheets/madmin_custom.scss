@@ -38,6 +38,16 @@ body.opens.index th:last-child {
   display: none;
 }
 
+/* Shows index: group the scope buttons visually (time / availability /
+   confirmation) with extra spacing. Positional — resource.scopes has no
+   grouping concept, so this must be updated if scope order/count changes:
+   All, Upcoming, Past | Available, Waitlisted, Sold out | Confirmed,
+   Unconfirmed, Cancelled. */
+body.shows.index .scopes a:nth-child(4),
+body.shows.index .scopes a:nth-child(7) {
+  margin-left: 1rem;
+}
+
 /* Sidebar section dividers (plain horizontal rules, no visible label) */
 nav h4 {
   height: 0;

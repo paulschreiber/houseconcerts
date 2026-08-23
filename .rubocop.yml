@@ -77,3 +77,10 @@ Style:
 # See https://medium.com/@john200Ok/migrating-a-rails-6-association-from-has-and-belongs-to-many-to-has-many-through-2e3ba1361542
 Rails/HasAndBelongsToMany:
   Enabled: false
+
+# Madmin::Resource's `scope :name` DSL (filter tabs on the index page) is
+# unrelated to ActiveRecord's `scope :name, -> { ... }` macro, but this cop
+# can't tell the two apart and flags every argument-only call as a "duplicate".
+Rails/DuplicateScope:
+  Exclude:
+    - "app/madmin/resources/**/*"
