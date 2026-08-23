@@ -11,7 +11,7 @@ class PersonResource < Madmin::Resource
   attribute :notes, field: MultilineTextField
   attribute :ip_address, field: ReadonlyStringField, form: false, new: true, edit: true
   attribute :removal_ip_address, field: ReadonlyStringField, form: false, new: true, edit: true
-  attribute :removed_at, field: ReadonlyDateTimeField, form: false, new: true, edit: true
+  attribute :removed_at, field: RemovedAtField, form: false, new: true, edit: true, index: true
   attribute :created_at
   attribute :updated_at
   attribute :status, field: RadioEnumField
@@ -20,7 +20,7 @@ class PersonResource < Madmin::Resource
   attribute :venue_groups
 
   # Add scopes to easily filter records
-  # scope :published
+  scope :removed
 
   # Add actions to the resource's show page
   # Pass collection: true to also render it in each row on the index page
