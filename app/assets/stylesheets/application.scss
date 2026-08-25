@@ -306,8 +306,14 @@ label {
   display: block;
 }
 
+div.radio {
+  display: flex;
+  align-items: center;
+}
+
 label.radio {
   display: inline-block;
+  margin: 3px;
 }
 
 select,
