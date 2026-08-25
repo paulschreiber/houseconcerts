@@ -2,7 +2,7 @@
 
 Rails.application.routes.draw do
   draw :madmin
-  devise_for :admins, skip: [ :registrations ]
+  devise_for :admins, skip: [ :registrations ], path: Settings.admin_prefix
   mount MissionControl::Jobs::Engine, at: "/admin/jobs"
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
