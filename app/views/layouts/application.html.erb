@@ -41,7 +41,7 @@
 </head>
 <body>
 	<% if notice.present? %><p class="notice"><%= notice %></p><% end %>
-	<% if alert.present? %><p class="alert"><%= alert %></p><% end %>
+	<% if alert.present? && !(controller_path == "devise/sessions" && action_name == "new") %><p class="alert"><%= alert %></p><% end %>
 	<%= render partial: "navbar" %>
 
 <%= yield %>

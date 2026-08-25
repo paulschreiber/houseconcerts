@@ -64,7 +64,10 @@ Devise.setup do |config|
   # config.http_authenticatable = false
 
   # If 401 status code should be returned for AJAX requests. True by default.
-  # config.http_authenticatable_on_xhr = true
+  # Turbo submits the sign-in form via fetch (sending X-Requested-With), so
+  # leaving this true makes Devise short-circuit to a bare 401 with no flash
+  # message instead of re-rendering the form with the "invalid" alert.
+  config.http_authenticatable_on_xhr = false
 
   # The realm used in Http Basic Authentication. 'Application' by default.
   # config.http_authentication_realm = 'Application'
@@ -262,4 +265,11 @@ Devise.setup do |config|
   # When using OmniAuth, Devise cannot automatically set OmniAuth path,
   # so you need to do it manually. For the users scope, it would be:
   # config.omniauth_path_prefix = '/my_engine/users/auth'
+
+  # ==> Hotwire/Turbo configuration
+  # Turbo requires 4xx/3xx status codes to render form-submission responses
+  # without a redirect (a plain 200 re-render, Devise's old default, is
+  # silently dropped instead of showing the "invalid password" flash).
+  config.responder.error_status = :unprocessable_entity
+  config.responder.redirect_status = :see_other
 end
