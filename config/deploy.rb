@@ -1,6 +1,8 @@
 # config valid only for current version of Capistrano
 lock "~>3"
 
+set :bundle_version, 4
+
 set :application, "houseconcerts"
 set :repo_url, "https://github.com/paulschreiber/houseconcerts.git"
 set :branch, "main"
