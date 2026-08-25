@@ -12,4 +12,6 @@
       <%= nav_link_to item.label, item.url, starts_with: item.url %>
     <% end %>
   <% end %>
+
+  <%= link_to "Sign out", destroy_admin_session_path, data: { turbo_method: :delete } %>
 </nav>
