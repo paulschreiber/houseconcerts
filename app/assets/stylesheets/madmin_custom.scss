@@ -65,3 +65,14 @@ nav h4 {
   padding-bottom: 0.75rem;
   margin-bottom: 0.75rem;
 }
+
+/* Pin the sign out link (last nav link) to the bottom of the viewport */
+#sidebar nav {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+#sidebar nav > a:last-child {
+  margin-top: auto;
+}
