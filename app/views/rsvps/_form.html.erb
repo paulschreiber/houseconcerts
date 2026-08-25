@@ -38,7 +38,7 @@
 	</div>
 
 
-	<div>
+	<div class="radio">
 		<strong>Seats</strong>
 		<%= f.hidden_field :seats_reserved, value: 0 %>
 		<% (Settings.show.min_seats..Settings.show.max_seats).each do |count| %>
@@ -50,7 +50,7 @@
 	<% seats_errors = @rsvp.errors.select{|s| s.attribute == :seats_reserved } %>
 	<%= content_tag :p, seats_errors.first.message, class: "error" unless seats_errors.empty? %>
 
-	<div>
+	<div class="radio">
 		<strong>Attending?</strong>
 		<%= f.hidden_field :response %>
 		<% RSVP.responses.each_key do |response| %>
