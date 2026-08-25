@@ -1,9 +1,7 @@
 <div>
 <p>Hi <%= @person.first_name %>,</p>
 
-<p>Hope you enjoyed the long weekend — we celebrated with delicious BBQ and Thai fried rice.</p>
-
-<p>There are five days until the Julie Loyd house concert — and a handful of spots available. <%= link_to "Reserve your seats for Saturday", @rsvp_url_yes %>.</p>
+<p>I’m excited to welcome Jen Lowe back to the house concert series! She’s a songwriter with a gift for turning real life into a good story.</p>
 
 <ul class="summary">
 <li><%= @show.name %></li>
@@ -18,13 +16,11 @@
 </strong></p>
 
 <h2>A bit about <%= @show.name %></h2>
-<p>Now more than old enough to rent her own cars, and with even more letters after her name, I’m excited to have Julie Loyd back.</p>
+<p>Now based in Tavares, Florida, Jen writes songs that sit at the crossroads of country, rock and honest Southern storytelling — songs about love and loss, resilience and reinvention, and moving forward.</p>
 
-<p>Julie is an award-winning songwriter toting along her banjo, guitar and heart-thumping, lyric-driven songs. Characterized by <cite>Curve</cite> magazine as “a charming acoustic spitfire,” Loyd is a seasoned performer with 20 years of experience on stage.</p>
+<p>Jen has shared the stage with Jason Mraz, Zac Brown, Kevin Griffin of Better Than Ezra, Ed Kowalczyk of Live, Emerson Hart of Tonic and Ed Roland of Collective Soul.</p>
 
-<p>A child of musical theater, Julie has released six solo albums — some folk-pop, some indie-pop and even one she calls indie-grass (which is not something you can smoke).</p>
-
-<p><%= link_to "Spend #{@show.day_of_week} evening with #{@show.name}", @rsvp_url_yes %>.</p>
+<p><%= link_to "Celebrate the end of the summer with #{@show.name}", @rsvp_url_yes %>.</p>
 
 <p><br/>Paul</p>
 
