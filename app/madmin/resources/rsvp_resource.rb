@@ -27,6 +27,7 @@ class RSVPResource < Madmin::Resource
 
   # Add scopes to easily filter records
   scope :next_show
+  scope :next_show_attendees
   scope :previous_show
 
   # Add actions to the resource's show page
