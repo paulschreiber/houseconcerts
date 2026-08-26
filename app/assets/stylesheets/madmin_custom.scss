@@ -76,3 +76,21 @@ nav h4 {
 #sidebar nav > a:last-child {
   margin-top: auto;
 }
+
+.actions .metrics {
+  .metric {
+    margin-right: 0;
+
+    &:not(:last-child) {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    &:not(:first-child) {
+      margin-left: 0;
+      border-left: none;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+  }
+}

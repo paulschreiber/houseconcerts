@@ -38,9 +38,14 @@ class RSVPResource < Madmin::Resource
   # end
 
   # Add actions to the resource's index page
-  # collection_action do
-  #   link_to "Bulk Import", bulk_import_path, class: "btn btn-secondary"
-  # end
+  collection_action do
+    next unless (totals = attendee_totals)
+
+    tag.div class: "metrics" do
+      tag.div(class: "metric") { tag.h4("Attendees") + tag.p(totals[:count]) } +
+        tag.div(class: "metric") { tag.h4("Seats Reserved") + tag.p(totals[:seats_reserved]) }
+    end
+  end
 
   # Customize the display name of records in the admin area.
   def self.display_name(record) = "#{record.full_name} — #{record.show&.name} #{record.show&.start&.strftime('%Y-%m-%d')}"
