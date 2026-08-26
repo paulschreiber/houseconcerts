@@ -19,7 +19,7 @@ class RSVPResource < Madmin::Resource
   attribute :created_at
   attribute :updated_at
   attribute :referrer, field: ReadonlyStringField, form: false, new: true, edit: true
-  attribute :response, field: RadioEnumField, index: true
+  attribute :response, field: HideableResponseField, index: true
   attribute :confirmed, field: RadioEnumField
 
   # Associations
