@@ -420,6 +420,8 @@ input[type="submit"] {
   }
 }
 
-form > div + div {
-  margin-top: 1em;
+form > div + div,
+.passkey-form div + div,
+.passkey-form {
+  margin-block-start: 1em;
 }
