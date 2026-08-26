@@ -18,7 +18,7 @@
 <%- if @shows_attended.any? %>
 <ul>
   <%- @shows_attended.each do |show| %>
-    <%- my_tag = show.seats_used.to_i == show.seats_reserved.to_i ? "span" : "strong" -%>
+    <%- my_tag = show.seats_used.to_i < show.seats_reserved.to_i ? "strong" : "span" -%>
 
     <li>
         <%= tag.public_send(my_tag) do %>
