@@ -3,7 +3,7 @@
 # that scope only ever includes "yes" responses.
 class HideableResponseField < RadioEnumField
   def visible?(action)
-    return false if action.to_sym == :index && %w[next_show_attendees previous_show_attendees].include?(Current.admin_scope)
+    return false if action.to_sym == :index && %w[next_show_attendees previous_show_attendees unconfirmed_rsvps].include?(Current.admin_scope)
 
     super
   end
