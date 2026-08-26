@@ -16,7 +16,7 @@ class AdminPasskeysTest < ApplicationSystemTestCase
     add_passkey_to_authenticator(@authenticator, @admin)
 
     visit new_admin_session_path
-    click_button "Log in with passkeys"
+    click_button "Log in with a passkey"
 
     assert_current_path root_path
     assert_text "Signed in successfully."
