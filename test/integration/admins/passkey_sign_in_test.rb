@@ -36,7 +36,7 @@ module Admins
 
       post admin_session_path, params: { public_key_credential: assertion.to_json }
 
-      assert_response :success
+      assert_response :unprocessable_entity
       assert_match(/passkey/i, flash[:alert])
       get mission_control_jobs_path
       assert_redirected_to new_admin_session_path
@@ -54,7 +54,7 @@ module Admins
 
       post admin_session_path, params: { public_key_credential: assertion.to_json }
 
-      assert_response :success
+      assert_response :unprocessable_entity
       assert_match(/passkey/i, flash[:alert])
       get mission_control_jobs_path
       assert_redirected_to new_admin_session_path
