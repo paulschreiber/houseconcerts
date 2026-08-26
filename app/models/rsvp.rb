@@ -119,6 +119,10 @@ class RSVP < ApplicationRecord
     RSVP.where(show: Show.previous)
   end
 
+  def self.previous_show_attendees
+    RSVP.where(show: Show.previous, response: "yes", confirmed: "yes")
+  end
+
   # notify_rsvp can be "yes", "all" (yes and no) or blank/false/empty string
   def notify_admin
     # don't notify of any RSVPs when notify is empty

@@ -29,6 +29,7 @@ class RSVPResource < Madmin::Resource
   scope :next_show
   scope :next_show_attendees
   scope :previous_show
+  scope :previous_show_attendees
 
   # Add actions to the resource's show page
   # Pass collection: true to also render it in each row on the index page
