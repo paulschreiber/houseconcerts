@@ -1,0 +1,11 @@
+<h2>Add a passkey</h2>
+
+<%= passkey_creation_form_for(resource_name, class: "passkey-form") do |form| %>
+  <div>
+    <%= form.label :name, 'Passkey name' %>
+    <%= form.text_field :name, required: true %>
+  </div>
+  <div>
+    <%= form.submit 'Create Passkey' %>
+  </div>
+<% end %>
