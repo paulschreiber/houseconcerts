@@ -4,6 +4,14 @@
   font-weight: 700;
 }
 
+/* New/edit forms: the Update button lives in the resource form, Delete (edit
+   only) in its own button_to form, and Cancel is a plain link after both.
+   display: contents drops each form's own box so their .btn children flow
+   together on one line, instead of each <form> forcing a line break. */
+.form-actions-form {
+  display: contents;
+}
+
 .radio-group {
   display: flex;
   gap: 0.75rem;
