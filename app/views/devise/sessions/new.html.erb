@@ -24,4 +24,10 @@
   </div>
 <% end %>
 
+<%= login_with_passkey_form_for(resource_name) do |form| %>
+  <div class="actions">
+    <%= form.submit "Log in with a passkey" %>
+  </div>
+<% end %>
+
 <%= render "devise/shared/links" %>

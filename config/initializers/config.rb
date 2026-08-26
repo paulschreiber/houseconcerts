@@ -2,6 +2,10 @@ Config.setup do |config|
   # Name of the constant exposing loaded settings
   config.const_name = "Settings"
 
+  # Raise instead of silently returning nil when an undefined setting is
+  # referenced.
+  config.fail_on_missing = true
+
   # Ability to remove elements of the array set in earlier loaded settings file. For example value: '--'.
   #
   # config.knockout_prefix = nil
