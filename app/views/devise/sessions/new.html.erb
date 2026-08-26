@@ -1,6 +1,6 @@
 <h2>Log in</h2>
 
-<% if alert.present? %><p class="alert"><%= alert %></p><% end %>
+<% if alert.present? && alert != t("devise.failure.unauthenticated") %><p class="alert"><%= alert %></p><% end %>
 
 <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
   <div class="field">

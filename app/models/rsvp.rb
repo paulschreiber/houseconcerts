@@ -115,6 +115,10 @@ class RSVP < ApplicationRecord
     RSVP.where(show: Show.next, response: "yes", confirmed: "yes")
   end
 
+  def self.unconfirmed_rsvps
+    RSVP.where(show: Show.next, response: "yes", confirmed: "unconfirmed")
+  end
+
   def self.previous_show
     RSVP.where(show: Show.previous)
   end

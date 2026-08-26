@@ -74,7 +74,66 @@ nav h4 {
   margin-bottom: 0.75rem;
 }
 
-/* Pin the sign out link (last nav link) to the bottom of the viewport */
+/* Madmin's body is `min-height: 100dvh`, not `height`, so on pages with
+   content taller than one viewport, body (and its grid) grows to fit that
+   content rather than staying capped at the viewport. That, plus grid
+   items defaulting to min-height: auto, means <main> (the body grid's
+   `1fr` row) grows along with it instead of clipping via its own
+   overflow: auto. #sidebar is positioned absolute against main, so it
+   stretches too, pushing the sign-out link below the fold. Capping body
+   to exactly one viewport (and letting main scroll its own overflow)
+   keeps the sidebar — and the pinned sign-out link — fixed in view. */
+body:has(> main > #sidebar) {
+  height: 100dvh;
+  overflow: hidden;
+}
+
+main:has(> #sidebar) {
+  min-height: 0;
+}
+
+/* #sidebar used to be position: absolute against main, sized via inset: 0,
+   with main's padding-left faking the two-column layout. That meant it
+   scrolled away with main's own content on tall table views. Switch it to
+   position: sticky within main's scrollport instead, so it stays put as
+   the table scrolls — which means main now needs to actually lay the
+   sidebar and content out side by side with flex, since sticky (unlike
+   absolute) keeps the sidebar in normal flow. (Selectors here are scoped
+   past Madmin's own bare `#sidebar`/`main` rules, which load after ours
+   and would otherwise win ties on identical specificity.)
+   Scoped to Madmin's own desktop breakpoint (mobile, below 769px, keeps
+   Madmin's default off-canvas #sidebar drawer — sticky positioning would
+   fight its position: fixed slide-in transform). */
+@media (width >= 769px) {
+  main:has(> #sidebar) {
+    display: flex;
+    align-items: flex-start;
+
+    /* #sidebar's own inset: 0 used to sit flush against main's padding
+       box, ignoring main's padding-left entirely — so drop it here too,
+       rather than adding space that wasn't there before. #sidebar's own
+       padding: 1rem (from Madmin) still insets its nav content. Madmin's
+       padding-left: calc(1rem + sidebar-width) put exactly 1rem between
+       the sidebar and the content div — restore that as a flex gap now
+       that the sidebar's width isn't baked into main's padding. */
+    padding-left: 0;
+    gap: 1rem;
+  }
+
+  main > #sidebar {
+    position: sticky;
+    inset: auto;
+    top: 0;
+    flex: 0 0 var(--sidebar-width);
+  }
+
+  #sidebar + div {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+/* Pin the sign out link (last nav link) to the bottom of the sidebar */
 #sidebar nav {
   display: flex;
   flex-direction: column;
