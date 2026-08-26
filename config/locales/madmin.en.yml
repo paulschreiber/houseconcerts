@@ -2,3 +2,5 @@ en:
   madmin:
     layout:
       admin_suffix: ""
+    confirmations:
+      delete_with_identifier: "Are you sure you want to delete %{name} '%{identifier}'?"

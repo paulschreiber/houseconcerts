@@ -1,0 +1,29 @@
+<%= form_with model: [:madmin, record], url: (record.persisted? ? resource.show_path(record) : resource.index_path), local: true, html: { class: "form-actions-form" } do |form| %>
+  <% if form.object.errors.any? %>
+    <div class="alert alert-danger">
+      <div class=""><%= t("madmin.form.errors", count: form.object.errors.full_messages.count) %>:</div>
+
+      <ul>
+        <% form.object.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <% resource.attributes.values.select{ _1.field.present? && _1.field.visible?(action_name) }.each do |attribute| %>
+    <div class="form-group">
+      <%= render "madmin/shared/label", form: form, field: attribute.field %>
+      <%= render partial: attribute.field.to_partial_path("form"), locals: { field: attribute.field, record: record, form: form, resource: resource } %>
+      <%= tag.div attribute.field.options.description, class: "form-description" if attribute.field.options.description.present? %>
+    </div>
+  <% end %>
+
+  <%= form.submit class: "btn btn-primary" %>
+<% end %>
+
+<% if record.persisted? && !resource.readonly? %>
+  <%= button_to t("madmin.actions.delete"), resource.show_path(record), method: :delete, data: { turbo_confirm: t("madmin.confirmations.delete_with_identifier", name: resource.friendly_name.downcase, identifier: resource.display_name(record)) }, class: "btn btn-danger", form_class: "form-actions-form" %>
+<% end %>
+
+<%= link_to t("madmin.actions.cancel"), (record.persisted? ? resource.show_path(record) : resource.index_path), class: "btn" %>
