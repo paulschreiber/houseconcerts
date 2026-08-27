@@ -9,10 +9,17 @@ class TextMessagesController < ApplicationController
   private
 
     def verify_twilio_signature!
+      # TWILIO_AUTH_TOKEN is only ever set by this controller's test suite,
+      # so it doesn't depend on Rails.application.credentials being
+      # decryptable — CI has no master key and can't decrypt it. Everywhere
+      # else (including production), the credential is what's actually used.
+      auth_token = ENV["TWILIO_AUTH_TOKEN"].presence || Rails.application.credentials.dig(:twilio, :auth_token)
       signature = request.headers["X-Twilio-Signature"]
-      validator = Twilio::Security::RequestValidator.new(Rails.application.credentials.twilio[:auth_token])
 
-      return if signature.present? && validator.validate(request.original_url, request.request_parameters, signature)
+      if auth_token.present? && signature.present?
+        validator = Twilio::Security::RequestValidator.new(auth_token)
+        return if validator.validate(request.original_url, request.request_parameters, signature)
+      end
 
       head :forbidden
     end
