@@ -104,7 +104,7 @@ class RsvpsController < ApplicationController
 
   def thanks
     @rsvp = RSVP.find_by(uniqid: params[:uniqid])
-    redirect_to root_url if @rsvp.nil?
+    redirect_to root_url if @rsvp.nil? || !@rsvp.show.confirmed? || @rsvp.show.occurred?
   end
 
   def rsvp_params
