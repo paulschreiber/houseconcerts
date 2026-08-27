@@ -41,7 +41,7 @@ module Madmin
 
       assert_equal "yes", @rsvp.reload.confirmed
       assert_redirected_to madmin_rsvps_path
-      assert_match(/can't be confirmed/, flash[:alert])
+      assert_match(/can’t be confirmed/, flash[:alert])
     end
 
     test "waitlist does not email or change an rsvp when the show can't be waitlisted" do
@@ -51,7 +51,7 @@ module Madmin
 
       assert_equal "unconfirmed", @rsvp.reload.confirmed
       assert_redirected_to madmin_rsvps_path
-      assert_match(/can't be waitlisted/, flash[:alert])
+      assert_match(/can’t be waitlisted/, flash[:alert])
     end
 
     test "index shows a Confirm button for an rsvp that can be confirmed" do
