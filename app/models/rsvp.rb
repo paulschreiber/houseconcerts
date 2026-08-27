@@ -9,10 +9,10 @@ class RSVP < ApplicationRecord
   enum :response, { no: 0, yes: 1 }, default: :no
   enum :confirmed, { unconfirmed: 0, waitlisted: 1, yes: 2 }, prefix: true, default: :unconfirmed
 
+  before_validation :clear_seats_if_no
   before_save :downcase_email
   before_save :set_ip_address
   before_save :update_confirmation_date
-  before_save :clear_seats_if_no
   after_save :update_phone_number
   after_save -> { NotifyAdminOfRSVP.call(self) }, unless: :confirmed?
 
@@ -50,7 +50,7 @@ class RSVP < ApplicationRecord
     return if yes?
 
     self.seats_reserved = 0
-    self.seats_used = 0
+    self.seats_used = nil
     self.confirmed = "unconfirmed"
   end
 
