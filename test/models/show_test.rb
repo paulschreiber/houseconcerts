@@ -66,6 +66,18 @@ class ShowTest < ActiveSupport::TestCase
     assert_equal shows(:past), Show.previous
   end
 
+  test "next_show? is true only for the nearest upcoming show" do
+    assert shows(:upcoming).next_show?
+    assert_not shows(:past).next_show?
+  end
+
+  test "next_show? is false for every show when there is no upcoming show" do
+    Show.upcoming.update_all(status: "cancelled") # rubocop:disable Rails/SkipsModelValidations
+
+    assert_not shows(:upcoming).next_show?
+    assert_not shows(:past).next_show?
+  end
+
   test "attendees returns confirmed yes rsvps" do
     assert_includes shows(:upcoming).attendees, rsvps(:one)
   end

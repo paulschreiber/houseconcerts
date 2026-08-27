@@ -187,10 +187,27 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
     get rsvp_thanks_path(uniqid: rsvps(:one).uniqid)
     assert_response :success
     assert_includes response.body, rsvps(:one).show.name
+    assert_match(/You.ll receive my address/, response.body)
   end
 
   test "thanks redirects home for an invalid uniqid" do
     get rsvp_thanks_path(uniqid: "nonexistent-uniqid")
+    assert_redirected_to root_url
+  end
+
+  test "thanks redirects home when the rsvp's show is not confirmed" do
+    rsvp = rsvps(:one)
+    rsvp.show.update!(status: "cancelled")
+
+    get rsvp_thanks_path(uniqid: rsvp.uniqid)
+    assert_redirected_to root_url
+  end
+
+  test "thanks redirects home when the rsvp's show already occurred" do
+    rsvp = rsvps(:one)
+    rsvp.update!(show: shows(:past))
+
+    get rsvp_thanks_path(uniqid: rsvp.uniqid)
     assert_redirected_to root_url
   end
 end
