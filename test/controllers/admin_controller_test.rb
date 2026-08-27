@@ -2,7 +2,7 @@ require "test_helper"
 
 class AdminControllerTest < ActionDispatch::IntegrationTest
   test "redirects an unauthenticated visitor to the admin login page" do
-    get "/admin/jobs"
+    get "/backstage/jobs"
 
     assert_redirected_to new_admin_session_path
   end
@@ -10,7 +10,7 @@ class AdminControllerTest < ActionDispatch::IntegrationTest
   test "allows an authenticated admin through" do
     sign_in admins(:one)
 
-    get "/admin/jobs"
+    get "/backstage/jobs"
 
     assert_response :success
   end
