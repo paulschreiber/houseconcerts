@@ -1,0 +1,20 @@
+<%= stylesheet_link_tag "mission_control_custom", "data-turbo-track": "reload" %>
+
+<header id="navbar">
+  <div class="nav-group">
+    <%= link_to Madmin.site_name, main_app.madmin_root_path(server_id: nil), data: { turbo: false } %>
+  </div>
+</header>
+
+<nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-menu is-active mb-4">
+    <div class="navbar-start">
+      <%= link_to "Back to main app", main_app.madmin_root_path(server_id: nil) %>
+    </div>
+
+    <div class="navbar-end">
+      <%= render "layouts/mission_control/jobs/application_selection/servers", application: @application %>
+      <%= render "layouts/mission_control/jobs/application_selection/applications" if selectable_applications.any? %>
+    </div>
+  </div>
+</nav>

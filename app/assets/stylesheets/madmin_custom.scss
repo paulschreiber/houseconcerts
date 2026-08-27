@@ -1,3 +1,5 @@
+@use "admin_navbar";
+
 /* .form-group label beats Madmin's bare `label` rule on specificity, so this
    doesn't depend on stylesheet load order. */
 .form-group label {
