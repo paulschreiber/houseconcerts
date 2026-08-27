@@ -222,15 +222,13 @@ namespace :next_show do
       rsvps = RSVP.where(show: show, response: "yes", confirmed: %w[unconfirmed waitlisted])
       rsvps.each do |rsvp|
         puts "Emailing #{rsvp.email_address_with_name}..."
-        InvitesMailer.confirm(rsvp).deliver_now
-        rsvp.confirm!
+        ConfirmRSVP.call(rsvp)
       end
     elsif show.waitlisted?
       rsvps = RSVP.where(show: show, response: "yes", confirmed: [ "unconfirmed" ])
       rsvps.each do |rsvp|
         puts "Emailing #{rsvp.email_address_with_name}..."
-        InvitesMailer.waitlisted(rsvp).deliver_now
-        rsvp.waitlist!
+        WaitlistRSVP.call(rsvp)
       end
     end
     print_confirmation(rsvps.size)

@@ -111,12 +111,20 @@ class RSVP < ApplicationRecord
     RSVP.where(show: Show.next)
   end
 
+  def can_confirm?
+    !confirmed? && yes? && show&.can_confirm_rsvps?
+  end
+
+  def can_waitlist?
+    !confirmed? && yes? && show&.can_waitlist_rsvps?
+  end
+
   def self.next_show_attendees
     RSVP.where(show: Show.next, response: "yes", confirmed: "yes")
   end
 
   def self.unconfirmed_rsvps
-    RSVP.where(show: Show.next, response: "yes", confirmed: "unconfirmed")
+    RSVP.where(show: Show.next, response: "yes", confirmed: %w[unconfirmed waitlisted])
   end
 
   def self.previous_show
