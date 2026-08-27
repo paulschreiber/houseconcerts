@@ -36,6 +36,8 @@ Metrics/MethodLength:
   Enabled: false
 Metrics/ClassLength:
   Max: 200
+  Exclude:
+    - "test/**/*"
 Style/ConditionalAssignment:
   Enabled: false
 Style/FrozenStringLiteralComment:
