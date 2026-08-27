@@ -7,7 +7,7 @@ class ShowsController < ApplicationController
     @shows = Show.past.occurred
   end
 
-  def ical
+  def calendar
     head :ok
   end
 end
