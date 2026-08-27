@@ -11,8 +11,8 @@ class ShowsController < ApplicationController
     cal = Icalendar::Calendar.new
     Show.upcoming.each do |show|
       cal.event do |e|
-        e.dtstart     = Icalendar::Values::DateTime.new(show.start)
-        e.dtend       = Icalendar::Values::DateTime.new(show.end)
+        e.dtstart     = Icalendar::Values::DateTime.new(show.start.utc, tzid: "UTC")
+        e.dtend       = Icalendar::Values::DateTime.new(show.end.utc, tzid: "UTC")
         e.summary     = "#{show.name} House Concert"
         e.location    = show.location
         e.url         = rsvp_for_show_url(slug: show.slug)
