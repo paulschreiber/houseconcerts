@@ -52,4 +52,14 @@ class PersonTest < ActiveSupport::TestCase
     person = Person.create!(first_name: "Mixed", last_name: "Case", email: "Mixed.Case@Example.COM")
     assert_equal "mixed.case@example.com", person.email
   end
+
+  test "can_invite? is true only for an active person" do
+    person = Person.new(status: "active")
+    assert person.can_invite?
+
+    %w[bouncing moved removed].each do |status|
+      person.status = status
+      assert_not person.can_invite?, "can_invite? wrong for status=#{status}"
+    end
+  end
 end
