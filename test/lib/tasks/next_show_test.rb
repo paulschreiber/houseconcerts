@@ -118,4 +118,13 @@ class NextShowRakeTest < ActiveSupport::TestCase
     end
     assert rsvp.reload.waitlisted?
   end
+
+  test "confirm does not error and emails no one when the show is sold out" do
+    shows(:upcoming).update!(availability: "sold_out")
+
+    assert_no_emails do
+      out, = capture_io { Rake::Task["next_show:confirm"].invoke }
+      assert_includes out, "Sent 0 emails."
+    end
+  end
 end
