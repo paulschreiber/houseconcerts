@@ -186,6 +186,59 @@ class RsvpTest < ActiveSupport::TestCase
     assert_not_includes RSVP.unconfirmed_rsvps, rsvp
   end
 
+  test "rejects a new yes rsvp for a sold out show" do
+    rsvp = RSVP.new(
+      first_name: "Sold",
+      last_name: "Out",
+      email: "sold.out@example.com",
+      show: shows(:sold_out),
+      response: "yes",
+      seats_reserved: 1
+    )
+
+    assert_not rsvp.valid?
+    assert_includes rsvp.errors.attribute_names, :show
+  end
+
+  test "rejects switching an existing rsvp from no to yes on a sold out show" do
+    rsvp = rsvps(:one)
+    rsvp.update!(show: shows(:sold_out), response: "no")
+
+    rsvp.response = "yes"
+    rsvp.seats_reserved = 2
+
+    assert_not rsvp.valid?
+    assert_includes rsvp.errors.attribute_names, :show
+  end
+
+  test "rejects increasing seats_reserved on an already-yes rsvp for a sold out show" do
+    rsvp = rsvps(:one)
+    rsvp.update!(show: shows(:sold_out), response: "yes", seats_reserved: 1)
+
+    rsvp.seats_reserved = 2
+
+    assert_not rsvp.valid?
+    assert_includes rsvp.errors.attribute_names, :show
+  end
+
+  test "allows decreasing seats_reserved on a sold out show" do
+    rsvp = rsvps(:one)
+    rsvp.update!(show: shows(:sold_out), response: "yes", seats_reserved: 2)
+
+    rsvp.seats_reserved = 1
+
+    assert rsvp.valid?
+  end
+
+  test "allows updating unrelated attributes on an existing yes rsvp for a sold out show" do
+    rsvp = rsvps(:one)
+    rsvp.update!(show: shows(:sold_out), response: "yes", seats_reserved: 2)
+
+    rsvp.phone_number = "2125551234"
+
+    assert rsvp.valid?
+  end
+
   test "person_exists? and create_person" do
     rsvp = RSVP.new(first_name: "New", last_name: "Person", email: "brand.new.person@example.com", show: shows(:upcoming))
     assert_not rsvp.person_exists?
