@@ -47,8 +47,13 @@ namespace :next_show do
       exit
     end
 
+    unless person.active?
+      puts "Email #{email} is not active"
+      exit
+    end
+
     puts "Emailing #{person.email_address_with_name}..."
-    InvitesMailer.invite(person, show).deliver_now
+    InvitePerson.call(person, show)
   end
 
   desc "Send invites for next show to people who have not opened the invitation"

@@ -2,7 +2,11 @@
 namespace :madmin, path: Settings.admin_prefix do
   resources :artists
   resources :opens
-  resources :people
+  resources :people do
+    member do
+      patch :invite
+    end
+  end
   resources :rsvps do
     member do
       patch :confirm
