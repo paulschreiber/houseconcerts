@@ -86,6 +86,14 @@ class Show < ApplicationRecord
     venue&.location
   end
 
+  def can_confirm_rsvps?
+    confirmed? && available?
+  end
+
+  def can_waitlist_rsvps?
+    confirmed? && waitlisted?
+  end
+
   def to_s
     "#{name} (#{start_date_short})"
   end

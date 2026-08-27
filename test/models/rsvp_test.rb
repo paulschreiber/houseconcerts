@@ -119,6 +119,42 @@ class RsvpTest < ActiveSupport::TestCase
     end
   end
 
+  test "can_confirm? and can_waitlist? across every show/rsvp state combination" do
+    rsvp = rsvps(:one)
+    show = rsvp.show
+    availabilities = %w[available waitlisted sold_out]
+    statuses = %w[confirmed unconfirmed cancelled]
+    responses = %w[yes no]
+    confirmed_states = %w[unconfirmed waitlisted yes]
+
+    availabilities.product(statuses, responses, confirmed_states).each do |availability, status, response, confirmed|
+      show.availability = availability
+      show.status = status
+      rsvp.response = response
+      rsvp.confirmed = confirmed
+
+      show_confirmed = status == "confirmed"
+      expected_can_confirm = confirmed != "yes" && response == "yes" && show_confirmed && availability == "available"
+      expected_can_waitlist = confirmed != "yes" && response == "yes" && show_confirmed && availability == "waitlisted"
+      combo = "availability=#{availability} status=#{status} response=#{response} confirmed=#{confirmed}"
+
+      assert_equal expected_can_confirm, rsvp.can_confirm?, "can_confirm? wrong for #{combo}"
+      assert_equal expected_can_waitlist, rsvp.can_waitlist?, "can_waitlist? wrong for #{combo}"
+    end
+  end
+
+  test "self.unconfirmed_rsvps includes unconfirmed and waitlisted yes rsvps for the next show" do
+    rsvp = rsvps(:one)
+    rsvp.update!(confirmed: "unconfirmed")
+    assert_includes RSVP.unconfirmed_rsvps, rsvp
+
+    rsvp.update!(confirmed: "waitlisted")
+    assert_includes RSVP.unconfirmed_rsvps, rsvp
+
+    rsvp.update!(confirmed: "yes")
+    assert_not_includes RSVP.unconfirmed_rsvps, rsvp
+  end
+
   test "person_exists? and create_person" do
     rsvp = RSVP.new(first_name: "New", last_name: "Person", email: "brand.new.person@example.com", show: shows(:upcoming))
     assert_not rsvp.person_exists?

@@ -34,9 +34,13 @@ class RSVPResource < Madmin::Resource
 
   # Add actions to the resource's show page
   # Pass collection: true to also render it in each row on the index page
-  # member_action do |record|
-  #   link_to "Do Something", some_path
-  # end
+  member_action(collection: true) do |record|
+    if record.can_confirm?
+      button_to "Confirm", confirm_madmin_rsvp_path(record), method: :patch, class: "btn btn-secondary"
+    elsif record.can_waitlist?
+      button_to "Waitlist", waitlist_madmin_rsvp_path(record), method: :patch, class: "btn btn-secondary"
+    end
+  end
 
   # Add actions to the resource's index page
   collection_action do

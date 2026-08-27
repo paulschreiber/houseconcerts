@@ -69,4 +69,22 @@ class ShowTest < ActiveSupport::TestCase
   test "attendees returns confirmed yes rsvps" do
     assert_includes shows(:upcoming).attendees, rsvps(:one)
   end
+
+  test "can_confirm_rsvps? and can_waitlist_rsvps? across every status/availability combination" do
+    show = shows(:upcoming)
+    statuses = %w[confirmed unconfirmed cancelled]
+    availabilities = %w[available waitlisted sold_out]
+
+    statuses.product(availabilities).each do |status, availability|
+      show.status = status
+      show.availability = availability
+
+      expected_can_confirm = status == "confirmed" && availability == "available"
+      expected_can_waitlist = status == "confirmed" && availability == "waitlisted"
+      combo = "status=#{status} availability=#{availability}"
+
+      assert_equal expected_can_confirm, show.can_confirm_rsvps?, "can_confirm_rsvps? wrong for #{combo}"
+      assert_equal expected_can_waitlist, show.can_waitlist_rsvps?, "can_waitlist_rsvps? wrong for #{combo}"
+    end
+  end
 end
