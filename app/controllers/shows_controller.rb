@@ -9,7 +9,8 @@ class ShowsController < ApplicationController
 
   def calendar
     cal = Icalendar::Calendar.new
-    Show.upcoming.each do |show|
+    shows = Show.upcoming.includes(:venue)
+    shows.each do |show|
       cal.event do |e|
         e.dtstart     = Icalendar::Values::DateTime.new(show.start.utc, tzid: "UTC")
         e.dtend       = Icalendar::Values::DateTime.new(show.end.utc, tzid: "UTC")
