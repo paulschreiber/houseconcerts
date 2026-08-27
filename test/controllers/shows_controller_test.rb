@@ -32,11 +32,20 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
     assert_select "h2", text: "No shows found"
   end
 
-  test "ical returns a blank success response" do
-    get "/calendar/ical"
+  test "calendar returns an ics feed of upcoming shows" do
+    get calendar_path
 
     assert_response :success
-    assert_empty @response.body
+    assert_equal "text/calendar", @response.media_type
+    assert_includes @response.body, "BEGIN:VCALENDAR"
+    assert_includes @response.body, "SUMMARY:#{shows(:upcoming).name} House Concert"
+  end
+
+  test "calendar excludes past shows" do
+    get calendar_path
+
+    assert_response :success
+    assert_not_includes @response.body, "SUMMARY:#{shows(:past).name} House Concert"
   end
 
   test "about renders the about page" do

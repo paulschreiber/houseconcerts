@@ -17,7 +17,7 @@ Rails.application.routes.draw do
   get "list/thanks/:uniqid", to: "mailing_list#thanks", as: "mailing_list_thanks"
   get "list/already_subscribed/:uniqid", to: "mailing_list#already_subscribed", as: "mailing_list_already_subscribed"
   get "unsubscribe/:uniqid", to: "mailing_list#unsubscribe", as: "unsubscribe"
-  get "calendar/ical", to: "shows#ical"
+  get "calendar/", to: "shows#calendar", as: "calendar"
 
   # Example of regular route:
   #   get 'products/:id' => 'catalog#view'
