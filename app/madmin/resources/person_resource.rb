@@ -20,6 +20,7 @@ class PersonResource < Madmin::Resource
   attribute :venue_groups
 
   # Add scopes to easily filter records
+  scope :active
   scope :removed
 
   # Add actions to the resource's show page
