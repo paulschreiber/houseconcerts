@@ -14,7 +14,7 @@ class RSVP < ApplicationRecord
   before_save :update_confirmation_date
   before_save :clear_seats_if_no
   after_save :update_phone_number
-  after_save :notify_admin, unless: :confirmed?
+  after_save -> { NotifyAdminOfRSVP.call(self) }, unless: :confirmed?
 
   # From https://stackoverflow.com/a/1126031/135850
   default_value_for :uniqid do
@@ -133,37 +133,6 @@ class RSVP < ApplicationRecord
 
   def self.previous_show_attendees
     RSVP.where(show: Show.previous, response: "yes", confirmed: "yes")
-  end
-
-  # notify_rsvp can be "yes", "all" (yes and no) or blank/false/empty string
-  def notify_admin
-    # don't notify of any RSVPs when notify is empty
-    return if Settings.notify_rsvp.blank?
-
-    # don't notify if show was in the past
-    return if show.occurred?
-
-    # don't notify if nothing important changed (seats, response, name) about the RSVP
-    return unless saved_changes.keys.intersect?(RSVP_NOTIFY_ATTRIBUTES) && persisted?
-
-    # don't notify of new "no" RSVPs when notify is "yes" only
-    return if Settings.notify_rsvp == "yes" && response != "yes" && previously_new_record?
-
-    if saved_changes.include?("response") && saved_changes["response"][1] == "no"
-      type = "cancel"
-    elsif previously_new_record?
-      type = "new"
-    else
-      type = "update"
-    end
-
-    old_seats = saved_changes.include?("seats_reserved") ? saved_changes["seats_reserved"][0] : nil
-
-    # notify if there's a cancellation (no -> yes)
-    # notify if there's a new yes
-    # notify if there's a updated yes
-    # notify if there's a new no (when notify is "all")
-    NotifyMailer.rsvp(self, type, old_seats).deliver_now
   end
 
   def sms_reminder
