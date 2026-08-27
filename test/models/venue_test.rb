@@ -41,4 +41,28 @@ class VenueTest < ActiveSupport::TestCase
   test "location combines city and province name" do
     assert_equal "Brooklyn, New York", venues(:one).location
   end
+
+  test "formatted_directions renders markdown formatting" do
+    venue = venues(:one)
+    venue.directions = "Take the **B61** bus to *5th Ave*."
+
+    assert_includes venue.formatted_directions, "<strong>B61</strong>"
+    assert_includes venue.formatted_directions, "<em>5th Ave</em>"
+  end
+
+  test "formatted_directions escapes raw html instead of rendering it" do
+    venue = venues(:one)
+    venue.directions = "Ring the buzzer. <script>alert('xss')</script>"
+
+    assert_not_includes venue.formatted_directions, "<script>"
+    assert_includes venue.formatted_directions, "&lt;script&gt;"
+  end
+
+  test "formatted_contact_info escapes raw html instead of rendering it" do
+    venue = venues(:one)
+    venue.contact_info = "<img src=x onerror=alert(1)>"
+
+    assert_not_includes venue.formatted_contact_info, "<img"
+    assert_includes venue.formatted_contact_info, "&lt;img"
+  end
 end
