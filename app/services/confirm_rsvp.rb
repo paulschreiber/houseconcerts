@@ -8,7 +8,7 @@ class ConfirmRSVP
   end
 
   def call
-    InvitesMailer.confirm(rsvp).deliver_now if rsvp.confirm!
+    InvitesMailer.confirm(rsvp).deliver_later if rsvp.confirm!
   end
 
   private

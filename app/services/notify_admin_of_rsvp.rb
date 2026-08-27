@@ -11,7 +11,7 @@ class NotifyAdminOfRSVP
   def call
     return unless notify?
 
-    NotifyMailer.rsvp(rsvp, type, old_seats).deliver_now
+    NotifyMailer.rsvp(rsvp, type, old_seats).deliver_later
   end
 
   private
