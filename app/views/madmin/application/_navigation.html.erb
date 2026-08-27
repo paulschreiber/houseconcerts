@@ -13,5 +13,8 @@
     <% end %>
   <% end %>
 
+  <h4>divider-3</h4>
+  <%= nav_link_to "Jobs", mission_control_jobs_path, starts_with: mission_control_jobs_path %>
+
   <%= link_to "Sign out", destroy_admin_session_path, data: { turbo_method: :delete } %>
 </nav>
