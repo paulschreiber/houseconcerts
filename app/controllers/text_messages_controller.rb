@@ -3,7 +3,7 @@ class TextMessagesController < ApplicationController
   before_action :verify_twilio_signature!
 
   def receive
-    NotifyMailer.text_message(params["From"], params["Body"]).deliver_now
+    NotifyMailer.text_message(params["From"], params["Body"]).deliver_later
   end
 
   private

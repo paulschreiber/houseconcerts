@@ -9,7 +9,7 @@ class InvitePerson
   end
 
   def call
-    InvitesMailer.invite(person, show).deliver_now
+    InvitesMailer.invite(person, show).deliver_later
   end
 
   private
