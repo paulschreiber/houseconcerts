@@ -1,0 +1,14 @@
+@use "admin_navbar";
+
+/* Mission Control wraps every page in Bulma's .section > .container, which
+   adds padding/centering that madmin's flush, full-width #navbar doesn't
+   have. Pull the header out to the section's edges so it sits flush like
+   madmin's does, matching Bulma's own .section padding at each breakpoint
+   (see bulma.min.css's --bulma-section-padding/-desktop). */
+#navbar {
+  margin: -3rem -1.5rem 1.5rem;
+
+  @media screen and (width >= 1024px) {
+    margin: -3rem -3rem 1.5rem;
+  }
+}
