@@ -31,10 +31,10 @@ class RsvpTest < ActiveSupport::TestCase
     assert_includes rsvp.errors.attribute_names, :seats_used
   end
 
-  test "seats_used must be blank when response is no" do
+  test "seats_used is cleared automatically when response is no" do
     rsvp = RSVP.new(rsvps(:one).attributes.except("id").merge("response" => "no", "seats_used" => 2))
-    assert_not rsvp.valid?
-    assert_includes rsvp.errors.attribute_names, :seats_used
+    assert rsvp.valid?
+    assert_nil rsvp.seats_used
   end
 
   test "seats_used can be 0, representing a no-show" do
@@ -78,7 +78,16 @@ class RsvpTest < ActiveSupport::TestCase
     rsvp.save!
 
     assert_equal 0, rsvp.seats_reserved
+    assert_nil rsvp.seats_used
     assert_equal "unconfirmed", rsvp.confirmed
+  end
+
+  test "an rsvp with recorded attendance can be corrected to response no" do
+    rsvp = rsvps(:one)
+    rsvp.update!(seats_used: 2)
+
+    assert rsvp.update(response: "no")
+    assert_nil rsvp.reload.seats_used
   end
 
   test "update_confirmation_date sets confirmed_at when confirmed becomes yes" do
