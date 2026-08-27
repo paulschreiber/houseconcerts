@@ -12,7 +12,7 @@ class PersonResource < Madmin::Resource
   attribute :ip_address, field: ReadonlyStringField, form: false, new: true, edit: true
   attribute :removal_ip_address, field: ReadonlyStringField, form: false, new: true, edit: true
   attribute :removed_at, field: RemovedAtField, form: false, new: true, edit: true, index: true
-  attribute :created_at
+  attribute :created_at, field: ShortDateTimeField, index: true
   attribute :updated_at
   attribute :status, field: RadioEnumField
 
