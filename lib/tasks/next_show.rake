@@ -218,6 +218,8 @@ namespace :next_show do
       exit
     end
 
+    rsvps = []
+
     if show.available?
       rsvps = RSVP.where(show: show, response: "yes", confirmed: %w[unconfirmed waitlisted])
       rsvps.each do |rsvp|
