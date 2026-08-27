@@ -38,6 +38,49 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to rsvp_thanks_path(uniqid: rsvps(:one).uniqid)
   end
 
+  test "create recovers when a concurrent request wins the race for the same show and email" do
+    show = shows(:upcoming)
+    email = "race.condition@example.com"
+
+    # Simulate two requests that both miss the initial find_by: the first
+    # call to #save creates the "winning" row out from under us and raises
+    # the DB's unique-index violation, exactly like a concurrent request
+    # would; the second call (our recovery update) behaves normally.
+    original_save = RSVP.instance_method(:save)
+    raced = false
+    RSVP.send(:define_method, :save) do |*args, **kwargs|
+      if raced
+        original_save.bind_call(self, *args, **kwargs)
+      else
+        raced = true
+        RSVP.create!(show_id: show.id, email: email, first_name: "Winner", last_name: "Row", response: "yes", seats_reserved: 2)
+        raise ActiveRecord::RecordNotUnique, "Duplicate entry for key 'index_rsvps_on_show_id_and_email'"
+      end
+    end
+
+    begin
+      assert_difference("RSVP.count", 1) do
+        post rsvps_path, params: {
+          rsvp: {
+            first_name: "Loser",
+            last_name: "Row",
+            email: email,
+            show_id: show.id,
+            response: "yes",
+            seats_reserved: 1
+          }
+        }
+      end
+    ensure
+      RSVP.send(:define_method, :save, original_save)
+    end
+
+    winner = RSVP.find_by(show_id: show.id, email: email)
+    assert_equal 1, RSVP.where(show_id: show.id, email: email).count
+    assert_redirected_to rsvp_thanks_path(uniqid: winner.uniqid)
+    assert_equal "Loser", winner.first_name
+  end
+
   test "create renders the form with 422 on validation failure" do
     assert_no_difference("RSVP.count") do
       post rsvps_path, params: {
