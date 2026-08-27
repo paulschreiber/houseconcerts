@@ -15,9 +15,8 @@ class Person < ApplicationRecord
   before_save :update_removal_status
   before_save :ensure_venue_group
 
-  # From https://stackoverflow.com/a/1126031/135850
   default_value_for :uniqid do
-    rand(2821109907456).to_s(36)
+    SecureRandom.alphanumeric(8)
   end
 
   default_value_for :status, "active"
