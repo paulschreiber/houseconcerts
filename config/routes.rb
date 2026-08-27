@@ -15,7 +15,7 @@ Rails.application.routes.draw do
   get "privacy", to: "privacy#index", as: "privacy"
   get "list", to: "mailing_list#index", as: "mailing_list"
   get "list/thanks/:uniqid", to: "mailing_list#thanks", as: "mailing_list_thanks"
-  get "list/already_subscribed/:uniqid", to: "mailing_list#already_subscribed", as: "mailing_list_already_subscribed"
+  get "list/already_subscribed", to: "mailing_list#already_subscribed", as: "mailing_list_already_subscribed"
   get "unsubscribe/:uniqid", to: "mailing_list#unsubscribe", as: "unsubscribe"
   get "calendar/", to: "shows#calendar", as: "calendar"
 

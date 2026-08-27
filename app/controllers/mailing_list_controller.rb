@@ -29,7 +29,7 @@ class MailingListController < ApplicationController
     @person = Person.find_by(email: email) if email.present?
 
     if @person.present?
-      redirect_to mailing_list_already_subscribed_path(uniqid: @person.uniqid)
+      redirect_to mailing_list_already_subscribed_path(first_name: params.dig(:person, :first_name))
       return
     end
 
@@ -42,12 +42,11 @@ class MailingListController < ApplicationController
     end
   end
 
-  def thanks
-    @person = Person.find_by(uniqid: params[:uniqid])
-    redirect_to root_url if @person.nil?
+  def already_subscribed
+    @first_name = params[:first_name]
   end
 
-  def already_subscribed
+  def thanks
     @person = Person.find_by(uniqid: params[:uniqid])
     redirect_to root_url if @person.nil?
   end

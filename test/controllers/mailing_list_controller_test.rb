@@ -59,7 +59,7 @@ class MailingListControllerTest < ActionDispatch::IntegrationTest
       }
     end
 
-    assert_redirected_to mailing_list_already_subscribed_path(uniqid: people(:one).uniqid)
+    assert_redirected_to mailing_list_already_subscribed_path(first_name: "Whatever")
   end
 
   test "create renders the form with 422 on validation failure" do
@@ -87,14 +87,15 @@ class MailingListControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_url
   end
 
-  test "already_subscribed shows the message for a valid uniqid" do
-    get mailing_list_already_subscribed_path(uniqid: people(:one).uniqid)
+  test "already_subscribed shows the message" do
+    get mailing_list_already_subscribed_path
     assert_response :success
-    assert_includes response.body, people(:one).first_name
+    assert_includes response.body, "already subscribed"
   end
 
-  test "already_subscribed redirects home for an invalid uniqid" do
-    get mailing_list_already_subscribed_path(uniqid: "nonexistent-uniqid")
-    assert_redirected_to root_url
+  test "already_subscribed greets the submitted name" do
+    get mailing_list_already_subscribed_path(first_name: "Jane")
+    assert_response :success
+    assert_includes response.body, "Jane, you’re already subscribed"
   end
 end
