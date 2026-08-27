@@ -36,7 +36,7 @@ class RSVP < ApplicationRecord
     greater_than_or_equal_to: 0
   }, allow_blank: true, if: :yes?
   validates :show_id, inclusion: { in: ->(_) { Show.all.collect(&:id) } }
-  validate :tickets_available?, on: :create, unless: :no?
+  validate :tickets_available?, unless: :no?, if: :requesting_more_seats?
 
   RSVP_NOTIFY_ATTRIBUTES = %w[first_name last_name seats_reserved response].freeze
 
@@ -59,6 +59,10 @@ class RSVP < ApplicationRecord
 
     errors.add(:show, "is sold out")
     false
+  end
+
+  def requesting_more_seats?
+    new_record? || seats_reserved > seats_reserved_was
   end
 
   def confirm!
