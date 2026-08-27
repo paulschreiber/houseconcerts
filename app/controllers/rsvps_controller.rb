@@ -75,16 +75,13 @@ class RsvpsController < ApplicationController
 
     @rsvp = RSVP.find_by(show_id: show_id, email: email) if email.present? && show_id.positive?
 
-    saved = false
-
     # create a new reservation
-    if @rsvp.nil?
-      @rsvp = RSVP.new(rsvp_params)
-      saved = @rsvp.save
+    saved = if @rsvp.nil?
+      create_rsvp
 
     # update an existing reservation
     else
-      saved = @rsvp.update(rsvp_params)
+      @rsvp.update(rsvp_params)
     end
 
     if saved
@@ -109,5 +106,16 @@ class RsvpsController < ApplicationController
 
   def rsvp_params
     params.expect(rsvp: %i[first_name last_name email phone_number show_id postcode response seats_reserved referrer])
+  end
+
+  # Two concurrent submissions for the same show/email can both miss the
+  # find_by above and race to create; the DB's unique index rejects the
+  # loser, which we recover by updating the row the winner created.
+  def create_rsvp
+    @rsvp = RSVP.new(rsvp_params)
+    @rsvp.save
+  rescue ActiveRecord::RecordNotUnique
+    @rsvp = RSVP.find_by(show_id: @rsvp.show_id, email: @rsvp.email)
+    @rsvp.update(rsvp_params)
   end
 end
