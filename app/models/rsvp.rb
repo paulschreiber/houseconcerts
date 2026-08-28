@@ -138,6 +138,10 @@ class RSVP < ApplicationRecord
     RSVP.where(show: Show.previous, response: "yes", confirmed: "yes")
   end
 
+  def self.nonsubscribers
+    RSVP.where(show: Show.next, response: "yes").where("email NOT IN (SELECT email FROM people)")
+  end
+
   def sms_reminder
     "Reminder: You have #{seats_reserved.humanize} #{'seat'.pluralize(seats_reserved)} for the #{show.name} show on #{show.start_date} at #{show.start_time}."
   end
