@@ -58,6 +58,11 @@ body.shows.index .scopes a:nth-child(7) {
   margin-left: 1rem;
 }
 
+body.rsvps.index .scopes a:nth-child(2),
+body.rsvps.index .scopes a:nth-child(6) {
+  margin-left: 1rem;
+}
+
 /* Sidebar section dividers (plain horizontal rules, no visible label) */
 nav h4 {
   height: 0;

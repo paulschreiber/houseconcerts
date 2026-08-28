@@ -29,6 +29,7 @@ class RSVPResource < Madmin::Resource
   scope :next_show
   scope :next_show_attendees
   scope :unconfirmed_rsvps
+  scope :nonsubscribers
   scope :previous_show
   scope :previous_show_attendees
 
