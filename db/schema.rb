@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_27_181318) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_29_112123) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", precision: nil, null: false
@@ -73,6 +73,36 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_27_181318) do
     t.bigint "show_id", null: false
     t.index ["artist_id", "show_id"], name: "index_artists_shows_on_artist_id_and_show_id"
     t.index ["show_id", "artist_id"], name: "index_artists_shows_on_show_id_and_artist_id"
+  end
+
+  create_table "batch_run_items", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "batch_run_id", null: false
+    t.datetime "created_at", null: false
+    t.string "error_message"
+    t.bigint "recipient_id", null: false
+    t.string "recipient_type", null: false
+    t.datetime "sent_at"
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["batch_run_id", "recipient_type", "recipient_id"], name: "index_batch_run_items_on_batch_run_and_recipient", unique: true
+    t.index ["batch_run_id"], name: "index_batch_run_items_on_batch_run_id"
+    t.index ["recipient_type", "recipient_id"], name: "index_batch_run_items_on_recipient"
+  end
+
+  create_table "batch_runs", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.virtual "active_kind_lock", type: :string, as: "(case when (`status` = 2) then NULL else concat(`show_id`,_utf8mb4'-',`kind`) end)", stored: true
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.integer "failed_count", default: 0, null: false
+    t.integer "kind", null: false
+    t.integer "sent_count", default: 0, null: false
+    t.bigint "show_id", null: false
+    t.datetime "started_at"
+    t.integer "status", default: 0, null: false
+    t.integer "total_count", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["active_kind_lock"], name: "index_batch_runs_on_active_kind_lock", unique: true
+    t.index ["show_id"], name: "index_batch_runs_on_show_id"
   end
 
   create_table "friendly_id_slugs", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -356,6 +386,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_27_181318) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "batch_run_items", "batch_runs"
+  add_foreign_key "batch_runs", "shows"
   add_foreign_key "rsvps", "shows"
   add_foreign_key "shows", "venues"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
