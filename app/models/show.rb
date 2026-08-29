@@ -6,6 +6,7 @@ class Show < ApplicationRecord
   has_many :artist_shows, dependent: :destroy
   has_many :artists, through: :artist_shows
   has_many :rsvps, dependent: :destroy
+  has_many :batch_runs, dependent: :destroy
   belongs_to :venue
 
   before_validation :set_end_time
@@ -92,6 +93,10 @@ class Show < ApplicationRecord
 
   def can_waitlist_rsvps?
     confirmed? && waitlisted?
+  end
+
+  def invites_sent?
+    batch_runs.invite.completed.exists?
   end
 
   def to_s
