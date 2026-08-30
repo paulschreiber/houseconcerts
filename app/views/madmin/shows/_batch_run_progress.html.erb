@@ -1,0 +1,12 @@
+<div id="batch_run_progress_<%= batch_run.kind %>" class="batch-progress-status">
+  <% if batch_run.completed? %>
+    <%= batch_run.sent_count %> sent<% if batch_run.failed_count.positive? %>, <%= batch_run.failed_count %> failed<% end %> (complete)
+  <% else %>
+    <progress value="<%= batch_run.processed_count %>" max="<%= [ batch_run.total_count, 1 ].max %>"></progress>
+    <%= batch_run.processed_count %>/<%= batch_run.total_count %> sent<% if batch_run.failed_count.positive? %>, <%= batch_run.failed_count %> failed<% end %>
+    (<%= batch_run.status.humanize %>)
+  <% end %>
+  <% if batch_run.failed_count.positive? %>
+    <%= button_to "Retry #{batch_run.failed_count} failed", retry_failed_batch_run_madmin_show_path(batch_run.show, kind: batch_run.kind), method: :patch, class: "btn btn-secondary" %>
+  <% end %>
+</div>
