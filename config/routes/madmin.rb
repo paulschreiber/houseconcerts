@@ -18,7 +18,14 @@ namespace :madmin, path: Settings.admin_prefix do
       get :print
     end
   end
-  resources :shows
+  resources :shows do
+    member do
+      patch :send_invites
+      patch :send_invites_unopened
+      patch :send_reminders
+      patch :retry_failed_batch_run
+    end
+  end
   resources :venues
   resources :venue_groups
   root to: "dashboard#show"
