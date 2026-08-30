@@ -190,3 +190,27 @@ main:has(> #sidebar) {
   vertical-align: middle;
   width: 6rem;
 }
+
+/* Dashboard callout listing shows with failed batch sends. */
+.dashboard-warning {
+  border: 1px solid rgb(252 165 165);
+  background-color: rgb(254 242 242);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+
+  h2 {
+    margin-top: 0;
+    color: rgb(153 27 27);
+  }
+
+  ul {
+    margin-bottom: 0;
+  }
+
+  .dashboard-warning-reasons {
+    color: rgb(127 29 29);
+    font-size: 0.875rem;
+    font-style: italic;
+  }
+}

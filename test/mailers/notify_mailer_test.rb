@@ -21,6 +21,49 @@ class NotifyMailerTest < ActionMailer::TestCase
     end
   end
 
+  test "failed_batch_items summarizes failed invite recipients (Person)" do
+    show = shows(:upcoming)
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 2, sent_count: 1, failed_count: 1)
+    person = Person.create!(first_name: "Failed", last_name: "Invite", email: "failed.invite@example.com", status: "active")
+    batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
+    batch_run.batch_run_items.create!(recipient: Person.create!(first_name: "Sent", last_name: "Ok", email: "sent.ok@example.com", status: "active"), status: "sent", sent_at: Time.current)
+
+    email = NotifyMailer.failed_batch_items(batch_run)
+
+    assert_includes email.subject, "1 failed invites send"
+    assert_includes email.subject, show.name
+    assert_equal [ "#{Settings.invites_from_email}@#{Settings.domain}" ], email.to
+    body = email.body.encoded
+    assert_includes body, person.email
+    assert_includes body, "boom"
+    assert_not_includes body, "sent.ok@example.com"
+  end
+
+  test "failed_batch_items summarizes failed remind recipients (RSVP)" do
+    show = shows(:upcoming)
+    batch_run = BatchRun.create!(show: show, kind: "remind", status: "completed", total_count: 1, failed_count: 1)
+    rsvp = rsvps(:one)
+    batch_run.batch_run_items.create!(recipient: rsvp, status: "failed", error_message: "SMS failed")
+
+    email = NotifyMailer.failed_batch_items(batch_run)
+
+    assert_includes email.subject, "1 failed reminders send"
+    body = email.body.encoded
+    assert_includes body, rsvp.email
+    assert_includes body, "SMS failed"
+  end
+
+  test "failed_batch_items delivers exactly one email" do
+    show = shows(:upcoming)
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 1, failed_count: 1)
+    person = Person.create!(first_name: "Failed", last_name: "Invite", email: "failed.invite2@example.com", status: "active")
+    batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
+
+    assert_emails 1 do
+      NotifyMailer.failed_batch_items(batch_run).deliver_now
+    end
+  end
+
   test "text_message includes the matching rsvp's name when the phone number matches" do
     rsvp = rsvps(:one)
     rsvp.update!(phone_number: "2125551234")
