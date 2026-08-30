@@ -95,10 +95,13 @@ class BatchRunItemJob < ApplicationJob
       if batch_run.processed_count >= batch_run.total_count
         # Guarded by `status: "running"` so only the item that actually
         # finishes the run flips it to completed, even if two items finish
-        # at the same time.
-        BatchRun.where(id: batch_run.id, status: "running")
-                .update_all(status: BatchRun.statuses[:completed], completed_at: Time.current) # rubocop:disable Rails/SkipsModelValidations
+        # at the same time -- and so the failure notification below only
+        # ever fires once per completion, not once per item.
+        became_completed = BatchRun.where(id: batch_run.id, status: "running")
+                                   .update_all(status: BatchRun.statuses[:completed], completed_at: Time.current) == 1 # rubocop:disable Rails/SkipsModelValidations
         batch_run.reload
+
+        NotifyMailer.failed_batch_items(batch_run).deliver_later if became_completed && batch_run.failed_count.positive?
       end
 
       # Scoped to this specific batch_run (not just show+kind), so a stale
