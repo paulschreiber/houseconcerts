@@ -195,6 +195,35 @@ class RsvpTest < ActiveSupport::TestCase
     assert_not_includes RSVP.unconfirmed_rsvps, rsvp
   end
 
+  test "self.nonsubscribers includes a yes rsvp for the next show whose email isn't a subscribed person" do
+    non_subscriber = RSVP.create!(show: Show.next, first_name: "Not", last_name: "Subscribed",
+                                  email: "not-subscribed@example.com", response: "yes", seats_reserved: 2)
+
+    assert_includes RSVP.nonsubscribers, non_subscriber
+  end
+
+  test "self.nonsubscribers excludes an rsvp whose email matches an existing person" do
+    Person.create!(first_name: "Already", last_name: "Subscribed", email: "matches-person@example.com", status: "active")
+    subscriber_rsvp = RSVP.create!(show: Show.next, first_name: "Matches", last_name: "Person",
+                                   email: "matches-person@example.com", response: "yes", seats_reserved: 2)
+
+    assert_not_includes RSVP.nonsubscribers, subscriber_rsvp
+  end
+
+  test "self.nonsubscribers excludes a declined rsvp" do
+    declined = RSVP.create!(show: Show.next, first_name: "Declined", last_name: "Rsvp",
+                            email: "declined@example.com", response: "no")
+
+    assert_not_includes RSVP.nonsubscribers, declined
+  end
+
+  test "self.nonsubscribers excludes rsvps for a different show" do
+    other_show_rsvp = RSVP.create!(show: shows(:past), first_name: "Past", last_name: "Rsvp",
+                                   email: "past-show@example.com", response: "yes", seats_reserved: 2)
+
+    assert_not_includes RSVP.nonsubscribers, other_show_rsvp
+  end
+
   test "rejects a new yes rsvp for a sold out show" do
     rsvp = RSVP.new(
       first_name: "Sold",
