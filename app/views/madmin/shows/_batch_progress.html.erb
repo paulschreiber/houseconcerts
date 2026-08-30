@@ -1,0 +1,15 @@
+<% latest_batch_runs_by_kind = show.batch_runs.order(created_at: :desc).group_by(&:kind).transform_values(&:first) %>
+<div class="batch-progress">
+  <% BatchRun.kinds.each_key do |kind| %>
+    <div class="batch-progress-item">
+      <strong><%= BatchRun.kind_label(kind) %>:</strong>
+      <% batch_run = latest_batch_runs_by_kind[kind] %>
+      <% if batch_run %>
+        <%= turbo_stream_from [ batch_run, :progress ] %>
+        <%= render partial: "madmin/shows/batch_run_progress", locals: { batch_run: batch_run } %>
+      <% else %>
+        <span id="batch_run_progress_<%= kind %>" class="batch-progress-none">Not sent yet</span>
+      <% end %>
+    </div>
+  <% end %>
+</div>

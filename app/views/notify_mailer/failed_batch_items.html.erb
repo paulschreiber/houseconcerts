@@ -1,0 +1,16 @@
+<h1>Failed <%= @kind_label.downcase %> sends</h1>
+
+<p>The <%= @kind_label.downcase %> batch for <strong><%= @show.name %></strong> finished with <%= @failed_items.size %> failed <%= @failed_items.size == 1 ? "send" : "sends" %>.</p>
+
+<ul>
+  <%- @failed_items.each do |item| -%>
+    <li>
+      <%= item.recipient.email %>
+      <%- if item.error_message.present? -%>
+        — <%= item.error_message %>
+      <%- end -%>
+    </li>
+  <%- end -%>
+</ul>
+
+<p><%= link_to "View and retry", madmin_show_url(@show) %></p>

@@ -22,6 +22,16 @@ class NotifyMailer < ApplicationMailer
          subject: @subject)
   end
 
+  def failed_batch_items(batch_run)
+    @batch_run = batch_run
+    @show = batch_run.show
+    @failed_items = batch_run.batch_run_items.failed.includes(:recipient)
+    @kind_label = BatchRun.kind_label(batch_run.kind)
+
+    mail(to: formatted_address(Settings.invites_from_name, Settings.invites_from_email),
+         subject: "#{@failed_items.size} failed #{@kind_label.downcase} #{'send'.pluralize(@failed_items.size)} for #{@show.name}")
+  end
+
   def text_message(sender, body)
     @body = body
 

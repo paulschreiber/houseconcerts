@@ -1,0 +1,20 @@
+<h1><%= Settings.site_name %></h1>
+
+<% if @failed_batch_items.any? %>
+  <div class="dashboard-warning">
+    <h2>Failed sends need attention</h2>
+    <ul>
+      <% @failed_batch_items.group_by { |item| item.batch_run.show }.each do |show, items| %>
+        <li>
+          <%= link_to show.name, madmin_show_path(show) %>:
+          <%= items.size %> failed <%= items.size == 1 ? "send" : "sends" %>
+          <ul class="dashboard-warning-reasons">
+            <% items.filter_map(&:error_message).uniq.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

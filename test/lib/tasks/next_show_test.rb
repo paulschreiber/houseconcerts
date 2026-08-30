@@ -5,7 +5,7 @@ class NextShowRakeTest < ActiveSupport::TestCase
 
   setup do
     load_rake_tasks
-    %w[invite invite_one invite_unopened invite_count attendees rsvps unconfirmed opens confirm].each do |task|
+    %w[invite invite_one invite_unopened invite_count remind attendees rsvps unconfirmed opens confirm].each do |task|
       Rake::Task["next_show:#{task}"].reenable
     end
   end
@@ -19,22 +19,41 @@ class NextShowRakeTest < ActiveSupport::TestCase
   end
 
   test "invite emails eligible people for the next show" do
-    person = Person.create!(first_name: "New", last_name: "Person", email: "invite@example.com", status: "active")
+    Person.create!(first_name: "New", last_name: "Person", email: "invite@example.com", status: "active")
 
     out = nil
     assert_emails 1 do
+      perform_enqueued_jobs { out, = capture_io { Rake::Task["next_show:invite"].invoke } }
+    end
+    assert_includes out, "Started sending invites"
+  end
+
+  test "invite prints a friendly message instead of double-sending when a run is already in progress" do
+    show = shows(:upcoming)
+    BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    Person.create!(first_name: "New", last_name: "Person", email: "invite@example.com", status: "active")
+
+    out = nil
+    assert_no_emails do
       out, = capture_io { Rake::Task["next_show:invite"].invoke }
     end
-    assert_includes out, person.email_address_with_name
+    assert_includes out, "already in progress"
+    assert_equal 1, BatchRun.where(show: show, kind: "invite").count
   end
 
   test "invite excludes people who already RSVPd for the show" do
-    person = Person.create!(first_name: "Already", last_name: "Rsvpd", email: "already-rsvpd@example.com", status: "active")
-    RSVP.create!(show: shows(:upcoming), email: person.email, first_name: "Already", last_name: "Rsvpd", response: "yes", seats_reserved: 1)
+    rsvpd = Person.create!(first_name: "Already", last_name: "Rsvpd", email: "already-rsvpd@example.com", status: "active")
+    RSVP.create!(show: shows(:upcoming), email: rsvpd.email, first_name: "Already", last_name: "Rsvpd", response: "yes", seats_reserved: 1)
+    eligible = Person.create!(first_name: "Not", last_name: "Rsvpd", email: "not-rsvpd@example.com", status: "active")
 
-    assert_no_emails do
-      capture_io { Rake::Task["next_show:invite"].invoke }
+    before_count = ActionMailer::Base.deliveries.size
+    assert_emails 1 do
+      perform_enqueued_jobs { capture_io { Rake::Task["next_show:invite"].invoke } }
     end
+
+    recipients = ActionMailer::Base.deliveries.drop(before_count).flat_map(&:to)
+    assert_includes recipients, eligible.email
+    assert_not_includes recipients, rsvpd.email
   end
 
   test "invite_one emails a specific person for the next show" do
@@ -54,15 +73,27 @@ class NextShowRakeTest < ActiveSupport::TestCase
   test "invite_unopened excludes people who already opened an invite for the show" do
     show = shows(:upcoming)
     opened = Person.create!(first_name: "Already", last_name: "Opened", email: "opened-invite@example.com", status: "active")
-    not_opened = Person.create!(first_name: "Not", last_name: "Opened", email: "fresh-invite@example.com", status: "active")
+    fresh = Person.create!(first_name: "Not", last_name: "Opened", email: "fresh-invite@example.com", status: "active")
     Open.create!(tag: "#{show.slug}:invite-abc", email: opened.email, open: true)
 
     out = nil
+    before_count = ActionMailer::Base.deliveries.size
     assert_emails 1 do
-      out, = capture_io { Rake::Task["next_show:invite_unopened"].invoke }
+      perform_enqueued_jobs { out, = capture_io { Rake::Task["next_show:invite_unopened"].invoke } }
     end
-    assert_includes out, not_opened.email
-    assert_not_includes out, opened.email
+    assert_includes out, "Started sending invites"
+
+    recipients = ActionMailer::Base.deliveries.drop(before_count).flat_map(&:to)
+    assert_includes recipients, fresh.email
+    assert_not_includes recipients, opened.email
+  end
+
+  test "remind emails confirmed attendees of the next show" do
+    out = nil
+    assert_emails 1 do
+      perform_enqueued_jobs { out, = capture_io { Rake::Task["next_show:remind"].invoke } }
+    end
+    assert_includes out, "Started sending reminders"
   end
 
   test "attendees lists confirmed attendees of the next show" do
