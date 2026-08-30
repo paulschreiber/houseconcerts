@@ -27,7 +27,7 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
     item = batch_run.batch_run_items.create!(recipient: person)
 
-    assert_no_emails do
+    assert_emails 1 do
       BatchRunItemJob.perform_now(item.id)
     end
 
@@ -49,7 +49,7 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     InvitesMailer.define_singleton_method(:invite) { |*| raise "simulated delivery failure" }
 
     begin
-      assert_no_emails do
+      assert_emails 1 do
         BatchRunItemJob.perform_now(item.id)
       end
     ensure
@@ -99,7 +99,7 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     assert batch_run.completed?
   end
 
-  test "retrying a failed item that fails again is freshly counted as failed" do
+  test "retrying a failed item that fails again is freshly counted as failed and re-notifies the admin" do
     show = shows(:upcoming)
     person = Person.create!(first_name: "Retry", last_name: "Failure", email: "retry-failure@example.com", status: "active")
     batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1, failed_count: 0)
@@ -109,7 +109,11 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     InvitesMailer.define_singleton_method(:invite) { |*| raise "boom again" }
 
     begin
-      assert_no_emails do
+      # No InvitesMailer email (it fails again), but the run completes
+      # with a failure present, so the admin-notification email fires --
+      # a still-failing item after a retry must keep alerting, not just
+      # on its very first failure.
+      assert_emails 1 do
         BatchRunItemJob.perform_now(item.id)
       end
     ensure
@@ -151,8 +155,10 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
       assert_equal 1, batch_run.sent_count
       assert_equal 0, batch_run.failed_count
 
-      # item_b's retry fails again -- no InvitesMailer send.
-      assert_no_emails do
+      # item_b's retry fails again -- no InvitesMailer send, but the run
+      # now completes with a failure present, so the admin notification
+      # fires exactly once, not once per retried item.
+      assert_emails 1 do
         BatchRunItemJob.perform_now(item_b.id)
       end
     ensure
@@ -192,7 +198,7 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     end
   end
 
-  test "completing a batch run with multiple successful items updates counts correctly" do
+  test "completing a batch run with zero failures does not notify the admin" do
     show = shows(:upcoming)
     person_a = Person.create!(first_name: "Clean", last_name: "One", email: "clean-one@example.com", status: "active")
     person_b = Person.create!(first_name: "Clean", last_name: "Two", email: "clean-two@example.com", status: "active")
@@ -209,7 +215,7 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     assert_equal 0, batch_run.failed_count
   end
 
-  test "completing a batch run with a mix of successes and failures updates counts correctly" do
+  test "completing a batch run with a failure notifies the admin exactly once" do
     show = shows(:upcoming)
     person_a = Person.create!(first_name: "Fails", last_name: "One", email: "fails-one@example.com", status: "active")
     person_b = Person.create!(first_name: "Succeeds", last_name: "Two", email: "succeeds-two@example.com", status: "active")
@@ -225,7 +231,8 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     end
 
     begin
-      assert_emails 1 do
+      # 1 InvitesMailer send for person_b + 1 NotifyMailer failure notification.
+      assert_emails 2 do
         BatchRunItemJob.perform_now(item_a.id)
         BatchRunItemJob.perform_now(item_b.id)
       end
