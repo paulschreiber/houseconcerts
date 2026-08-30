@@ -12,4 +12,4 @@ jobs:
     if: github.event.pull_request.user.login == 'dependabot[bot]'
     steps:
       - name: Approve Dependabot pull request
-        uses: hmarr/auto-approve-action@8f929096a962e83ccdfa8afcf855f39f12d4dac7
+        uses: hmarr/auto-approve-action@05a696a09d381a5a0d142c755f7eacbb19eb6525
