@@ -69,6 +69,14 @@ class InvitesMailer < ApplicationMailer
       return
     end
 
+    # Atomic, one-time claim: if the enqueued mailer job somehow gets
+    # performed more than once for the same rsvp (e.g. a queue
+    # redelivery), the second attempt's claim fails and this becomes a
+    # no-op instead of sending a second waitlist email.
+    claimed = RSVP.where(id: rsvp.id, waitlist_emailed_at: nil)
+                  .update_all(waitlist_emailed_at: Time.current) # rubocop:disable Rails/SkipsModelValidations
+    return unless claimed.positive?
+
     @rsvp = rsvp
     tag = "#{rsvp.show.slug}:#{email_type}"
     @track_url = open_tracking_url(tag: tag, uniqid: rsvp.uniqid)
@@ -92,6 +100,14 @@ class InvitesMailer < ApplicationMailer
       logger.warn "RSVP #{rsvp.id} has 0 seats"
       return
     end
+
+    # Atomic, one-time claim: if the enqueued mailer job somehow gets
+    # performed more than once for the same rsvp (e.g. a queue
+    # redelivery), the second attempt's claim fails and this becomes a
+    # no-op instead of sending a second confirmation email.
+    claimed = RSVP.where(id: rsvp.id, confirmation_emailed_at: nil)
+                  .update_all(confirmation_emailed_at: Time.current) # rubocop:disable Rails/SkipsModelValidations
+    return unless claimed.positive?
 
     @rsvp = rsvp
     tag = "#{rsvp.show.slug}:#{email_type}"
