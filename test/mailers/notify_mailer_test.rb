@@ -2,22 +2,50 @@ require "test_helper"
 
 class NotifyMailerTest < ActionMailer::TestCase
   test "rsvp uses a subject appropriate to the type and notifies the admin" do
-    rsvp = rsvps(:one)
-
-    new_email = NotifyMailer.rsvp(rsvp, "new", nil)
+    new_email = NotifyMailer.rsvp(rsvps(:one), "new", nil)
     assert_includes new_email.subject, "New RSVP"
     assert_equal [ "#{Settings.invites_from_email}@#{Settings.domain}" ], new_email.to
+  end
 
-    cancel_email = NotifyMailer.rsvp(rsvp, "cancel", nil)
-    assert_includes cancel_email.subject, "Cancellation"
+  test "rsvp uses a cancellation subject for type cancel" do
+    email = NotifyMailer.rsvp(rsvps(:one), "cancel", nil)
+    assert_includes email.subject, "Cancellation"
+  end
 
-    update_email = NotifyMailer.rsvp(rsvp, "update", 1)
-    assert_includes update_email.subject, "Updated RSVP"
+  test "rsvp uses an updated subject for type update" do
+    email = NotifyMailer.rsvp(rsvps(:one), "update", 1)
+    assert_includes email.subject, "Updated RSVP"
   end
 
   test "rsvp delivers exactly one email" do
     assert_emails 1 do
       NotifyMailer.rsvp(rsvps(:one), "new", nil).deliver_now
+    end
+  end
+
+  test "rsvp only sends once even if the same job is performed twice" do
+    rsvp = rsvps(:one)
+
+    assert_emails 1 do
+      2.times { NotifyMailer.rsvp(rsvp, "new", nil).deliver_now }
+    end
+  end
+
+  test "rsvp is a no-op when already notified for this exact save" do
+    rsvp = rsvps(:one)
+    rsvp.update_column(:admin_notified_at, rsvp.updated_at) # rubocop:disable Rails/SkipsModelValidations
+
+    assert_no_emails do
+      NotifyMailer.rsvp(rsvp, "new", nil).deliver_now
+    end
+  end
+
+  test "rsvp sends again for a genuinely later save" do
+    rsvp = rsvps(:one)
+    rsvp.update_column(:admin_notified_at, 1.hour.ago(rsvp.updated_at)) # rubocop:disable Rails/SkipsModelValidations
+
+    assert_emails 1 do
+      NotifyMailer.rsvp(rsvp, "update", 1).deliver_now
     end
   end
 
