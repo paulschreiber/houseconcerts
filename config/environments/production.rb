@@ -49,6 +49,12 @@ Rails.application.configure do
   # two targets, every job enqueue and perform ran twice, including the
   # underlying solid_queue_jobs insert. Give ActiveJob its own
   # non-broadcasting logger so this can't happen.
+
+  # Once Rails fixes this,
+  # https://github.com/rails/rails/pull/53105
+  # https://github.com/rails/rails/pull/53505
+  # https://github.com/rails/rails/pull/58429
+  # we can remove the code change (75b2925).
   config.after_initialize do
     ActiveJob::Base.logger = ActiveSupport::TaggedLogging.new(
       ActiveSupport::Logger.new("log/production.log", formatter: Logger::Formatter.new)
