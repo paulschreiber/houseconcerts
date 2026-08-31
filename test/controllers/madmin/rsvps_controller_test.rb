@@ -10,6 +10,24 @@ module Madmin
       @rsvp.update!(confirmed: "unconfirmed")
     end
 
+    test "edit renders successfully" do
+      get edit_madmin_rsvp_path(@rsvp)
+
+      assert_response :success
+    end
+
+    test "new renders successfully" do
+      get new_madmin_rsvp_path
+
+      assert_response :success
+    end
+
+    test "show renders successfully" do
+      get madmin_rsvp_path(@rsvp)
+
+      assert_response :success
+    end
+
     test "confirm confirms the rsvp, emails it, and redirects with a notice" do
       assert_emails 1 do
         patch confirm_madmin_rsvp_path(@rsvp)
