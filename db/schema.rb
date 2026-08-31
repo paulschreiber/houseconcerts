@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_31_170926) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_31_171112) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", precision: nil, null: false
@@ -127,6 +127,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_170926) do
 
   create_table "rsvps", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.datetime "admin_notified_at"
+    t.datetime "confirmation_emailed_at"
     t.integer "confirmed", default: 0, null: false
     t.datetime "confirmed_at", precision: nil
     t.datetime "created_at", precision: nil, null: false
@@ -143,6 +144,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_170926) do
     t.bigint "show_id"
     t.string "uniqid"
     t.datetime "updated_at", precision: nil, null: false
+    t.datetime "waitlist_emailed_at"
     t.index ["confirmed"], name: "index_rsvps_on_confirmed"
     t.index ["email"], name: "index_rsvps_on_email"
     t.index ["response"], name: "index_rsvps_on_response"

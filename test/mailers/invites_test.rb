@@ -49,6 +49,21 @@ class InvitesTest < ActionMailer::TestCase
     end
   end
 
+  test "waitlisted is a no-op if it has already sent for this rsvp" do
+    rsvp = rsvps(:one)
+    rsvp.update_column(:waitlist_emailed_at, Time.current) # rubocop:disable Rails/SkipsModelValidations
+
+    assert_no_emails { InvitesMailer.waitlisted(rsvp).deliver_now }
+  end
+
+  test "confirm only sends once even if the same job is performed twice" do
+    rsvp = rsvps(:one)
+
+    assert_emails 1 do
+      2.times { InvitesMailer.confirm(rsvp).deliver_now }
+    end
+  end
+
   test "confirm delivers with a confirmation subject and a calendar link" do
     rsvp = rsvps(:one)
 
@@ -59,6 +74,13 @@ class InvitesTest < ActionMailer::TestCase
     end
     assert_includes email.subject, "RSVP Confirmation"
     assert_includes email.body.encoded, "calendar.google.com"
+  end
+
+  test "confirm is a no-op if it has already sent for this rsvp" do
+    rsvp = rsvps(:one)
+    rsvp.update_column(:confirmation_emailed_at, Time.current) # rubocop:disable Rails/SkipsModelValidations
+
+    assert_no_emails { InvitesMailer.confirm(rsvp).deliver_now }
   end
 
   test "remind delivers with a reminder subject" do
