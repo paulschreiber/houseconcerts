@@ -9,6 +9,24 @@ module Madmin
       @person = people(:one)
     end
 
+    test "edit renders successfully" do
+      get edit_madmin_person_path(@person)
+
+      assert_response :success
+    end
+
+    test "new renders successfully" do
+      get new_madmin_person_path
+
+      assert_response :success
+    end
+
+    test "show renders successfully" do
+      get madmin_person_path(@person)
+
+      assert_response :success
+    end
+
     test "invite emails the person and redirects with a notice" do
       assert_emails 1 do
         patch invite_madmin_person_path(@person)
