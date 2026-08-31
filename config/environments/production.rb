@@ -41,6 +41,20 @@ Rails.application.configure do
     ActiveSupport::TaggedLogging.new(ActiveSupport::Logger.new("log/production.log", formatter: Logger::Formatter.new))
   )
 
+  # ActiveJob::Base.logger defaults to Rails.logger (the BroadcastLogger
+  # above). ActiveJob::Logging wraps both #enqueue and #perform_now in
+  # logger.tagged(&block) -- a block that does real work, not just a log
+  # line -- and BroadcastLogger#method_missing maps a multi-target call
+  # across every broadcast, running the wrapped block once per target. With
+  # two targets, every job enqueue and perform ran twice, including the
+  # underlying solid_queue_jobs insert. Give ActiveJob its own
+  # non-broadcasting logger so this can't happen.
+  config.after_initialize do
+    ActiveJob::Base.logger = ActiveSupport::TaggedLogging.new(
+      ActiveSupport::Logger.new("log/production.log", formatter: Logger::Formatter.new)
+    )
+  end
+
   # Change to "debug" to log everything (including potentially personally-identifiable information!)
   config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "info")
 
