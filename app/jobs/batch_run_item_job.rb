@@ -39,7 +39,7 @@ class BatchRunItemJob < ApplicationJob
       with_transient_retries { item.update!(status: :failed, error_message: e.message) }
     end
 
-    with_transient_retries { record_progress(item) }
+    record_progress(item)
   end
 
   private
@@ -139,32 +139,45 @@ class BatchRunItemJob < ApplicationJob
       # the same as a first attempt -- not adjusted as a delta against a
       # count that's already sitting at its final value.
       counter = item.failed? ? :failed_count : :sent_count
-      # Atomic SQL increment (not #increment!) so concurrent worker
-      # threads updating the same batch_run's counters can't lose an
-      # update.
-      BatchRun.increment_counter(counter, batch_run.id) # rubocop:disable Rails/SkipsModelValidations
+      # Retried on its own, separately from everything below, and not
+      # wrapped together with them in one retry: this increment is a
+      # single atomic SQL statement with no partial-effect possibility,
+      # unlike the compound steps below -- if it raises, it didn't take
+      # effect, so retrying just it is safe. Retrying it *together* with
+      # reload/the completion check/the broadcast would risk a second,
+      # genuine increment if the failure happened somewhere *after* this
+      # succeeded (not #increment!, so concurrent worker threads updating
+      # the same batch_run's counters can't lose an update either way).
+      with_transient_retries { BatchRun.increment_counter(counter, batch_run.id) } # rubocop:disable Rails/SkipsModelValidations
 
-      batch_run.reload
-      if batch_run.processed_count >= batch_run.total_count
-        # Guarded by `status: "running"` so only the item that actually
-        # finishes the run flips it to completed, even if two items finish
-        # at the same time -- and so the failure notification below only
-        # ever fires once per completion, not once per item.
-        became_completed = BatchRun.where(id: batch_run.id, status: "running")
-                                   .update_all(status: BatchRun.statuses[:completed], completed_at: Time.current) == 1 # rubocop:disable Rails/SkipsModelValidations
+      with_transient_retries do
         batch_run.reload
+        if batch_run.processed_count >= batch_run.total_count
+          # Guarded by `status: "running"` so only the item that actually
+          # finishes the run flips it to completed, even if two items
+          # finish at the same time -- and so the failure notification
+          # below only ever fires once per completion, not once per item.
+          # That guard also makes this whole block idempotent to retry:
+          # once it succeeds, a later retry finds status no longer
+          # "running" and just no-ops instead of re-transitioning or
+          # re-notifying.
+          became_completed = BatchRun.where(id: batch_run.id, status: "running")
+                                     .update_all(status: BatchRun.statuses[:completed], completed_at: Time.current) == 1 # rubocop:disable Rails/SkipsModelValidations
+          batch_run.reload
 
-        NotifyMailer.failed_batch_items(batch_run).deliver_later if became_completed && batch_run.failed_count.positive?
+          NotifyMailer.failed_batch_items(batch_run).deliver_later if became_completed && batch_run.failed_count.positive?
+        end
+
+        # Scoped to this specific batch_run (not just show+kind), so a
+        # stale broadcast from an older run of the same kind can't
+        # clobber whatever newer run the show page is actually
+        # displaying/subscribed to.
+        Turbo::StreamsChannel.broadcast_replace_to(
+          [ batch_run, :progress ],
+          target: "batch_run_progress_#{batch_run.kind}",
+          partial: "madmin/shows/batch_run_progress",
+          locals: { batch_run: batch_run }
+        )
       end
-
-      # Scoped to this specific batch_run (not just show+kind), so a stale
-      # broadcast from an older run of the same kind can't clobber whatever
-      # newer run the show page is actually displaying/subscribed to.
-      Turbo::StreamsChannel.broadcast_replace_to(
-        [ batch_run, :progress ],
-        target: "batch_run_progress_#{batch_run.kind}",
-        partial: "madmin/shows/batch_run_progress",
-        locals: { batch_run: batch_run }
-      )
     end
 end

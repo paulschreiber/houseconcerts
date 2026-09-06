@@ -405,4 +405,38 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     assert_equal 1, batch_run.sent_count
     assert batch_run.completed?
   end
+
+  test "a transient error after the counter increment already succeeded does not double-count on retry" do
+    show = shows(:upcoming)
+    person = Person.create!(first_name: "New", last_name: "Person", email: "transient-after-increment@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    item = batch_run.batch_run_items.create!(recipient: person)
+
+    # Simulates the increment succeeding and then the very next
+    # operation (reload) failing transiently -- record_progress retries
+    # only the reload/completion-check/broadcast portion in that case,
+    # not the increment, so it must not run a second time.
+    call_count = 0
+    original_reload = BatchRun.instance_method(:reload)
+    BatchRun.define_method(:reload) do |*args|
+      call_count += 1
+      raise ActiveRecord::ConnectionTimeoutError, "transient boom" if call_count == 1
+
+      original_reload.bind(self).call(*args)
+    end
+
+    begin
+      assert_emails 1 do
+        BatchRunItemJob.perform_now(item.id)
+      end
+    ensure
+      BatchRun.define_method(:reload, original_reload)
+    end
+
+    item.reload
+    assert item.sent?
+    batch_run.reload
+    assert_equal 1, batch_run.sent_count, "the counter must not be double-incremented by retrying a failure that happened after it already succeeded"
+    assert batch_run.completed?
+  end
 end
