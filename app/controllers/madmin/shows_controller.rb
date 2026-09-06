@@ -31,7 +31,7 @@ module Madmin
       failed_items = batch_run&.batch_run_items&.failed
 
       if batch_run.nil? || failed_items.none?
-        redirect_back_or_to resource.index_path, alert: "There are no failed #{kind_label} sends to retry."
+        redirect_back_or_to resource.show_path(@record), alert: "There are no failed #{kind_label} sends to retry."
         return
       end
 
@@ -54,7 +54,7 @@ module Madmin
         # active_kind_lock only allows one non-completed run per show+kind
         # at a time -- reopening this (older) run collides if a newer run
         # of the same kind is currently pending/running.
-        redirect_back_or_to resource.index_path,
+        redirect_back_or_to resource.show_path(@record),
                             alert: "Can't retry right now -- a newer #{kind_label} batch is already in progress for #{@record.name}. Try again once it finishes."
         return
       end
@@ -71,28 +71,28 @@ module Madmin
         # (failed_count is already reset and the failed items are still
         # there), so clicking Retry again picks up right where this left
         # off -- the button/gate query the real items, not this counter.
-        redirect_back_or_to resource.index_path, alert: "Couldn't start retrying #{kind_label} sends right now -- please try again in a moment."
+        redirect_back_or_to resource.show_path(@record), alert: "Couldn't start retrying #{kind_label} sends right now -- please try again in a moment."
         return
       end
 
-      redirect_back_or_to resource.index_path, notice: "Retrying #{retry_count} failed #{BatchRun.kind_label(kind).downcase} for #{@record.name}."
+      redirect_back_or_to resource.show_path(@record), notice: "Retrying #{retry_count} failed #{BatchRun.kind_label(kind).downcase} for #{@record.name}."
     end
 
     private
 
       def start_batch_run(kind, description, require_invites_sent: false)
         if !@record.next_show?
-          redirect_back_or_to resource.index_path, alert: "Only the next show can have #{description} sent."
+          redirect_back_or_to resource.show_path(@record), alert: "Only the next show can have #{description} sent."
         elsif require_invites_sent && !@record.invites_sent?
-          redirect_back_or_to resource.index_path, alert: "Send the initial invites before sending #{description}."
+          redirect_back_or_to resource.show_path(@record), alert: "Send the initial invites before sending #{description}."
         else
           StartBatchRun.call(show: @record, kind: kind)
-          redirect_back_or_to resource.index_path, notice: "Started sending #{description} for #{@record.name}."
+          redirect_back_or_to resource.show_path(@record), notice: "Started sending #{description} for #{@record.name}."
         end
       rescue StartBatchRun::AlreadyInProgress
-        redirect_back_or_to resource.index_path, alert: "Already sending #{description} for #{@record.name} -- hang tight."
+        redirect_back_or_to resource.show_path(@record), alert: "Already sending #{description} for #{@record.name} -- hang tight."
       rescue StartBatchRun::EnqueueFailed => e
-        redirect_back_or_to resource.index_path, alert: e.message
+        redirect_back_or_to resource.show_path(@record), alert: e.message
       end
   end
 end
