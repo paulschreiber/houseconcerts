@@ -57,6 +57,8 @@ class BatchRunFanOutJob < ApplicationJob
     batch_run = BatchRun.find(batch_run_id)
     return if batch_run.completed?
 
+    transitioned = false
+
     batch_run.with_lock do
       next unless batch_run.pending?
 
@@ -73,7 +75,20 @@ class BatchRunFanOutJob < ApplicationJob
       else
         batch_run.update!(status: :running, total_count: total_count, started_at: Time.current)
       end
+
+      transitioned = true
     end
+
+    # Without this, the show page would sit on "Not sent yet" until
+    # something else broadcasts -- which, for a run with zero eligible
+    # recipients, never happens at all (no BatchRunItemJob is ever
+    # enqueued to do it), and even for a normal run, leaves it looking
+    # untouched until the first item resolves. Only fires once, right
+    # after the transition actually committed above (not on a call that
+    # found the run already past "pending" and skipped straight to
+    # enqueueing) -- broadcasting an uncommitted or unchanged state would
+    # be either wrong or just noise.
+    broadcast_progress(batch_run) if transitioned
 
     return if batch_run.completed?
 
@@ -81,6 +96,15 @@ class BatchRunFanOutJob < ApplicationJob
   end
 
   private
+
+    def broadcast_progress(batch_run)
+      Turbo::StreamsChannel.broadcast_replace_to(
+        [ batch_run.show, :batch_progress ],
+        target: "batch_run_progress_#{batch_run.kind}",
+        partial: "madmin/shows/batch_run_progress",
+        locals: { batch_run: batch_run }
+      )
+    end
 
     # Claims each item (atomically, one row at a time) before enqueuing a
     # job for it -- with_lock above only makes the recipient-snapshot

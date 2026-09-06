@@ -210,12 +210,15 @@ class BatchRunItemJob < ApplicationJob
           NotifyMailer.failed_batch_items(batch_run).deliver_later if became_completed && batch_run.failed_count.positive?
         end
 
-        # Scoped to this specific batch_run (not just show+kind), so a
-        # stale broadcast from an older run of the same kind can't
-        # clobber whatever newer run the show page is actually
-        # displaying/subscribed to.
+        # Broadcast at the show level (not per-batch_run): the show page
+        # subscribes there unconditionally, once, regardless of which run
+        # is currently active for any given kind -- see
+        # _batch_progress.html.erb for why a per-run stream can't do
+        # that. Safe to share across kinds/runs: the DOM target is
+        # per-kind, and active_kind_lock guarantees at most one
+        # non-completed run per kind is ever broadcasting at a time.
         Turbo::StreamsChannel.broadcast_replace_to(
-          [ batch_run, :progress ],
+          [ batch_run.show, :batch_progress ],
           target: "batch_run_progress_#{batch_run.kind}",
           partial: "madmin/shows/batch_run_progress",
           locals: { batch_run: batch_run }
