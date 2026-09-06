@@ -186,6 +186,23 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     end
   end
 
+  test "an item whose recipient was deleted before the job ran is marked failed with a clear message" do
+    show = shows(:upcoming)
+    person = Person.create!(first_name: "Deleted", last_name: "Recipient", email: "deleted-before-send@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    item = batch_run.batch_run_items.create!(recipient: person)
+    person.destroy!
+
+    # 1 email: the admin failure-notification (total_count 1, so this
+    # single failure completes the run), not an InvitesMailer send.
+    assert_emails 1 do
+      BatchRunItemJob.perform_now(item.id)
+    end
+
+    assert item.reload.failed?
+    assert_equal "recipient no longer exists", item.error_message
+  end
+
   test "redelivering the same job (e.g. after a worker crash) does not resend" do
     show = shows(:upcoming)
     person = Person.create!(first_name: "New", last_name: "Person", email: "redelivered@example.com", status: "active")

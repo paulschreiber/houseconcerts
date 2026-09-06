@@ -40,7 +40,17 @@ module Madmin
       # run reopens, and the very first retried item to finish would
       # falsely flip the run back to "completed" while its siblings were
       # still in flight.
-      batch_run.update!(status: :running, completed_at: nil, failed_count: 0)
+      begin
+        batch_run.update!(status: :running, completed_at: nil, failed_count: 0)
+      rescue ActiveRecord::RecordNotUnique
+        # active_kind_lock only allows one non-completed run per show+kind
+        # at a time -- reopening this (older) run collides if a newer run
+        # of the same kind is currently pending/running.
+        redirect_back_or_to resource.index_path,
+                            alert: "Can't retry right now -- a newer #{kind_label} batch is already in progress for #{@record.name}. Try again once it finishes."
+        return
+      end
+
       batch_run.batch_run_items.failed.find_each { |item| BatchRunItemJob.perform_later(item.id) }
 
       redirect_back_or_to resource.index_path, notice: "Retrying #{retry_count} failed #{BatchRun.kind_label(kind).downcase} for #{@record.name}."

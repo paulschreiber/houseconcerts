@@ -81,6 +81,18 @@ class NotifyMailerTest < ActionMailer::TestCase
     assert_includes body, "SMS failed"
   end
 
+  test "failed_batch_items shows a placeholder instead of raising when a recipient was deleted" do
+    show = shows(:upcoming)
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 1, failed_count: 1)
+    person = Person.create!(first_name: "Deleted", last_name: "Recipient", email: "deleted-recipient@example.com", status: "active")
+    batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
+    person.destroy!
+
+    email = NotifyMailer.failed_batch_items(batch_run)
+
+    assert_includes email.body.encoded, "(recipient deleted)"
+  end
+
   test "failed_batch_items delivers exactly one email" do
     show = shows(:upcoming)
     batch_run = BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 1, failed_count: 1)

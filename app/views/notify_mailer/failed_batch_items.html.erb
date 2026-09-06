@@ -5,7 +5,7 @@
 <ul>
   <%- @failed_items.each do |item| -%>
     <li>
-      <%= item.recipient.email %>
+      <%= item.recipient&.email || "(recipient deleted)" %>
       <%- if item.error_message.present? -%>
         — <%= item.error_message %>
       <%- end -%>
