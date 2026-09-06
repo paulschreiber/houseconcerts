@@ -182,6 +182,18 @@ module Madmin
       assert_select "#batch_run_progress_remind progress", count: 1
     end
 
+    test "show page's running progress text labels only actual sends as sent, not sends plus failures" do
+      show = shows(:upcoming)
+      person = Person.create!(first_name: "Failed", last_name: "Item", email: "running-label-failed@example.com", status: "active")
+      batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 3, sent_count: 1, failed_count: 1)
+      batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
+
+      get madmin_show_path(show)
+
+      assert_response :success
+      assert_select "#batch_run_progress_invite", text: %r{1/3 sent, 1 failed}
+    end
+
     test "show page shows a retry button when a batch run has failed items" do
       show = shows(:upcoming)
       BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 2, sent_count: 1, failed_count: 1)
