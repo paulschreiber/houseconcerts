@@ -1,12 +1,24 @@
+<%# The running-state failed count/button below is queried live rather
+    than trusting batch_run.failed_count: a prior retry's enqueue of
+    BatchRunRetryFanOutJob could have itself failed after this run's
+    counters were already reset to failed_count: 0, which would hide
+    still-genuinely-failed items from an admin with no way to retry
+    them. The completed-state count doesn't need this -- it's only ever
+    set via record_progress's guarded atomic transition, so it's always
+    accurate. %>
 <div id="batch_run_progress_<%= batch_run.kind %>" class="batch-progress-status">
   <% if batch_run.completed? %>
     <%= batch_run.sent_count %> sent<% if batch_run.failed_count.positive? %>, <%= batch_run.failed_count %> failed<% end %> (complete)
+    <% if batch_run.failed_count.positive? %>
+      <%= button_to "Retry #{batch_run.failed_count} failed", retry_failed_batch_run_madmin_show_path(batch_run.show, batch_run_id: batch_run.id), method: :patch, class: "btn btn-secondary" %>
+    <% end %>
   <% else %>
+    <% live_failed_count = batch_run.batch_run_items.failed.count %>
     <progress value="<%= batch_run.processed_count %>" max="<%= [ batch_run.total_count, 1 ].max %>"></progress>
-    <%= batch_run.processed_count %>/<%= batch_run.total_count %> sent<% if batch_run.failed_count.positive? %>, <%= batch_run.failed_count %> failed<% end %>
+    <%= batch_run.processed_count %>/<%= batch_run.total_count %> sent<% if live_failed_count.positive? %>, <%= live_failed_count %> failed<% end %>
     (<%= batch_run.status.humanize %>)
-  <% end %>
-  <% if batch_run.failed_count.positive? %>
-    <%= button_to "Retry #{batch_run.failed_count} failed", retry_failed_batch_run_madmin_show_path(batch_run.show, batch_run_id: batch_run.id), method: :patch, class: "btn btn-secondary" %>
+    <% if live_failed_count.positive? %>
+      <%= button_to "Retry #{live_failed_count} failed", retry_failed_batch_run_madmin_show_path(batch_run.show, batch_run_id: batch_run.id), method: :patch, class: "btn btn-secondary" %>
+    <% end %>
   <% end %>
 </div>
