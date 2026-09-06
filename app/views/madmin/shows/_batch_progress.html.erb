@@ -1,9 +1,19 @@
-<% latest_batch_runs_by_kind = show.batch_runs.order(created_at: :desc).group_by(&:kind).transform_values(&:first) %>
+<%
+  # active_kind_lock allows at most one non-completed run per show+kind at
+  # a time, so if one exists it's unambiguously the one to display/
+  # subscribe to -- including a *retried* older run, whose created_at is
+  # older than a newer, already-completed run of the same kind. Picking
+  # by created_at alone (as this used to) would keep showing that newer,
+  # already-finished run and never reflect the reopened one's progress.
+  all_batch_runs = show.batch_runs.order(created_at: :desc).to_a
+  active_batch_runs_by_kind = all_batch_runs.reject(&:completed?).index_by(&:kind)
+  latest_completed_batch_runs_by_kind = all_batch_runs.select(&:completed?).group_by(&:kind).transform_values(&:first)
+%>
 <div class="batch-progress">
   <% BatchRun.kinds.each_key do |kind| %>
     <div class="batch-progress-item">
       <strong><%= BatchRun.kind_label(kind) %>:</strong>
-      <% batch_run = latest_batch_runs_by_kind[kind] %>
+      <% batch_run = active_batch_runs_by_kind[kind] || latest_completed_batch_runs_by_kind[kind] %>
       <% if batch_run %>
         <%= turbo_stream_from [ batch_run, :progress ] %>
         <%= render partial: "madmin/shows/batch_run_progress", locals: { batch_run: batch_run } %>
