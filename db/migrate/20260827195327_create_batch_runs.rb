@@ -38,6 +38,14 @@ class CreateBatchRuns < ActiveRecord::Migration[8.1]
       # operation.
       t.datetime :email_sent_at
       t.datetime :sms_sent_at
+      # Atomic per-item claim for BatchRunFanOutJob's enqueue step,
+      # mirroring BatchRunItemJob's own claim(): without it, two fan-out
+      # executions racing on the same run could both enqueue a
+      # BatchRunItemJob for the same item, and if the first duplicate's
+      # send fails, the item becomes "failed" -- a status deliberately
+      # left reclaimable for admin retries -- so an unclaimed second
+      # duplicate could then resend it automatically.
+      t.datetime :fan_out_enqueued_at
 
       t.timestamps
 

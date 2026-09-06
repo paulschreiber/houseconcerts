@@ -257,4 +257,63 @@ class BatchRunFanOutJobTest < ActiveSupport::TestCase
       BatchRunItemJob.define_singleton_method(:perform_later, original_perform_later)
     end
   end
+
+  test "does not enqueue a job for an item another fan-out execution already claimed" do
+    show = shows(:upcoming)
+    person = Person.create!(first_name: "Alice", last_name: "Aardvark", email: "alice-claimed@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    item = batch_run.batch_run_items.create!(recipient: person, status: :pending)
+
+    # Simulates a sibling fan-out execution (e.g. one that lost the
+    # with_lock race but still reached the enqueue step) having already
+    # claimed this item.
+    BatchRunItem.where(id: item.id).update_all(fan_out_enqueued_at: Time.current) # rubocop:disable Rails/SkipsModelValidations
+
+    assert_no_enqueued_jobs only: BatchRunItemJob do
+      BatchRunFanOutJob.perform_now(batch_run.id)
+    end
+  end
+
+  test "releases an item's enqueue claim if perform_later raises, so a later scan can retry it" do
+    show = shows(:upcoming)
+    person = Person.create!(first_name: "Alice", last_name: "Aardvark", email: "alice-release-claim@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    item = batch_run.batch_run_items.create!(recipient: person, status: :pending)
+
+    original_perform_later = BatchRunItemJob.method(:perform_later)
+    BatchRunItemJob.define_singleton_method(:perform_later) do |*_args|
+      raise SolidQueue::Job::EnqueueError, "transient boom"
+    end
+
+    begin
+      assert_nothing_raised do
+        BatchRunFanOutJob.perform_now(batch_run.id)
+      end
+    ensure
+      BatchRunItemJob.define_singleton_method(:perform_later, original_perform_later)
+    end
+
+    assert_nil item.reload.fan_out_enqueued_at, "the claim should be released, not left stuck, so a retried scan doesn't skip this item forever"
+  end
+
+  test "two racing scans that both see an item as pending only let one of them enqueue it" do
+    show = shows(:upcoming)
+    person = Person.create!(first_name: "Alice", last_name: "Aardvark", email: "alice-duplicate-race@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    item = batch_run.batch_run_items.create!(recipient: person, status: :pending)
+
+    # Simulates two fan-out executions racing to enqueue the same still-
+    # "pending" item (e.g. a winner and a with_lock loser that both reach
+    # the enqueue step): only the first claim can succeed, so the second
+    # scan finds nothing left to enqueue. Without this, both scans could
+    # enqueue their own BatchRunItemJob for this item; if the first one's
+    # send then failed (a status BatchRunItemJob's own claim deliberately
+    # leaves reclaimable for legitimate admin retries), the second,
+    # already-queued duplicate could later claim and resend it.
+    first_claimed = BatchRunItem.where(id: item.id, fan_out_enqueued_at: nil).update_all(fan_out_enqueued_at: Time.current) # rubocop:disable Rails/SkipsModelValidations
+    second_claimed = BatchRunItem.where(id: item.id, fan_out_enqueued_at: nil).update_all(fan_out_enqueued_at: Time.current) # rubocop:disable Rails/SkipsModelValidations
+
+    assert_equal 1, first_claimed
+    assert_equal 0, second_claimed
+  end
 end
