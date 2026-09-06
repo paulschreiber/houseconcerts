@@ -19,6 +19,7 @@ namespace :madmin, path: Settings.admin_prefix do
       patch :send_invites_unopened
       patch :send_reminders
       patch :retry_failed_batch_run
+      patch :cancel_batch_run
     end
   end
   resources :venues
