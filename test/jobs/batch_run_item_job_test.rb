@@ -255,4 +255,24 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
 
     assert item.reload.sent?
   end
+
+  test "retrying a reminder whose email already went out does not resend the email, only the SMS" do
+    show = shows(:upcoming)
+    rsvp = RSVP.create!(show: show, email: "retry-remind@example.com", first_name: "Retry", last_name: "Remind",
+                        response: "yes", confirmed: "yes", seats_reserved: 1, phone_number: "5555550123")
+    batch_run = BatchRun.create!(show: show, kind: "remind", status: "running", total_count: 1, failed_count: 0)
+    # Mirrors the state after a first attempt where the reminder email
+    # succeeded but the SMS step failed: email_sent_at is already set,
+    # and the item is claimable again via its failed status.
+    item = batch_run.batch_run_items.create!(recipient: rsvp, status: "failed", error_message: "Twilio boom", email_sent_at: 1.hour.ago)
+
+    assert_no_emails do
+      BatchRunItemJob.perform_now(item.id)
+    end
+
+    assert item.reload.sent?
+    batch_run.reload
+    assert_equal 1, batch_run.sent_count
+    assert_equal 0, batch_run.failed_count
+  end
 end

@@ -55,12 +55,21 @@ class BatchRunItemJob < ApplicationJob
 
         InvitesMailer.invite(person, batch_run.show).deliver_now
       when "remind"
-        remind(item.recipient)
+        remind(item)
       end
     end
 
-    def remind(rsvp)
-      InvitesMailer.remind(rsvp).deliver_now
+    def remind(item)
+      rsvp = item.recipient
+
+      # Email and SMS are two separate external deliveries, not one
+      # transaction: tracked independently so that retrying a failed item
+      # (e.g. email sent, Twilio raised) only re-attempts the channel
+      # that didn't already succeed, instead of resending the email too.
+      unless item.email_sent_at?
+        InvitesMailer.remind(rsvp).deliver_now
+        item.update!(email_sent_at: Time.current)
+      end
 
       return if rsvp.phone_number.blank?
 
