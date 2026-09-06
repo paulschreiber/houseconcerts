@@ -51,7 +51,10 @@ module Madmin
         return
       end
 
-      batch_run.batch_run_items.failed.find_each { |item| BatchRunItemJob.perform_later(item.id) }
+      # Handed off to a job (not looped inline here) so a crash partway
+      # through enqueuing doesn't strand the remaining failed items --
+      # see BatchRunRetryFanOutJob for why that's resumable.
+      BatchRunRetryFanOutJob.perform_later(batch_run.id)
 
       redirect_back_or_to resource.index_path, notice: "Retrying #{retry_count} failed #{BatchRun.kind_label(kind).downcase} for #{@record.name}."
     end

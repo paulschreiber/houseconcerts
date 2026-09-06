@@ -208,7 +208,7 @@ module Madmin
       batch_run = BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 1, failed_count: 1, completed_at: Time.current)
       batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
 
-      assert_enqueued_with(job: BatchRunItemJob) do
+      assert_enqueued_with(job: BatchRunRetryFanOutJob, args: [ batch_run.id ]) do
         patch retry_failed_batch_run_madmin_show_path(show, batch_run_id: batch_run.id)
       end
 
@@ -265,7 +265,7 @@ module Madmin
       old_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
       BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 1, sent_count: 1, completed_at: Time.current)
 
-      assert_enqueued_with(job: BatchRunItemJob) do
+      assert_enqueued_with(job: BatchRunRetryFanOutJob, args: [ old_run.id ]) do
         patch retry_failed_batch_run_madmin_show_path(show, batch_run_id: old_run.id)
       end
 
