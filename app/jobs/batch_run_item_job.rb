@@ -186,6 +186,21 @@ class BatchRunItemJob < ApplicationJob
     # Madmin::ShowsController#retry_failed_batch_run alongside
     # failed_count, so a retried item's next resolution gets freshly
     # counted too, the same as a first attempt.
+    #
+    # The claim only ever covers the increment below, not the completion
+    # check/broadcast that follows it: claiming both together would mean
+    # a persistent DB outage that outlasts the increment's own local
+    # retries leaves counted_at set with the increment never having
+    # happened (an undercount, not just a stuck run), and even a
+    # successful increment followed by a failed completion check would
+    # leave nothing able to retry just that part -- a redelivery would
+    # see counted_at already set and bail out at the top, same as this
+    # method's very first no-op case. The increment releases its own
+    # claim if it fails, so a redelivery redoes it from scratch (safe,
+    # since a failed atomic UPDATE never took effect); the completion
+    # check runs unconditionally on every call regardless of whether
+    # *this* call did any counting, since it's already idempotent and
+    # guarded against re-transitioning or re-notifying.
     def record_progress(item)
       # Only sent/failed items count toward sent_count/failed_count.
       # "cancelled" is the one other status this can see: this job may
@@ -195,21 +210,24 @@ class BatchRunItemJob < ApplicationJob
       # -- it just has nothing to count.
       return unless item.sent? || item.failed?
 
-      claimed = BatchRunItem.where(id: item.id, counted_at: nil).update_all(counted_at: Time.current) == 1 # rubocop:disable Rails/SkipsModelValidations
-      return unless claimed
-
       batch_run = item.batch_run
-      counter = item.failed? ? :failed_count : :sent_count
-      # Retried on its own, separately from everything below, and not
-      # wrapped together with them in one retry: this increment is a
-      # single atomic SQL statement with no partial-effect possibility,
-      # unlike the compound steps below -- if it raises, it didn't take
-      # effect, so retrying just it is safe. Retrying it *together* with
-      # reload/the completion check/the broadcast would risk a second,
-      # genuine increment if the failure happened somewhere *after* this
-      # succeeded (not #increment!, so concurrent worker threads updating
-      # the same batch_run's counters can't lose an update either way).
-      with_transient_retries(item: item, label: "incrementing #{counter}") { BatchRun.increment_counter(counter, batch_run.id) } # rubocop:disable Rails/SkipsModelValidations
+      claimed = BatchRunItem.where(id: item.id, counted_at: nil).update_all(counted_at: Time.current) == 1 # rubocop:disable Rails/SkipsModelValidations
+
+      if claimed
+        counter = item.failed? ? :failed_count : :sent_count
+        begin
+          # A single atomic SQL statement with no partial-effect
+          # possibility -- if it raises, it didn't take effect, so
+          # releasing the claim and letting a later attempt redo it from
+          # scratch is safe (not #increment!, so concurrent worker
+          # threads updating the same batch_run's counters can't lose an
+          # update either way).
+          with_transient_retries(item: item, label: "incrementing #{counter}") { BatchRun.increment_counter(counter, batch_run.id) } # rubocop:disable Rails/SkipsModelValidations
+        rescue StandardError
+          BatchRunItem.where(id: item.id).update_all(counted_at: nil) # rubocop:disable Rails/SkipsModelValidations
+          raise
+        end
+      end
 
       with_transient_retries(item: item, label: "the post-increment completion check/broadcast") do
         batch_run.reload
