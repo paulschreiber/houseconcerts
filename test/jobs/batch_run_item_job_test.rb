@@ -21,6 +21,21 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     assert batch_run.completed?
   end
 
+  test "invite_unopened tags its open-tracking pixel distinctly from a plain invite" do
+    show = shows(:upcoming)
+    person = Person.create!(first_name: "New", last_name: "Person", email: "new-invite-unopened@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite_unopened", status: "running", total_count: 1)
+    item = batch_run.batch_run_items.create!(recipient: person)
+
+    email = nil
+    assert_emails 1 do
+      BatchRunItemJob.perform_now(item.id)
+      email = ActionMailer::Base.deliveries.last
+    end
+
+    assert_includes email.body.encoded, "invite_unopened", "the tracking tag should distinguish invite_unopened opens from plain invite opens"
+  end
+
   test "an invite to a recipient who is no longer active is marked failed, not sent" do
     show = shows(:upcoming)
     person = Person.create!(first_name: "Removed", last_name: "Person", email: "removed@example.com", status: "removed")
@@ -58,6 +73,7 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
 
     assert item.reload.failed?
     assert_equal "simulated delivery failure", item.error_message
+    assert_nil item.sent_at, "a failed item shouldn't keep the timestamp claim() set before the send was even attempted"
     batch_run.reload
     assert_equal 0, batch_run.sent_count
     assert_equal 1, batch_run.failed_count
