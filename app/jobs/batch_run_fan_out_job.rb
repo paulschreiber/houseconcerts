@@ -13,24 +13,35 @@ class BatchRunFanOutJob < ApplicationJob
   # has been attempted, and per-item jobs are only enqueued after that --
   # so a job that's already running can't see a stale/incomplete count
   # and mark the run "completed" too early.
+  #
+  # Resumption isn't limited to the item-creation phase: if the job dies
+  # after status is already flipped to "running" but before every item
+  # got enqueued, a redelivery skips straight to re-enqueuing whatever's
+  # still pending -- it does not bail out just because status is no
+  # longer "pending". That's safe to do unconditionally (even on a
+  # non-crash redelivery) because BatchRunItemJob's claim step makes a
+  # duplicate enqueue of an already-sent item a no-op.
   def perform(batch_run_id)
     batch_run = BatchRun.find(batch_run_id)
-    return unless batch_run.pending?
+    return if batch_run.completed?
 
-    recipients_for(batch_run).each do |recipient|
-      batch_run.batch_run_items.create!(recipient: recipient, status: :pending)
-    rescue ActiveRecord::RecordNotUnique
-      next
+    if batch_run.pending?
+      recipients_for(batch_run).each do |recipient|
+        batch_run.batch_run_items.create!(recipient: recipient, status: :pending)
+      rescue ActiveRecord::RecordNotUnique
+        next
+      end
+
+      total_count = batch_run.batch_run_items.count
+      batch_run.update!(status: :running, total_count: total_count, started_at: Time.current)
+
+      if total_count.zero?
+        batch_run.update!(status: :completed, completed_at: Time.current)
+        return
+      end
     end
 
-    total_count = batch_run.batch_run_items.count
-    batch_run.update!(status: :running, total_count: total_count, started_at: Time.current)
-
-    if total_count.zero?
-      batch_run.update!(status: :completed, completed_at: Time.current)
-    else
-      batch_run.batch_run_items.pending.find_each { |item| BatchRunItemJob.perform_later(item.id) }
-    end
+    batch_run.batch_run_items.pending.find_each { |item| BatchRunItemJob.perform_later(item.id) }
   end
 
   private
@@ -42,7 +53,10 @@ class BatchRunFanOutJob < ApplicationJob
       when "invite"
         invite_recipients(show)
       when "invite_unopened"
-        invite_recipients(show).where("email NOT IN (SELECT email FROM opens WHERE tag LIKE ?)", "#{show.slug}:invite%")
+        invite_recipients(show).where(
+          "NOT EXISTS (SELECT 1 FROM opens WHERE opens.tag LIKE ? AND opens.email = people.email)",
+          "#{show.slug}:invite%"
+        )
       when "remind"
         show.attendees
       else
@@ -53,7 +67,10 @@ class BatchRunFanOutJob < ApplicationJob
     def invite_recipients(show)
       Person.includes(:venue_groups)
             .where(venue_groups: { id: Settings.default_venue_group }, status: "active")
-            .where("email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)", show.id)
+            .where(
+              "NOT EXISTS (SELECT 1 FROM rsvps WHERE rsvps.show_id = ? AND rsvps.email = people.email)",
+              show.id
+            )
             .order(:last_name, :first_name)
     end
 end
