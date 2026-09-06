@@ -28,13 +28,45 @@ class BatchRunItemJob < ApplicationJob
     begin
       send_to(item)
     rescue StandardError => e
-      item.update!(status: :failed, error_message: e.message)
+      # Retried locally (not via ActiveJob's retry_on), not just for
+      # emphasis: retry_on would re-invoke this whole method, which
+      # would call claim() again -- and since "failed" is one of
+      # CLAIMABLE_STATUSES (so an admin can retry a genuinely failed
+      # send), that would silently re-trigger send_to and resend a
+      # message that may have already gone out. A transient failure
+      # writing this outcome shouldn't be able to do that; it should
+      # only ever retry the write itself.
+      with_transient_retries { item.update!(status: :failed, error_message: e.message) }
     end
 
-    record_progress(item)
+    with_transient_retries { record_progress(item) }
   end
 
   private
+
+    # A few immediate, local retries for a transient DB error, scoped
+    # narrowly to the bookkeeping that follows claim()/send_to() above.
+    # Without this, a transient error while marking the item failed, or
+    # anywhere in record_progress (counter increment, completion check,
+    # broadcast), would abandon this item mid-flight: the item is
+    # already claimed ("sent" or "failed"), so a redelivered job
+    # execution would just no-op via claim() and never retry recording
+    # the outcome -- the run's counters would permanently undercount,
+    # and (worse, if send_to actually failed but this write also failed)
+    # the item could stay mislabeled "sent" despite never being
+    # delivered.
+    def with_transient_retries(max_attempts: 3)
+      attempts = 0
+      begin
+        yield
+      rescue ActiveRecord::AdapterError
+        attempts += 1
+        raise if attempts >= max_attempts
+
+        sleep(0.1 * attempts)
+        retry
+      end
+    end
 
     def claim(batch_run_item_id)
       CLAIMABLE_STATUSES.each do |status|
