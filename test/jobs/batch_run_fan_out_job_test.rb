@@ -276,6 +276,36 @@ class BatchRunFanOutJobTest < ActiveSupport::TestCase
     end
   end
 
+  test "reclaims and re-enqueues an item whose claim went stale, e.g. from a crash right after claiming it" do
+    show = shows(:upcoming)
+    person = Person.create!(first_name: "Alice", last_name: "Aardvark", email: "alice-stale-claim@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    # Simulates a worker crashing between claiming this item (setting
+    # fan_out_enqueued_at) and actually calling perform_later for it --
+    # no BatchRunItemJob was ever created, so nothing exists to redeliver
+    # on its own.
+    item = batch_run.batch_run_items.create!(recipient: person, status: :pending, fan_out_enqueued_at: 20.minutes.ago)
+
+    assert_enqueued_jobs 1, only: BatchRunItemJob do
+      BatchRunFanOutJob.perform_now(batch_run.id)
+    end
+
+    assert_in_delta Time.current, item.reload.fan_out_enqueued_at, 5
+  end
+
+  test "does not reclaim an item whose claim is recent, even if the same job instance is what's re-scanning" do
+    show = shows(:upcoming)
+    person = Person.create!(first_name: "Alice", last_name: "Aardvark", email: "alice-fresh-claim@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    item = batch_run.batch_run_items.create!(recipient: person, status: :pending, fan_out_enqueued_at: 1.minute.ago)
+
+    assert_no_enqueued_jobs only: BatchRunItemJob do
+      BatchRunFanOutJob.perform_now(batch_run.id)
+    end
+
+    assert_in_delta 1.minute.ago, item.reload.fan_out_enqueued_at, 5
+  end
+
   test "releases an item's enqueue claim if perform_later raises, so a later scan can retry it" do
     show = shows(:upcoming)
     person = Person.create!(first_name: "Alice", last_name: "Aardvark", email: "alice-release-claim@example.com", status: "active")
