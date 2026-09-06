@@ -7,14 +7,21 @@ class BatchRunFanOutJob < ApplicationJob
   # blocks starting a fresh one) provide a way out. Safe to retry in full
   # regardless of where it died, per the resumability described below.
   #
-  # Scoped to ActiveRecord::AdapterError -- "Superclass for all errors
-  # raised from an Active Record adapter" (connection drops, deadlocks,
-  # lock/statement timeouts) -- rather than bare StandardError. A real
-  # bug (NoMethodError, an unknown kind, a bad query) would just get
-  # retried 5 times against something that can never resolve itself
-  # before finally surfacing; scoping to adapter errors means genuine
-  # bugs still fail immediately and loudly.
-  retry_on ActiveRecord::AdapterError, wait: :polynomially_longer, attempts: 5
+  # Scoped to two things, not bare StandardError -- a real bug
+  # (NoMethodError, an unknown kind, a bad query) would just get retried
+  # 5 times against something that can never resolve itself before
+  # finally surfacing:
+  # - ActiveRecord::AdapterError, "Superclass for all errors raised from
+  #   an Active Record adapter" (connection drops, deadlocks,
+  #   lock/statement timeouts), for this job's own direct DB operations.
+  # - SolidQueue::Job::EnqueueError, which is what a transient DB problem
+  #   during BatchRunItemJob.perform_later actually surfaces as: Solid
+  #   Queue's Job.enqueue rescues ActiveRecord::ActiveRecordError and
+  #   re-raises it wrapped in this class (a plain StandardError, not an
+  #   AdapterError), so retry_on ActiveRecord::AdapterError alone never
+  #   actually catches an enqueue failure despite that being the
+  #   motivating case above.
+  retry_on ActiveRecord::AdapterError, SolidQueue::Job::EnqueueError, wait: :polynomially_longer, attempts: 5
 
   # Populates a BatchRun's items and enqueues their per-item jobs. Kept
   # separate from StartBatchRun (which just creates the BatchRun row) so
@@ -43,18 +50,34 @@ class BatchRunFanOutJob < ApplicationJob
     return if batch_run.completed?
 
     if batch_run.pending?
-      recipients_for(batch_run).each do |recipient|
-        batch_run.batch_run_items.create!(recipient: recipient, status: :pending)
-      rescue ActiveRecord::RecordNotUnique
-        next
-      end
+      # Atomic claim, not just a pending? boolean check: StartBatchRun's
+      # resume logic can enqueue a second fan-out job for the same
+      # pending run while a first one is still mid-flight (e.g. an admin
+      # re-triggering a send before the original job has finished
+      # computing recipients). Without this, both executions could pass
+      # the pending? check, independently create items and each compute
+      # their own total_count, and race setting status/total_count --
+      # the run's correctness depends on only one execution ever doing
+      # this phase. update_all here only succeeds for whichever
+      # execution gets there first; the loser falls through to the
+      # final re-scan below, same as any other resumed execution.
+      claimed = BatchRun.where(id: batch_run_id, status: "pending")
+                        .update_all(status: "running", started_at: Time.current) == 1 # rubocop:disable Rails/SkipsModelValidations
 
-      total_count = batch_run.batch_run_items.count
-      batch_run.update!(status: :running, total_count: total_count, started_at: Time.current)
+      if claimed
+        recipients_for(batch_run).each do |recipient|
+          batch_run.batch_run_items.create!(recipient: recipient, status: :pending)
+        rescue ActiveRecord::RecordNotUnique
+          next
+        end
 
-      if total_count.zero?
-        batch_run.update!(status: :completed, completed_at: Time.current)
-        return
+        total_count = batch_run.batch_run_items.count
+        batch_run.update!(total_count: total_count)
+
+        if total_count.zero?
+          batch_run.update!(status: :completed, completed_at: Time.current)
+          return
+        end
       end
     end
 

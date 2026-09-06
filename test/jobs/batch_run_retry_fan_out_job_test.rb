@@ -46,7 +46,7 @@ class BatchRunRetryFanOutJobTest < ActiveSupport::TestCase
     assert_enqueued_with(job: BatchRunItemJob, args: [ item_b.id ])
   end
 
-  test "retries the whole job instead of leaving failures unenqueued if a per-item enqueue raises a transient adapter error" do
+  test "retries the whole job instead of leaving failures unenqueued if a per-item enqueue raises Solid Queue's EnqueueError" do
     show = shows(:upcoming)
     person = Person.create!(first_name: "Retry", last_name: "Transient", email: "retry-fanout-transient@example.com", status: "active")
     batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1, failed_count: 0)
@@ -54,7 +54,7 @@ class BatchRunRetryFanOutJobTest < ActiveSupport::TestCase
 
     original_perform_later = BatchRunItemJob.method(:perform_later)
     BatchRunItemJob.define_singleton_method(:perform_later) do |*_args|
-      raise ActiveRecord::ConnectionTimeoutError, "transient enqueue failure"
+      raise SolidQueue::Job::EnqueueError, "transient enqueue failure"
     end
 
     begin

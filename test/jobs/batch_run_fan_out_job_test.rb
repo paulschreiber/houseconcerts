@@ -121,16 +121,20 @@ class BatchRunFanOutJobTest < ActiveSupport::TestCase
     assert batch_run.reload.running?
   end
 
-  test "retries the whole job instead of leaving the run stuck if enqueuing a per-item job raises a transient adapter error" do
+  test "retries the whole job instead of leaving the run stuck if enqueuing a per-item job raises Solid Queue's EnqueueError" do
     show = shows(:upcoming)
     Person.create!(first_name: "Alice", last_name: "Aardvark", email: "alice-transient@example.com", status: "active")
     batch_run = BatchRun.create!(show: show, kind: "invite", status: "pending")
 
+    # This, not a raw ActiveRecord::AdapterError, is what a transient DB
+    # problem during perform_later actually surfaces as: Solid Queue's
+    # Job.enqueue rescues ActiveRecord::ActiveRecordError and re-raises
+    # it wrapped in this class.
     call_count = 0
     original_perform_later = BatchRunItemJob.method(:perform_later)
     BatchRunItemJob.define_singleton_method(:perform_later) do |*args|
       call_count += 1
-      raise ActiveRecord::ConnectionTimeoutError, "transient enqueue failure" if call_count == 1
+      raise SolidQueue::Job::EnqueueError, "transient enqueue failure" if call_count == 1
 
       original_perform_later.call(*args)
     end
@@ -152,6 +156,64 @@ class BatchRunFanOutJobTest < ActiveSupport::TestCase
     assert batch_run.running?
     assert_equal 1, batch_run.total_count
     assert_equal 1, batch_run.batch_run_items.pending.count
+  end
+
+  test "retries the whole job if its own direct DB operations raise a transient adapter error" do
+    show = shows(:upcoming)
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "pending")
+
+    call_count = 0
+    original_find = BatchRun.method(:find)
+    BatchRun.define_singleton_method(:find) do |*args|
+      call_count += 1
+      raise ActiveRecord::ConnectionTimeoutError, "transient boom" if call_count == 1
+
+      original_find.call(*args)
+    end
+
+    begin
+      assert_enqueued_with(job: BatchRunFanOutJob, args: [ batch_run.id ]) do
+        assert_nothing_raised do
+          BatchRunFanOutJob.perform_now(batch_run.id)
+        end
+      end
+    ensure
+      BatchRun.define_singleton_method(:find, original_find)
+    end
+  end
+
+  test "an atomic claim lets only one of two racing pending->running transitions succeed" do
+    show = shows(:upcoming)
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "pending")
+
+    # Simulates two BatchRunFanOutJob executions racing on the same
+    # pending run (e.g. StartBatchRun's resume logic re-enqueuing while
+    # the first job is still mid-flight): only one update_all can ever
+    # match status: "pending" and flip it.
+    first_claimed = BatchRun.where(id: batch_run.id, status: "pending").update_all(status: "running", started_at: Time.current) # rubocop:disable Rails/SkipsModelValidations
+    second_claimed = BatchRun.where(id: batch_run.id, status: "pending").update_all(status: "running", started_at: Time.current) # rubocop:disable Rails/SkipsModelValidations
+
+    assert_equal 1, first_claimed
+    assert_equal 0, second_claimed
+  end
+
+  test "a fan-out execution that loses the claim race falls through without touching total_count or creating items" do
+    show = shows(:upcoming)
+    Person.create!(first_name: "Alice", last_name: "Aardvark", email: "alice-race@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "pending")
+
+    # Simulates a concurrent execution having already won the claim by
+    # the time this one runs its own pending? check.
+    BatchRun.where(id: batch_run.id, status: "pending").update_all(status: "running", started_at: Time.current) # rubocop:disable Rails/SkipsModelValidations
+
+    assert_no_enqueued_jobs only: BatchRunItemJob do
+      BatchRunFanOutJob.perform_now(batch_run.id)
+    end
+
+    batch_run.reload
+    assert batch_run.running?
+    assert_equal 0, batch_run.total_count
+    assert_equal 0, batch_run.batch_run_items.count
   end
 
   test "a genuine bug is not retried -- it raises immediately instead of retrying against a job that will never fix itself" do

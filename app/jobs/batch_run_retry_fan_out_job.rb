@@ -8,10 +8,14 @@ class BatchRunRetryFanOutJob < ApplicationJob
   # safe here, per the resumability described below.
   #
   # Scoped to ActiveRecord::AdapterError (connection drops, deadlocks,
-  # lock/statement timeouts), not bare StandardError, so a real bug gets
-  # surfaced immediately instead of retried 5 times against something
-  # that can never resolve itself.
-  retry_on ActiveRecord::AdapterError, wait: :polynomially_longer, attempts: 5
+  # lock/statement timeouts) plus SolidQueue::Job::EnqueueError -- which
+  # is what a transient DB problem during perform_later actually surfaces
+  # as, since Solid Queue's Job.enqueue rescues
+  # ActiveRecord::ActiveRecordError and re-raises it wrapped in that
+  # class instead. Not bare StandardError, so a real bug gets surfaced
+  # immediately instead of retried 5 times against something that can
+  # never resolve itself.
+  retry_on ActiveRecord::AdapterError, SolidQueue::Job::EnqueueError, wait: :polynomially_longer, attempts: 5
 
   # Enqueues a BatchRunItemJob for every currently-failed item on a
   # reopened run. Kept as its own job (rather than looping inline in the
