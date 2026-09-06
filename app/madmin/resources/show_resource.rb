@@ -30,16 +30,23 @@ class ShowResource < Madmin::Resource
   # Add actions to the resource's show page
   # Pass collection: true to also render it in each row on the index page
   member_action do |record|
-    next unless record.next_show?
+    # Only the next show can have a new batch started, but batch history
+    # (and any retry buttons for still-failed items) stays visible for
+    # every other show that has ever had one -- otherwise a past show's
+    # failed sends would be invisible and unretryable from its own page.
+    send_buttons = if record.next_show?
+      gate = ShowResource.invite_gate_options(record)
 
-    gate = ShowResource.invite_gate_options(record)
+      safe_join([
+                  button_to("Send Invites", send_invites_madmin_show_path(record), method: :patch, class: "btn btn-secondary"),
+                  button_to("Send to Unopened", send_invites_unopened_madmin_show_path(record), method: :patch, class: "btn btn-secondary", **gate),
+                  button_to("Send Reminders", send_reminders_madmin_show_path(record), method: :patch, class: "btn btn-secondary", **gate)
+                ])
+    end
 
-    safe_join([
-                button_to("Send Invites", send_invites_madmin_show_path(record), method: :patch, class: "btn btn-secondary"),
-                button_to("Send to Unopened", send_invites_unopened_madmin_show_path(record), method: :patch, class: "btn btn-secondary", **gate),
-                button_to("Send Reminders", send_reminders_madmin_show_path(record), method: :patch, class: "btn btn-secondary", **gate),
-                render(partial: "madmin/shows/batch_progress", locals: { show: record })
-              ])
+    progress = render(partial: "madmin/shows/batch_progress", locals: { show: record }) if record.batch_runs.exists?
+
+    safe_join([ send_buttons, progress ].compact)
   end
 
   # Send to Unopened / Send Reminders only make sense after an initial
