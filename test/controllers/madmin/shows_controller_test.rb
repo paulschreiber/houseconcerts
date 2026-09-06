@@ -153,7 +153,7 @@ module Madmin
       end
 
       assert_equal "invite", BatchRun.last.kind
-      assert_redirected_to madmin_shows_path
+      assert_redirected_to madmin_show_path(show)
       assert_match(/Started sending invites/, flash[:notice])
     end
 
@@ -165,7 +165,7 @@ module Madmin
         patch send_invites_madmin_show_path(show)
       end
 
-      assert_redirected_to madmin_shows_path
+      assert_redirected_to madmin_show_path(show)
       assert_match(/Already sending invites/, flash[:alert])
     end
 
@@ -183,7 +183,7 @@ module Madmin
         BatchRunFanOutJob.define_singleton_method(:perform_later, original_perform_later)
       end
 
-      assert_redirected_to madmin_shows_path
+      assert_redirected_to madmin_show_path(show)
       assert_match(/try again/, flash[:alert])
     end
 
@@ -206,7 +206,7 @@ module Madmin
         patch send_invites_unopened_madmin_show_path(show)
       end
 
-      assert_redirected_to madmin_shows_path
+      assert_redirected_to madmin_show_path(show)
       assert_match(/Send the initial invites before sending/, flash[:alert])
     end
 
@@ -229,7 +229,7 @@ module Madmin
         patch send_reminders_madmin_show_path(show)
       end
 
-      assert_redirected_to madmin_shows_path
+      assert_redirected_to madmin_show_path(show)
       assert_match(/Send the initial invites before sending/, flash[:alert])
     end
 
@@ -241,7 +241,7 @@ module Madmin
         patch send_invites_madmin_show_path(show)
       end
 
-      assert_redirected_to madmin_shows_path
+      assert_redirected_to madmin_show_path(show)
       assert_match(/Only the next show/, flash[:alert])
     end
 
@@ -254,7 +254,7 @@ module Madmin
         patch send_reminders_madmin_show_path(show)
       end
 
-      assert_redirected_to madmin_shows_path
+      assert_redirected_to madmin_show_path(show)
       assert_match(/Only the next show/, flash[:alert])
     end
 
@@ -369,7 +369,7 @@ module Madmin
         patch retry_failed_batch_run_madmin_show_path(show, batch_run_id: batch_run.id)
       end
 
-      assert_redirected_to madmin_shows_path
+      assert_redirected_to madmin_show_path(show)
       assert_match(/Retrying 1 failed invites/, flash[:notice])
     end
 
@@ -386,7 +386,7 @@ module Madmin
       batch_run.reload
       assert batch_run.running?
       assert_nil batch_run.completed_at
-      assert_redirected_to madmin_shows_path
+      assert_redirected_to madmin_show_path(show)
       assert_match(/Retrying 1 failed invites/, flash[:notice])
     end
 
@@ -413,7 +413,7 @@ module Madmin
         patch retry_failed_batch_run_madmin_show_path(show, batch_run_id: other_show_batch_run.id)
       end
 
-      assert_redirected_to madmin_shows_path
+      assert_redirected_to madmin_show_path(show)
       assert_match(/no failed batch sends to retry/, flash[:alert])
     end
 
@@ -425,7 +425,7 @@ module Madmin
         patch retry_failed_batch_run_madmin_show_path(show, batch_run_id: batch_run.id)
       end
 
-      assert_redirected_to madmin_shows_path
+      assert_redirected_to madmin_show_path(show)
       assert_match(/no failed invites sends to retry/, flash[:alert])
     end
 
@@ -440,7 +440,7 @@ module Madmin
         patch retry_failed_batch_run_madmin_show_path(show, batch_run_id: old_run.id)
       end
 
-      assert_redirected_to madmin_shows_path
+      assert_redirected_to madmin_show_path(show)
       assert old_run.reload.running?
     end
 
@@ -457,7 +457,7 @@ module Madmin
         patch retry_failed_batch_run_madmin_show_path(show, batch_run_id: old_run.id)
       end
 
-      assert_redirected_to madmin_shows_path
+      assert_redirected_to madmin_show_path(show)
       assert_match(/already in progress/, flash[:alert])
       assert old_run.reload.completed?
     end
@@ -479,7 +479,7 @@ module Madmin
         BatchRunRetryFanOutJob.define_singleton_method(:perform_later, original_perform_later)
       end
 
-      assert_redirected_to madmin_shows_path
+      assert_redirected_to madmin_show_path(show)
       assert_match(/try again/, flash[:alert])
       # The run itself is still correctly reopened -- the button/gate
       # will pick this back up on a later click since they query the
