@@ -47,21 +47,20 @@ class BatchRunItemJob < ApplicationJob
 
     def send_to(item)
       batch_run = item.batch_run
+      recipient = item.recipient
+      raise InvalidRecipient, "recipient no longer exists" if recipient.nil?
 
       case batch_run.kind
       when "invite", "invite_unopened"
-        person = item.recipient
-        raise InvalidRecipient, "#{person.email} is no longer active" unless person.active?
+        raise InvalidRecipient, "#{recipient.email} is no longer active" unless recipient.active?
 
-        InvitesMailer.invite(person, batch_run.show).deliver_now
+        InvitesMailer.invite(recipient, batch_run.show).deliver_now
       when "remind"
-        remind(item)
+        remind(item, recipient)
       end
     end
 
-    def remind(item)
-      rsvp = item.recipient
-
+    def remind(item, rsvp)
       # Rechecked at send time, not just at fan-out snapshot time: an
       # attendee can be waitlisted/unconfirmed or withdraw their RSVP
       # between when the batch was created and when this specific job

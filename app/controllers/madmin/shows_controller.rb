@@ -21,13 +21,21 @@ module Madmin
       # run and strand this run's failures with no way to retry them.
       batch_run = @record.batch_runs.find_by(id: params.require(:batch_run_id))
       kind_label = batch_run ? BatchRun.kind_label(batch_run.kind).downcase : "batch"
+      # Queried live, not read off batch_run.failed_count: if a previous
+      # retry's enqueue of BatchRunRetryFanOutJob itself failed after
+      # this run's counters were already reset, failed_count would say 0
+      # while these items are still genuinely failed. Gating on the real
+      # rows (not the aggregate counter) means that case self-heals --
+      # the button and this check still see the failures and allow
+      # retrying again -- instead of silently stranding them forever.
+      failed_items = batch_run&.batch_run_items&.failed
 
-      if batch_run.nil? || batch_run.failed_count.zero?
+      if batch_run.nil? || failed_items.none?
         redirect_back_or_to resource.index_path, alert: "There are no failed #{kind_label} sends to retry."
         return
       end
 
-      retry_count = batch_run.failed_count
+      retry_count = failed_items.count
       kind = batch_run.kind
 
       # Reopen the run so its progress bar shows again while the retries
@@ -40,8 +48,21 @@ module Madmin
       # run reopens, and the very first retried item to finish would
       # falsely flip the run back to "completed" while its siblings were
       # still in flight.
-      batch_run.update!(status: :running, completed_at: nil, failed_count: 0)
-      batch_run.batch_run_items.failed.find_each { |item| BatchRunItemJob.perform_later(item.id) }
+      begin
+        batch_run.update!(status: :running, completed_at: nil, failed_count: 0)
+      rescue ActiveRecord::RecordNotUnique
+        # active_kind_lock only allows one non-completed run per show+kind
+        # at a time -- reopening this (older) run collides if a newer run
+        # of the same kind is currently pending/running.
+        redirect_back_or_to resource.index_path,
+                            alert: "Can't retry right now -- a newer #{kind_label} batch is already in progress for #{@record.name}. Try again once it finishes."
+        return
+      end
+
+      # Handed off to a job (not looped inline here) so a crash partway
+      # through enqueuing doesn't strand the remaining failed items --
+      # see BatchRunRetryFanOutJob for why that's resumable.
+      BatchRunRetryFanOutJob.perform_later(batch_run.id)
 
       redirect_back_or_to resource.index_path, notice: "Retrying #{retry_count} failed #{BatchRun.kind_label(kind).downcase} for #{@record.name}."
     end
