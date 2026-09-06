@@ -1,4 +1,13 @@
 class BatchRunRetryFanOutJob < ApplicationJob
+  # Without this, a transient error raised mid-loop (e.g. enqueuing item
+  # #37 of 100) would fail this job with nothing left to finish it. An
+  # admin re-clicking "Retry" would still recover (the button and gate
+  # query live batch_run_items.failed, not this run's aggregate counter),
+  # but retrying automatically means that doesn't have to depend on an
+  # admin noticing and acting -- and re-running perform in full is always
+  # safe here, per the resumability described below.
+  retry_on StandardError, wait: :polynomially_longer, attempts: 5
+
   # Enqueues a BatchRunItemJob for every currently-failed item on a
   # reopened run. Kept as its own job (rather than looping inline in the
   # controller) so a crash partway through -- e.g. after 37 of 100 items

@@ -1,4 +1,18 @@
 class BatchRunFanOutJob < ApplicationJob
+  # Without this, an exception raised mid-run (e.g. a transient DB error
+  # while creating an item or enqueuing a BatchRunItemJob) would fail this
+  # job with nothing left to ever finish it: the run would stay "running"
+  # with some items never enqueued, and neither StartBatchRun's resume
+  # logic (which only resumes "pending" runs) nor active_kind_lock (which
+  # blocks starting a fresh one) provide a way out. Safe to retry in full
+  # regardless of where it died, per the resumability described below.
+  # ArgumentError (an unknown kind) is a real bug, not a transient
+  # failure -- registered after retry_on so it's checked first (handlers
+  # match in reverse registration order) and fails immediately instead of
+  # retrying 5 times against an error that will never resolve itself.
+  retry_on StandardError, wait: :polynomially_longer, attempts: 5
+  discard_on ArgumentError
+
   # Populates a BatchRun's items and enqueues their per-item jobs. Kept
   # separate from StartBatchRun (which just creates the BatchRun row) so
   # this slow part -- computing recipients and doing up to one insert +

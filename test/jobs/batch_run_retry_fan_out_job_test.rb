@@ -45,4 +45,30 @@ class BatchRunRetryFanOutJobTest < ActiveSupport::TestCase
 
     assert_enqueued_with(job: BatchRunItemJob, args: [ item_b.id ])
   end
+
+  test "retries the whole job instead of leaving failures unenqueued if a per-item enqueue raises" do
+    show = shows(:upcoming)
+    person = Person.create!(first_name: "Retry", last_name: "Transient", email: "retry-fanout-transient@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1, failed_count: 0)
+    item = batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
+
+    original_perform_later = BatchRunItemJob.method(:perform_later)
+    BatchRunItemJob.define_singleton_method(:perform_later) do |*_args|
+      raise "transient enqueue failure"
+    end
+
+    begin
+      assert_enqueued_with(job: BatchRunRetryFanOutJob, args: [ batch_run.id ]) do
+        assert_nothing_raised do
+          BatchRunRetryFanOutJob.perform_now(batch_run.id)
+        end
+      end
+    ensure
+      BatchRunItemJob.define_singleton_method(:perform_later, original_perform_later)
+    end
+
+    # Nothing about the underlying item changed -- it's still there for
+    # the retried job to find and enqueue.
+    assert item.reload.failed?
+  end
 end

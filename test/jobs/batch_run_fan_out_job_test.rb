@@ -120,4 +120,37 @@ class BatchRunFanOutJobTest < ActiveSupport::TestCase
 
     assert batch_run.reload.running?
   end
+
+  test "retries the whole job instead of leaving the run stuck if enqueuing a per-item job raises" do
+    show = shows(:upcoming)
+    Person.create!(first_name: "Alice", last_name: "Aardvark", email: "alice-transient@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "pending")
+
+    call_count = 0
+    original_perform_later = BatchRunItemJob.method(:perform_later)
+    BatchRunItemJob.define_singleton_method(:perform_later) do |*args|
+      call_count += 1
+      raise "transient enqueue failure" if call_count == 1
+
+      original_perform_later.call(*args)
+    end
+
+    begin
+      assert_enqueued_with(job: BatchRunFanOutJob, args: [ batch_run.id ]) do
+        assert_nothing_raised do
+          BatchRunFanOutJob.perform_now(batch_run.id)
+        end
+      end
+    ensure
+      BatchRunItemJob.define_singleton_method(:perform_later, original_perform_later)
+    end
+
+    # The run is left in a state the retried job can cleanly resume from,
+    # not stranded: the item already exists and total_count is already
+    # set, so the retry just needs to enqueue what's still pending.
+    batch_run.reload
+    assert batch_run.running?
+    assert_equal 1, batch_run.total_count
+    assert_equal 1, batch_run.batch_run_items.pending.count
+  end
 end
