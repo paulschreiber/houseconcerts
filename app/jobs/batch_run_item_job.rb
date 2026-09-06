@@ -150,6 +150,17 @@ class BatchRunItemJob < ApplicationJob
 
       return if item.sms_sent_at?
 
+      # A permanently bad number (landline, wrong digits) means this
+      # raises every time, marking the whole item "failed" despite the
+      # email above having genuinely gone out -- deliberately, not an
+      # oversight: item status is one signal for "does this recipient
+      # need anything else from us," not two independent per-channel
+      # ones, and splitting it would mean tracking a partial-success
+      # state through counters/notifications/retry UI that don't
+      # distinguish it today. The accepted cost is a retry that keeps
+      # re-alerting the admin on the same number -- resolved by fixing
+      # the number on the RSVP's own Madmin edit page, which does stop
+      # the loop, just not automatically.
       if Rails.env.production?
         client = Twilio::REST::Client.new(Rails.application.credentials.twilio.account_sid, Rails.application.credentials.twilio.auth_token)
         client.api.account.messages.create(
