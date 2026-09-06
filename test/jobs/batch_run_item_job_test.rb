@@ -339,4 +339,70 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     assert item.sent?
     assert_in_delta original_sms_sent_at, item.sms_sent_at, 1, "sms_sent_at should be untouched, not refreshed by a skipped resend"
   end
+
+  test "a transient error marking a failed send is retried locally instead of leaving the item mislabeled sent" do
+    show = shows(:upcoming)
+    original_invite = InvitesMailer.method(:invite)
+    InvitesMailer.define_singleton_method(:invite) { |*| raise "delivery boom" }
+    person = Person.create!(first_name: "Transient", last_name: "Failure", email: "transient-fail@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    item = batch_run.batch_run_items.create!(recipient: person)
+
+    call_count = 0
+    original_update = BatchRunItem.instance_method(:update!)
+    BatchRunItem.define_method(:update!) do |*args, **kwargs|
+      call_count += 1
+      raise ActiveRecord::ConnectionTimeoutError, "transient boom" if call_count == 1
+
+      original_update.bind(self).call(*args, **kwargs)
+    end
+
+    begin
+      assert_nothing_raised do
+        BatchRunItemJob.perform_now(item.id)
+      end
+    ensure
+      InvitesMailer.define_singleton_method(:invite, original_invite)
+      BatchRunItem.define_method(:update!, original_update)
+    end
+
+    # Correctly marked failed (not stuck showing "sent" despite the
+    # delivery never succeeding), and the run's counters reflect it.
+    item.reload
+    assert item.failed?
+    assert_equal "delivery boom", item.error_message
+    batch_run.reload
+    assert_equal 0, batch_run.sent_count
+    assert_equal 1, batch_run.failed_count
+  end
+
+  test "a transient error in record_progress is retried locally instead of permanently undercounting the run" do
+    show = shows(:upcoming)
+    person = Person.create!(first_name: "New", last_name: "Person", email: "transient-progress@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    item = batch_run.batch_run_items.create!(recipient: person)
+
+    call_count = 0
+    original_increment = BatchRun.method(:increment_counter)
+    BatchRun.define_singleton_method(:increment_counter) do |*args|
+      call_count += 1
+      raise ActiveRecord::ConnectionTimeoutError, "transient boom" if call_count == 1
+
+      original_increment.call(*args)
+    end
+
+    begin
+      assert_emails 1 do
+        BatchRunItemJob.perform_now(item.id)
+      end
+    ensure
+      BatchRun.define_singleton_method(:increment_counter, original_increment)
+    end
+
+    item.reload
+    assert item.sent?
+    batch_run.reload
+    assert_equal 1, batch_run.sent_count
+    assert batch_run.completed?
+  end
 end
