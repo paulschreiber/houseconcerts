@@ -1,4 +1,17 @@
 class BatchRunFanOutJob < ApplicationJob
+  # How long enqueue_pending_items's per-item claim is trusted before
+  # it's treated as abandoned. A crash between that claim and actually
+  # calling perform_later right after it (process kill, OOM -- not a
+  # raised exception, which its own rescue already handles) leaves an
+  # item claimed but never actually enqueued, with nothing to redeliver:
+  # unlike this job itself, no BatchRunItemJob was ever created to
+  # retry. Set high enough that it can never fire against an item
+  # that's merely still being *sent* by a genuinely in-flight job (a
+  # live mail/SMS delivery taking a while) -- the gap this claim
+  # actually needs to survive is the single method call between the two
+  # lines in enqueue_pending_items, not the send itself.
+  STRANDED_CLAIM_AGE = 10.minutes
+
   # Without this, an exception raised mid-run (e.g. a transient DB error
   # while creating an item or enqueuing a BatchRunItemJob) would fail this
   # job with nothing left to ever finish it: the run would stay "running"
@@ -120,10 +133,18 @@ class BatchRunFanOutJob < ApplicationJob
     # could then resend it automatically. If perform_later itself raises,
     # the claim is released so a later attempt (this job's own retry_on,
     # or a resumed execution) doesn't skip the item forever.
+    #
+    # A claim older than STRANDED_CLAIM_AGE is treated the same as no
+    # claim at all, so a redelivered/resumed/manually-retried execution
+    # of this job can reclaim and re-enqueue an item stranded by that
+    # crash, instead of where(fan_out_enqueued_at: nil) permanently
+    # excluding it from every future scan.
     def enqueue_pending_items(batch_run)
-      batch_run.batch_run_items.pending.where(fan_out_enqueued_at: nil).find_each do |item|
-        claimed = BatchRunItem.where(id: item.id, fan_out_enqueued_at: nil)
-                              .update_all(fan_out_enqueued_at: Time.current) == 1 # rubocop:disable Rails/SkipsModelValidations
+      claimable = ->(scope) { scope.where("fan_out_enqueued_at IS NULL OR fan_out_enqueued_at < ?", STRANDED_CLAIM_AGE.ago) }
+
+      claimable.call(batch_run.batch_run_items.pending).find_each do |item|
+        claimed = claimable.call(BatchRunItem.where(id: item.id))
+                           .update_all(fan_out_enqueued_at: Time.current) == 1 # rubocop:disable Rails/SkipsModelValidations
         next unless claimed
 
         begin
