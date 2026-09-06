@@ -176,6 +176,14 @@ class BatchRunItemJob < ApplicationJob
     # failed_count, so a retried item's next resolution gets freshly
     # counted too, the same as a first attempt.
     def record_progress(item)
+      # Only sent/failed items count toward sent_count/failed_count.
+      # "cancelled" is the one other status this can see: this job may
+      # have already been sitting enqueued for an item when an admin
+      # cancelled its run out from under it, and claim() finding
+      # "cancelled" not claimable (correctly) still lets this method run
+      # -- it just has nothing to count.
+      return unless item.sent? || item.failed?
+
       claimed = BatchRunItem.where(id: item.id, counted_at: nil).update_all(counted_at: Time.current) == 1 # rubocop:disable Rails/SkipsModelValidations
       return unless claimed
 
