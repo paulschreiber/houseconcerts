@@ -375,6 +375,89 @@ module Madmin
       assert batch_run.reload.running?
     end
 
+    test "cancel_batch_run completes a running batch, cancelling its still-pending items but keeping resolved ones" do
+      show = shows(:upcoming)
+      sent_person = Person.create!(first_name: "Already", last_name: "Sent", email: "cancel-sent@example.com", status: "active")
+      pending_person = Person.create!(first_name: "Still", last_name: "Pending", email: "cancel-pending@example.com", status: "active")
+      batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 2, sent_count: 1)
+      sent_item = batch_run.batch_run_items.create!(recipient: sent_person, status: "sent", sent_at: Time.current)
+      pending_item = batch_run.batch_run_items.create!(recipient: pending_person, status: "pending")
+
+      patch cancel_batch_run_madmin_show_path(show, batch_run_id: batch_run.id)
+
+      assert_redirected_to madmin_show_path(show)
+      assert_match(/Cancelled/, flash[:notice])
+      batch_run.reload
+      assert batch_run.completed?
+      assert_not_nil batch_run.completed_at
+      assert sent_item.reload.sent?, "an already-resolved item's outcome must not be touched by cancelling"
+      assert pending_item.reload.cancelled?
+    end
+
+    test "cancel_batch_run redirects with an alert when there is nothing in progress to cancel" do
+      show = shows(:upcoming)
+      batch_run = BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 1, sent_count: 1)
+
+      patch cancel_batch_run_madmin_show_path(show, batch_run_id: batch_run.id)
+
+      assert_redirected_to madmin_show_path(show)
+      assert_match(/no in-progress/, flash[:alert])
+    end
+
+    test "cancel_batch_run redirects with an alert for a batch_run_id that doesn't belong to this show" do
+      show = shows(:upcoming)
+      other_show_batch_run = BatchRun.create!(show: shows(:sold_out), kind: "invite", status: "running", total_count: 1)
+
+      patch cancel_batch_run_madmin_show_path(show, batch_run_id: other_show_batch_run.id)
+
+      assert_redirected_to madmin_show_path(show)
+      assert_match(/no in-progress/, flash[:alert])
+      assert other_show_batch_run.reload.running?
+    end
+
+    test "cancelling frees active_kind_lock so a fresh batch of the same kind can start" do
+      show = shows(:upcoming)
+      batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+
+      patch cancel_batch_run_madmin_show_path(show, batch_run_id: batch_run.id)
+      assert batch_run.reload.completed?
+
+      assert_difference("BatchRun.count", 1) do
+        patch send_invites_madmin_show_path(show)
+      end
+    end
+
+    test "a job already enqueued for a since-cancelled pending item does not send it or corrupt the run's counters" do
+      show = shows(:upcoming)
+      person = Person.create!(first_name: "Cancelled", last_name: "Underneath", email: "cancel-stray-job@example.com", status: "active")
+      batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+      item = batch_run.batch_run_items.create!(recipient: person, status: "pending", fan_out_enqueued_at: Time.current)
+
+      patch cancel_batch_run_madmin_show_path(show, batch_run_id: batch_run.id)
+      assert item.reload.cancelled?
+
+      assert_no_emails do
+        BatchRunItemJob.perform_now(item.id)
+      end
+
+      batch_run.reload
+      assert_equal 0, batch_run.sent_count
+      assert_equal 0, batch_run.failed_count
+      assert batch_run.completed?, "the run must stay completed, not be reopened by a stray job for a cancelled item"
+    end
+
+    test "show page shows a cancel button for a batch run in progress, but not once it's completed" do
+      show = shows(:upcoming)
+      batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+
+      get madmin_show_path(show)
+      assert_select "#batch_run_progress_invite button", text: "Cancel", count: 1
+
+      batch_run.update!(status: :completed, completed_at: Time.current, sent_count: 1)
+      get madmin_show_path(show)
+      assert_select "#batch_run_progress_invite button", text: "Cancel", count: 0
+    end
+
     test "the show page subscribes to one stable stream regardless of which batch run is active" do
       show = shows(:upcoming)
       BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 1, sent_count: 1)

@@ -87,6 +87,33 @@ module Madmin
       redirect_back_or_to resource.show_path(@record), notice: "Retrying #{retry_count} failed #{BatchRun.kind_label(kind).downcase} for #{@record.name}."
     end
 
+    # An escape hatch for a run that's stuck, or that an admin simply
+    # wants to stop -- neither StartBatchRun's resume logic (only
+    # "pending" runs) nor retry_failed_batch_run (only runs with failed
+    # items) can unblock a run that's "running" with no failures, and
+    # active_kind_lock otherwise blocks starting a fresh one of this
+    # kind for this show until it does reach completed.
+    def cancel_batch_run
+      batch_run = @record.batch_runs.find_by(id: params.require(:batch_run_id))
+      kind_label = batch_run ? BatchRun.kind_label(batch_run.kind).downcase : "batch"
+
+      if batch_run.nil? || batch_run.completed?
+        redirect_back_or_to resource.show_path(@record), alert: "There is no in-progress #{kind_label} batch to cancel."
+        return
+      end
+
+      # Any item still pending is marked "cancelled", not left as-is:
+      # that status is deliberately excluded from
+      # BatchRunItemJob::CLAIMABLE_STATUSES, so a job that's already
+      # enqueued for one -- cancelling can't un-enqueue a Solid Queue
+      # job -- finds nothing claimable and never sends it. Items that
+      # already resolved (sent/failed) keep their real outcome.
+      batch_run.batch_run_items.pending.update_all(status: BatchRunItem.statuses[:cancelled]) # rubocop:disable Rails/SkipsModelValidations
+      batch_run.update!(status: :completed, completed_at: Time.current)
+
+      redirect_back_or_to resource.show_path(@record), notice: "Cancelled the #{kind_label} batch for #{@record.name}."
+    end
+
     private
 
       def start_batch_run(kind, description, require_invites_sent: false)
