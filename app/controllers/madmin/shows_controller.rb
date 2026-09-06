@@ -110,6 +110,10 @@ module Madmin
       # already resolved (sent/failed) keep their real outcome.
       batch_run.batch_run_items.pending.update_all(status: BatchRunItem.statuses[:cancelled]) # rubocop:disable Rails/SkipsModelValidations
       batch_run.update!(status: :completed, completed_at: Time.current)
+      # Without this, another admin with the show page open (this
+      # request's own redirect is what shows the cancelling admin the
+      # new state) would keep seeing "Running" until they refreshed.
+      batch_run.broadcast_progress
 
       redirect_back_or_to resource.show_path(@record), notice: "Cancelled the #{kind_label} batch for #{@record.name}."
     end

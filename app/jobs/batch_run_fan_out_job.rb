@@ -1,16 +1,5 @@
 class BatchRunFanOutJob < ApplicationJob
-  # How long enqueue_pending_items's per-item claim is trusted before
-  # it's treated as abandoned. A crash between that claim and actually
-  # calling perform_later right after it (process kill, OOM -- not a
-  # raised exception, which its own rescue already handles) leaves an
-  # item claimed but never actually enqueued, with nothing to redeliver:
-  # unlike this job itself, no BatchRunItemJob was ever created to
-  # retry. Set high enough that it can never fire against an item
-  # that's merely still being *sent* by a genuinely in-flight job (a
-  # live mail/SMS delivery taking a while) -- the gap this claim
-  # actually needs to survive is the single method call between the two
-  # lines in enqueue_pending_items, not the send itself.
-  STRANDED_CLAIM_AGE = 10.minutes
+  include ClaimsBatchRunItemsForEnqueue
 
   # Without this, an exception raised mid-run (e.g. a transient DB error
   # while creating an item or enqueuing a BatchRunItemJob) would fail this
@@ -101,7 +90,7 @@ class BatchRunFanOutJob < ApplicationJob
     # found the run already past "pending" and skipped straight to
     # enqueueing) -- broadcasting an uncommitted or unchanged state would
     # be either wrong or just noise.
-    broadcast_progress(batch_run) if transitioned
+    batch_run.broadcast_progress if transitioned
 
     return if batch_run.completed?
 
@@ -110,50 +99,13 @@ class BatchRunFanOutJob < ApplicationJob
 
   private
 
-    def broadcast_progress(batch_run)
-      Turbo::StreamsChannel.broadcast_replace_to(
-        [ batch_run.show, :batch_progress ],
-        target: "batch_run_progress_#{batch_run.kind}",
-        partial: "madmin/shows/batch_run_progress",
-        locals: { batch_run: batch_run }
-      )
-    end
-
-    # Claims each item (atomically, one row at a time) before enqueuing a
-    # job for it -- with_lock above only makes the recipient-snapshot
-    # phase exclusive, not this step. Two fan-out executions can still
-    # both reach here (e.g. one that just finished the snapshot, and
-    # another that lost the with_lock race and fell through with nothing
-    # left to do there): without a claim here too, both could enqueue a
-    # BatchRunItemJob for the same item. A duplicate enqueue of a still-
-    # "pending" item is harmless on its own (BatchRunItemJob's own claim
-    # makes the second one a no-op), but if the first duplicate's send
-    # fails, the item becomes "failed" -- a status deliberately left
-    # reclaimable for admin retries -- so an unclaimed second duplicate
-    # could then resend it automatically. If perform_later itself raises,
-    # the claim is released so a later attempt (this job's own retry_on,
-    # or a resumed execution) doesn't skip the item forever.
-    #
-    # A claim older than STRANDED_CLAIM_AGE is treated the same as no
-    # claim at all, so a redelivered/resumed/manually-retried execution
-    # of this job can reclaim and re-enqueue an item stranded by that
-    # crash, instead of where(fan_out_enqueued_at: nil) permanently
-    # excluding it from every future scan.
+    # Two fan-out executions can both reach here (e.g. one that just
+    # finished the snapshot, and another that lost the with_lock race
+    # and fell through with nothing left to do there) -- see
+    # ClaimsBatchRunItemsForEnqueue for why each item still needs its
+    # own claim before being enqueued.
     def enqueue_pending_items(batch_run)
-      claimable = ->(scope) { scope.where("fan_out_enqueued_at IS NULL OR fan_out_enqueued_at < ?", STRANDED_CLAIM_AGE.ago) }
-
-      claimable.call(batch_run.batch_run_items.pending).find_each do |item|
-        claimed = claimable.call(BatchRunItem.where(id: item.id))
-                           .update_all(fan_out_enqueued_at: Time.current) == 1 # rubocop:disable Rails/SkipsModelValidations
-        next unless claimed
-
-        begin
-          BatchRunItemJob.perform_later(item.id)
-        rescue StandardError
-          BatchRunItem.where(id: item.id).update_all(fan_out_enqueued_at: nil) # rubocop:disable Rails/SkipsModelValidations
-          raise
-        end
-      end
+      claimable(batch_run.batch_run_items.pending).find_each { |item| enqueue_item(item) }
     end
 
     def recipients_for(batch_run)

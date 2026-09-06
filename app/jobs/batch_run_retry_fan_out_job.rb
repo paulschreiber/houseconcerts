@@ -1,4 +1,6 @@
 class BatchRunRetryFanOutJob < ApplicationJob
+  include ClaimsBatchRunItemsForEnqueue
+
   # Without this, a transient error raised mid-loop (e.g. enqueuing item
   # #37 of 100) would fail this job with nothing left to finish it. An
   # admin re-clicking "Retry" would still recover (the button and gate
@@ -27,36 +29,22 @@ class BatchRunRetryFanOutJob < ApplicationJob
   # failed_count (which the controller already reset to 0 before
   # enqueuing this job), so a partial previous attempt can't hide
   # still-failed items from it.
+  # Claimed via the same fan_out_enqueued_at column BatchRunFanOutJob
+  # uses (reset to NULL by Madmin::ShowsController#retry_failed_batch_run
+  # alongside failed_count/counted_at), for the same reason: without a
+  # claim, a double-clicked "Retry" -- or this job simply being
+  # redelivered after already enqueuing some items -- could enqueue two
+  # BatchRunItemJobs for the same failed item. That's not just a
+  # harmless duplicate: if both actually run, the second one reclaims
+  # the item (still "failed" is claimable) and re-sends it, and
+  # whichever of the two resolves second finds counted_at already set
+  # by the first and silently never gets counted, undercounting the run
+  # forever despite having genuinely just sent something. See
+  # ClaimsBatchRunItemsForEnqueue for the claim itself, including why a
+  # stale one is still reclaimable (a worker dying between claiming an
+  # item here and actually enqueuing it leaves nothing to redeliver).
   def perform(batch_run_id)
     batch_run = BatchRun.find(batch_run_id)
-    batch_run.batch_run_items.failed.where(fan_out_enqueued_at: nil).find_each do |item|
-      enqueue_item(item)
-    end
+    claimable(batch_run.batch_run_items.failed).find_each { |item| enqueue_item(item) }
   end
-
-  private
-
-    # Claimed via the same fan_out_enqueued_at column BatchRunFanOutJob
-    # uses (reset to NULL by Madmin::ShowsController#retry_failed_batch_run
-    # alongside failed_count/counted_at), for the same reason: without a
-    # claim here, a double-clicked "Retry" -- or this job simply being
-    # redelivered after already enqueuing some items -- could enqueue two
-    # BatchRunItemJobs for the same failed item. That's not just a
-    # harmless duplicate: if both actually run, the second one reclaims
-    # the item (still "failed" is claimable) and re-sends it, and
-    # whichever of the two resolves second finds counted_at already set
-    # by the first and silently never gets counted, undercounting the
-    # run forever despite having genuinely just sent something.
-    def enqueue_item(item)
-      claimed = BatchRunItem.where(id: item.id, fan_out_enqueued_at: nil)
-                            .update_all(fan_out_enqueued_at: Time.current) == 1 # rubocop:disable Rails/SkipsModelValidations
-      return unless claimed
-
-      begin
-        BatchRunItemJob.perform_later(item.id)
-      rescue StandardError
-        BatchRunItem.where(id: item.id).update_all(fan_out_enqueued_at: nil) # rubocop:disable Rails/SkipsModelValidations
-        raise
-      end
-    end
 end
