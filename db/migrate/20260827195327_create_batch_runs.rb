@@ -46,6 +46,16 @@ class CreateBatchRuns < ActiveRecord::Migration[8.1]
       # left reclaimable for admin retries -- so an unclaimed second
       # duplicate could then resend it automatically.
       t.datetime :fan_out_enqueued_at
+      # Tracks whether this item's resolution has already been reflected
+      # in batch_run's sent_count/failed_count, independently of status:
+      # status alone can't answer that, since a redelivered job whose
+      # earlier execution crashed after claiming the item (flipping
+      # status) but before recording its outcome would otherwise have no
+      # way to tell "already sent" apart from "sent, but never counted"
+      # -- leaving the run stuck "running" forever. Reset to NULL by
+      # Madmin::ShowsController#retry_failed_batch_run alongside
+      # failed_count, so a retried item gets freshly counted again too.
+      t.datetime :counted_at
 
       t.timestamps
 
