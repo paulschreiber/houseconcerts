@@ -41,6 +41,23 @@ class NextShowRakeTest < ActiveSupport::TestCase
     assert_equal 1, BatchRun.where(show: show, kind: "invite").count
   end
 
+  test "invite prints a friendly message instead of a stack trace when the fan-out job fails to enqueue" do
+    Person.create!(first_name: "New", last_name: "Person", email: "invite-enqueue-fail@example.com", status: "active")
+
+    original_perform_later = BatchRunFanOutJob.method(:perform_later)
+    BatchRunFanOutJob.define_singleton_method(:perform_later) do |*_args|
+      raise SolidQueue::Job::EnqueueError, "transient boom"
+    end
+
+    begin
+      out, = capture_io { Rake::Task["next_show:invite"].invoke }
+    ensure
+      BatchRunFanOutJob.define_singleton_method(:perform_later, original_perform_later)
+    end
+
+    assert_includes out, "try again"
+  end
+
   test "invite excludes people who already RSVPd for the show" do
     rsvpd = Person.create!(first_name: "Already", last_name: "Rsvpd", email: "already-rsvpd@example.com", status: "active")
     RSVP.create!(show: shows(:upcoming), email: rsvpd.email, first_name: "Already", last_name: "Rsvpd", response: "yes", seats_reserved: 1)
