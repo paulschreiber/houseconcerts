@@ -10,7 +10,7 @@
   <% if batch_run.completed? %>
     <%= batch_run.sent_count %> sent<% if batch_run.failed_count.positive? %>, <%= batch_run.failed_count %> failed<% end %> (complete)
     <% if batch_run.failed_count.positive? %>
-      <%= button_to "Retry #{batch_run.failed_count} failed", retry_failed_batch_run_madmin_show_path(batch_run.show, batch_run_id: batch_run.id), method: :patch, class: "btn btn-secondary" %>
+      <%= button_to "Retry #{batch_run.failed_count} failed", retry_failed_batch_run_madmin_show_path(batch_run.show, batch_run_id: batch_run.id), method: :patch, class: "btn btn-secondary", form: ShowResource.disable_on_submit %>
     <% end %>
   <% else %>
     <% live_failed_count = batch_run.batch_run_items.failed.count %>
@@ -18,7 +18,7 @@
     <%= batch_run.sent_count %>/<%= batch_run.total_count %> sent<% if live_failed_count.positive? %>, <%= live_failed_count %> failed<% end %>
     (<%= batch_run.status.humanize %>)
     <% if live_failed_count.positive? %>
-      <%= button_to "Retry #{live_failed_count} failed", retry_failed_batch_run_madmin_show_path(batch_run.show, batch_run_id: batch_run.id), method: :patch, class: "btn btn-secondary" %>
+      <%= button_to "Retry #{live_failed_count} failed", retry_failed_batch_run_madmin_show_path(batch_run.show, batch_run_id: batch_run.id), method: :patch, class: "btn btn-secondary", form: ShowResource.disable_on_submit %>
     <% end %>
   <% end %>
 </div>
