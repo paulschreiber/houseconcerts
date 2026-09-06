@@ -53,7 +53,15 @@ class ShowResource < Madmin::Resource
                 ])
     end
 
-    progress = render(partial: "madmin/shows/batch_progress", locals: { show: record }) if record.batch_runs.exists?
+    # Also rendered for the next show even with zero batch runs yet
+    # (not just record.batch_runs.exists?): only the next show can ever
+    # have a new one started (see above), so it's the only show whose
+    # batch_runs.exists? can ever flip from false to true. Without the
+    # subscription/DOM targets this partial renders already being on the
+    # page beforehand, an admin with this tab open when a batch is
+    # triggered elsewhere -- another tab, the rake task, a cron job --
+    # would never see it appear.
+    progress = render(partial: "madmin/shows/batch_progress", locals: { show: record }) if record.next_show? || record.batch_runs.exists?
 
     safe_join([ send_buttons, progress ].compact)
   end
