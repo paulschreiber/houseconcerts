@@ -9,13 +9,23 @@
   active_batch_runs_by_kind = all_batch_runs.reject(&:completed?).index_by(&:kind)
   latest_completed_batch_runs_by_kind = all_batch_runs.select(&:completed?).group_by(&:kind).transform_values(&:first)
 %>
+<%# Subscribed at the show level, not per-batch_run: a per-run stream
+    has to be re-subscribed to whenever the *active* run for a kind
+    changes (a fresh run starting from "Not sent yet", or an older run
+    being retried while a newer one of the same kind exists), which
+    only happens on a full page reload. The show itself never changes,
+    so one subscription here covers every kind for as long as the page
+    stays open. Safe to share: each kind still broadcasts to its own
+    DOM target (batch_run_progress_#{kind}), and active_kind_lock
+    guarantees at most one non-completed run per kind can ever be
+    broadcasting at a time. %>
+<%= turbo_stream_from [ show, :batch_progress ] %>
 <div class="batch-progress">
   <% BatchRun.kinds.each_key do |kind| %>
     <div class="batch-progress-item">
       <strong><%= BatchRun.kind_label(kind) %>:</strong>
       <% batch_run = active_batch_runs_by_kind[kind] || latest_completed_batch_runs_by_kind[kind] %>
       <% if batch_run %>
-        <%= turbo_stream_from [ batch_run, :progress ] %>
         <%= render partial: "madmin/shows/batch_run_progress", locals: { batch_run: batch_run } %>
       <% else %>
         <span id="batch_run_progress_<%= kind %>" class="batch-progress-none">Not sent yet</span>
