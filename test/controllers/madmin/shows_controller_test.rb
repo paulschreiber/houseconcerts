@@ -1,8 +1,10 @@
 require "test_helper"
+require "turbo/broadcastable/test_helper"
 
 module Madmin
   class ShowsControllerTest < ActionDispatch::IntegrationTest
     include ActiveJob::TestHelper
+    include Turbo::Broadcastable::TestHelper
 
     setup do
       sign_in admins(:one)
@@ -394,6 +396,15 @@ module Madmin
       assert pending_item.reload.cancelled?
     end
 
+    test "cancel_batch_run broadcasts the completed state, so another admin's open tab updates without a refresh" do
+      show = shows(:upcoming)
+      batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+
+      assert_turbo_stream_broadcasts [ show, :batch_progress ] do
+        patch cancel_batch_run_madmin_show_path(show, batch_run_id: batch_run.id)
+      end
+    end
+
     test "cancel_batch_run redirects with an alert when there is nothing in progress to cancel" do
       show = shows(:upcoming)
       batch_run = BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 1, sent_count: 1)
@@ -485,6 +496,18 @@ module Madmin
 
       assert_response :success
       assert_select ".batch-progress", count: 0
+    end
+
+    test "the next show subscribes to batch progress even before any batch run exists" do
+      show = shows(:upcoming)
+      assert_not show.batch_runs.exists?
+
+      get madmin_show_path(show)
+
+      assert_response :success
+      assert_select ".batch-progress", count: 1
+      stream_names = response.body.scan(/signed-stream-name="([^"]+)"/).flatten
+      assert_includes stream_names, Turbo::StreamsChannel.signed_stream_name([ show, :batch_progress ])
     end
 
     test "show page still shows batch history and a retry button for a show that is not the next show" do
