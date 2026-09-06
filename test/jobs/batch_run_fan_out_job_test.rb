@@ -1,7 +1,9 @@
 require "test_helper"
+require "turbo/broadcastable/test_helper"
 
 class BatchRunFanOutJobTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
+  include Turbo::Broadcastable::TestHelper
 
   test "invite creates an item per eligible person, sets total_count, and enqueues a job for each" do
     show = shows(:upcoming)
@@ -294,6 +296,41 @@ class BatchRunFanOutJobTest < ActiveSupport::TestCase
     end
 
     assert_nil item.reload.fan_out_enqueued_at, "the claim should be released, not left stuck, so a retried scan doesn't skip this item forever"
+  end
+
+  test "broadcasts the initial running state once total_count is set" do
+    show = shows(:upcoming)
+    Person.create!(first_name: "Alice", last_name: "Aardvark", email: "alice-initial-broadcast@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "pending")
+
+    assert_turbo_stream_broadcasts [ show, :batch_progress ] do
+      BatchRunFanOutJob.perform_now(batch_run.id)
+    end
+  end
+
+  test "broadcasts the completed state immediately when there are zero eligible recipients" do
+    show = shows(:upcoming)
+    person = Person.create!(first_name: "Already", last_name: "Rsvpd", email: "zero-recipients-broadcast@example.com", status: "active")
+    RSVP.create!(show: show, email: person.email, first_name: "Already", last_name: "Rsvpd", response: "yes", seats_reserved: 1)
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "pending")
+
+    turbo_streams = capture_turbo_stream_broadcasts [ show, :batch_progress ] do
+      BatchRunFanOutJob.perform_now(batch_run.id)
+    end
+
+    assert_equal 1, turbo_streams.size
+    assert_match(/complete/, turbo_streams.first.text)
+  end
+
+  test "does not re-broadcast the initial state when resuming past an already-completed transition" do
+    show = shows(:upcoming)
+    alice = Person.create!(first_name: "Alice", last_name: "Aardvark", email: "alice-no-reenqueue-broadcast@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    batch_run.batch_run_items.create!(recipient: alice, status: :pending)
+
+    assert_no_turbo_stream_broadcasts [ show, :batch_progress ] do
+      BatchRunFanOutJob.perform_now(batch_run.id)
+    end
   end
 
   test "two racing scans that both see an item as pending only let one of them enqueue it" do
