@@ -395,6 +395,26 @@ module Madmin
       assert_no_match(/>Send Invites</, response.body)
     end
 
+    test "batch progress shows and subscribes to a retried older run, not a newer completed run of the same kind" do
+      show = shows(:upcoming)
+      person = Person.create!(first_name: "Retry", last_name: "Reopen", email: "retry-reopen@example.com", status: "active")
+      old_run = BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 1, failed_count: 1, completed_at: 1.day.ago)
+      old_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
+      newer_run = BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 1, sent_count: 1, completed_at: Time.current)
+
+      patch retry_failed_batch_run_madmin_show_path(show, batch_run_id: old_run.id)
+      assert old_run.reload.running?
+
+      get madmin_show_path(show)
+
+      assert_response :success
+      assert_select "#batch_run_progress_invite", text: %r{0/1 sent, 1 failed}
+
+      stream_names = response.body.scan(/signed-stream-name="([^"]+)"/).flatten
+      assert_includes stream_names, Turbo::StreamsChannel.signed_stream_name([ old_run, :progress ])
+      assert_not_includes stream_names, Turbo::StreamsChannel.signed_stream_name([ newer_run, :progress ])
+    end
+
     test "index without a scope sorts shows by start descending" do
       get madmin_shows_path
 
