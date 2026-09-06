@@ -474,6 +474,93 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     assert batch_run.completed?
   end
 
+  test "a persistent failure incrementing the counter releases the claim so a later retry can redo it" do
+    show = shows(:upcoming)
+    person = Person.create!(first_name: "New", last_name: "Person", email: "persistent-increment-failure@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    item = batch_run.batch_run_items.create!(recipient: person)
+
+    failing = true
+    original_increment = BatchRun.method(:increment_counter)
+    BatchRun.define_singleton_method(:increment_counter) do |*args|
+      raise ActiveRecord::ConnectionTimeoutError, "persistent boom" if failing
+
+      original_increment.call(*args)
+    end
+
+    begin
+      assert_raises(ActiveRecord::ConnectionTimeoutError) do
+        BatchRunItemJob.perform_now(item.id)
+      end
+
+      assert_nil item.reload.counted_at, "the claim must be released so a later attempt can redo the increment instead of undercounting forever"
+
+      # The outage resolves; a redelivery (Solid Queue's own retry, or a
+      # manual one via Mission Control Jobs) re-invokes the same job. It
+      # must not resend -- the item is already "sent" from the original
+      # attempt -- just finish the bookkeeping that failed.
+      failing = false
+      assert_no_emails do
+        assert_nothing_raised do
+          BatchRunItemJob.perform_now(item.id)
+        end
+      end
+    ensure
+      BatchRun.define_singleton_method(:increment_counter, original_increment)
+    end
+
+    item.reload
+    assert item.sent?
+    batch_run.reload
+    assert_equal 1, batch_run.sent_count
+    assert batch_run.completed?
+  end
+
+  test "a persistent failure in the completion check after the counter was incremented is recovered by a later redelivery" do
+    show = shows(:upcoming)
+    person = Person.create!(first_name: "New", last_name: "Person", email: "persistent-completion-failure@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    item = batch_run.batch_run_items.create!(recipient: person)
+
+    failing = true
+    original_reload = BatchRun.instance_method(:reload)
+    BatchRun.define_method(:reload) do |*args|
+      raise ActiveRecord::ConnectionTimeoutError, "persistent boom" if failing
+
+      original_reload.bind(self).call(*args)
+    end
+
+    begin
+      assert_raises(ActiveRecord::ConnectionTimeoutError) do
+        BatchRunItemJob.perform_now(item.id)
+      end
+      failing = false
+
+      # The increment itself succeeded and must not be undone or redone
+      # -- only the completion check/broadcast that follows it failed.
+      assert_not_nil item.reload.counted_at
+      batch_run.reload
+      assert_equal 1, batch_run.sent_count
+      assert batch_run.running?, "the run must not be stuck looking complete-but-running forever"
+
+      # A redelivery of this same job -- which no longer even reclaims
+      # the item, since it's already "sent" -- must still retry the
+      # completion check instead of bailing out early just because
+      # counted_at is already set.
+      assert_no_emails do
+        assert_nothing_raised do
+          BatchRunItemJob.perform_now(item.id)
+        end
+      end
+    ensure
+      BatchRun.define_method(:reload, original_reload)
+    end
+
+    batch_run.reload
+    assert_equal 1, batch_run.sent_count, "must not be double-counted by the redelivery"
+    assert batch_run.completed?
+  end
+
   test "logs which item/run it gave up on when local retries are exhausted, instead of failing silently" do
     show = shows(:upcoming)
     person = Person.create!(first_name: "New", last_name: "Person", email: "exhausted-retries@example.com", status: "active")
