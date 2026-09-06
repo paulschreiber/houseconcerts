@@ -28,6 +28,35 @@ class BatchRunRetryFanOutJob < ApplicationJob
   # enqueuing this job), so a partial previous attempt can't hide
   # still-failed items from it.
   def perform(batch_run_id)
-    BatchRun.find(batch_run_id).batch_run_items.failed.find_each { |item| BatchRunItemJob.perform_later(item.id) }
+    batch_run = BatchRun.find(batch_run_id)
+    batch_run.batch_run_items.failed.where(fan_out_enqueued_at: nil).find_each do |item|
+      enqueue_item(item)
+    end
   end
+
+  private
+
+    # Claimed via the same fan_out_enqueued_at column BatchRunFanOutJob
+    # uses (reset to NULL by Madmin::ShowsController#retry_failed_batch_run
+    # alongside failed_count/counted_at), for the same reason: without a
+    # claim here, a double-clicked "Retry" -- or this job simply being
+    # redelivered after already enqueuing some items -- could enqueue two
+    # BatchRunItemJobs for the same failed item. That's not just a
+    # harmless duplicate: if both actually run, the second one reclaims
+    # the item (still "failed" is claimable) and re-sends it, and
+    # whichever of the two resolves second finds counted_at already set
+    # by the first and silently never gets counted, undercounting the
+    # run forever despite having genuinely just sent something.
+    def enqueue_item(item)
+      claimed = BatchRunItem.where(id: item.id, fan_out_enqueued_at: nil)
+                            .update_all(fan_out_enqueued_at: Time.current) == 1 # rubocop:disable Rails/SkipsModelValidations
+      return unless claimed
+
+      begin
+        BatchRunItemJob.perform_later(item.id)
+      rescue StandardError
+        BatchRunItem.where(id: item.id).update_all(fan_out_enqueued_at: nil) # rubocop:disable Rails/SkipsModelValidations
+        raise
+      end
+    end
 end

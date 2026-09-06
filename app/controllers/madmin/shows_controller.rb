@@ -54,8 +54,11 @@ module Madmin
         # BatchRunItemJob#record_progress checks to decide whether an
         # item's resolution still needs counting, so without this reset
         # a retried item's fresh resolution would look already-counted
-        # and never update failed_count/sent_count at all.
-        failed_items.update_all(counted_at: nil) # rubocop:disable Rails/SkipsModelValidations
+        # and never update failed_count/sent_count at all. fan_out_enqueued_at
+        # is reset alongside it so BatchRunRetryFanOutJob's own claim can
+        # enqueue these items again -- it's still set from their first,
+        # now-failed attempt.
+        failed_items.update_all(counted_at: nil, fan_out_enqueued_at: nil) # rubocop:disable Rails/SkipsModelValidations
       rescue ActiveRecord::RecordNotUnique
         # active_kind_lock only allows one non-completed run per show+kind
         # at a time -- reopening this (older) run collides if a newer run
