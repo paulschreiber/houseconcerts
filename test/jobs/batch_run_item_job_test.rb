@@ -80,11 +80,11 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     assert batch_run.completed?
   end
 
-  test "a non-pending item is a no-op" do
+  test "a non-pending item whose progress was already counted is a no-op" do
     show = shows(:upcoming)
     person = Person.create!(first_name: "Already", last_name: "Sent", email: "already-sent@example.com", status: "active")
     batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1, sent_count: 1)
-    item = batch_run.batch_run_items.create!(recipient: person, status: "sent", sent_at: Time.current)
+    item = batch_run.batch_run_items.create!(recipient: person, status: "sent", sent_at: Time.current, counted_at: Time.current)
 
     assert_no_emails do
       BatchRunItemJob.perform_now(item.id)
@@ -93,6 +93,24 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     batch_run.reload
     assert_equal 1, batch_run.sent_count
     assert_equal 0, batch_run.failed_count
+  end
+
+  test "redelivering an item whose earlier execution crashed before recording progress still completes the run" do
+    show = shows(:upcoming)
+    person = Person.create!(first_name: "Crashed", last_name: "BeforeProgress", email: "crashed-before-progress@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    # Simulates claim() having already succeeded in a prior execution that
+    # crashed before record_progress ever ran: the item is "sent", but
+    # batch_run's counters were never updated and the run never completed.
+    item = batch_run.batch_run_items.create!(recipient: person, status: "sent", sent_at: 1.hour.ago)
+
+    assert_no_emails do
+      BatchRunItemJob.perform_now(item.id)
+    end
+
+    batch_run.reload
+    assert_equal 1, batch_run.sent_count
+    assert batch_run.completed?, "a redelivered job for an already-claimed item must still reconcile the run's counters instead of leaving it stuck running forever"
   end
 
   test "retrying a failed item that now succeeds is freshly counted as sent" do
