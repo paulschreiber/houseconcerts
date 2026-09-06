@@ -21,13 +21,21 @@ module Madmin
       # run and strand this run's failures with no way to retry them.
       batch_run = @record.batch_runs.find_by(id: params.require(:batch_run_id))
       kind_label = batch_run ? BatchRun.kind_label(batch_run.kind).downcase : "batch"
+      # Queried live, not read off batch_run.failed_count: if a previous
+      # retry's enqueue of BatchRunRetryFanOutJob itself failed after
+      # this run's counters were already reset, failed_count would say 0
+      # while these items are still genuinely failed. Gating on the real
+      # rows (not the aggregate counter) means that case self-heals --
+      # the button and this check still see the failures and allow
+      # retrying again -- instead of silently stranding them forever.
+      failed_items = batch_run&.batch_run_items&.failed
 
-      if batch_run.nil? || batch_run.failed_count.zero?
+      if batch_run.nil? || failed_items.none?
         redirect_back_or_to resource.index_path, alert: "There are no failed #{kind_label} sends to retry."
         return
       end
 
-      retry_count = batch_run.failed_count
+      retry_count = failed_items.count
       kind = batch_run.kind
 
       # Reopen the run so its progress bar shows again while the retries

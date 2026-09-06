@@ -202,6 +202,35 @@ module Madmin
       assert_select "#batch_run_progress_invite button", text: /Retry/, count: 0
     end
 
+    test "show page still shows a retry button when failed_count says zero but failed items actually exist" do
+      show = shows(:upcoming)
+      person = Person.create!(first_name: "Retry", last_name: "Stranded", email: "retry-stranded-view@example.com", status: "active")
+      # Simulates the aggregate counter and the real rows disagreeing --
+      # e.g. a previous retry's own job enqueue failed after failed_count
+      # was already reset to 0, leaving this item still genuinely failed.
+      batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1, failed_count: 0)
+      batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
+
+      get madmin_show_path(show)
+
+      assert_response :success
+      assert_select "#batch_run_progress_invite button", text: "Retry 1 failed"
+    end
+
+    test "retry_failed_batch_run still works when failed_count says zero but failed items actually exist" do
+      show = shows(:upcoming)
+      person = Person.create!(first_name: "Retry", last_name: "Stranded", email: "retry-stranded@example.com", status: "active")
+      batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1, failed_count: 0)
+      batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
+
+      assert_enqueued_with(job: BatchRunRetryFanOutJob, args: [ batch_run.id ]) do
+        patch retry_failed_batch_run_madmin_show_path(show, batch_run_id: batch_run.id)
+      end
+
+      assert_redirected_to madmin_shows_path
+      assert_match(/Retrying 1 failed invites/, flash[:notice])
+    end
+
     test "retry_failed_batch_run re-enqueues failed items and reopens the run" do
       show = shows(:upcoming)
       person = Person.create!(first_name: "Retry", last_name: "Me", email: "retry-me@example.com", status: "active")
