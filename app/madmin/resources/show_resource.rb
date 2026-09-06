@@ -1,4 +1,13 @@
 class ShowResource < Madmin::Resource
+  # Disables a batch-action button immediately on submit, so a rapid
+  # double-click can't fire the same start/retry action twice before the
+  # first request's redirect replaces the page. A fresh hash every call
+  # (not a shared frozen constant): button_to mutates whatever's passed
+  # as :form in place (setting :class, :method, :action on it).
+  def self.disable_on_submit
+    { data: { controller: "disable-on-submit", action: "submit->disable-on-submit#disable" } }
+  end
+
   # Attributes
   attribute :id
   attribute :start
@@ -38,9 +47,9 @@ class ShowResource < Madmin::Resource
       gate = ShowResource.invite_gate_options(record)
 
       safe_join([
-                  button_to("Send Invites", send_invites_madmin_show_path(record), method: :patch, class: "btn btn-secondary"),
-                  button_to("Send to Unopened", send_invites_unopened_madmin_show_path(record), method: :patch, class: "btn btn-secondary", **gate),
-                  button_to("Send Reminders", send_reminders_madmin_show_path(record), method: :patch, class: "btn btn-secondary", **gate)
+                  button_to("Send Invites", send_invites_madmin_show_path(record), method: :patch, class: "btn btn-secondary", form: ShowResource.disable_on_submit),
+                  button_to("Send to Unopened", send_invites_unopened_madmin_show_path(record), method: :patch, class: "btn btn-secondary", form: ShowResource.disable_on_submit, **gate),
+                  button_to("Send Reminders", send_reminders_madmin_show_path(record), method: :patch, class: "btn btn-secondary", form: ShowResource.disable_on_submit, **gate)
                 ])
     end
 
