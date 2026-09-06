@@ -15,21 +15,20 @@ module Madmin
     end
 
     def retry_failed_batch_run
-      kind = params.require(:kind)
-
-      unless BatchRun.kinds.key?(kind)
-        redirect_back_or_to resource.index_path, alert: "Unknown batch kind: #{kind}."
-        return
-      end
-
-      batch_run = @record.batch_runs.where(kind: kind).order(created_at: :desc).first
+      # Keyed on the specific batch_run, not "the latest run of this
+      # kind" -- once a newer run of the same kind exists, that lookup
+      # would silently point at the wrong (newer, possibly failure-free)
+      # run and strand this run's failures with no way to retry them.
+      batch_run = @record.batch_runs.find_by(id: params.require(:batch_run_id))
+      kind_label = batch_run ? BatchRun.kind_label(batch_run.kind).downcase : "batch"
 
       if batch_run.nil? || batch_run.failed_count.zero?
-        redirect_back_or_to resource.index_path, alert: "There are no failed #{BatchRun.kind_label(kind).downcase} sends to retry."
+        redirect_back_or_to resource.index_path, alert: "There are no failed #{kind_label} sends to retry."
         return
       end
 
       retry_count = batch_run.failed_count
+      kind = batch_run.kind
 
       # Reopen the run so its progress bar shows again while the retries
       # are in flight -- BatchRunItemJob flips it back to completed once

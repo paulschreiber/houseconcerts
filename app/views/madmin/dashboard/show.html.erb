@@ -4,10 +4,11 @@
   <div class="dashboard-warning">
     <h2>Failed sends need attention</h2>
     <ul>
-      <% @failed_batch_items.group_by { |item| item.batch_run.show }.each do |show, items| %>
+      <% @failed_batch_items.group_by(&:batch_run).each do |batch_run, items| %>
         <li>
-          <%= link_to show.name, madmin_show_path(show) %>:
+          <%= link_to batch_run.show.name, madmin_show_path(batch_run.show) %> &mdash; <%= BatchRun.kind_label(batch_run.kind) %>:
           <%= items.size %> failed <%= items.size == 1 ? "send" : "sends" %>
+          <%= button_to "Retry", retry_failed_batch_run_madmin_show_path(batch_run.show, batch_run_id: batch_run.id), method: :patch, class: "btn btn-secondary" %>
           <ul class="dashboard-warning-reasons">
             <% items.filter_map(&:error_message).uniq.each do |message| %>
               <li><%= message %></li>
