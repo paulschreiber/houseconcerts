@@ -439,4 +439,31 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     assert_equal 1, batch_run.sent_count, "the counter must not be double-incremented by retrying a failure that happened after it already succeeded"
     assert batch_run.completed?
   end
+
+  test "logs which item/run it gave up on when local retries are exhausted, instead of failing silently" do
+    show = shows(:upcoming)
+    person = Person.create!(first_name: "New", last_name: "Person", email: "exhausted-retries@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    item = batch_run.batch_run_items.create!(recipient: person)
+
+    original_increment = BatchRun.method(:increment_counter)
+    BatchRun.define_singleton_method(:increment_counter) do |*_args|
+      raise ActiveRecord::ConnectionTimeoutError, "persistent boom"
+    end
+
+    logged = StringIO.new
+    original_logger = Rails.logger
+    Rails.logger = Logger.new(logged)
+
+    begin
+      assert_raises(ActiveRecord::ConnectionTimeoutError) do
+        BatchRunItemJob.perform_now(item.id)
+      end
+    ensure
+      BatchRun.define_singleton_method(:increment_counter, original_increment)
+      Rails.logger = original_logger
+    end
+
+    assert_match(/giving up incrementing sent_count for batch_run_item_id=#{item.id} \(batch_run_id=#{batch_run.id}\)/, logged.string)
+  end
 end

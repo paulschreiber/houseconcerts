@@ -36,7 +36,7 @@ class BatchRunItemJob < ApplicationJob
       # message that may have already gone out. A transient failure
       # writing this outcome shouldn't be able to do that; it should
       # only ever retry the write itself.
-      with_transient_retries { item.update!(status: :failed, error_message: e.message) }
+      with_transient_retries(item: item, label: "marking it failed") { item.update!(status: :failed, error_message: e.message) }
     end
 
     record_progress(item)
@@ -55,13 +55,29 @@ class BatchRunItemJob < ApplicationJob
     # and (worse, if send_to actually failed but this write also failed)
     # the item could stay mislabeled "sent" despite never being
     # delivered.
-    def with_transient_retries(max_attempts: 3)
+    def with_transient_retries(item: nil, label: "recording progress", max_attempts: 3)
       attempts = 0
       begin
         yield
-      rescue ActiveRecord::AdapterError
+      rescue ActiveRecord::AdapterError => e
         attempts += 1
-        raise if attempts >= max_attempts
+        if attempts >= max_attempts
+          # No automatic recovery beyond this: if the item ended up
+          # "sent", it's not reclaimable, and nothing re-checks the run's
+          # completion state on its behalf, so the run can stay "running"
+          # forever with otherwise-correct counts. Logged loudly (this
+          # already shows up as a failed job in Solid Queue, but a
+          # specific, grep-able line makes the actual gap -- and which
+          # item/run it's about -- obvious rather than requiring someone
+          # to reconstruct it from a bare exception) so an admin knows to
+          # check whether batch_run_id needs a manual nudge.
+          Rails.logger.error(
+            "BatchRunItemJob: giving up #{label} for batch_run_item_id=#{item&.id} " \
+            "(batch_run_id=#{item&.batch_run_id}) after #{attempts} attempts: " \
+            "#{e.class}: #{e.message}"
+          )
+          raise
+        end
 
         sleep(0.1 * attempts)
         retry
@@ -148,9 +164,9 @@ class BatchRunItemJob < ApplicationJob
       # genuine increment if the failure happened somewhere *after* this
       # succeeded (not #increment!, so concurrent worker threads updating
       # the same batch_run's counters can't lose an update either way).
-      with_transient_retries { BatchRun.increment_counter(counter, batch_run.id) } # rubocop:disable Rails/SkipsModelValidations
+      with_transient_retries(item: item, label: "incrementing #{counter}") { BatchRun.increment_counter(counter, batch_run.id) } # rubocop:disable Rails/SkipsModelValidations
 
-      with_transient_retries do
+      with_transient_retries(item: item, label: "the post-increment completion check/broadcast") do
         batch_run.reload
         if batch_run.processed_count >= batch_run.total_count
           # Guarded by `status: "running"` so only the item that actually
