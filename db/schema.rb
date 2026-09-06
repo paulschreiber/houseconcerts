@@ -80,6 +80,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_171112) do
     t.datetime "created_at", null: false
     t.datetime "email_sent_at"
     t.string "error_message"
+    t.datetime "fan_out_enqueued_at"
     t.bigint "recipient_id", null: false
     t.string "recipient_type", null: false
     t.datetime "sent_at"

@@ -77,10 +77,39 @@ class BatchRunFanOutJob < ApplicationJob
 
     return if batch_run.completed?
 
-    batch_run.batch_run_items.pending.find_each { |item| BatchRunItemJob.perform_later(item.id) }
+    enqueue_pending_items(batch_run)
   end
 
   private
+
+    # Claims each item (atomically, one row at a time) before enqueuing a
+    # job for it -- with_lock above only makes the recipient-snapshot
+    # phase exclusive, not this step. Two fan-out executions can still
+    # both reach here (e.g. one that just finished the snapshot, and
+    # another that lost the with_lock race and fell through with nothing
+    # left to do there): without a claim here too, both could enqueue a
+    # BatchRunItemJob for the same item. A duplicate enqueue of a still-
+    # "pending" item is harmless on its own (BatchRunItemJob's own claim
+    # makes the second one a no-op), but if the first duplicate's send
+    # fails, the item becomes "failed" -- a status deliberately left
+    # reclaimable for admin retries -- so an unclaimed second duplicate
+    # could then resend it automatically. If perform_later itself raises,
+    # the claim is released so a later attempt (this job's own retry_on,
+    # or a resumed execution) doesn't skip the item forever.
+    def enqueue_pending_items(batch_run)
+      batch_run.batch_run_items.pending.where(fan_out_enqueued_at: nil).find_each do |item|
+        claimed = BatchRunItem.where(id: item.id, fan_out_enqueued_at: nil)
+                              .update_all(fan_out_enqueued_at: Time.current) == 1 # rubocop:disable Rails/SkipsModelValidations
+        next unless claimed
+
+        begin
+          BatchRunItemJob.perform_later(item.id)
+        rescue StandardError
+          BatchRunItem.where(id: item.id).update_all(fan_out_enqueued_at: nil) # rubocop:disable Rails/SkipsModelValidations
+          raise
+        end
+      end
+    end
 
     def recipients_for(batch_run)
       show = batch_run.show
