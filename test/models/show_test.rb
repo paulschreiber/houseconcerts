@@ -82,18 +82,25 @@ class ShowTest < ActiveSupport::TestCase
     assert_includes shows(:upcoming).attendees, rsvps(:one)
   end
 
-  test "invites_sent? reflects whether an invite batch run has completed for the show" do
+  test "invites_sent? reflects whether an invite batch run has completed and actually sent at least one invite" do
     show = shows(:upcoming)
     assert_not show.invites_sent?
 
-    show.batch_runs.create!(kind: "invite", status: "completed", total_count: 0)
+    show.batch_runs.create!(kind: "invite", status: "completed", total_count: 1, sent_count: 1)
 
     assert show.invites_sent?
   end
 
+  test "invites_sent? is false for a completed invite batch run that had zero eligible recipients" do
+    show = shows(:upcoming)
+    show.batch_runs.create!(kind: "invite", status: "completed", total_count: 0, sent_count: 0)
+
+    assert_not show.invites_sent?
+  end
+
   test "invites_sent? ignores batch runs of other kinds" do
     show = shows(:upcoming)
-    show.batch_runs.create!(kind: "remind", status: "completed", total_count: 0)
+    show.batch_runs.create!(kind: "remind", status: "completed", total_count: 1, sent_count: 1)
 
     assert_not show.invites_sent?
   end

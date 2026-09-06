@@ -96,7 +96,7 @@ class Show < ApplicationRecord
   end
 
   def invites_sent?
-    batch_runs.invite.completed.exists?
+    batch_runs.invite.completed.where("sent_count > 0").exists?
   end
 
   def to_s
