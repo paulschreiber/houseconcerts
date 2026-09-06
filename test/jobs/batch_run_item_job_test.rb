@@ -294,9 +294,32 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
       BatchRunItemJob.perform_now(item.id)
     end
 
-    assert item.reload.sent?
+    item.reload
+    assert item.sent?
+    assert_not_nil item.sms_sent_at, "the SMS step should still have been attempted and recorded"
     batch_run.reload
     assert_equal 1, batch_run.sent_count
     assert_equal 0, batch_run.failed_count
+  end
+
+  test "retrying an item whose email and SMS already both went out does not resend either" do
+    show = shows(:upcoming)
+    rsvp = RSVP.create!(show: show, email: "retry-both-sent@example.com", first_name: "Retry", last_name: "Both",
+                        response: "yes", confirmed: "yes", seats_reserved: 1, phone_number: "5555550123")
+    batch_run = BatchRun.create!(show: show, kind: "remind", status: "running", total_count: 1, failed_count: 0)
+    original_sms_sent_at = 1.hour.ago
+    # Mirrors a retry triggered after both channels already succeeded
+    # (e.g. the item was marked failed for an unrelated reason after both
+    # completed): neither channel should be re-attempted.
+    item = batch_run.batch_run_items.create!(recipient: rsvp, status: "failed", error_message: "boom",
+                                             email_sent_at: 1.hour.ago, sms_sent_at: original_sms_sent_at)
+
+    assert_no_emails do
+      BatchRunItemJob.perform_now(item.id)
+    end
+
+    item.reload
+    assert item.sent?
+    assert_in_delta original_sms_sent_at, item.sms_sent_at, 1, "sms_sent_at should be untouched, not refreshed by a skipped resend"
   end
 end
