@@ -62,6 +62,12 @@ class BatchRunItemJob < ApplicationJob
     def remind(item)
       rsvp = item.recipient
 
+      # Rechecked at send time, not just at fan-out snapshot time: an
+      # attendee can be waitlisted/unconfirmed or withdraw their RSVP
+      # between when the batch was created and when this specific job
+      # actually runs.
+      raise InvalidRecipient, "RSVP #{rsvp.id} is no longer a confirmed yes attendee" unless rsvp.confirmed? && rsvp.yes?
+
       # Email and SMS are two separate external deliveries, not one
       # transaction: tracked independently so that retrying a failed item
       # (e.g. email sent, Twilio raised) only re-attempts the channel

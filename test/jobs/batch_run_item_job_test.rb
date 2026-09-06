@@ -256,6 +256,30 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     assert item.reload.sent?
   end
 
+  test "a reminder to an RSVP that's no longer a confirmed yes attendee is marked failed, not sent" do
+    show = shows(:upcoming)
+    rsvp = RSVP.create!(show: show, email: "waitlisted-by-now@example.com", first_name: "No", last_name: "Longer",
+                        response: "yes", confirmed: "yes", seats_reserved: 1)
+    # Bypasses callbacks (incl. the admin RSVP-change notification, which
+    # isn't what this test is about) to simulate the RSVP having been
+    # waitlisted after the batch snapshot but before this job ran.
+    rsvp.update_column(:confirmed, "waitlisted") # rubocop:disable Rails/SkipsModelValidations
+    batch_run = BatchRun.create!(show: show, kind: "remind", status: "running", total_count: 1)
+    item = batch_run.batch_run_items.create!(recipient: rsvp)
+
+    # 1 email: not the reminder itself, but the admin failure-notification
+    # (total_count 1, so this single failure completes the run).
+    assert_emails 1 do
+      BatchRunItemJob.perform_now(item.id)
+    end
+
+    assert item.reload.failed?
+    assert_match(/no longer a confirmed yes attendee/, item.error_message)
+    batch_run.reload
+    assert_equal 0, batch_run.sent_count
+    assert_equal 1, batch_run.failed_count
+  end
+
   test "retrying a reminder whose email already went out does not resend the email, only the SMS" do
     show = shows(:upcoming)
     rsvp = RSVP.create!(show: show, email: "retry-remind@example.com", first_name: "Retry", last_name: "Remind",
