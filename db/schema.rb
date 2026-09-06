@@ -78,10 +78,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_191415) do
   create_table "batch_run_items", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "batch_run_id", null: false
     t.datetime "created_at", null: false
+    t.datetime "email_sent_at"
     t.string "error_message"
     t.bigint "recipient_id", null: false
     t.string "recipient_type", null: false
     t.datetime "sent_at"
+    t.datetime "sms_sent_at"
     t.integer "status", default: 0, null: false
     t.datetime "updated_at", null: false
     t.index ["batch_run_id", "recipient_type", "recipient_id"], name: "index_batch_run_items_on_batch_run_and_recipient", unique: true

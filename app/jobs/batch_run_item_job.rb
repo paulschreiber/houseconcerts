@@ -55,14 +55,35 @@ class BatchRunItemJob < ApplicationJob
 
         InvitesMailer.invite(person, batch_run.show).deliver_now
       when "remind"
-        remind(item.recipient)
+        remind(item)
       end
     end
 
-    def remind(rsvp)
-      InvitesMailer.remind(rsvp).deliver_now
+    def remind(item)
+      rsvp = item.recipient
+
+      # Rechecked at send time, not just at fan-out snapshot time: an
+      # attendee can be waitlisted/unconfirmed or withdraw their RSVP
+      # between when the batch was created and when this specific job
+      # actually runs.
+      raise InvalidRecipient, "RSVP #{rsvp.id} is no longer a confirmed yes attendee" unless rsvp.confirmed? && rsvp.yes?
+
+      # Email and SMS are two separate external deliveries, not one
+      # transaction: each is tracked independently, and each is only
+      # marked done *after* it succeeds (not before), so retrying a
+      # failed item only re-attempts whichever channel didn't already
+      # succeed. The narrow window this leaves -- delivery succeeds but
+      # this timestamp write itself fails -- risks a rare duplicate on
+      # retry, which we accept in exchange for never silently skipping a
+      # channel that actually failed to send.
+      unless item.email_sent_at?
+        InvitesMailer.remind(rsvp).deliver_now
+        item.update!(email_sent_at: Time.current)
+      end
 
       return if rsvp.phone_number.blank?
+
+      return if item.sms_sent_at?
 
       if Rails.env.production?
         client = Twilio::REST::Client.new(Rails.application.credentials.twilio.account_sid, Rails.application.credentials.twilio.auth_token)
@@ -74,6 +95,7 @@ class BatchRunItemJob < ApplicationJob
       else
         Rails.logger.debug { "Sending SMS [#{rsvp.phone_number_twilio}]: #{rsvp.sms_reminder}" }
       end
+      item.update!(sms_sent_at: Time.current)
     end
 
     def record_progress(item)
