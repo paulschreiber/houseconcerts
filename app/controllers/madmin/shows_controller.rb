@@ -50,6 +50,12 @@ module Madmin
       # still in flight.
       begin
         batch_run.update!(status: :running, completed_at: nil, failed_count: 0)
+        # counted_at mirrors failed_count's reset, per item: it's what
+        # BatchRunItemJob#record_progress checks to decide whether an
+        # item's resolution still needs counting, so without this reset
+        # a retried item's fresh resolution would look already-counted
+        # and never update failed_count/sent_count at all.
+        failed_items.update_all(counted_at: nil) # rubocop:disable Rails/SkipsModelValidations
       rescue ActiveRecord::RecordNotUnique
         # active_kind_lock only allows one non-completed run per show+kind
         # at a time -- reopening this (older) run collides if a newer run
