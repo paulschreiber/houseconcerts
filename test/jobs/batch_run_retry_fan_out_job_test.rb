@@ -72,6 +72,43 @@ class BatchRunRetryFanOutJobTest < ActiveSupport::TestCase
     assert item.reload.failed?
   end
 
+  test "does not enqueue a duplicate job for an item another retry attempt already claimed" do
+    show = shows(:upcoming)
+    person = Person.create!(first_name: "Retry", last_name: "Claimed", email: "retry-fanout-claimed@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1, failed_count: 0)
+    item = batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
+
+    # Simulates a sibling retry attempt -- e.g. a double-clicked Retry
+    # button -- having already claimed this item.
+    BatchRunItem.where(id: item.id).update_all(fan_out_enqueued_at: Time.current) # rubocop:disable Rails/SkipsModelValidations
+
+    assert_no_enqueued_jobs only: BatchRunItemJob do
+      BatchRunRetryFanOutJob.perform_now(batch_run.id)
+    end
+  end
+
+  test "releases an item's enqueue claim if perform_later raises, so a later scan can retry it" do
+    show = shows(:upcoming)
+    person = Person.create!(first_name: "Retry", last_name: "ReleaseClaim", email: "retry-fanout-release-claim@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1, failed_count: 0)
+    item = batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
+
+    original_perform_later = BatchRunItemJob.method(:perform_later)
+    BatchRunItemJob.define_singleton_method(:perform_later) do |*_args|
+      raise SolidQueue::Job::EnqueueError, "transient boom"
+    end
+
+    begin
+      assert_nothing_raised do
+        BatchRunRetryFanOutJob.perform_now(batch_run.id)
+      end
+    ensure
+      BatchRunItemJob.define_singleton_method(:perform_later, original_perform_later)
+    end
+
+    assert_nil item.reload.fan_out_enqueued_at, "the claim should be released, not left stuck, so a retried scan doesn't skip this item forever"
+  end
+
   test "a genuine bug is not retried -- it raises immediately instead of retrying against a job that will never fix itself" do
     show = shows(:upcoming)
     person = Person.create!(first_name: "Retry", last_name: "Buggy", email: "retry-fanout-bug@example.com", status: "active")
