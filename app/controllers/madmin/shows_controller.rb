@@ -62,7 +62,18 @@ module Madmin
       # Handed off to a job (not looped inline here) so a crash partway
       # through enqueuing doesn't strand the remaining failed items --
       # see BatchRunRetryFanOutJob for why that's resumable.
-      BatchRunRetryFanOutJob.perform_later(batch_run.id)
+      begin
+        BatchRunRetryFanOutJob.perform_later(batch_run.id)
+      rescue ActiveRecord::AdapterError, SolidQueue::Job::EnqueueError
+        # Solid Queue raises synchronously, at the point perform_later is
+        # called, not later in a worker -- so a transient DB problem here
+        # would otherwise surface as a raw 500. The run itself is fine
+        # (failed_count is already reset and the failed items are still
+        # there), so clicking Retry again picks up right where this left
+        # off -- the button/gate query the real items, not this counter.
+        redirect_back_or_to resource.index_path, alert: "Couldn't start retrying #{kind_label} sends right now -- please try again in a moment."
+        return
+      end
 
       redirect_back_or_to resource.index_path, notice: "Retrying #{retry_count} failed #{BatchRun.kind_label(kind).downcase} for #{@record.name}."
     end
@@ -80,6 +91,8 @@ module Madmin
         end
       rescue StartBatchRun::AlreadyInProgress
         redirect_back_or_to resource.index_path, alert: "Already sending #{description} for #{@record.name} -- hang tight."
+      rescue StartBatchRun::EnqueueFailed => e
+        redirect_back_or_to resource.index_path, alert: e.message
       end
   end
 end

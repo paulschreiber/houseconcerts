@@ -8,6 +8,15 @@ class StartBatchRun
   # every future send of this kind for this show).
   class AlreadyInProgress < StandardError; end
 
+  # Raised when BatchRunFanOutJob.perform_later itself fails (Solid
+  # Queue's Job.enqueue raises synchronously, at the point perform_later
+  # is called, not later in a worker) -- e.g. a transient DB problem
+  # writing the job row. The BatchRun itself is already created and
+  # remains recoverable (a later call here will find it "pending" and
+  # resume it, or an admin can just try again), but *this* request
+  # should say so plainly instead of surfacing as a raw 500.
+  class EnqueueFailed < StandardError; end
+
   def self.call(show:, kind:)
     new(show, kind).call
   end
@@ -22,7 +31,7 @@ class StartBatchRun
   # immediately regardless of how many people are eligible.
   def call
     batch_run = BatchRun.create!(show: show, kind: kind, status: :pending)
-    BatchRunFanOutJob.perform_later(batch_run.id)
+    enqueue_fan_out(batch_run)
     batch_run
   rescue ActiveRecord::RecordNotUnique
     resume_pending_run || raise(AlreadyInProgress, "A #{kind} batch is already in progress for #{show.name}")
@@ -31,6 +40,12 @@ class StartBatchRun
   private
 
     attr_reader :show, :kind
+
+    def enqueue_fan_out(batch_run)
+      BatchRunFanOutJob.perform_later(batch_run.id)
+    rescue ActiveRecord::AdapterError, SolidQueue::Job::EnqueueError
+      raise EnqueueFailed, "Couldn't start the #{kind} batch for #{show.name} right now -- please try again in a moment."
+    end
 
     # active_kind_lock only allows one non-completed run per show+kind, so
     # a RecordNotUnique collision means either a "pending" run (fan-out
@@ -44,7 +59,7 @@ class StartBatchRun
       existing = show.batch_runs.find_by(kind: kind, status: :pending)
       return nil unless existing
 
-      BatchRunFanOutJob.perform_later(existing.id)
+      enqueue_fan_out(existing)
       existing
     end
 end
