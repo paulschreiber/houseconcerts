@@ -62,6 +62,11 @@ namespace :next_show do
       exit
     end
 
+    unless show.invites_sent?
+      puts "Send the initial invites before sending invites to unopened recipients"
+      exit
+    end
+
     run_batch(show, "invite_unopened", "invite")
   end
 

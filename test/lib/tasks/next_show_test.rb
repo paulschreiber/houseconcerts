@@ -89,6 +89,7 @@ class NextShowRakeTest < ActiveSupport::TestCase
 
   test "invite_unopened excludes people who already opened an invite for the show" do
     show = shows(:upcoming)
+    BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 1, sent_count: 1)
     opened = Person.create!(first_name: "Already", last_name: "Opened", email: "opened-invite@example.com", status: "active")
     fresh = Person.create!(first_name: "Not", last_name: "Opened", email: "fresh-invite@example.com", status: "active")
     Open.create!(tag: "#{show.slug}:invite-abc", email: opened.email, open: true)
@@ -103,6 +104,19 @@ class NextShowRakeTest < ActiveSupport::TestCase
     recipients = ActionMailer::Base.deliveries.drop(before_count).flat_map(&:to)
     assert_includes recipients, fresh.email
     assert_not_includes recipients, opened.email
+  end
+
+  test "invite_unopened refuses to run before invites have been sent" do
+    show = shows(:upcoming)
+    assert_not show.invites_sent?
+    Person.create!(first_name: "Fresh", last_name: "Person", email: "invite-unopened-gate@example.com", status: "active")
+
+    out = nil
+    assert_no_emails do
+      out, = capture_io { assert_raises(SystemExit) { Rake::Task["next_show:invite_unopened"].invoke } }
+    end
+    assert_includes out, "Send the initial invites before sending invites to unopened recipients"
+    assert_equal 0, BatchRun.where(show: show, kind: "invite_unopened").count
   end
 
   test "remind emails confirmed attendees of the next show" do
