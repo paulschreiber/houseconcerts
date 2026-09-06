@@ -65,4 +65,46 @@ class StartBatchRunTest < ActiveSupport::TestCase
 
     assert_not_equal first_run.id, second_run.id
   end
+
+  test "raises a friendly EnqueueFailed instead of a raw error when perform_later itself fails" do
+    show = shows(:upcoming)
+
+    original_perform_later = BatchRunFanOutJob.method(:perform_later)
+    BatchRunFanOutJob.define_singleton_method(:perform_later) do |*_args|
+      raise SolidQueue::Job::EnqueueError, "transient boom"
+    end
+
+    begin
+      error = assert_raises(StartBatchRun::EnqueueFailed) do
+        StartBatchRun.call(show: show, kind: "invite")
+      end
+      assert_match(/try again/, error.message)
+    ensure
+      BatchRunFanOutJob.define_singleton_method(:perform_later, original_perform_later)
+    end
+
+    # The BatchRun itself is still there, pending, and recoverable -- a
+    # later call finds and resumes it instead of raising again.
+    assert_equal 1, BatchRun.where(show: show, kind: "invite", status: "pending").count
+  end
+
+  test "resuming a pending run also raises a friendly EnqueueFailed if its own perform_later fails" do
+    show = shows(:upcoming)
+    BatchRun.create!(show: show, kind: "invite", status: :pending)
+
+    original_perform_later = BatchRunFanOutJob.method(:perform_later)
+    BatchRunFanOutJob.define_singleton_method(:perform_later) do |*_args|
+      raise SolidQueue::Job::EnqueueError, "transient boom"
+    end
+
+    begin
+      assert_raises(StartBatchRun::EnqueueFailed) do
+        StartBatchRun.call(show: show, kind: "invite")
+      end
+    ensure
+      BatchRunFanOutJob.define_singleton_method(:perform_later, original_perform_later)
+    end
+
+    assert_equal 1, BatchRun.where(show: show, kind: "invite").count
+  end
 end

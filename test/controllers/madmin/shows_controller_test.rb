@@ -57,6 +57,24 @@ module Madmin
       assert_match(/Already sending invites/, flash[:alert])
     end
 
+    test "send_invites redirects with a friendly alert instead of a raw error when the fan-out job fails to enqueue" do
+      show = shows(:upcoming)
+
+      original_perform_later = BatchRunFanOutJob.method(:perform_later)
+      BatchRunFanOutJob.define_singleton_method(:perform_later) do |*_args|
+        raise SolidQueue::Job::EnqueueError, "transient boom"
+      end
+
+      begin
+        patch send_invites_madmin_show_path(show)
+      ensure
+        BatchRunFanOutJob.define_singleton_method(:perform_later, original_perform_later)
+      end
+
+      assert_redirected_to madmin_shows_path
+      assert_match(/try again/, flash[:alert])
+    end
+
     test "send_invites_unopened starts a batch run once invites have already been sent" do
       show = shows(:upcoming)
       BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 1, sent_count: 1)
@@ -330,6 +348,31 @@ module Madmin
       assert_redirected_to madmin_shows_path
       assert_match(/already in progress/, flash[:alert])
       assert old_run.reload.completed?
+    end
+
+    test "retry_failed_batch_run redirects with a friendly alert instead of a raw error when the retry fan-out job fails to enqueue" do
+      show = shows(:upcoming)
+      person = Person.create!(first_name: "Retry", last_name: "EnqueueFail", email: "retry-enqueue-fail@example.com", status: "active")
+      batch_run = BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 1, failed_count: 1, completed_at: Time.current)
+      batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
+
+      original_perform_later = BatchRunRetryFanOutJob.method(:perform_later)
+      BatchRunRetryFanOutJob.define_singleton_method(:perform_later) do |*_args|
+        raise SolidQueue::Job::EnqueueError, "transient boom"
+      end
+
+      begin
+        patch retry_failed_batch_run_madmin_show_path(show, batch_run_id: batch_run.id)
+      ensure
+        BatchRunRetryFanOutJob.define_singleton_method(:perform_later, original_perform_later)
+      end
+
+      assert_redirected_to madmin_shows_path
+      assert_match(/try again/, flash[:alert])
+      # The run itself is still correctly reopened -- the button/gate
+      # will pick this back up on a later click since they query the
+      # real failed items, not the (already-reset) counter.
+      assert batch_run.reload.running?
     end
 
     test "each batch run gets its own stream, so an older run of the same kind can't clobber a newer one's display" do

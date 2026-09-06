@@ -9,6 +9,8 @@ def run_batch(show, kind, noun)
   puts "Started sending #{noun.pluralize} for #{show.name}."
 rescue StartBatchRun::AlreadyInProgress
   puts "A #{kind} batch is already in progress for #{show.name}; not starting another."
+rescue StartBatchRun::EnqueueFailed => e
+  puts e.message
 end
 
 namespace :next_show do
