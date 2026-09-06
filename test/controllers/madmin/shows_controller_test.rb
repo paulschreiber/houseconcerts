@@ -395,6 +395,26 @@ module Madmin
       assert_no_match(/>Send Invites</, response.body)
     end
 
+    test "show page has no batch progress section for a show with no batch runs" do
+      get madmin_show_path(shows(:sold_out))
+
+      assert_response :success
+      assert_select ".batch-progress", count: 0
+    end
+
+    test "show page still shows batch history and a retry button for a show that is not the next show" do
+      show = shows(:sold_out)
+      person = Person.create!(first_name: "Retry", last_name: "PastShow", email: "retry-past-show@example.com", status: "active")
+      batch_run = BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 1, failed_count: 1, completed_at: Time.current)
+      batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
+
+      get madmin_show_path(show)
+
+      assert_response :success
+      assert_no_match(/>Send Invites</, response.body)
+      assert_select "#batch_run_progress_invite button", text: "Retry 1 failed"
+    end
+
     test "batch progress shows and subscribes to a retried older run, not a newer completed run of the same kind" do
       show = shows(:upcoming)
       person = Person.create!(first_name: "Retry", last_name: "Reopen", email: "retry-reopen@example.com", status: "active")
