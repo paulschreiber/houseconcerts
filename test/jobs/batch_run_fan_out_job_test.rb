@@ -90,7 +90,7 @@ class BatchRunFanOutJobTest < ActiveSupport::TestCase
     assert_equal 1, batch_run.batch_run_items.where(recipient: alice).count
   end
 
-  test "is a no-op if the batch run is no longer pending" do
+  test "is a no-op once the batch run has completed" do
     show = shows(:upcoming)
     Person.create!(first_name: "Alice", last_name: "Aardvark", email: "alice@example.com", status: "active")
     batch_run = BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 0, completed_at: Time.current)
@@ -100,5 +100,24 @@ class BatchRunFanOutJobTest < ActiveSupport::TestCase
     end
 
     assert_equal 0, batch_run.reload.batch_run_items.count
+  end
+
+  test "resuming after a crash between the running flip and the enqueue loop still enqueues the stranded items" do
+    show = shows(:upcoming)
+    alice = Person.create!(first_name: "Alice", last_name: "Aardvark", email: "alice-resume@example.com", status: "active")
+    bob = Person.create!(first_name: "Bob", last_name: "Zebra", email: "bob-resume@example.com", status: "active")
+    # Simulates a worker crash after status was already flipped to
+    # "running" (and both items already created) but before either job
+    # got enqueued: without resuming past the pending? guard, these two
+    # items would stay pending forever and the run would never complete.
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 2)
+    batch_run.batch_run_items.create!(recipient: alice, status: :pending)
+    batch_run.batch_run_items.create!(recipient: bob, status: :pending)
+
+    assert_enqueued_jobs 2, only: BatchRunItemJob do
+      BatchRunFanOutJob.perform_now(batch_run.id)
+    end
+
+    assert batch_run.reload.running?
   end
 end

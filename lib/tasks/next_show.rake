@@ -77,9 +77,12 @@ namespace :next_show do
       exit
     end
 
-    people = Person.active.includes(:venue_groups)
-                   .where(venue_groups: { id: Settings.default_venue_group })
-                   .where("email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)", show.id)
+    people = Person.includes(:venue_groups)
+                   .where(venue_groups: { id: Settings.default_venue_group }, status: "active")
+                   .where(
+                     "NOT EXISTS (SELECT 1 FROM rsvps WHERE rsvps.show_id = ? AND rsvps.email = people.email)",
+                     show.id
+                   )
 
     puts "Can email #{people.size} people."
   end
