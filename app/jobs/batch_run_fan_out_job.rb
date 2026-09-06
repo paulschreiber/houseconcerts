@@ -33,53 +33,49 @@ class BatchRunFanOutJob < ApplicationJob
   # reboot) and Solid Queue redelivers it, recipients are recomputed and
   # re-attempted, but an item that already exists for a given recipient
   # (per the unique index on batch_run_items) is simply skipped rather
-  # than duplicated. total_count is only set once, after every recipient
-  # has been attempted, and per-item jobs are only enqueued after that --
+  # than duplicated. Status only flips to "running" (and total_count only
+  # gets set) after every recipient has been attempted -- not before --
   # so a job that's already running can't see a stale/incomplete count
   # and mark the run "completed" too early.
   #
-  # Resumption isn't limited to the item-creation phase: if the job dies
-  # after status is already flipped to "running" but before every item
-  # got enqueued, a redelivery skips straight to re-enqueuing whatever's
-  # still pending -- it does not bail out just because status is no
-  # longer "pending". That's safe to do unconditionally (even on a
-  # non-crash redelivery) because BatchRunItemJob's claim step makes a
-  # duplicate enqueue of an already-sent item a no-op.
+  # The whole recipient-creation/total_count phase runs inside
+  # batch_run.with_lock: StartBatchRun's resume logic can enqueue a
+  # second fan-out job for the same pending run while a first one is
+  # still mid-flight (e.g. an admin re-triggering a send before the
+  # original job finished computing recipients), and without a real
+  # mutual-exclusion lock, both executions could interleave -- one
+  # racing ahead to enqueue per-item jobs against a total_count that's
+  # still 0, completing the run before the other has finished creating
+  # every recipient. with_lock (SELECT ... FOR UPDATE) makes a second,
+  # truly concurrent execution block until the first's transaction
+  # commits or rolls back, rather than observe a half-finished snapshot.
+  # If the winner dies before committing, the whole transaction rolls
+  # back -- no partial items, status still "pending" -- so a later
+  # attempt (this same execution retried, or a blocked second one
+  # resuming) redoes the entire phase from scratch, safely deduped.
   def perform(batch_run_id)
     batch_run = BatchRun.find(batch_run_id)
     return if batch_run.completed?
 
-    if batch_run.pending?
-      # Atomic claim, not just a pending? boolean check: StartBatchRun's
-      # resume logic can enqueue a second fan-out job for the same
-      # pending run while a first one is still mid-flight (e.g. an admin
-      # re-triggering a send before the original job has finished
-      # computing recipients). Without this, both executions could pass
-      # the pending? check, independently create items and each compute
-      # their own total_count, and race setting status/total_count --
-      # the run's correctness depends on only one execution ever doing
-      # this phase. update_all here only succeeds for whichever
-      # execution gets there first; the loser falls through to the
-      # final re-scan below, same as any other resumed execution.
-      claimed = BatchRun.where(id: batch_run_id, status: "pending")
-                        .update_all(status: "running", started_at: Time.current) == 1 # rubocop:disable Rails/SkipsModelValidations
+    batch_run.with_lock do
+      next unless batch_run.pending?
 
-      if claimed
-        recipients_for(batch_run).each do |recipient|
-          batch_run.batch_run_items.create!(recipient: recipient, status: :pending)
-        rescue ActiveRecord::RecordNotUnique
-          next
-        end
+      recipients_for(batch_run).each do |recipient|
+        batch_run.batch_run_items.create!(recipient: recipient, status: :pending)
+      rescue ActiveRecord::RecordNotUnique
+        next
+      end
 
-        total_count = batch_run.batch_run_items.count
-        batch_run.update!(total_count: total_count)
+      total_count = batch_run.batch_run_items.count
 
-        if total_count.zero?
-          batch_run.update!(status: :completed, completed_at: Time.current)
-          return
-        end
+      if total_count.zero?
+        batch_run.update!(status: :completed, total_count: total_count, completed_at: Time.current)
+      else
+        batch_run.update!(status: :running, total_count: total_count, started_at: Time.current)
       end
     end
+
+    return if batch_run.completed?
 
     batch_run.batch_run_items.pending.find_each { |item| BatchRunItemJob.perform_later(item.id) }
   end

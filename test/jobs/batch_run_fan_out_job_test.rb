@@ -182,38 +182,59 @@ class BatchRunFanOutJobTest < ActiveSupport::TestCase
     end
   end
 
-  test "an atomic claim lets only one of two racing pending->running transitions succeed" do
+  test "does not recreate items or touch total_count if the recipient phase already completed" do
     show = shows(:upcoming)
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "pending")
-
-    # Simulates two BatchRunFanOutJob executions racing on the same
-    # pending run (e.g. StartBatchRun's resume logic re-enqueuing while
-    # the first job is still mid-flight): only one update_all can ever
-    # match status: "pending" and flip it.
-    first_claimed = BatchRun.where(id: batch_run.id, status: "pending").update_all(status: "running", started_at: Time.current) # rubocop:disable Rails/SkipsModelValidations
-    second_claimed = BatchRun.where(id: batch_run.id, status: "pending").update_all(status: "running", started_at: Time.current) # rubocop:disable Rails/SkipsModelValidations
-
-    assert_equal 1, first_claimed
-    assert_equal 0, second_claimed
-  end
-
-  test "a fan-out execution that loses the claim race falls through without touching total_count or creating items" do
-    show = shows(:upcoming)
-    Person.create!(first_name: "Alice", last_name: "Aardvark", email: "alice-race@example.com", status: "active")
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "pending")
-
-    # Simulates a concurrent execution having already won the claim by
-    # the time this one runs its own pending? check.
-    BatchRun.where(id: batch_run.id, status: "pending").update_all(status: "running", started_at: Time.current) # rubocop:disable Rails/SkipsModelValidations
+    alice = Person.create!(first_name: "Alice", last_name: "Aardvark", email: "alice-done@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    batch_run.batch_run_items.create!(recipient: alice, status: :sent, sent_at: Time.current)
 
     assert_no_enqueued_jobs only: BatchRunItemJob do
       BatchRunFanOutJob.perform_now(batch_run.id)
     end
 
     batch_run.reload
-    assert batch_run.running?
-    assert_equal 0, batch_run.total_count
+    assert_equal 1, batch_run.total_count
+    assert_equal 1, batch_run.batch_run_items.count
+  end
+
+  test "a failure anywhere during the recipient snapshot rolls back the whole transaction, not just part of it" do
+    show = shows(:upcoming)
+    Person.create!(first_name: "Alice", last_name: "Aardvark", email: "alice-rollback@example.com", status: "active")
+    Person.create!(first_name: "Bob", last_name: "Zebra", email: "bob-rollback@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "pending")
+
+    # Simulates a crash/transient failure on the very last write of the
+    # recipient-snapshot phase, after both items were already created
+    # (within the same still-open transaction). The whole thing must
+    # roll back together -- unlike the old design, where each create!
+    # committed individually and durably regardless of what happened
+    # next -- so a retry can safely redo the entire phase from scratch
+    # instead of finding a half-finished snapshot.
+    BatchRun.class_eval do
+      alias_method :original_update_for_test, :update!
+      define_method(:update!) { |*_args, **_kwargs| raise "simulated failure finalizing the snapshot" }
+    end
+
+    begin
+      assert_raises(RuntimeError) do
+        BatchRunFanOutJob.perform_now(batch_run.id)
+      end
+    ensure
+      BatchRun.class_eval do
+        remove_method :update!
+        alias_method :update!, :original_update_for_test
+        remove_method :original_update_for_test
+      end
+    end
+
+    batch_run.reload
+    assert batch_run.pending?
     assert_equal 0, batch_run.batch_run_items.count
+
+    assert_enqueued_jobs 2, only: BatchRunItemJob do
+      BatchRunFanOutJob.perform_now(batch_run.id)
+    end
+    assert_equal 2, batch_run.reload.total_count
   end
 
   test "a genuine bug is not retried -- it raises immediately instead of retrying against a job that will never fix itself" do
