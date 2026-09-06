@@ -16,14 +16,32 @@ class StartBatchRunTest < ActiveSupport::TestCase
     assert_equal 0, batch_run.total_count
   end
 
-  test "starting invite again while the first run is still in progress raises instead of double-sending" do
+  test "starting invite again while the first run is genuinely running raises instead of double-sending" do
     show = shows(:upcoming)
     first_run = StartBatchRun.call(show: show, kind: "invite")
-    assert first_run.pending?
+    first_run.update!(status: :running)
 
     assert_raises(StartBatchRun::AlreadyInProgress) do
       StartBatchRun.call(show: show, kind: "invite")
     end
+    assert_equal 1, BatchRun.where(show: show, kind: "invite").count
+  end
+
+  test "starting invite again while the first run is still pending re-enqueues its fan-out job instead of raising" do
+    show = shows(:upcoming)
+    # Simulates the first attempt's own BatchRunFanOutJob.perform_later
+    # having silently failed to enqueue: the run exists and is still
+    # pending, but no job was ever queued for it.
+    first_run = BatchRun.create!(show: show, kind: "invite", status: :pending)
+
+    second_run = nil
+    assert_enqueued_with(job: BatchRunFanOutJob, args: [ first_run.id ]) do
+      assert_nothing_raised do
+        second_run = StartBatchRun.call(show: show, kind: "invite")
+      end
+    end
+
+    assert_equal first_run.id, second_run.id
     assert_equal 1, BatchRun.where(show: show, kind: "invite").count
   end
 
