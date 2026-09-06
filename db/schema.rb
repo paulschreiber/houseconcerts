@@ -77,6 +77,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_171112) do
 
   create_table "batch_run_items", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "batch_run_id", null: false
+    t.datetime "counted_at"
     t.datetime "created_at", null: false
     t.datetime "email_sent_at"
     t.string "error_message"
