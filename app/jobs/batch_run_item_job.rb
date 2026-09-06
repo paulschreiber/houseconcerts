@@ -36,7 +36,13 @@ class BatchRunItemJob < ApplicationJob
       # message that may have already gone out. A transient failure
       # writing this outcome shouldn't be able to do that; it should
       # only ever retry the write itself.
-      with_transient_retries(item: item, label: "marking it failed") { item.update!(status: :failed, error_message: e.message) }
+      # sent_at is cleared here too, not just status/error_message: claim()
+      # sets it unconditionally before send_to runs (it's really "claimed
+      # at", not "delivered at"), so a failed item would otherwise keep a
+      # real timestamp in a column named sent_at despite never having
+      # been delivered -- misleading for anything that trusts
+      # "sent_at IS NOT NULL" as "this was actually sent."
+      with_transient_retries(item: item, label: "marking it failed") { item.update!(status: :failed, error_message: e.message, sent_at: nil) }
     end
 
     record_progress(item)
@@ -102,7 +108,15 @@ class BatchRunItemJob < ApplicationJob
       when "invite", "invite_unopened"
         raise InvalidRecipient, "#{recipient.email} is no longer active" unless recipient.active?
 
-        InvitesMailer.invite(recipient, batch_run.show).deliver_now
+        # batch_run.kind ("invite" or "invite_unopened") is passed through
+        # as the tracking tag's email_type so opens from the two kinds are
+        # distinguishable (rake next_show:opens, etc.) instead of both
+        # recording as a plain "invite" open. BatchRunFanOutJob's
+        # invite_unopened exclusion query (NOT EXISTS ... tag LIKE
+        # "#{slug}:invite%") still matches "invite_unopened" via that
+        # prefix, so this doesn't change who gets excluded from a future
+        # invite_unopened send.
+        InvitesMailer.invite(recipient, batch_run.show, batch_run.kind).deliver_now
       when "remind"
         remind(item, recipient)
       end
