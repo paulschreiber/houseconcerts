@@ -41,29 +41,21 @@ class NextShowRakeTest < ActiveSupport::TestCase
     assert_equal 1, BatchRun.where(show: show, kind: "invite").count
   end
 
-  test "invite reports failed sends separately from successful ones" do
-    ok_person = Person.create!(first_name: "Ok", last_name: "Person", email: "ok-invite@example.com", status: "active")
-    bad_person = Person.create!(first_name: "Bad", last_name: "Person", email: "bad-invite@example.com", status: "active")
+  test "invite prints a friendly message instead of a stack trace when the fan-out job fails to enqueue" do
+    Person.create!(first_name: "New", last_name: "Person", email: "invite-enqueue-fail@example.com", status: "active")
 
-    original_invite = InvitesMailer.method(:invite)
-    InvitesMailer.define_singleton_method(:invite) do |person, show, *rest|
-      raise Net::SMTPServerBusy, "simulated" if person.email == bad_person.email
-
-      original_invite.call(person, show, *rest)
+    original_perform_later = BatchRunFanOutJob.method(:perform_later)
+    BatchRunFanOutJob.define_singleton_method(:perform_later) do |*_args|
+      raise SolidQueue::Job::EnqueueError, "transient boom"
     end
 
-    out = nil
     begin
-      assert_emails 1 do
-        out, = capture_io { Rake::Task["next_show:invite"].invoke }
-      end
+      out, = capture_io { Rake::Task["next_show:invite"].invoke }
     ensure
-      InvitesMailer.define_singleton_method(:invite, original_invite)
+      BatchRunFanOutJob.define_singleton_method(:perform_later, original_perform_later)
     end
 
-    assert_includes out, ok_person.email_address_with_name
-    assert_includes out, "Failed to email #{bad_person.email_address_with_name}"
-    assert_includes out, "Sent 1 email, 1 failed."
+    assert_includes out, "try again"
   end
 
   test "invite excludes people who already RSVPd for the show" do
