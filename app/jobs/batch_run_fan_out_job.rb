@@ -6,12 +6,15 @@ class BatchRunFanOutJob < ApplicationJob
   # logic (which only resumes "pending" runs) nor active_kind_lock (which
   # blocks starting a fresh one) provide a way out. Safe to retry in full
   # regardless of where it died, per the resumability described below.
-  # ArgumentError (an unknown kind) is a real bug, not a transient
-  # failure -- registered after retry_on so it's checked first (handlers
-  # match in reverse registration order) and fails immediately instead of
-  # retrying 5 times against an error that will never resolve itself.
-  retry_on StandardError, wait: :polynomially_longer, attempts: 5
-  discard_on ArgumentError
+  #
+  # Scoped to ActiveRecord::AdapterError -- "Superclass for all errors
+  # raised from an Active Record adapter" (connection drops, deadlocks,
+  # lock/statement timeouts) -- rather than bare StandardError. A real
+  # bug (NoMethodError, an unknown kind, a bad query) would just get
+  # retried 5 times against something that can never resolve itself
+  # before finally surfacing; scoping to adapter errors means genuine
+  # bugs still fail immediately and loudly.
+  retry_on ActiveRecord::AdapterError, wait: :polynomially_longer, attempts: 5
 
   # Populates a BatchRun's items and enqueues their per-item jobs. Kept
   # separate from StartBatchRun (which just creates the BatchRun row) so

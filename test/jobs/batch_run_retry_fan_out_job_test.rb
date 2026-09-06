@@ -46,7 +46,7 @@ class BatchRunRetryFanOutJobTest < ActiveSupport::TestCase
     assert_enqueued_with(job: BatchRunItemJob, args: [ item_b.id ])
   end
 
-  test "retries the whole job instead of leaving failures unenqueued if a per-item enqueue raises" do
+  test "retries the whole job instead of leaving failures unenqueued if a per-item enqueue raises a transient adapter error" do
     show = shows(:upcoming)
     person = Person.create!(first_name: "Retry", last_name: "Transient", email: "retry-fanout-transient@example.com", status: "active")
     batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1, failed_count: 0)
@@ -54,7 +54,7 @@ class BatchRunRetryFanOutJobTest < ActiveSupport::TestCase
 
     original_perform_later = BatchRunItemJob.method(:perform_later)
     BatchRunItemJob.define_singleton_method(:perform_later) do |*_args|
-      raise "transient enqueue failure"
+      raise ActiveRecord::ConnectionTimeoutError, "transient enqueue failure"
     end
 
     begin
@@ -70,5 +70,27 @@ class BatchRunRetryFanOutJobTest < ActiveSupport::TestCase
     # Nothing about the underlying item changed -- it's still there for
     # the retried job to find and enqueue.
     assert item.reload.failed?
+  end
+
+  test "a genuine bug is not retried -- it raises immediately instead of retrying against a job that will never fix itself" do
+    show = shows(:upcoming)
+    person = Person.create!(first_name: "Retry", last_name: "Buggy", email: "retry-fanout-bug@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1, failed_count: 0)
+    batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
+
+    original_perform_later = BatchRunItemJob.method(:perform_later)
+    BatchRunItemJob.define_singleton_method(:perform_later) do |*_args|
+      raise NoMethodError, "undefined method (simulated code bug, not a transient adapter error)"
+    end
+
+    begin
+      assert_no_enqueued_jobs only: BatchRunRetryFanOutJob do
+        assert_raises(NoMethodError) do
+          BatchRunRetryFanOutJob.perform_now(batch_run.id)
+        end
+      end
+    ensure
+      BatchRunItemJob.define_singleton_method(:perform_later, original_perform_later)
+    end
   end
 end

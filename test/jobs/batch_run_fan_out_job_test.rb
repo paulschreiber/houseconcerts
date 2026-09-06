@@ -121,7 +121,7 @@ class BatchRunFanOutJobTest < ActiveSupport::TestCase
     assert batch_run.reload.running?
   end
 
-  test "retries the whole job instead of leaving the run stuck if enqueuing a per-item job raises" do
+  test "retries the whole job instead of leaving the run stuck if enqueuing a per-item job raises a transient adapter error" do
     show = shows(:upcoming)
     Person.create!(first_name: "Alice", last_name: "Aardvark", email: "alice-transient@example.com", status: "active")
     batch_run = BatchRun.create!(show: show, kind: "invite", status: "pending")
@@ -130,7 +130,7 @@ class BatchRunFanOutJobTest < ActiveSupport::TestCase
     original_perform_later = BatchRunItemJob.method(:perform_later)
     BatchRunItemJob.define_singleton_method(:perform_later) do |*args|
       call_count += 1
-      raise "transient enqueue failure" if call_count == 1
+      raise ActiveRecord::ConnectionTimeoutError, "transient enqueue failure" if call_count == 1
 
       original_perform_later.call(*args)
     end
@@ -152,5 +152,26 @@ class BatchRunFanOutJobTest < ActiveSupport::TestCase
     assert batch_run.running?
     assert_equal 1, batch_run.total_count
     assert_equal 1, batch_run.batch_run_items.pending.count
+  end
+
+  test "a genuine bug is not retried -- it raises immediately instead of retrying against a job that will never fix itself" do
+    show = shows(:upcoming)
+    Person.create!(first_name: "Alice", last_name: "Aardvark", email: "alice-bug@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "pending")
+
+    original_perform_later = BatchRunItemJob.method(:perform_later)
+    BatchRunItemJob.define_singleton_method(:perform_later) do |*_args|
+      raise NoMethodError, "undefined method (simulated code bug, not a transient adapter error)"
+    end
+
+    begin
+      assert_no_enqueued_jobs only: BatchRunFanOutJob do
+        assert_raises(NoMethodError) do
+          BatchRunFanOutJob.perform_now(batch_run.id)
+        end
+      end
+    ensure
+      BatchRunItemJob.define_singleton_method(:perform_later, original_perform_later)
+    end
   end
 end
