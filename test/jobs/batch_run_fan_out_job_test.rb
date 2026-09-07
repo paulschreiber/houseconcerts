@@ -123,6 +123,37 @@ class BatchRunFanOutJobTest < ActiveSupport::TestCase
     assert batch_run.reload.running?
   end
 
+  test "enqueues a failed item once an admin's retry has reset its claim" do
+    show = shows(:upcoming)
+    person = Person.create!(first_name: "Retry", last_name: "Reset", email: "retry-reset-claim@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    # Mirrors what Madmin::ShowsController#retry_failed_batch_run does:
+    # leaves the item "failed" but clears its claim.
+    item = batch_run.batch_run_items.create!(recipient: person, status: :failed, error_message: "boom", fan_out_enqueued_at: nil)
+
+    assert_enqueued_with(job: BatchRunItemJob, args: [ item.id ]) do
+      BatchRunFanOutJob.perform_now(batch_run.id)
+    end
+  end
+
+  test "does not enqueue a failed item whose claim was never reset, even if it's old" do
+    show = shows(:upcoming)
+    person = Person.create!(first_name: "Genuine", last_name: "Failure", email: "genuine-failure-no-retry@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    # A genuinely failed item's claim is never reset except by an
+    # explicit retry -- unlike a pending item, staleness alone must not
+    # make it eligible again, or this job being redelivered/resumed for
+    # an unrelated reason could silently re-attempt a failure no admin
+    # ever asked to retry.
+    item = batch_run.batch_run_items.create!(recipient: person, status: :failed, error_message: "boom", fan_out_enqueued_at: 1.day.ago)
+
+    assert_no_enqueued_jobs only: BatchRunItemJob do
+      BatchRunFanOutJob.perform_now(batch_run.id)
+    end
+
+    assert_equal 1.day.ago.to_i, item.reload.fan_out_enqueued_at.to_i
+  end
+
   test "retries the whole job instead of leaving the run stuck if enqueuing a per-item job raises Solid Queue's EnqueueError" do
     show = shows(:upcoming)
     Person.create!(first_name: "Alice", last_name: "Aardvark", email: "alice-transient@example.com", status: "active")

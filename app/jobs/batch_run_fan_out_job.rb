@@ -1,5 +1,16 @@
 class BatchRunFanOutJob < ApplicationJob
-  include ClaimsBatchRunItemsForEnqueue
+  # How long enqueue_unresolved_items's per-item claim is trusted before
+  # it's treated as abandoned. A crash between claiming an item (setting
+  # fan_out_enqueued_at) and actually calling perform_later for it right
+  # after (process kill, OOM -- not a raised exception, which the rescue
+  # in enqueue_item already handles) leaves an item claimed but never
+  # actually enqueued, with nothing to redeliver: no BatchRunItemJob was
+  # ever created to retry. Set high enough that it can never fire
+  # against an item that's merely still being *sent* by a genuinely
+  # in-flight job (a live mail/SMS delivery taking a while) -- the gap a
+  # claim actually needs to survive is the single method call between
+  # the two lines in enqueue_item, not the send itself.
+  STRANDED_CLAIM_AGE = 10.minutes
 
   # Without this, an exception raised mid-run (e.g. a transient DB error
   # while creating an item or enqueuing a BatchRunItemJob) would fail this
@@ -30,6 +41,15 @@ class BatchRunFanOutJob < ApplicationJob
   # this slow part -- computing recipients and doing up to one insert +
   # one enqueue per recipient -- runs in the background instead of
   # blocking the admin's request.
+  #
+  # Also what Madmin::ShowsController#retry_failed_batch_run enqueues:
+  # once it's reopened the run to "running" and reset the failed items'
+  # claims (but deliberately left them "failed" -- see its own comment
+  # for why), this job's own pending? guard below correctly skips the
+  # recipient-snapshot phase (nothing to snapshot again) and falls
+  # straight through to enqueue_unresolved_items, whose scan includes
+  # "failed" for exactly this reason -- no separate retry-specific job
+  # needed.
   #
   # Resumable: if this job dies partway through (worker crash, deploy,
   # reboot) and Solid Queue redelivers it, recipients are recomputed and
@@ -94,18 +114,55 @@ class BatchRunFanOutJob < ApplicationJob
 
     return if batch_run.completed?
 
-    enqueue_pending_items(batch_run)
+    enqueue_unresolved_items(batch_run)
   end
 
   private
 
+    def claimable(scope)
+      scope.where("fan_out_enqueued_at IS NULL OR fan_out_enqueued_at < ?", STRANDED_CLAIM_AGE.ago)
+    end
+
     # Two fan-out executions can both reach here (e.g. one that just
     # finished the snapshot, and another that lost the with_lock race
-    # and fell through with nothing left to do there) -- see
-    # ClaimsBatchRunItemsForEnqueue for why each item still needs its
-    # own claim before being enqueued.
-    def enqueue_pending_items(batch_run)
+    # and fell through with nothing left to do there; or an original
+    # fan-out racing a retry of the same run) -- without a claim, both
+    # could enqueue a BatchRunItemJob for the same item. A duplicate
+    # enqueue of a still-unresolved item is harmless on its own
+    # (BatchRunItemJob's own claim makes the second one a no-op), but if
+    # the first duplicate's send fails, the item becomes "failed" -- a
+    # status deliberately left reclaimable for admin retries -- so an
+    # unclaimed second duplicate could then resend it automatically.
+    def enqueue_unresolved_items(batch_run)
       claimable(batch_run.batch_run_items.pending).find_each { |item| enqueue_item(item) }
+
+      # Failed items are scanned separately, and strictly by
+      # fan_out_enqueued_at: nil -- no staleness fallback, unlike
+      # pending items above. A failed item's own claim only ever gets
+      # reset to nil by an admin's explicit retry_failed_batch_run
+      # click (which resets it unconditionally, regardless of age), so
+      # requiring exactly that means this job being redelivered or
+      # resumed for an unrelated reason (this run's own crash recovery)
+      # can never silently re-attempt a genuine failure the admin never
+      # asked to retry -- it can only pick up ones an admin explicitly
+      # did.
+      batch_run.batch_run_items.failed.where(fan_out_enqueued_at: nil).find_each { |item| enqueue_item(item) }
+    end
+
+    # If perform_later itself raises, the claim is released so a later
+    # attempt (this job's own retry_on, or a resumed execution) doesn't
+    # skip the item forever.
+    def enqueue_item(item)
+      claimed = claimable(BatchRunItem.where(id: item.id))
+                .update_all(fan_out_enqueued_at: Time.current) == 1 # rubocop:disable Rails/SkipsModelValidations
+      return unless claimed
+
+      begin
+        BatchRunItemJob.perform_later(item.id)
+      rescue StandardError
+        BatchRunItem.where(id: item.id).update_all(fan_out_enqueued_at: nil) # rubocop:disable Rails/SkipsModelValidations
+        raise
+      end
     end
 
     def recipients_for(batch_run)
