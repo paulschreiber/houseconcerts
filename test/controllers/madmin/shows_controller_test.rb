@@ -352,6 +352,41 @@ module Madmin
       assert old_run.reload.completed?
     end
 
+    test "retry_failed_batch_run does not reopen a run that was cancelled concurrently after being read" do
+      show = shows(:upcoming)
+      person = Person.create!(first_name: "Retry", last_name: "CancelledRace", email: "retry-cancelled-race@example.com", status: "active")
+      batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 2, sent_count: 1)
+      item = batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
+
+      # Simulates a concurrent cancel_batch_run completing the run
+      # between this request's read of batch_run (at the top of the
+      # action) and its later conditional write -- hooked onto #kind,
+      # which the controller calls on its own freshly-loaded instance
+      # early on, well before that write.
+      triggered = false
+      original_kind = BatchRun.instance_method(:kind)
+      BatchRun.define_method(:kind) do
+        unless triggered
+          triggered = true
+          BatchRun.where(id: id).update_all(status: BatchRun.statuses[:completed], completed_at: Time.current) # rubocop:disable Rails/SkipsModelValidations
+        end
+        original_kind.bind(self).call
+      end
+
+      begin
+        assert_no_enqueued_jobs do
+          patch retry_failed_batch_run_madmin_show_path(show, batch_run_id: batch_run.id)
+        end
+      ensure
+        BatchRun.define_method(:kind, original_kind)
+      end
+
+      assert_redirected_to madmin_show_path(show)
+      assert_match(/status just changed/, flash[:alert])
+      assert batch_run.reload.completed?, "the concurrent cancellation must win, not be silently overwritten back to running"
+      assert item.reload.failed?, "the failed item must not have been touched by a retry that should have been rejected"
+    end
+
     test "retry_failed_batch_run redirects with a friendly alert instead of a raw error when the retry fan-out job fails to enqueue" do
       show = shows(:upcoming)
       person = Person.create!(first_name: "Retry", last_name: "EnqueueFail", email: "retry-enqueue-fail@example.com", status: "active")
