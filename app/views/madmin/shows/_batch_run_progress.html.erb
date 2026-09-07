@@ -1,11 +1,11 @@
 <%# The running-state failed count/button below is queried live rather
-    than trusting batch_run.failed_count: a prior retry's enqueue of
-    BatchRunRetryFanOutJob could have itself failed after this run's
-    counters were already reset to failed_count: 0, which would hide
-    still-genuinely-failed items from an admin with no way to retry
-    them. The completed-state count doesn't need this -- it's only ever
-    set via record_progress's guarded atomic transition, so it's always
-    accurate. %>
+    than trusting batch_run.failed_count: that cached column is only
+    ever refreshed as part of some item's own record_progress call, so
+    a batch_run row read at just the wrong moment (e.g. right after an
+    item fails, before its own recompute reaches this field) could
+    still show a stale count here. The completed-state count doesn't
+    need this -- once a run is completed, nothing changes its counters
+    again, so it's always accurate by then. %>
 <div id="batch_run_progress_<%= batch_run.kind %>" class="batch-progress-status">
   <% if batch_run.completed? %>
     <%= batch_run.sent_count %> sent<% if batch_run.failed_count.positive? %>, <%= batch_run.failed_count %> failed<% end %> (complete)
