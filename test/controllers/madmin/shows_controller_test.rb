@@ -255,7 +255,7 @@ module Madmin
       batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1, failed_count: 0)
       batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
 
-      assert_enqueued_with(job: BatchRunRetryFanOutJob, args: [ batch_run.id ]) do
+      assert_enqueued_with(job: BatchRunFanOutJob, args: [ batch_run.id ]) do
         patch retry_failed_batch_run_madmin_show_path(show, batch_run_id: batch_run.id)
       end
 
@@ -269,7 +269,7 @@ module Madmin
       batch_run = BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 1, failed_count: 1, completed_at: Time.current)
       batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
 
-      assert_enqueued_with(job: BatchRunRetryFanOutJob, args: [ batch_run.id ]) do
+      assert_enqueued_with(job: BatchRunFanOutJob, args: [ batch_run.id ]) do
         patch retry_failed_batch_run_madmin_show_path(show, batch_run_id: batch_run.id)
       end
 
@@ -280,19 +280,45 @@ module Madmin
       assert_match(/Retrying 1 failed invites/, flash[:notice])
     end
 
-    test "retry_failed_batch_run resets failed_count so the run doesn't look complete before the retries resolve" do
+    test "retry_failed_batch_run recovers an item stranded by a crash during an earlier retry attempt" do
+      show = shows(:upcoming)
+      person = Person.create!(first_name: "Retry", last_name: "Stranded", email: "retry-stranded-claim@example.com", status: "active")
+      batch_run = BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 1, failed_count: 1, completed_at: Time.current)
+      # Simulates a worker crashing between an earlier retry attempt
+      # claiming this item (setting fan_out_enqueued_at) and actually
+      # enqueueing a BatchRunItemJob for it -- unlike a "pending" item's
+      # equivalent stranded claim, this one is never picked up
+      # automatically by staleness alone (see BatchRunFanOutJob), so a
+      # fresh admin retry click, which resets it unconditionally, is
+      # what has to recover it.
+      item = batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom", fan_out_enqueued_at: 1.day.ago)
+
+      assert_enqueued_with(job: BatchRunItemJob, args: [ item.id ]) do
+        perform_enqueued_jobs(only: BatchRunFanOutJob) do
+          patch retry_failed_batch_run_madmin_show_path(show, batch_run_id: batch_run.id)
+        end
+      end
+    end
+
+    test "retry_failed_batch_run resets counted_at so the run doesn't look complete before the retries resolve" do
       show = shows(:upcoming)
       person_a = Person.create!(first_name: "Retry", last_name: "Aardvark", email: "retry-a@example.com", status: "active")
       person_b = Person.create!(first_name: "Retry", last_name: "Baboon", email: "retry-b@example.com", status: "active")
       batch_run = BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 2, failed_count: 2, completed_at: Time.current)
-      batch_run.batch_run_items.create!(recipient: person_a, status: "failed", error_message: "boom")
-      batch_run.batch_run_items.create!(recipient: person_b, status: "failed", error_message: "boom")
+      item_a = batch_run.batch_run_items.create!(recipient: person_a, status: "failed", error_message: "boom", counted_at: 1.hour.ago)
+      item_b = batch_run.batch_run_items.create!(recipient: person_b, status: "failed", error_message: "boom", counted_at: 1.hour.ago)
 
       patch retry_failed_batch_run_madmin_show_path(show, batch_run_id: batch_run.id)
 
       batch_run.reload
       assert batch_run.running?
-      assert_equal 0, batch_run.failed_count, "failed_count must be reset so a single resolved retry can't look like the whole run finished"
+      # Deliberately still "failed", not reset to "pending": if the
+      # retry's own fan-out enqueue below had failed, that's what lets
+      # the retry button/gate find these again on a later click.
+      assert item_a.reload.failed?
+      assert item_b.reload.failed?
+      assert_nil item_a.counted_at, "counted_at must be reset so a still-outstanding retry doesn't look already-counted"
+      assert_nil item_b.counted_at
     end
 
     test "retry_failed_batch_run refuses a batch_run_id that doesn't belong to this show instead of raising" do
@@ -326,7 +352,7 @@ module Madmin
       old_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
       BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 1, sent_count: 1, completed_at: Time.current)
 
-      assert_enqueued_with(job: BatchRunRetryFanOutJob, args: [ old_run.id ]) do
+      assert_enqueued_with(job: BatchRunFanOutJob, args: [ old_run.id ]) do
         patch retry_failed_batch_run_madmin_show_path(show, batch_run_id: old_run.id)
       end
 
@@ -393,15 +419,15 @@ module Madmin
       batch_run = BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 1, failed_count: 1, completed_at: Time.current)
       batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
 
-      original_perform_later = BatchRunRetryFanOutJob.method(:perform_later)
-      BatchRunRetryFanOutJob.define_singleton_method(:perform_later) do |*_args|
+      original_perform_later = BatchRunFanOutJob.method(:perform_later)
+      BatchRunFanOutJob.define_singleton_method(:perform_later) do |*_args|
         raise SolidQueue::Job::EnqueueError, "transient boom"
       end
 
       begin
         patch retry_failed_batch_run_madmin_show_path(show, batch_run_id: batch_run.id)
       ensure
-        BatchRunRetryFanOutJob.define_singleton_method(:perform_later, original_perform_later)
+        BatchRunFanOutJob.define_singleton_method(:perform_later, original_perform_later)
       end
 
       assert_redirected_to madmin_show_path(show)
