@@ -21,13 +21,10 @@ module Madmin
       # run and strand this run's failures with no way to retry them.
       batch_run = @record.batch_runs.find_by(id: params.require(:batch_run_id))
       kind_label = batch_run ? BatchRun.kind_label(batch_run.kind).downcase : "batch"
-      # Queried live, not read off batch_run.failed_count: if a previous
-      # retry's enqueue of BatchRunRetryFanOutJob itself failed after
-      # this run's counters were already reset, failed_count would say 0
-      # while these items are still genuinely failed. Gating on the real
-      # rows (not the aggregate counter) means that case self-heals --
-      # the button and this check still see the failures and allow
-      # retrying again -- instead of silently stranding them forever.
+      # Queried live, not read off any cached counter: if a previous
+      # retry's own enqueue failed partway through, this still sees
+      # whatever's genuinely still "failed" and lets retrying again --
+      # instead of silently stranding some of them forever.
       failed_items = batch_run&.batch_run_items&.failed
 
       if batch_run.nil? || failed_items.none?
@@ -39,24 +36,15 @@ module Madmin
       kind = batch_run.kind
 
       # Reopen the run so its progress bar shows again while the retries
-      # are in flight -- BatchRunItemJob flips it back to completed once
-      # every item (including these) has resolved again. failed_count is
-      # reset to 0 (not left at its old value) because every failed item
-      # is being retried here, and BatchRunItemJob#record_progress counts
-      # each one fresh as it resolves -- without this reset,
-      # processed_count would already equal total_count the instant the
-      # run reopens, and the very first retried item to finish would
-      # falsely flip the run back to "completed" while its siblings were
-      # still in flight.
-      #
-      # Conditioned on status still matching what was read above, not a
-      # blind write: without this, a concurrent cancel_batch_run
-      # completing the run between that read and this write would get
-      # silently overwritten back to "running" -- reopening, and then
-      # actually retrying, a batch the admin had just cancelled.
+      # are in flight. Conditioned on status still matching what was
+      # read above, not a blind write: without this, a concurrent
+      # cancel_batch_run completing the run between that read and this
+      # write would get silently overwritten back to "running" --
+      # reopening, and then actually retrying, a batch the admin had
+      # just cancelled.
       begin
         reopened = BatchRun.where(id: batch_run.id, status: batch_run.status)
-                           .update_all(status: BatchRun.statuses[:running], completed_at: nil, failed_count: 0) == 1 # rubocop:disable Rails/SkipsModelValidations
+                           .update_all(status: BatchRun.statuses[:running], completed_at: nil) == 1 # rubocop:disable Rails/SkipsModelValidations
       rescue ActiveRecord::RecordNotUnique
         # active_kind_lock only allows one non-completed run per show+kind
         # at a time -- reopening this (older) run collides if a newer run
@@ -72,28 +60,34 @@ module Madmin
         return
       end
 
-      # counted_at mirrors failed_count's reset, per item: it's what
-      # BatchRunItemJob#record_progress checks to decide whether an
-      # item's resolution still needs counting, so without this reset
-      # a retried item's fresh resolution would look already-counted
-      # and never update failed_count/sent_count at all. fan_out_enqueued_at
-      # is reset alongside it so BatchRunRetryFanOutJob's own claim can
-      # enqueue these items again -- it's still set from their first,
-      # now-failed attempt.
+      # Deliberately left "failed", not reset to "pending": if
+      # BatchRunFanOutJob.perform_later below itself fails to enqueue,
+      # these items staying "failed" is what lets the retry button/gate
+      # (which query .failed) find and offer them again on a later
+      # click. counted_at is reset so BatchRunItemJob#record_progress's
+      # live recount excludes them until they actually resolve again --
+      # without it, processed_count would already equal total_count the
+      # instant the run reopens, before any retry has run.
+      # fan_out_enqueued_at is reset alongside it since it's still set
+      # from their first, now-failed attempt.
       failed_items.update_all(counted_at: nil, fan_out_enqueued_at: nil) # rubocop:disable Rails/SkipsModelValidations
 
-      # Handed off to a job (not looped inline here) so a crash partway
-      # through enqueuing doesn't strand the remaining failed items --
-      # see BatchRunRetryFanOutJob for why that's resumable.
+      # Handed off to BatchRunFanOutJob -- not a separate retry-specific
+      # job -- so a crash partway through enqueuing doesn't strand the
+      # remaining failed items: its own pending? guard already skips the
+      # recipient-snapshot phase for a non-"pending" run and falls
+      # straight through to re-scanning for unresolved items, which
+      # includes these (see its own comment for why "failed" is in that
+      # scan at all).
       begin
-        BatchRunRetryFanOutJob.perform_later(batch_run.id)
+        BatchRunFanOutJob.perform_later(batch_run.id)
       rescue ActiveRecord::AdapterError, SolidQueue::Job::EnqueueError
         # Solid Queue raises synchronously, at the point perform_later is
         # called, not later in a worker -- so a transient DB problem here
         # would otherwise surface as a raw 500. The run itself is fine
-        # (failed_count is already reset and the failed items are still
-        # there), so clicking Retry again picks up right where this left
-        # off -- the button/gate query the real items, not this counter.
+        # (failed_items are still "failed" and untouched otherwise), so
+        # clicking Retry again picks up right where this left off -- the
+        # button/gate query the real items, not a cached counter.
         redirect_back_or_to resource.show_path(@record), alert: "Couldn't start retrying #{kind_label} sends right now -- please try again in a moment."
         return
       end
