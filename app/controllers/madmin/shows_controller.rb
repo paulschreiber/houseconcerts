@@ -48,17 +48,15 @@ module Madmin
       # run reopens, and the very first retried item to finish would
       # falsely flip the run back to "completed" while its siblings were
       # still in flight.
+      #
+      # Conditioned on status still matching what was read above, not a
+      # blind write: without this, a concurrent cancel_batch_run
+      # completing the run between that read and this write would get
+      # silently overwritten back to "running" -- reopening, and then
+      # actually retrying, a batch the admin had just cancelled.
       begin
-        batch_run.update!(status: :running, completed_at: nil, failed_count: 0)
-        # counted_at mirrors failed_count's reset, per item: it's what
-        # BatchRunItemJob#record_progress checks to decide whether an
-        # item's resolution still needs counting, so without this reset
-        # a retried item's fresh resolution would look already-counted
-        # and never update failed_count/sent_count at all. fan_out_enqueued_at
-        # is reset alongside it so BatchRunRetryFanOutJob's own claim can
-        # enqueue these items again -- it's still set from their first,
-        # now-failed attempt.
-        failed_items.update_all(counted_at: nil, fan_out_enqueued_at: nil) # rubocop:disable Rails/SkipsModelValidations
+        reopened = BatchRun.where(id: batch_run.id, status: batch_run.status)
+                           .update_all(status: BatchRun.statuses[:running], completed_at: nil, failed_count: 0) == 1 # rubocop:disable Rails/SkipsModelValidations
       rescue ActiveRecord::RecordNotUnique
         # active_kind_lock only allows one non-completed run per show+kind
         # at a time -- reopening this (older) run collides if a newer run
@@ -67,6 +65,22 @@ module Madmin
                             alert: "Can't retry right now -- a newer #{kind_label} batch is already in progress for #{@record.name}. Try again once it finishes."
         return
       end
+
+      unless reopened
+        redirect_back_or_to resource.show_path(@record),
+                            alert: "Can't retry right now -- this #{kind_label} batch's status just changed (it may have been cancelled). Please check and try again."
+        return
+      end
+
+      # counted_at mirrors failed_count's reset, per item: it's what
+      # BatchRunItemJob#record_progress checks to decide whether an
+      # item's resolution still needs counting, so without this reset
+      # a retried item's fresh resolution would look already-counted
+      # and never update failed_count/sent_count at all. fan_out_enqueued_at
+      # is reset alongside it so BatchRunRetryFanOutJob's own claim can
+      # enqueue these items again -- it's still set from their first,
+      # now-failed attempt.
+      failed_items.update_all(counted_at: nil, fan_out_enqueued_at: nil) # rubocop:disable Rails/SkipsModelValidations
 
       # Handed off to a job (not looped inline here) so a crash partway
       # through enqueuing doesn't strand the remaining failed items --

@@ -20,6 +20,6 @@
     <% if live_failed_count.positive? %>
       <%= button_to "Retry #{live_failed_count} failed", retry_failed_batch_run_madmin_show_path(batch_run.show, batch_run_id: batch_run.id), method: :patch, class: "btn btn-secondary", form: ShowResource.disable_on_submit %>
     <% end %>
-    <%= button_to "Cancel", cancel_batch_run_madmin_show_path(batch_run.show, batch_run_id: batch_run.id), method: :patch, class: "btn btn-secondary", data: { turbo_confirm: "Cancel this batch? Anything not already sent will not be sent." }, form: ShowResource.disable_on_submit %>
+    <%= button_to "Cancel", cancel_batch_run_madmin_show_path(batch_run.show, batch_run_id: batch_run.id), method: :patch, class: "btn btn-secondary", data: { turbo_confirm: "Cancel this batch? Sends already in progress may still go out, but nothing still waiting to start will be sent." }, form: ShowResource.disable_on_submit %>
   <% end %>
 </div>
