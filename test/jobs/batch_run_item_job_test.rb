@@ -95,14 +95,16 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     assert_equal 0, batch_run.failed_count
   end
 
-  test "redelivering an item whose earlier execution crashed before recording progress still completes the run" do
+  test "redelivering an item whose earlier execution crashed before the recount ever ran still completes the run" do
     show = shows(:upcoming)
-    person = Person.create!(first_name: "Crashed", last_name: "BeforeProgress", email: "crashed-before-progress@example.com", status: "active")
+    person = Person.create!(first_name: "Crashed", last_name: "BeforeRecount", email: "crashed-before-recount@example.com", status: "active")
     batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
-    # Simulates claim() having already succeeded in a prior execution that
-    # crashed before record_progress ever ran: the item is "sent", but
-    # batch_run's counters were never updated and the run never completed.
-    item = batch_run.batch_run_items.create!(recipient: person, status: "sent", sent_at: 1.hour.ago)
+    # Simulates claim() having already succeeded in a prior execution
+    # that crashed before record_progress's recount ever ran: the item
+    # is "sent" with counted_at set (exactly as claim() sets both
+    # together), but batch_run's counters never caught up and the run
+    # never completed.
+    item = batch_run.batch_run_items.create!(recipient: person, status: "sent", sent_at: 1.hour.ago, counted_at: 1.hour.ago)
 
     assert_no_emails do
       BatchRunItemJob.perform_now(item.id)
@@ -410,19 +412,19 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     assert_equal 1, batch_run.failed_count
   end
 
-  test "a transient error in record_progress is retried locally instead of permanently undercounting the run" do
+  test "a transient error recording progress is retried locally instead of permanently undercounting the run" do
     show = shows(:upcoming)
     person = Person.create!(first_name: "New", last_name: "Person", email: "transient-progress@example.com", status: "active")
     batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
     item = batch_run.batch_run_items.create!(recipient: person)
 
     call_count = 0
-    original_increment = BatchRun.method(:increment_counter)
-    BatchRun.define_singleton_method(:increment_counter) do |*args|
+    original_update = BatchRun.instance_method(:update!)
+    BatchRun.define_method(:update!) do |*args, **kwargs|
       call_count += 1
       raise ActiveRecord::ConnectionTimeoutError, "transient boom" if call_count == 1
 
-      original_increment.call(*args)
+      original_update.bind(self).call(*args, **kwargs)
     end
 
     begin
@@ -430,7 +432,7 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
         BatchRunItemJob.perform_now(item.id)
       end
     ensure
-      BatchRun.define_singleton_method(:increment_counter, original_increment)
+      BatchRun.define_method(:update!, original_update)
     end
 
     item.reload
@@ -440,23 +442,25 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     assert batch_run.completed?
   end
 
-  test "a transient error after the counter increment already succeeded does not double-count on retry" do
+  test "retrying a recount that actually applied before its acknowledgment was lost does not double-count" do
     show = shows(:upcoming)
-    person = Person.create!(first_name: "New", last_name: "Person", email: "transient-after-increment@example.com", status: "active")
+    person = Person.create!(first_name: "New", last_name: "Person", email: "lost-ack@example.com", status: "active")
     batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
     item = batch_run.batch_run_items.create!(recipient: person)
 
-    # Simulates the increment succeeding and then the very next
-    # operation (reload) failing transiently -- record_progress retries
-    # only the reload/completion-check/broadcast portion in that case,
-    # not the increment, so it must not run a second time.
+    # Simulates a DB connection dropping after MySQL committed this
+    # write but before Rails received the acknowledgment: the write
+    # genuinely applied, yet this attempt still raises as if it hadn't.
+    # An additive increment retried here would double-count; a live
+    # recount redone here just recomputes the same correct answer.
     call_count = 0
-    original_reload = BatchRun.instance_method(:reload)
-    BatchRun.define_method(:reload) do |*args|
+    original_update = BatchRun.instance_method(:update!)
+    BatchRun.define_method(:update!) do |*args, **kwargs|
       call_count += 1
-      raise ActiveRecord::ConnectionTimeoutError, "transient boom" if call_count == 1
+      result = original_update.bind(self).call(*args, **kwargs)
+      raise ActiveRecord::ConnectionTimeoutError, "ack lost after commit" if call_count == 1
 
-      original_reload.bind(self).call(*args)
+      result
     end
 
     begin
@@ -464,28 +468,28 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
         BatchRunItemJob.perform_now(item.id)
       end
     ensure
-      BatchRun.define_method(:reload, original_reload)
+      BatchRun.define_method(:update!, original_update)
     end
 
     item.reload
     assert item.sent?
     batch_run.reload
-    assert_equal 1, batch_run.sent_count, "the counter must not be double-incremented by retrying a failure that happened after it already succeeded"
+    assert_equal 1, batch_run.sent_count, "a write that actually applied before its ack was lost must not be double-counted when retried"
     assert batch_run.completed?
   end
 
-  test "a persistent failure incrementing the counter releases the claim so a later retry can redo it" do
+  test "a persistent failure recording progress is recovered by a later redelivery, with nothing needing to be released" do
     show = shows(:upcoming)
-    person = Person.create!(first_name: "New", last_name: "Person", email: "persistent-increment-failure@example.com", status: "active")
+    person = Person.create!(first_name: "New", last_name: "Person", email: "persistent-progress-failure@example.com", status: "active")
     batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
     item = batch_run.batch_run_items.create!(recipient: person)
 
     failing = true
-    original_increment = BatchRun.method(:increment_counter)
-    BatchRun.define_singleton_method(:increment_counter) do |*args|
+    original_update = BatchRun.instance_method(:update!)
+    BatchRun.define_method(:update!) do |*args, **kwargs|
       raise ActiveRecord::ConnectionTimeoutError, "persistent boom" if failing
 
-      original_increment.call(*args)
+      original_update.bind(self).call(*args, **kwargs)
     end
 
     begin
@@ -493,7 +497,14 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
         BatchRunItemJob.perform_now(item.id)
       end
 
-      assert_nil item.reload.counted_at, "the claim must be released so a later attempt can redo the increment instead of undercounting forever"
+      # The item was already claimed (and genuinely sent) before this
+      # failure, and stays that way -- unlike the old additive-increment
+      # design, record_progress holds no claim of its own that needs
+      # releasing for a later attempt to redo the count.
+      item.reload
+      assert item.sent?
+      assert_not_nil item.counted_at
+      assert batch_run.reload.running?, "the run must not be stuck looking complete-but-running forever"
 
       # The outage resolves; a redelivery (Solid Queue's own retry, or a
       # manual one via Mission Control Jobs) re-invokes the same job. It
@@ -506,58 +517,11 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
         end
       end
     ensure
-      BatchRun.define_singleton_method(:increment_counter, original_increment)
+      BatchRun.define_method(:update!, original_update)
     end
 
-    item.reload
-    assert item.sent?
     batch_run.reload
     assert_equal 1, batch_run.sent_count
-    assert batch_run.completed?
-  end
-
-  test "a persistent failure in the completion check after the counter was incremented is recovered by a later redelivery" do
-    show = shows(:upcoming)
-    person = Person.create!(first_name: "New", last_name: "Person", email: "persistent-completion-failure@example.com", status: "active")
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
-    item = batch_run.batch_run_items.create!(recipient: person)
-
-    failing = true
-    original_reload = BatchRun.instance_method(:reload)
-    BatchRun.define_method(:reload) do |*args|
-      raise ActiveRecord::ConnectionTimeoutError, "persistent boom" if failing
-
-      original_reload.bind(self).call(*args)
-    end
-
-    begin
-      assert_raises(ActiveRecord::ConnectionTimeoutError) do
-        BatchRunItemJob.perform_now(item.id)
-      end
-      failing = false
-
-      # The increment itself succeeded and must not be undone or redone
-      # -- only the completion check/broadcast that follows it failed.
-      assert_not_nil item.reload.counted_at
-      batch_run.reload
-      assert_equal 1, batch_run.sent_count
-      assert batch_run.running?, "the run must not be stuck looking complete-but-running forever"
-
-      # A redelivery of this same job -- which no longer even reclaims
-      # the item, since it's already "sent" -- must still retry the
-      # completion check instead of bailing out early just because
-      # counted_at is already set.
-      assert_no_emails do
-        assert_nothing_raised do
-          BatchRunItemJob.perform_now(item.id)
-        end
-      end
-    ensure
-      BatchRun.define_method(:reload, original_reload)
-    end
-
-    batch_run.reload
-    assert_equal 1, batch_run.sent_count, "must not be double-counted by the redelivery"
     assert batch_run.completed?
   end
 
@@ -567,8 +531,8 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
     item = batch_run.batch_run_items.create!(recipient: person)
 
-    original_increment = BatchRun.method(:increment_counter)
-    BatchRun.define_singleton_method(:increment_counter) do |*_args|
+    original_update = BatchRun.instance_method(:update!)
+    BatchRun.define_method(:update!) do |*_args, **_kwargs|
       raise ActiveRecord::ConnectionTimeoutError, "persistent boom"
     end
 
@@ -581,10 +545,41 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
         BatchRunItemJob.perform_now(item.id)
       end
     ensure
-      BatchRun.define_singleton_method(:increment_counter, original_increment)
+      BatchRun.define_method(:update!, original_update)
       Rails.logger = original_logger
     end
 
-    assert_match(/giving up incrementing sent_count for batch_run_item_id=#{item.id} \(batch_run_id=#{batch_run.id}\)/, logged.string)
+    assert_match(/giving up recording progress for batch_run_item_id=#{item.id} \(batch_run_id=#{batch_run.id}\)/, logged.string)
+  end
+
+  test "does not send if the batch run was cancelled in the window between claim and send" do
+    show = shows(:upcoming)
+    person = Person.create!(first_name: "New", last_name: "Person", email: "cancelled-mid-flight@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    item = batch_run.batch_run_items.create!(recipient: person)
+
+    # Simulates an admin cancelling the run in the narrow window after
+    # claim() has already flipped this item to "sent" but before send_to
+    # actually runs: perform's very next step after claim() is to look
+    # up the item, so that's hooked to also perform the race's
+    # cancellation, as if it happened concurrently right after the claim.
+    original_find_by = BatchRunItem.method(:find_by)
+    BatchRunItem.define_singleton_method(:find_by) do |*args, **kwargs|
+      result = original_find_by.call(*args, **kwargs)
+      batch_run.update!(status: :completed, completed_at: Time.current) if result&.id == item.id
+      result
+    end
+
+    begin
+      assert_no_emails do
+        BatchRunItemJob.perform_now(item.id)
+      end
+    ensure
+      BatchRunItem.define_singleton_method(:find_by, original_find_by)
+    end
+
+    item.reload
+    assert item.cancelled?
+    assert_nil item.sent_at
   end
 end
