@@ -33,24 +33,39 @@ class BatchRunItemJob < ApplicationJob
     # up instead of leaving it stuck "running" forever with an item that
     # can never be reclaimed to try again.
     if previous_status
-      begin
-        send_to(item)
-      rescue StandardError => e
-        # Retried locally (not via ActiveJob's retry_on), not just for
-        # emphasis: retry_on would re-invoke this whole method, which
-        # would call claim() again -- and since "failed" is one of
-        # CLAIMABLE_STATUSES (so an admin can retry a genuinely failed
-        # send), that would silently re-trigger send_to and resend a
-        # message that may have already gone out. A transient failure
-        # writing this outcome shouldn't be able to do that; it should
-        # only ever retry the write itself.
-        # sent_at is cleared here too, not just status/error_message: claim()
-        # sets it unconditionally before send_to runs (it's really "claimed
-        # at", not "delivered at"), so a failed item would otherwise keep a
-        # real timestamp in a column named sent_at despite never having
-        # been delivered -- misleading for anything that trusts
-        # "sent_at IS NOT NULL" as "this was actually sent."
-        with_transient_retries(item: item, label: "marking it failed") { item.update!(status: :failed, error_message: e.message, sent_at: nil) }
+      # Checked here, immediately before the actual send, not just at
+      # cancel_batch_run's own end: claim() above already flipped this
+      # item's status away from "pending" before this line even runs, so
+      # Madmin::ShowsController#cancel_batch_run -- which only touches
+      # items still "pending" -- can't see or stop it. A batch_run can
+      # only already be completed *here* (before this item has resolved,
+      # so before it could have contributed to a normal completion) if
+      # it was cancelled in that exact window. This can't close the
+      # window entirely (there's always some gap between a check and an
+      # action), but shrinks it from this item's whole time in flight
+      # down to one query, right before the real external call.
+      if item.batch_run.completed?
+        item.update!(status: :cancelled, sent_at: nil)
+      else
+        begin
+          send_to(item)
+        rescue StandardError => e
+          # Retried locally (not via ActiveJob's retry_on), not just for
+          # emphasis: retry_on would re-invoke this whole method, which
+          # would call claim() again -- and since "failed" is one of
+          # CLAIMABLE_STATUSES (so an admin can retry a genuinely failed
+          # send), that would silently re-trigger send_to and resend a
+          # message that may have already gone out. A transient failure
+          # writing this outcome shouldn't be able to do that; it should
+          # only ever retry the write itself.
+          # sent_at is cleared here too, not just status/error_message: claim()
+          # sets it unconditionally before send_to runs (it's really "claimed
+          # at", not "delivered at"), so a failed item would otherwise keep a
+          # real timestamp in a column named sent_at despite never having
+          # been delivered -- misleading for anything that trusts
+          # "sent_at IS NOT NULL" as "this was actually sent."
+          with_transient_retries(item: item, label: "marking it failed") { item.update!(status: :failed, error_message: e.message, sent_at: nil) }
+        end
       end
     end
 
@@ -61,8 +76,8 @@ class BatchRunItemJob < ApplicationJob
 
     # A few immediate, local retries for a transient DB error, scoped
     # narrowly to the bookkeeping that follows claim()/send_to() above.
-    # This is the fast, in-process path; record_progress's counted_at
-    # claim (see its comment) is what actually makes recovery possible
+    # This is the fast, in-process path; record_progress's own idempotent
+    # recount (see its comment) is what actually makes recovery possible
     # beyond these few attempts, via a crash-recovered redelivery of this
     # same job.
     def with_transient_retries(item: nil, label: "recording progress", max_attempts: 3)
@@ -96,8 +111,18 @@ class BatchRunItemJob < ApplicationJob
 
     def claim(batch_run_item_id)
       CLAIMABLE_STATUSES.each do |status|
+        # counted_at set here too, not just by record_progress: it's what
+        # record_progress's live recount filters on to tell "should count
+        # right now" apart from "failed, awaiting a retry that hasn't
+        # resolved yet" (see record_progress). Setting it as part of this
+        # same atomic write -- rather than as record_progress's own,
+        # separate claim -- means there's no gap where this item is
+        # already "sent"/"failed" but not yet marked countable, so
+        # record_progress never needs to claim anything itself; it can
+        # just recount unconditionally, any number of times, and always
+        # get the right answer.
         claimed = BatchRunItem.where(id: batch_run_item_id, status: status)
-                              .update_all(status: "sent", sent_at: Time.current, error_message: nil) # rubocop:disable Rails/SkipsModelValidations
+                              .update_all(status: "sent", sent_at: Time.current, error_message: nil, counted_at: Time.current) # rubocop:disable Rails/SkipsModelValidations
         return status if claimed == 1
       end
       nil
@@ -174,33 +199,30 @@ class BatchRunItemJob < ApplicationJob
       item.update!(sms_sent_at: Time.current)
     end
 
-    # Claimed via counted_at, not status: status alone can't tell "already
-    # sent" apart from "sent, but its outcome was never counted", which is
-    # exactly what happens if the execution that claimed the item (see
-    # perform above) crashed before ever reaching this method. Gating on
-    # counted_at instead means this redelivery -- which still calls this
-    # method even though it didn't claim the item -- notices counted_at
-    # is nil and does the counting itself, instead of the run staying
-    # "running" forever with an item that can never be reclaimed to try
-    # again. Reset to NULL by
-    # Madmin::ShowsController#retry_failed_batch_run alongside
-    # failed_count, so a retried item's next resolution gets freshly
-    # counted too, the same as a first attempt.
+    # Recomputed live from the items themselves (filtered by counted_at
+    # -- see claim() above), not accumulated with an additive increment,
+    # so this needs no claim of its own and is safe to call any number
+    # of times: unconditionally, on every invocation, regardless of
+    # whether *this* one is what actually resolved the item.
     #
-    # The claim only ever covers the increment below, not the completion
-    # check/broadcast that follows it: claiming both together would mean
-    # a persistent DB outage that outlasts the increment's own local
-    # retries leaves counted_at set with the increment never having
-    # happened (an undercount, not just a stuck run), and even a
-    # successful increment followed by a failed completion check would
-    # leave nothing able to retry just that part -- a redelivery would
-    # see counted_at already set and bail out at the top, same as this
-    # method's very first no-op case. The increment releases its own
-    # claim if it fails, so a redelivery redoes it from scratch (safe,
-    # since a failed atomic UPDATE never took effect); the completion
-    # check runs unconditionally on every call regardless of whether
-    # *this* call did any counting, since it's already idempotent and
-    # guarded against re-transitioning or re-notifying.
+    # That's deliberate, not incidental: an additive delta can't safely
+    # be retried under an uncertain outcome. If the DB connection drops
+    # after MySQL commits a `sent_count = sent_count + 1` but before
+    # Rails receives the acknowledgment, there's no way to tell "didn't
+    # happen" apart from "happened, but I never heard back" -- retrying
+    # in the first case is required, and in the second case double-
+    # counts. A live recount has no such ambiguity: redone any number of
+    # times, for any reason (an ordinary crash-recovered redelivery, or
+    # this exact kind of ack-loss uncertainty), it always converges on
+    # the same correct answer, since there's no delta to apply twice.
+    #
+    # Filtered by counted_at, not just status = sent/failed: a failed
+    # item awaiting an admin's retry is still "failed" in the database
+    # the whole time, but Madmin::ShowsController#retry_failed_batch_run
+    # resets its counted_at to NULL specifically so it's excluded here
+    # until it actually resolves again -- without that, processed_count
+    # would already equal total_count the instant a retried run reopens,
+    # before any of the retries have actually run.
     def record_progress(item)
       # Only sent/failed items count toward sent_count/failed_count.
       # "cancelled" is the one other status this can see: this job may
@@ -211,26 +233,15 @@ class BatchRunItemJob < ApplicationJob
       return unless item.sent? || item.failed?
 
       batch_run = item.batch_run
-      claimed = BatchRunItem.where(id: item.id, counted_at: nil).update_all(counted_at: Time.current) == 1 # rubocop:disable Rails/SkipsModelValidations
 
-      if claimed
-        counter = item.failed? ? :failed_count : :sent_count
-        begin
-          # A single atomic SQL statement with no partial-effect
-          # possibility -- if it raises, it didn't take effect, so
-          # releasing the claim and letting a later attempt redo it from
-          # scratch is safe (not #increment!, so concurrent worker
-          # threads updating the same batch_run's counters can't lose an
-          # update either way).
-          with_transient_retries(item: item, label: "incrementing #{counter}") { BatchRun.increment_counter(counter, batch_run.id) } # rubocop:disable Rails/SkipsModelValidations
-        rescue StandardError
-          BatchRunItem.where(id: item.id).update_all(counted_at: nil) # rubocop:disable Rails/SkipsModelValidations
-          raise
+      with_transient_retries(item: item) do
+        batch_run.with_lock do
+          batch_run.update!(
+            sent_count: batch_run.batch_run_items.where.not(counted_at: nil).sent.count,
+            failed_count: batch_run.batch_run_items.where.not(counted_at: nil).failed.count
+          )
         end
-      end
 
-      with_transient_retries(item: item, label: "the post-increment completion check/broadcast") do
-        batch_run.reload
         if batch_run.processed_count >= batch_run.total_count
           # Guarded by `status: "running"` so only the item that actually
           # finishes the run flips it to completed, even if two items
