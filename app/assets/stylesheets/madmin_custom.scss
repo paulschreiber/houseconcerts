@@ -168,3 +168,54 @@ main:has(> #sidebar) {
     }
   }
 }
+
+/* Invite/reminder batch progress: one compact row under the buttons,
+   instead of a paragraph per kind. .actions is itself a flex row (madmin's
+   base.css), so without flex-basis: 100% this would just sit inline next
+   to the buttons instead of wrapping onto its own line below them.
+   Edit/Delete render after this in the DOM (madmin's show.html.erb adds
+   them after member_actions), so `order` pulls this visually to the end
+   of the row instead of splitting Edit/Delete onto a third line. */
+.batch-progress {
+  display: flex;
+  order: 1;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+  font-size: 0.9em;
+  color: var(--light-text-color);
+}
+
+.batch-progress-none {
+  font-style: italic;
+}
+
+.batch-progress-status progress {
+  vertical-align: middle;
+  width: 6rem;
+}
+
+/* Dashboard callout listing shows with failed batch sends. */
+.dashboard-warning {
+  border: 1px solid rgb(252 165 165);
+  background-color: rgb(254 242 242);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+
+  h2 {
+    margin-top: 0;
+    color: rgb(153 27 27);
+  }
+
+  ul {
+    margin-bottom: 0;
+  }
+
+  .dashboard-warning-reasons {
+    color: rgb(127 29 29);
+    font-size: 0.875rem;
+    font-style: italic;
+  }
+}

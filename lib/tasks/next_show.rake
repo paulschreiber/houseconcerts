@@ -1,7 +1,16 @@
-require "logger"
-
 def print_confirmation(count)
   puts "Sent #{count} #{'email'.pluralize(count)}."
+end
+
+def run_batch(show, kind, noun)
+  # Recipients are computed and enqueued in the background (BatchRunFanOutJob),
+  # so the count isn't known yet here -- check the show's madmin page for progress.
+  StartBatchRun.call(show: show, kind: kind)
+  puts "Started sending #{noun.pluralize} for #{show.name}."
+rescue StartBatchRun::AlreadyInProgress
+  puts "A #{kind} batch is already in progress for #{show.name}; not starting another."
+rescue StartBatchRun::EnqueueFailed => e
+  puts e.message
 end
 
 namespace :next_show do
@@ -13,18 +22,7 @@ namespace :next_show do
       exit
     end
 
-    people = Person.includes(:venue_groups)
-                   .where(venue_groups: { id: Settings.default_venue_group }, status: "active")
-                   .where("email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)", show.id)
-                   .order(:last_name, :first_name)
-
-    people.each do |p|
-      puts "Emailing #{p.email_address_with_name}..."
-      InvitesMailer.invite(p, show).deliver_now
-    rescue Net::SMTPServerBusy => e
-      puts "Failed to email #{p.email_address_with_name} [#{e.message}]"
-    end
-    print_confirmation(people.size)
+    run_batch(show, "invite", "invite")
   end
 
   desc "Send invites for next show to one person"
@@ -64,19 +62,12 @@ namespace :next_show do
       exit
     end
 
-    people = Person.includes(:venue_groups)
-                   .where(venue_groups: { id: Settings.default_venue_group }, status: "active")
-                   .where("email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)", show.id)
-                   .where("email NOT IN (SELECT email FROM opens WHERE tag LIKE ?)", "#{show.slug}:invite%")
-                   .order(:last_name, :first_name)
-
-    people.each do |p|
-      puts "Emailing #{p.email_address_with_name}..."
-      InvitesMailer.invite(p, show).deliver_now
-    rescue Net::SMTPServerBusy => e
-      puts "Failed to email #{p.email_address_with_name} [#{e.message}]"
+    unless show.invites_sent?
+      puts "Send the initial invites before sending invites to unopened recipients"
+      exit
     end
-    print_confirmation(people.size)
+
+    run_batch(show, "invite_unopened", "invite")
   end
 
   desc "Count invites for next show"
@@ -89,7 +80,10 @@ namespace :next_show do
 
     people = Person.includes(:venue_groups)
                    .where(venue_groups: { id: Settings.default_venue_group }, status: "active")
-                   .where("email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)", show.id)
+                   .where(
+                     "NOT EXISTS (SELECT 1 FROM rsvps WHERE rsvps.show_id = ? AND rsvps.email = people.email)",
+                     show.id
+                   )
 
     puts "Can email #{people.size} people."
   end
@@ -249,28 +243,6 @@ namespace :next_show do
       exit
     end
 
-    rsvps = show.attendees
-    client = Twilio::REST::Client.new Rails.application.credentials.twilio.account_sid, Rails.application.credentials.twilio.auth_token
-
-    Rails.logger = Logger.new($stdout) unless Rails.env.production?
-
-    rsvps.each do |rsvp|
-      puts "Emailing #{rsvp.email_address_with_name}..."
-      InvitesMailer.remind(rsvp).deliver_now
-
-      next if rsvp.phone_number.blank?
-
-      puts "Texting #{rsvp.phone_number}..."
-      if Rails.env.production?
-        client.api.account.messages.create(
-          from: Rails.application.credentials.twilio.sms_sender,
-          to: rsvp.phone_number_twilio,
-          body: rsvp.sms_reminder
-        )
-      else
-        Rails.logger.debug { "Sending SMS [#{rsvp.phone_number_twilio}]: #{rsvp.sms_reminder}" }
-      end
-    end
-    print_confirmation(rsvps.size)
+    run_batch(show, "remind", "reminder")
   end
 end
