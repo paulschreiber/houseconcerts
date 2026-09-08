@@ -32,6 +32,16 @@ class InvitesTest < ActionMailer::TestCase
     assert_equal email.header["List-Unsubscribe"].to_s, email["List-Unsubscribe"].to_s
   end
 
+  test "invite includes an open-tracking pixel keyed to the person's uniqid" do
+    person = people(:one)
+    show = shows(:upcoming)
+
+    email = InvitesMailer.invite(person, show)
+
+    expected_src = tracking_pixel_url(tag: "#{show.slug}:invite", uniqid: person.uniqid)
+    assert_includes email.body.encoded, %(src="#{expected_src}")
+  end
+
   test "waitlisted does nothing for an rsvp with no seats reserved" do
     rsvp = rsvps(:one)
     # seats_reserved: 0 would normally fail validation for a "yes" rsvp -
@@ -47,6 +57,15 @@ class InvitesTest < ActionMailer::TestCase
     assert_emails 1 do
       InvitesMailer.waitlisted(rsvp).deliver_now
     end
+  end
+
+  test "waitlisted includes an open-tracking pixel keyed to the rsvp's uniqid" do
+    rsvp = rsvps(:one)
+
+    email = InvitesMailer.waitlisted(rsvp)
+
+    expected_src = tracking_pixel_url(tag: "#{rsvp.show.slug}:waitlist", uniqid: rsvp.uniqid)
+    assert_includes email.body.encoded, %(src="#{expected_src}")
   end
 
   test "waitlisted is a no-op if it has already sent for this rsvp" do
@@ -76,6 +95,15 @@ class InvitesTest < ActionMailer::TestCase
     assert_includes email.body.encoded, "calendar.google.com"
   end
 
+  test "confirm includes an open-tracking pixel keyed to the rsvp's uniqid" do
+    rsvp = rsvps(:one)
+
+    email = InvitesMailer.confirm(rsvp)
+
+    expected_src = tracking_pixel_url(tag: "#{rsvp.show.slug}:confirm", uniqid: rsvp.uniqid)
+    assert_includes email.body.encoded, %(src="#{expected_src}")
+  end
+
   test "confirm is a no-op if it has already sent for this rsvp" do
     rsvp = rsvps(:one)
     rsvp.update_column(:confirmation_emailed_at, Time.current) # rubocop:disable Rails/SkipsModelValidations
@@ -94,6 +122,15 @@ class InvitesTest < ActionMailer::TestCase
     assert_includes email.subject, "Reminder"
   end
 
+  test "remind includes an open-tracking pixel keyed to the rsvp's uniqid" do
+    rsvp = rsvps(:one)
+
+    email = InvitesMailer.remind(rsvp)
+
+    expected_src = tracking_pixel_url(tag: "#{rsvp.show.slug}:remind", uniqid: rsvp.uniqid)
+    assert_includes email.body.encoded, %(src="#{expected_src}")
+  end
+
   test "make_calendar_url builds a google calendar link with the show details" do
     rsvp = rsvps(:one)
     url = InvitesMailer.new.make_calendar_url(rsvp)
@@ -101,4 +138,10 @@ class InvitesTest < ActionMailer::TestCase
     assert_includes url, "https://calendar.google.com/calendar/r/eventedit"
     assert_includes url, CGI.escape(rsvp.show.name)
   end
+
+  private
+
+    def tracking_pixel_url(tag:, uniqid:)
+      Rails.application.routes.url_helpers.open_tracking_url(tag: tag, uniqid: uniqid, host: "example.com")
+    end
 end
