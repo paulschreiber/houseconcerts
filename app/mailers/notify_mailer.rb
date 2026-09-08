@@ -17,8 +17,8 @@ class NotifyMailer < ApplicationMailer
 
     @rsvp = rsvp
     @old_seats = old_seats
-    # .to_a avoids the view's .any? and .each each triggering a separate query
-    @shows_attended = (rsvp.person&.attendance_history || RSVP.none).to_a
+    # .load avoids the view's .any? and .each each triggering a separate query
+    @shows_attended = (rsvp.person&.attendance_history || RSVP.none).load
 
     case type
     when "cancel"
