@@ -1,9 +1,13 @@
 class OpensController < ApplicationController
   def index
-    person = Person.find_by(uniqid: params[:uniqid]) if params[:uniqid]
     tag = params[:tag]
 
-    Open.create(tag: tag, email: person.email, ip_address: Current.ip_address, open: true) if person && tag
+    if tag && params[:uniqid]
+      record = Person.find_by(uniqid: params[:uniqid])
+      record = RSVP.find_by(uniqid: params[:uniqid]) if record.nil?
+
+      Open.create(tag: tag, email: record.email, ip_address: Current.ip_address, open: true) if record
+    end
 
     send_blank_gif
   end
