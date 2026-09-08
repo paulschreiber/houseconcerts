@@ -4,6 +4,18 @@ def print_confirmation(count)
   puts "Sent #{count} #{'email'.pluralize(count)}."
 end
 
+def find_unopened_invites(show)
+  people = Person.includes(:venue_groups)
+                 .where(venue_groups: { id: Settings.default_venue_group }, status: "active")
+                 .where("email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)", show.id)
+                 .where("email NOT IN (SELECT email FROM opens WHERE tag LIKE ?)", "#{show.slug}:invite%")
+                 .order(:last_name, :first_name)
+                 .load
+
+  puts "Found #{people.size} who have not opened the invite for #{show.name}"
+  people
+end
+
 namespace :next_show do
   desc "Send invites for next show"
   task invite: :environment do
@@ -64,11 +76,7 @@ namespace :next_show do
       exit
     end
 
-    people = Person.includes(:venue_groups)
-                   .where(venue_groups: { id: Settings.default_venue_group }, status: "active")
-                   .where("email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)", show.id)
-                   .where("email NOT IN (SELECT email FROM opens WHERE tag LIKE ?)", "#{show.slug}:invite%")
-                   .order(:last_name, :first_name)
+    people = find_unopened_invites(show)
 
     people.each do |p|
       puts "Emailing #{p.email_address_with_name}..."
