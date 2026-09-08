@@ -14,6 +14,28 @@ class OpensControllerTest < ActionDispatch::IntegrationTest
     assert open.open
   end
 
+  test "records an open when a known RSVP uniqid and tag are given" do
+    rsvp = rsvps(:one)
+
+    assert_difference("Open.count", 1) do
+      get open_tracking_path(tag: "test-show:confirm", uniqid: rsvp.uniqid)
+    end
+
+    open = Open.last
+    assert_equal rsvp.email, open.email
+    assert_equal "test-show:confirm", open.tag
+    assert open.open
+  end
+
+  test "prefers a Person match over an RSVP match for the same uniqid" do
+    rsvp = rsvps(:one)
+    rsvp.update_column(:uniqid, people(:one).uniqid) # rubocop:disable Rails/SkipsModelValidations
+
+    get open_tracking_path(tag: "test-show:invite", uniqid: people(:one).uniqid)
+
+    assert_equal people(:one).email, Open.last.email
+  end
+
   test "does not record an open for an unknown uniqid" do
     assert_no_difference("Open.count") do
       get open_tracking_path(tag: "test-show:invite", uniqid: "nonexistent")
