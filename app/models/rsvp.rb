@@ -7,7 +7,7 @@ class RSVP < ApplicationRecord
   belongs_to :show
 
   enum :response, { no: 0, yes: 1 }, default: :no
-  enum :confirmed, { unconfirmed: 0, waitlisted: 1, yes: 2 }, prefix: true, default: :unconfirmed
+  enum :confirmed, { unconfirmed: 0, waitlisted: 1, confirmed: 2 }, prefix: true, default: :unconfirmed
 
   before_validation :clear_seats_if_no
   before_save :downcase_email
@@ -68,7 +68,7 @@ class RSVP < ApplicationRecord
   def confirm!
     return unless yes?
 
-    self.confirmed = "yes"
+    self.confirmed = "confirmed"
     save
   end
 
@@ -80,7 +80,7 @@ class RSVP < ApplicationRecord
   end
 
   def confirmed?
-    confirmed == "yes"
+    confirmed == "confirmed"
   end
 
   def unconfirmed?
@@ -123,7 +123,7 @@ class RSVP < ApplicationRecord
   end
 
   def self.next_show_attendees
-    RSVP.where(show: Show.next, response: "yes", confirmed: "yes")
+    RSVP.where(show: Show.next, response: "yes", confirmed: "confirmed")
   end
 
   def self.unconfirmed_rsvps
@@ -135,7 +135,7 @@ class RSVP < ApplicationRecord
   end
 
   def self.previous_show_attendees
-    RSVP.where(show: Show.previous, response: "yes", confirmed: "yes")
+    RSVP.where(show: Show.previous, response: "yes", confirmed: "confirmed")
   end
 
   def self.nonsubscribers
