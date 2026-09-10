@@ -6,4 +6,4 @@ one:
   uniqid: "testrsvp1"
   response: "yes"
   seats_reserved: 2
-  confirmed: "yes"
+  confirmed: "confirmed"

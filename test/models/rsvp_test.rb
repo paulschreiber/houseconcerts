@@ -61,14 +61,14 @@ class RsvpTest < ActiveSupport::TestCase
     assert_not rsvp.yes?
   end
 
-  test "unconfirmed? is true by default and false once confirmed is yes" do
+  test "unconfirmed? is true by default and false once confirmed is confirmed" do
     rsvp = RSVP.new
     assert rsvp.unconfirmed?
 
     rsvp.confirmed = "waitlisted"
     assert_not rsvp.unconfirmed?
 
-    rsvp.confirmed = "yes"
+    rsvp.confirmed = "confirmed"
     assert_not rsvp.unconfirmed?
   end
 
@@ -90,19 +90,19 @@ class RsvpTest < ActiveSupport::TestCase
     assert_nil rsvp.reload.seats_used
   end
 
-  test "update_confirmation_date sets confirmed_at when confirmed becomes yes" do
+  test "update_confirmation_date sets confirmed_at when confirmed becomes confirmed" do
     rsvp = rsvps(:one)
     rsvp.update!(confirmed: "unconfirmed")
     assert_nil rsvp.confirmed_at
 
-    rsvp.update!(confirmed: "yes")
+    rsvp.update!(confirmed: "confirmed")
     assert_not_nil rsvp.confirmed_at
   end
 
-  test "confirm! sets confirmed to yes only for a yes rsvp" do
+  test "confirm! sets confirmed to confirmed only for a yes rsvp" do
     yes_rsvp = rsvps(:one)
     assert yes_rsvp.confirm!
-    assert_equal "yes", yes_rsvp.reload.confirmed
+    assert_equal "confirmed", yes_rsvp.reload.confirmed
 
     no_rsvp = rsvps(:one).dup
     no_rsvp.response = "no"
@@ -165,7 +165,7 @@ class RsvpTest < ActiveSupport::TestCase
     availabilities = %w[available waitlisted sold_out]
     statuses = %w[confirmed unconfirmed cancelled]
     responses = %w[yes no]
-    confirmed_states = %w[unconfirmed waitlisted yes]
+    confirmed_states = %w[unconfirmed waitlisted confirmed]
 
     availabilities.product(statuses, responses, confirmed_states).each do |availability, status, response, confirmed|
       show.availability = availability
@@ -174,8 +174,8 @@ class RsvpTest < ActiveSupport::TestCase
       rsvp.confirmed = confirmed
 
       show_confirmed = status == "confirmed"
-      expected_can_confirm = confirmed != "yes" && response == "yes" && show_confirmed && availability == "available"
-      expected_can_waitlist = confirmed != "yes" && response == "yes" && show_confirmed && availability == "waitlisted"
+      expected_can_confirm = confirmed != "confirmed" && response == "yes" && show_confirmed && availability == "available"
+      expected_can_waitlist = confirmed != "confirmed" && response == "yes" && show_confirmed && availability == "waitlisted"
       combo = "availability=#{availability} status=#{status} response=#{response} confirmed=#{confirmed}"
 
       assert_equal expected_can_confirm, rsvp.can_confirm?, "can_confirm? wrong for #{combo}"
@@ -191,7 +191,7 @@ class RsvpTest < ActiveSupport::TestCase
     rsvp.update!(confirmed: "waitlisted")
     assert_includes RSVP.unconfirmed_rsvps, rsvp
 
-    rsvp.update!(confirmed: "yes")
+    rsvp.update!(confirmed: "confirmed")
     assert_not_includes RSVP.unconfirmed_rsvps, rsvp
   end
 
