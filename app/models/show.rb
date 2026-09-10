@@ -27,7 +27,7 @@ class Show < ApplicationRecord
   validates :venue_id, inclusion: { in: ->(_) { Venue.all.collect(&:id) } }
 
   def attendees
-    rsvps.where(confirmed: "yes", response: "yes")
+    rsvps.where(confirmed: "confirmed", response: "yes")
   end
 
   def self.next

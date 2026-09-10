@@ -45,6 +45,6 @@ class Person < ApplicationRecord
   end
 
   def attendance_history
-    RSVP.joins(:show).merge(Show.occurred).where(email: email, response: "yes", confirmed: "yes", seats_reserved: 1..).reorder("shows.start DESC").select(:start, :name, :seats_used, :seats_reserved)
+    RSVP.joins(:show).merge(Show.occurred).where(email: email, response: "yes", confirmed: "confirmed", seats_reserved: 1..).reorder("shows.start DESC").select(:start, :name, :seats_used, :seats_reserved)
   end
 end
