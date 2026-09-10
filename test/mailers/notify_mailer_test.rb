@@ -67,7 +67,7 @@ class NotifyMailerTest < ActionMailer::TestCase
   test "rsvp shows no previous reservations for someone with no attendance history" do
     person = Person.create!(first_name: "No", last_name: "History", email: "no.history@example.com")
     rsvp = RSVP.create!(show: shows(:upcoming), first_name: person.first_name, last_name: person.last_name,
-                        email: person.email, response: "yes", confirmed: "yes", seats_reserved: 2)
+                        email: person.email, response: "yes", confirmed: "confirmed", seats_reserved: 2)
 
     email = NotifyMailer.rsvp(rsvp, "new", nil)
 
@@ -78,7 +78,7 @@ class NotifyMailerTest < ActionMailer::TestCase
     person = Person.create!(first_name: "One", last_name: "Show", email: "one.show@example.com")
     attended = create_past_rsvp(person, shows(:past), seats_reserved: 2, seats_used: 2)
     rsvp = RSVP.create!(show: shows(:upcoming), first_name: person.first_name, last_name: person.last_name,
-                        email: person.email, response: "yes", confirmed: "yes", seats_reserved: 2)
+                        email: person.email, response: "yes", confirmed: "confirmed", seats_reserved: 2)
 
     email = NotifyMailer.rsvp(rsvp, "new", nil)
     body = email.body.encoded
@@ -99,7 +99,7 @@ class NotifyMailerTest < ActionMailer::TestCase
     create_past_rsvp(person, show_c, seats_reserved: 3, seats_used: 3)
 
     rsvp = RSVP.create!(show: shows(:upcoming), first_name: person.first_name, last_name: person.last_name,
-                        email: person.email, response: "yes", confirmed: "yes", seats_reserved: 2)
+                        email: person.email, response: "yes", confirmed: "confirmed", seats_reserved: 2)
 
     email = NotifyMailer.rsvp(rsvp, "new", nil)
     body = email.body.encoded
@@ -119,7 +119,7 @@ class NotifyMailerTest < ActionMailer::TestCase
     create_past_rsvp(person, show, seats_reserved: 2, seats_used: 0)
 
     rsvp = RSVP.create!(show: shows(:upcoming), first_name: person.first_name, last_name: person.last_name,
-                        email: person.email, response: "yes", confirmed: "yes", seats_reserved: 2)
+                        email: person.email, response: "yes", confirmed: "confirmed", seats_reserved: 2)
 
     email = NotifyMailer.rsvp(rsvp, "new", nil)
     body = email.body.encoded
@@ -133,7 +133,7 @@ class NotifyMailerTest < ActionMailer::TestCase
     create_past_rsvp(person, show, seats_reserved: 2, seats_used: 2)
 
     rsvp = RSVP.create!(show: shows(:upcoming), first_name: person.first_name, last_name: person.last_name,
-                        email: person.email, response: "yes", confirmed: "yes", seats_reserved: 2)
+                        email: person.email, response: "yes", confirmed: "confirmed", seats_reserved: 2)
 
     email = NotifyMailer.rsvp(rsvp, "new", nil)
     body = email.body.encoded
@@ -147,7 +147,7 @@ class NotifyMailerTest < ActionMailer::TestCase
     create_past_rsvp(person, show, seats_reserved: 2, seats_used: 3)
 
     rsvp = RSVP.create!(show: shows(:upcoming), first_name: person.first_name, last_name: person.last_name,
-                        email: person.email, response: "yes", confirmed: "yes", seats_reserved: 2)
+                        email: person.email, response: "yes", confirmed: "confirmed", seats_reserved: 2)
 
     email = NotifyMailer.rsvp(rsvp, "new", nil)
     body = email.body.encoded
@@ -174,7 +174,7 @@ class NotifyMailerTest < ActionMailer::TestCase
 
     def create_past_rsvp(person, show, seats_reserved:, seats_used:)
       RSVP.create!(show: show, first_name: person.first_name, last_name: person.last_name,
-                   email: person.email, response: "yes", confirmed: "yes",
+                   email: person.email, response: "yes", confirmed: "confirmed",
                    seats_reserved: seats_reserved, seats_used: seats_used)
     end
 end

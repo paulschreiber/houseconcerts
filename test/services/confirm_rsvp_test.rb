@@ -11,7 +11,7 @@ class ConfirmRSVPTest < ActiveSupport::TestCase
       ConfirmRSVP.call(rsvp)
     end
 
-    assert_equal "yes", rsvp.reload.confirmed
+    assert_equal "confirmed", rsvp.reload.confirmed
   end
 
   test "does not confirm or email a no rsvp" do

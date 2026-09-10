@@ -33,7 +33,7 @@ module Madmin
         patch confirm_madmin_rsvp_path(@rsvp)
       end
 
-      assert_equal "yes", @rsvp.reload.confirmed
+      assert_equal "confirmed", @rsvp.reload.confirmed
       assert_redirected_to madmin_rsvps_path
       assert_match(/Confirmed #{Regexp.escape(@rsvp.full_name)}/, flash[:notice])
     end
@@ -51,13 +51,13 @@ module Madmin
     end
 
     test "confirm does not re-email or change an already-confirmed rsvp" do
-      @rsvp.update!(confirmed: "yes")
+      @rsvp.update!(confirmed: "confirmed")
 
       assert_no_emails do
         patch confirm_madmin_rsvp_path(@rsvp)
       end
 
-      assert_equal "yes", @rsvp.reload.confirmed
+      assert_equal "confirmed", @rsvp.reload.confirmed
       assert_redirected_to madmin_rsvps_path
       assert_match(/can’t be confirmed/, flash[:alert])
     end
@@ -91,7 +91,7 @@ module Madmin
     end
 
     test "index hides both buttons once an rsvp is already confirmed" do
-      @rsvp.update!(confirmed: "yes")
+      @rsvp.update!(confirmed: "confirmed")
 
       get madmin_rsvps_path
 
