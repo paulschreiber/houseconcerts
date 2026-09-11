@@ -5,6 +5,7 @@ namespace :madmin, path: Settings.admin_prefix do
   resources :people do
     member do
       patch :invite
+      patch :rsvp_no
     end
   end
   resources :rsvps do
