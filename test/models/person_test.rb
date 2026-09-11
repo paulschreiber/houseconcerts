@@ -62,4 +62,23 @@ class PersonTest < ActiveSupport::TestCase
       assert_not person.can_invite?, "can_invite? wrong for status=#{status}"
     end
   end
+
+  test "can_rsvp_no? is true for an active person who hasn't RSVPd for the next show" do
+    person = people(:one)
+    assert person.can_rsvp_no?
+  end
+
+  test "can_rsvp_no? is false for an inactive person" do
+    person = people(:one)
+    person.update!(status: "removed")
+    assert_not person.can_rsvp_no?
+  end
+
+  test "can_rsvp_no? is false once the person has an RSVP for the next show" do
+    person = people(:one)
+    RSVP.create!(first_name: person.first_name, last_name: person.last_name, email: person.email,
+                 show: Show.next, response: "yes", seats_reserved: 2)
+
+    assert_not person.can_rsvp_no?
+  end
 end
