@@ -1,33 +1,33 @@
 version: 2
 updates:
-  - package-ecosystem: 'github-actions'
-    directory: '/'
+  - package-ecosystem: "github-actions"
+    directory: "/"
     schedule:
-      interval: 'weekly'
-      day: 'sunday'
+      interval: "weekly"
+      day: "sunday"
     cooldown:
       default-days: 7
 
-  - package-ecosystem: 'pre-commit'
-    directory: '/'
+  - package-ecosystem: "pre-commit"
+    directory: "/"
     schedule:
-      interval: 'weekly'
-      day: 'sunday'
+      interval: "weekly"
+      day: "sunday"
     cooldown:
       default-days: 7
 
-  - package-ecosystem: 'bundler'
-    directory: '/'
+  - package-ecosystem: "bundler"
+    directory: "/"
     schedule:
-      interval: 'weekly'
-      day: 'sunday'
+      interval: "weekly"
+      day: "sunday"
     cooldown:
       default-days: 7
 
-  - package-ecosystem: 'npm'
-    directory: '/'
+  - package-ecosystem: "npm"
+    directory: "/"
     schedule:
-      interval: 'weekly'
-      day: 'sunday'
+      interval: "weekly"
+      day: "sunday"
     cooldown:
       default-days: 7
