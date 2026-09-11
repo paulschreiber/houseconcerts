@@ -2,6 +2,7 @@ source "https://rubygems.org"
 
 ruby ">= 3.3.0"
 
+gem "json", "< 3" # activesupport 8.1.3.1's JSON.decode is incompatible with json 3.x's keyword-only parse signature
 gem "mysql2"
 gem "rails", "~> 8"
 
