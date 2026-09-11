@@ -23,3 +23,11 @@ updates:
       day: 'sunday'
     cooldown:
       default-days: 7
+
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'sunday'
+    cooldown:
+      default-days: 7
