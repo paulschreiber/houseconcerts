@@ -20,7 +20,7 @@ repos:
         exclude: ^test/fixtures/
 
   - repo: https://github.com/rubocop/rubocop
-    rev: v1.90.0
+    rev: v1.91.0
     hooks:
       - id: rubocop
         additional_dependencies:
@@ -29,7 +29,7 @@ repos:
           - rubocop-rails
 
   - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v10.9.1
+    rev: v10.10.0
     hooks:
       - id: eslint
         files: \.js$
@@ -49,7 +49,7 @@ repos:
           - prettier
 
   - repo: https://github.com/thibaudcolas/pre-commit-stylelint
-    rev: v17.14.1
+    rev: v17.15.0
     hooks:
       - id: stylelint
         files: \.scss$
