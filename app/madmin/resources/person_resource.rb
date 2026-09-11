@@ -14,7 +14,7 @@ class PersonResource < Madmin::Resource
   attribute :removed_at, field: RemovedAtField, form: false, new: true, edit: true, index: true
   attribute :created_at, field: ShortDateTimeField, index: true
   attribute :updated_at
-  attribute :status, field: RadioEnumField
+  attribute :status, field: RadioEnumField, index: true
 
   # Associations
   attribute :venue_groups
