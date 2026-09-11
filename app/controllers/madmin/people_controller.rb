@@ -12,6 +12,16 @@ module Madmin
       end
     end
 
+    def rsvp_no
+      show = Show.next
+      if @record.can_rsvp_no? && show
+        RSVPNo.call(@record, show)
+        redirect_back_or_to resource.index_path, notice: "Recorded a “no” RSVP for #{@record.full_name} for #{show.name}."
+      else
+        redirect_back_or_to resource.index_path, alert: "Can’t record a “no” RSVP for #{@record.full_name}."
+      end
+    end
+
     private
 
       # The "removed" scope (recent unsubscriptions) defaults to newest-first,
