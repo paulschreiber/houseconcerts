@@ -6,19 +6,19 @@ class RSVPResource < Madmin::Resource
                         compute: ->(record) { record.show&.name }
   attribute :show_date, field: ComputedField, label: "Show Date", form: false, show: false, index: true,
                         compute: ->(record) { record.show&.start&.strftime("%Y-%m-%d") }
-  attribute :uniqid, form: false, show: false
-  attribute :first_name
-  attribute :last_name
-  attribute :email
-  attribute :phone_number
-  attribute :postcode, label: "Postal Code"
+  attribute :uniqid, form: false, show: false, searchable: false
+  attribute :first_name, searchable: true
+  attribute :last_name, searchable: true
+  attribute :email, searchable: true
+  attribute :phone_number, searchable: true
+  attribute :postcode, label: "Postal Code", searchable: false
   attribute :seats_reserved, index: true
   attribute :seats_used
-  attribute :ip_address, field: ReadonlyStringField, form: false, new: true, edit: true
+  attribute :ip_address, field: ReadonlyStringField, form: false, new: true, edit: true, searchable: false
   attribute :confirmed_at, field: ReadonlyDateTimeField, form: false, new: true, edit: true
   attribute :created_at
   attribute :updated_at
-  attribute :referrer, field: ReadonlyStringField, form: false, new: true, edit: true
+  attribute :referrer, field: ReadonlyStringField, form: false, new: true, edit: true, searchable: false
   attribute :response, field: HideableResponseField, index: true
   attribute :confirmed, field: RadioEnumField
 

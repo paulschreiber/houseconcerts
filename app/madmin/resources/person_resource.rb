@@ -2,15 +2,15 @@ class PersonResource < Madmin::Resource
   # Attributes
   attribute :id
   attribute :full_name, field: LinkedStringField, label: "Name", form: false, index: true
-  attribute :uniqid, form: false, show: false
-  attribute :first_name
-  attribute :last_name
-  attribute :email
-  attribute :phone_number
-  attribute :postcode, label: "Postal Code"
-  attribute :notes, field: MultilineTextField
-  attribute :ip_address, field: ReadonlyStringField, form: false, new: true, edit: true
-  attribute :removal_ip_address, field: ReadonlyStringField, form: false, new: true, edit: true
+  attribute :uniqid, form: false, show: false, searchable: false
+  attribute :first_name, searchable: true
+  attribute :last_name, searchable: true
+  attribute :email, searchable: true
+  attribute :phone_number, searchable: false
+  attribute :postcode, label: "Postal Code", searchable: false
+  attribute :notes, field: MultilineTextField, searchable: false
+  attribute :ip_address, field: ReadonlyStringField, form: false, new: true, edit: true, searchable: false
+  attribute :removal_ip_address, field: ReadonlyStringField, form: false, new: true, edit: true, searchable: false
   attribute :removed_at, field: RemovedAtField, form: false, new: true, edit: true, index: true
   attribute :created_at, field: ShortDateTimeField, index: true
   attribute :updated_at
