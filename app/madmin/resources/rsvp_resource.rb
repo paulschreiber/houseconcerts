@@ -40,6 +40,8 @@ class RSVPResource < Madmin::Resource
       button_to "Confirm", confirm_madmin_rsvp_path(record), method: :patch, class: "btn btn-secondary"
     elsif record.can_waitlist?
       button_to "Waitlist", waitlist_madmin_rsvp_path(record), method: :patch, class: "btn btn-secondary"
+    elsif Current.admin_scope == "next_show_attendees" && record.can_cancel?
+      button_to "Cancel", cancel_madmin_rsvp_path(record), method: :patch, class: "btn btn-secondary"
     end
   end
 
