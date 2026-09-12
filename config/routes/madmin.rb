@@ -12,6 +12,7 @@ namespace :madmin, path: Settings.admin_prefix do
     member do
       patch :confirm
       patch :waitlist
+      patch :cancel
     end
   end
   resources :shows
