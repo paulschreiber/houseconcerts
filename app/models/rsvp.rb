@@ -137,12 +137,12 @@ class RSVP < ApplicationRecord
     !confirmed? && yes? && show&.can_waitlist_rsvps?
   end
 
-  def can_cancel?
-    yes? && show&.next_show? && !show.occurred?
+  def can_cancel?(next_show = Show.next)
+    yes? && show.present? && show.id == next_show&.id && !show.occurred?
   end
 
-  def self.next_show_attendees
-    RSVP.where(show: Show.next, response: "yes", confirmed: "confirmed")
+  def self.next_show_attendees(show = Show.next)
+    RSVP.where(show: show, response: "yes", confirmed: "confirmed")
   end
 
   def self.unconfirmed_rsvps

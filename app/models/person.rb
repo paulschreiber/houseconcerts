@@ -44,8 +44,8 @@ class Person < ApplicationRecord
     active?
   end
 
-  def can_rsvp_no?
-    active? && !RSVP.exists?(email: email, show: Show.next)
+  def can_rsvp_no?(next_show = Show.next)
+    active? && !RSVP.exists?(email: email, show: next_show)
   end
 
   def attendance_history
