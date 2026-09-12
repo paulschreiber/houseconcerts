@@ -72,6 +72,46 @@ module Madmin
       assert_match(/can’t be waitlisted/, flash[:alert])
     end
 
+    test "cancel cancels the rsvp and redirects with a notice" do
+      @rsvp.update!(confirmed: "confirmed")
+
+      patch cancel_madmin_rsvp_path(@rsvp)
+
+      @rsvp.reload
+      assert_equal "no", @rsvp.response
+      assert_equal 0, @rsvp.seats_reserved
+      assert_redirected_to madmin_rsvps_path
+      assert_match(/Cancelled #{Regexp.escape(@rsvp.full_name)}/, flash[:notice])
+    end
+
+    test "cancel does not change an already-no rsvp" do
+      @rsvp.update!(response: "no")
+
+      patch cancel_madmin_rsvp_path(@rsvp)
+
+      assert_equal "no", @rsvp.reload.response
+      assert_redirected_to madmin_rsvps_path
+      assert_match(/can’t be cancelled/, flash[:alert])
+    end
+
+    test "index shows a Cancel button for an rsvp in the next_show_attendees scope" do
+      @rsvp.update!(confirmed: "confirmed")
+
+      get madmin_rsvps_path(scope: "next_show_attendees")
+
+      assert_response :success
+      assert_match(/>Cancel</, response.body)
+    end
+
+    test "index hides the Cancel button outside the next_show_attendees scope" do
+      @rsvp.update!(confirmed: "confirmed")
+
+      get madmin_rsvps_path
+
+      assert_response :success
+      assert_no_match(/>Cancel</, response.body)
+    end
+
     test "index shows a Confirm button for an rsvp that can be confirmed" do
       get madmin_rsvps_path
 

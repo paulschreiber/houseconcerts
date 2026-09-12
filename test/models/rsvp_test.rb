@@ -115,6 +115,18 @@ class RsvpTest < ActiveSupport::TestCase
     assert_equal "waitlisted", rsvp.reload.confirmed
   end
 
+  test "cancel! sets response to no and zeroes seats only for a yes rsvp" do
+    rsvp = rsvps(:one)
+    assert rsvp.cancel!
+    rsvp.reload
+    assert_equal "no", rsvp.response
+    assert_equal 0, rsvp.seats_reserved
+
+    no_rsvp = rsvps(:one).dup
+    no_rsvp.response = "no"
+    assert_not no_rsvp.cancel!
+  end
+
   test "notify_admin delivers a mailer email when a yes rsvp is created" do
     assert_emails 1 do
       RSVP.create!(
@@ -181,6 +193,31 @@ class RsvpTest < ActiveSupport::TestCase
       assert_equal expected_can_confirm, rsvp.can_confirm?, "can_confirm? wrong for #{combo}"
       assert_equal expected_can_waitlist, rsvp.can_waitlist?, "can_waitlist? wrong for #{combo}"
     end
+  end
+
+  test "can_cancel? is true only for a yes rsvp on the next upcoming show" do
+    rsvp = rsvps(:one)
+    assert rsvp.show.next_show?, "fixture setup assumption: rsvps(:one)'s show is Show.next"
+
+    assert rsvp.can_cancel?
+
+    rsvp.response = "no"
+    assert_not rsvp.can_cancel?
+  end
+
+  test "can_cancel? is false once the show has occurred" do
+    rsvp = rsvps(:one)
+    rsvp.show.start = 1.day.ago
+    rsvp.show.end = 1.day.ago
+
+    assert_not rsvp.can_cancel?
+  end
+
+  test "can_cancel? is false when the show is not the next upcoming show" do
+    rsvp = rsvps(:one)
+    rsvp.show_id = shows(:sold_out).id
+
+    assert_not rsvp.can_cancel?
   end
 
   test "self.unconfirmed_rsvps includes unconfirmed and waitlisted yes rsvps for the next show" do
