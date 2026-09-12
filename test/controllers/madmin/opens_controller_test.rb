@@ -29,5 +29,30 @@ module Madmin
 
       assert_redirected_to madmin_opens_path
     end
+
+    test "create redirects without creating a record, since opens are read-only" do
+      assert_no_difference "Open.count" do
+        post madmin_opens_path, params: { open: { email: "new@example.com" } }
+      end
+
+      assert_redirected_to madmin_opens_path
+    end
+
+    test "update redirects without changing the record, since opens are read-only" do
+      open = opens(:one)
+
+      patch madmin_open_path(open), params: { open: { email: "changed@example.com" } }
+
+      assert_redirected_to madmin_opens_path
+      assert_nil open.reload.email
+    end
+
+    test "destroy redirects without destroying the record, since opens are read-only" do
+      assert_no_difference "Open.count" do
+        delete madmin_open_path(opens(:one))
+      end
+
+      assert_redirected_to madmin_opens_path
+    end
   end
 end

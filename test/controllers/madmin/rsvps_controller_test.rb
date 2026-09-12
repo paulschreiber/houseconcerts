@@ -28,6 +28,47 @@ module Madmin
       assert_response :success
     end
 
+    test "create creates an rsvp and redirects to its show page" do
+      assert_difference "RSVP.count", 1 do
+        post madmin_rsvps_path, params: { rsvp: {
+          first_name: "New", last_name: "Rsvp", email: "new.rsvp@example.com",
+          show_id: shows(:upcoming).id, response: "yes", seats_reserved: 2
+        } }
+      end
+
+      assert_redirected_to madmin_rsvp_path(RSVP.last)
+    end
+
+    test "create with invalid attributes renders new" do
+      assert_no_difference "RSVP.count" do
+        post madmin_rsvps_path, params: { rsvp: { first_name: "" } }
+      end
+
+      assert_response :unprocessable_content
+    end
+
+    test "update updates the rsvp and redirects to its show page" do
+      patch madmin_rsvp_path(@rsvp), params: { rsvp: { first_name: "Updated" } }
+
+      assert_equal "Updated", @rsvp.reload.first_name
+      assert_redirected_to madmin_rsvp_path(@rsvp)
+    end
+
+    test "update with invalid attributes renders edit" do
+      patch madmin_rsvp_path(@rsvp), params: { rsvp: { first_name: "" } }
+
+      assert_response :unprocessable_content
+      assert_equal "Test", @rsvp.reload.first_name
+    end
+
+    test "destroy destroys the rsvp and redirects to the index page" do
+      assert_difference "RSVP.count", -1 do
+        delete madmin_rsvp_path(@rsvp)
+      end
+
+      assert_redirected_to madmin_rsvps_path
+    end
+
     test "confirm confirms the rsvp, emails it, and redirects with a notice" do
       assert_emails 1 do
         patch confirm_madmin_rsvp_path(@rsvp)
