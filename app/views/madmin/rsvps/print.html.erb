@@ -1,0 +1,50 @@
+<% content_for :title, "Attendees — #{@show&.name}" %>
+
+<header class="header">
+  <h1><%= @show&.name %></h1>
+  <p><%= @show&.start&.strftime("%A, %B %-d, %Y") %></p>
+
+  <div class="actions">
+    <%= link_to "Back", madmin_rsvps_path(scope: "next_show_attendees"), class: "btn btn-secondary" %>
+  </div>
+</header>
+
+<% if @show.nil? %>
+  <p>There’s no upcoming show.</p>
+<% else %>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Phone Number</th>
+          <th>Seats</th>
+          <th>On Mailing List</th>
+          <th>Attended Before</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @rsvps.each do |rsvp| %>
+          <tr>
+            <td><%= rsvp.full_name %></td>
+            <td><%= rsvp.phone_number_formatted(rsvp.phone_number) if rsvp.phone_number.present? %></td>
+            <td><%= rsvp.seats_reserved %></td>
+            <td><%= rsvp.person_exists? ? "✔" : "✖" %></td>
+            <td><%= rsvp.attended_before? ? "✔" : "✖" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="metrics">
+    <div class="metric">
+      <h4>RSVPs</h4>
+      <p><%= @rsvp_count %></p>
+    </div>
+    <div class="metric">
+      <h4>Seats Reserved</h4>
+      <p><%= @total_seats %></p>
+    </div>
+  </div>
+<% end %>

@@ -168,3 +168,13 @@ main:has(> #sidebar) {
     }
   }
 }
+
+/* Attendee print view: hide the admin chrome so only the attendee list
+   itself ends up on paper. */
+@media print {
+  body.rsvps.print #navbar,
+  body.rsvps.print #sidebar,
+  body.rsvps.print .header .actions {
+    display: none;
+  }
+}
