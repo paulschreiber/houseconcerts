@@ -174,10 +174,13 @@ module Madmin
 
       assert_response :success
       assert_match(@rsvp.show.name, response.body)
-      assert_match(/#{Regexp.escape(@rsvp.full_name)}/, response.body)
-      assert_match(/\(212\) 555-1234/, response.body)
-      assert_match(/>#{@rsvp.seats_reserved}</, response.body)
-      assert_match(%r{>✖</td>\s*<td>✖<}, response.body)
+
+      cells = attendee_row_cells(@rsvp.full_name)
+      assert_equal "(212) 555-1234", cells[1].text
+      assert_equal @rsvp.seats_reserved.to_s, cells[2].text
+      assert_equal "✖", cells[3].text
+      assert_equal "✖", cells[4].text
+
       assert_match(%r{RSVPs</h4>\s*<p>1<}, response.body)
       assert_match(%r{Seats Reserved</h4>\s*<p>2<}, response.body)
     end
@@ -190,7 +193,9 @@ module Madmin
       get print_madmin_rsvps_path
 
       assert_response :success
-      assert_match(%r{>✔</td>\s*<td>✔<}, response.body)
+      cells = attendee_row_cells(@rsvp.full_name)
+      assert_equal "✔", cells[3].text
+      assert_equal "✔", cells[4].text
     end
 
     test "print excludes an rsvp that isn't a confirmed yes for the next show" do
@@ -227,5 +232,16 @@ module Madmin
       assert_no_match(/>Confirm</, response.body)
       assert_no_match(/>Waitlist</, response.body)
     end
+
+    private
+
+      # Finds the print view's attendee row by name and returns its <td> cells,
+      # so assertions check that specific attendee's columns instead of
+      # matching any row's markup anywhere in the page.
+      def attendee_row_cells(full_name)
+        row = response.parsed_body.css("tbody tr").find { |tr| tr.text.include?(full_name) }
+        assert row, "no attendee row found for #{full_name}"
+        row.css("td")
+      end
   end
 end
