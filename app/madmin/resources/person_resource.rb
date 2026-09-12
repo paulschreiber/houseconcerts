@@ -26,11 +26,11 @@ class PersonResource < Madmin::Resource
   # Add actions to the resource's show page
   # Pass collection: true to also render it in each row on the index page
   member_action(collection: true) do |record|
-    next unless Show.next
+    next unless @next_show
 
     buttons = []
     buttons << button_to("Invite", invite_madmin_person_path(record), method: :patch, class: "btn btn-secondary") if record.can_invite?
-    buttons << button_to("RSVP No", rsvp_no_madmin_person_path(record), method: :patch, class: "btn btn-secondary") if record.can_rsvp_no?
+    buttons << button_to("RSVP No", rsvp_no_madmin_person_path(record), method: :patch, class: "btn btn-secondary") if record.can_rsvp_no?(@next_show)
     safe_join(buttons)
   end
 

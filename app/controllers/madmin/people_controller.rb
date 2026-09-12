@@ -1,6 +1,7 @@
 module Madmin
   class PeopleController < Madmin::ResourceController
     before_action { Current.admin_scope = params[:scope] }
+    before_action :next_show, if: -> { action_name.in?(%w[index show]) }
 
     def invite
       show = Show.next
@@ -31,6 +32,11 @@ module Madmin
         return resources.reorder(removed_at: :desc) if params[:scope] == "removed" && params[:sort].blank?
 
         resources
+      end
+
+      # Avoid re-running the "find the next show" query once per row.
+      def next_show
+        @next_show ||= Show.next
       end
   end
 end

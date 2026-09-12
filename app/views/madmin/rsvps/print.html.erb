@@ -29,8 +29,8 @@
             <td><%= rsvp.full_name %></td>
             <td><%= rsvp.phone_number_formatted(rsvp.phone_number) if rsvp.phone_number.present? %></td>
             <td><%= rsvp.seats_reserved %></td>
-            <td><%= rsvp.person_exists? ? "✔" : "✖" %></td>
-            <td><%= rsvp.attended_before? ? "✔" : "✖" %></td>
+            <td><%= @subscribed_emails.include?(rsvp.email) ? "✔" : "✖" %></td>
+            <td><%= @attended_emails.include?(rsvp.email) ? "✔" : "✖" %></td>
           </tr>
         <% end %>
       </tbody>
