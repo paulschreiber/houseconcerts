@@ -153,6 +153,53 @@ module Madmin
       assert_no_match(/>Cancel</, response.body)
     end
 
+    test "index shows a Print link in the next_show_attendees scope" do
+      get madmin_rsvps_path(scope: "next_show_attendees")
+
+      assert_response :success
+      assert_match(/>Print</, response.body)
+    end
+
+    test "index hides the Print link outside the next_show_attendees scope" do
+      get madmin_rsvps_path
+
+      assert_response :success
+      assert_no_match(/>Print</, response.body)
+    end
+
+    test "print renders the next show's attendees and totals" do
+      @rsvp.update!(confirmed: "confirmed", phone_number: "2125551234")
+
+      get print_madmin_rsvps_path
+
+      assert_response :success
+      assert_match(@rsvp.show.name, response.body)
+      assert_match(/#{Regexp.escape(@rsvp.full_name)}/, response.body)
+      assert_match(/\(212\) 555-1234/, response.body)
+      assert_match(/>#{@rsvp.seats_reserved}</, response.body)
+      assert_match(%r{>✖</td>\s*<td>✖<}, response.body)
+      assert_match(%r{RSVPs</h4>\s*<p>1<}, response.body)
+      assert_match(%r{Seats Reserved</h4>\s*<p>2<}, response.body)
+    end
+
+    test "print flags an attendee who is on the mailing list and has attended before" do
+      @rsvp.update!(confirmed: "confirmed", email: people(:one).email)
+      RSVP.create!(first_name: "Past", last_name: "Attendee", email: @rsvp.email, show: shows(:past),
+                   response: "yes", confirmed: "confirmed", seats_reserved: 1)
+
+      get print_madmin_rsvps_path
+
+      assert_response :success
+      assert_match(%r{>✔</td>\s*<td>✔<}, response.body)
+    end
+
+    test "print excludes an rsvp that isn't a confirmed yes for the next show" do
+      get print_madmin_rsvps_path
+
+      assert_response :success
+      assert_no_match(/#{Regexp.escape(@rsvp.full_name)}/, response.body)
+    end
+
     test "index shows a Confirm button for an rsvp that can be confirmed" do
       get madmin_rsvps_path
 
