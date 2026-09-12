@@ -31,8 +31,7 @@ module Madmin
     end
 
     def cancel
-      if @record.can_cancel?
-        @record.cancel!
+      if @record.can_cancel? && @record.cancel!
         redirect_back_or_to resource.index_path, notice: "Cancelled #{@record.full_name}’s RSVP for #{@record.show&.name}."
       else
         redirect_back_or_to resource.index_path, alert: "#{@record.full_name}’s RSVP can’t be cancelled."
