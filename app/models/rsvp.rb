@@ -117,6 +117,10 @@ class RSVP < ApplicationRecord
     Person.find_by(email: email)
   end
 
+  def attended_before?
+    RSVP.joins(:show).merge(Show.occurred).exists?(email: email, response: "yes", confirmed: "confirmed", seats_reserved: 1..)
+  end
+
   def self.next_show
     RSVP.where(show: Show.next)
   end
