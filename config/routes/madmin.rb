@@ -14,6 +14,9 @@ namespace :madmin, path: Settings.admin_prefix do
       patch :waitlist
       patch :cancel
     end
+    collection do
+      get :print
+    end
   end
   resources :shows
   resources :venues
