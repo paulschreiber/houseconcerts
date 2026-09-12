@@ -99,4 +99,10 @@ class ShowTest < ActiveSupport::TestCase
       assert_equal expected_can_waitlist, show.can_waitlist_rsvps?, "can_waitlist_rsvps? wrong for #{combo}"
     end
   end
+
+  test "summary combines the name with an ISO-formatted date" do
+    show = shows(:upcoming)
+
+    assert_equal "#{show.name} (#{show.start.to_date.iso8601})", show.summary
+  end
 end

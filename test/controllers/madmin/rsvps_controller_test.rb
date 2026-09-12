@@ -205,6 +205,62 @@ module Madmin
       assert_no_match(/#{Regexp.escape(@rsvp.full_name)}/, response.body)
     end
 
+    test "index renders Show and Seats columns instead of Show Name/Show Date/Seats Reserved" do
+      get madmin_rsvps_path
+
+      assert_response :success
+      headers = response.parsed_body.css("thead th").map { |th| th.text.strip }
+      assert_includes headers, "Show"
+      assert_includes headers, "Seats"
+      assert_not_includes headers, "Show Name"
+      assert_not_includes headers, "Show Date"
+      assert_not_includes headers, "Seats Reserved"
+    end
+
+    test "index hides the Attended Before column on the all, previous_show, and previous_show_attendees scopes" do
+      [ nil, "previous_show", "previous_show_attendees" ].each do |scope|
+        get madmin_rsvps_path(scope: scope)
+
+        assert_response :success
+        headers = response.parsed_body.css("thead th").map { |th| th.text.strip }
+        assert_not_includes headers, "Attended Before", "Attended Before shown for scope=#{scope.inspect}"
+      end
+    end
+
+    test "index shows the Attended Before column on other scopes" do
+      %w[next_show next_show_attendees unconfirmed_rsvps nonsubscribers].each do |scope|
+        get madmin_rsvps_path(scope: scope)
+
+        assert_response :success
+        headers = response.parsed_body.css("thead th").map { |th| th.text.strip }
+        assert_includes headers, "Attended Before", "Attended Before missing for scope=#{scope}"
+      end
+    end
+
+    test "index shows the show's summary and seat count for each rsvp" do
+      @rsvp.update!(confirmed: "confirmed")
+
+      get madmin_rsvps_path(scope: "next_show_attendees")
+
+      assert_response :success
+      cells = attendee_row_cells(@rsvp.full_name)
+      assert_equal @rsvp.show.summary, cells[1].text.strip
+      assert_equal @rsvp.seats_reserved.to_s, cells[2].text.strip
+      assert_equal "✖", cells[3].text.strip
+    end
+
+    test "index marks an rsvp who has attended a past show" do
+      @rsvp.update!(confirmed: "confirmed")
+      RSVP.create!(first_name: "Past", last_name: "Attendee", email: @rsvp.email, show: shows(:past),
+                   response: "yes", confirmed: "confirmed", seats_reserved: 1)
+
+      get madmin_rsvps_path(scope: "next_show_attendees")
+
+      assert_response :success
+      cells = attendee_row_cells(@rsvp.full_name)
+      assert_equal "✔", cells[3].text.strip
+    end
+
     test "index shows a Confirm button for an rsvp that can be confirmed" do
       get madmin_rsvps_path
 
