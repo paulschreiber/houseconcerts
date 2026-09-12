@@ -2,17 +2,15 @@ class RSVPResource < Madmin::Resource
   # Attributes
   attribute :id
   attribute :full_name, field: LinkedStringField, label: "Name", form: false, index: true
-  attribute :show_name, field: ComputedField, label: "Show Name", form: false, show: false, index: true,
-                        compute: ->(record) { record.show&.name }
-  attribute :show_date, field: ComputedField, label: "Show Date", form: false, show: false, index: true,
-                        compute: ->(record) { record.show&.start&.strftime("%Y-%m-%d") }
+  attribute :show_summary, field: ComputedField, label: "Show", form: false, show: false, index: true,
+                           compute: ->(record) { record.show&.summary }
   attribute :uniqid, form: false, show: false, searchable: false
   attribute :first_name, searchable: true
   attribute :last_name, searchable: true
   attribute :email, searchable: true
   attribute :phone_number, searchable: true
   attribute :postcode, label: "Postal Code", searchable: false
-  attribute :seats_reserved, index: true
+  attribute :seats_reserved, label: "Seats", index: true
   attribute :seats_used
   attribute :ip_address, field: ReadonlyStringField, form: false, new: true, edit: true, searchable: false
   attribute :confirmed_at, field: ReadonlyDateTimeField, form: false, new: true, edit: true
@@ -21,6 +19,8 @@ class RSVPResource < Madmin::Resource
   attribute :referrer, field: ReadonlyStringField, form: false, new: true, edit: true, searchable: false
   attribute :response, field: HideableResponseField, index: true
   attribute :confirmed, field: RadioEnumField
+  attribute :attended_before, field: HideableAttendedBeforeField, label: "Attended Before", form: false, show: false, index: true,
+                              compute: ->(record) { record.attended_before? ? "✔" : "✖" }
 
   # Associations
   attribute :show
