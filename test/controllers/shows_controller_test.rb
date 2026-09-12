@@ -23,6 +23,22 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "shows preloads artists instead of querying per show" do
+    shows(:past).artists << artists(:one)
+    Show.create!(name: "Another Past Show", venue: venues(:one), price: 20, artists: [ artists(:one) ],
+                 start: 2.months.ago, end: 2.months.ago + 2.hours)
+
+    artist_queries = 0
+    callback = ->(*, payload) { artist_queries += 1 if payload[:name] == "Artist Load" }
+
+    ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+      get past_shows_path
+    end
+
+    assert_response :success
+    assert_equal 1, artist_queries
+  end
+
   test "shows shows a message when there are no past shows" do
     Show.update_all(status: "cancelled") # rubocop:disable Rails/SkipsModelValidations
 
