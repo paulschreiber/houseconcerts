@@ -55,6 +55,12 @@ class RSVPResource < Madmin::Resource
     end
   end
 
+  collection_action do
+    next unless Current.admin_scope == "next_show_attendees"
+
+    link_to "Print", print_madmin_rsvps_path, class: "btn btn-secondary", target: "_blank", rel: "noopener"
+  end
+
   # Customize the display name of records in the admin area.
   def self.display_name(record) = "#{record.full_name} — #{record.show&.name} #{record.show&.start&.strftime('%Y-%m-%d')}"
 

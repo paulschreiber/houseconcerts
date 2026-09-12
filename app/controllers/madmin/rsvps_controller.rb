@@ -1,8 +1,16 @@
 module Madmin
   class RsvpsController < Madmin::ResourceController
     before_action { Current.admin_scope = params[:scope] }
+    skip_before_action :set_record, only: :print
 
     helper_method :attendee_totals
+
+    def print
+      @show = Show.next
+      @rsvps = RSVP.next_show_attendees.order(:last_name, :first_name)
+      @rsvp_count = @rsvps.count
+      @total_seats = @rsvps.sum(:seats_reserved)
+    end
 
     def confirm
       if @record.can_confirm?
