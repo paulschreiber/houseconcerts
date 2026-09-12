@@ -27,6 +27,46 @@ module Madmin
       assert_response :success
     end
 
+    test "create creates a person and redirects to their show page" do
+      assert_difference "Person.count", 1 do
+        post madmin_people_path, params: { person: { first_name: "New", last_name: "Person", email: "new.person@example.com" } }
+      end
+
+      assert_redirected_to madmin_person_path(Person.last)
+    end
+
+    test "create with invalid attributes renders new" do
+      assert_no_difference "Person.count" do
+        post madmin_people_path, params: { person: { first_name: "" } }
+      end
+
+      assert_response :unprocessable_content
+    end
+
+    test "update updates the person and redirects to their show page" do
+      patch madmin_person_path(@person), params: { person: { first_name: "Updated" } }
+
+      assert_equal "Updated", @person.reload.first_name
+      assert_redirected_to madmin_person_path(@person)
+    end
+
+    test "update with invalid attributes renders edit" do
+      patch madmin_person_path(@person), params: { person: { first_name: "" } }
+
+      assert_response :unprocessable_content
+      assert_equal "Test", @person.reload.first_name
+    end
+
+    test "destroy destroys the person and redirects to the index page" do
+      person = people(:subscribed)
+
+      assert_difference "Person.count", -1 do
+        delete madmin_person_path(person)
+      end
+
+      assert_redirected_to madmin_people_path
+    end
+
     test "invite emails the person and redirects with a notice" do
       assert_emails 1 do
         patch invite_madmin_person_path(@person)
