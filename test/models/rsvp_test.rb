@@ -197,7 +197,9 @@ class RsvpTest < ActiveSupport::TestCase
 
   test "can_cancel? is true only for a yes rsvp on the next upcoming show" do
     rsvp = rsvps(:one)
-    assert rsvp.show.next_show?, "fixture setup assumption: rsvps(:one)'s show is Show.next"
+    rsvp.show.update!(start: 1.day.from_now, end: 1.day.from_now + 2.hours)
+    shows(:sold_out).update!(start: 2.days.from_now, end: 2.days.from_now + 2.hours)
+    assert_equal rsvp.show, Show.next
 
     assert rsvp.can_cancel?
 
@@ -215,7 +217,10 @@ class RsvpTest < ActiveSupport::TestCase
 
   test "can_cancel? is false when the show is not the next upcoming show" do
     rsvp = rsvps(:one)
+    shows(:upcoming).update!(start: 1.day.from_now, end: 1.day.from_now + 2.hours)
+    shows(:sold_out).update!(start: 2.days.from_now, end: 2.days.from_now + 2.hours)
     rsvp.show_id = shows(:sold_out).id
+    assert_not_equal shows(:sold_out), Show.next
 
     assert_not rsvp.can_cancel?
   end
@@ -339,6 +344,13 @@ class RsvpTest < ActiveSupport::TestCase
 
     RSVP.create!(first_name: "Past", last_name: "Attendee", email: rsvp.email, show: shows(:past),
                  response: "no", confirmed: "unconfirmed", seats_reserved: 0)
+
+    assert_not rsvp.attended_before?
+  end
+
+  test "attended_before? does not count the rsvp's own record" do
+    rsvp = RSVP.create!(first_name: "Self", last_name: "Match", email: "self.match@example.com", show: shows(:past),
+                        response: "yes", confirmed: "confirmed", seats_reserved: 1)
 
     assert_not rsvp.attended_before?
   end
