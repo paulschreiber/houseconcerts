@@ -98,6 +98,10 @@ class Show < ApplicationRecord
     "#{name} (#{start_date_short})"
   end
 
+  def summary
+    "#{name} (#{start.to_date.iso8601})"
+  end
+
   def set_end_time
     self.end = start + Settings.show_duration.hours unless self.end
   end
