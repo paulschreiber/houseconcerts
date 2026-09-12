@@ -79,6 +79,13 @@ class RSVP < ApplicationRecord
     save
   end
 
+  def cancel!
+    return unless yes?
+
+    self.response = "no"
+    save
+  end
+
   def confirmed?
     confirmed == "confirmed"
   end
@@ -120,6 +127,10 @@ class RSVP < ApplicationRecord
 
   def can_waitlist?
     !confirmed? && yes? && show&.can_waitlist_rsvps?
+  end
+
+  def can_cancel?
+    yes? && show&.next_show? && !show.occurred?
   end
 
   def self.next_show_attendees
