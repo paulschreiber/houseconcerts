@@ -4,7 +4,7 @@ class ShowsController < ApplicationController
   end
 
   def shows
-    @shows = Show.past.occurred
+    @shows = Show.past.occurred.includes(:artists)
   end
 
   def calendar
