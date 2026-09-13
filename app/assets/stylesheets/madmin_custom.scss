@@ -178,3 +178,10 @@ main:has(> #sidebar) {
     display: none;
   }
 }
+
+/* zebra striping for tables */
+table tbody tr:nth-child(even) {
+  background-color: var(--background-color);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
