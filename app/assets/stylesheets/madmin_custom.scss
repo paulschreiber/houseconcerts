@@ -177,6 +177,14 @@ main:has(> #sidebar) {
   body.rsvps.print .header .actions {
     display: none;
   }
+
+  body.rsvps.print {
+    td,
+    th {
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+    }
+  }
 }
 
 /* zebra striping for tables */
