@@ -3,6 +3,9 @@
   "private": true,
   "type": "module",
   "description": "Lint/format tooling for app/javascript and app/assets/stylesheets. No build step - JS/CSS are served directly by importmap-rails/dartsass-rails.",
+  "browserslist": [
+    "baseline widely available"
+  ],
   "scripts": {
     "lint:js": "eslint app/javascript",
     "format": "prettier --write app/javascript",
