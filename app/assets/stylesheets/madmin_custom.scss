@@ -191,5 +191,4 @@ main:has(> #sidebar) {
 table tbody tr:nth-child(even) {
   background-color: var(--background-color);
   print-color-adjust: exact;
-  -webkit-print-color-adjust: exact;
 }
