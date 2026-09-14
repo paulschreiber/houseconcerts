@@ -4,7 +4,7 @@ class Person < ApplicationRecord
   include NumberHelpers
   include IPAddress
 
-  has_many :person_venue_groups, dependent: :destroy
+  has_many :person_venue_groups, dependent: :delete_all
   has_many :venue_groups, through: :person_venue_groups
 
   enum :status, { active: 0, bouncing: 1, moved: 2, removed: 3 }, default: :active
