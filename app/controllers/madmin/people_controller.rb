@@ -37,5 +37,13 @@ module Madmin
       def next_show
         @next_show ||= Show.next
       end
+
+      # Preload can_rsvp_no? for the whole page in one query instead of one
+      # per row.
+      def paginate_collection(collection)
+        pagy, records = super
+        Current.next_show_rsvpd_emails = RSVP.rsvpd_emails(@next_show) if @next_show
+        [ pagy, records ]
+      end
   end
 end

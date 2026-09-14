@@ -44,8 +44,11 @@ class Person < ApplicationRecord
     active?
   end
 
-  def can_rsvp_no?(next_show = Show.next)
-    active? && !RSVP.exists?(email: email, show: next_show)
+  def can_rsvp_no?(next_show = nil)
+    return false unless active?
+    return Current.next_show_rsvpd_emails.exclude?(email) if Current.next_show_rsvpd_emails
+
+    !RSVP.exists?(email: email, show: next_show || Show.next)
   end
 
   def rsvp_prefill_attributes
