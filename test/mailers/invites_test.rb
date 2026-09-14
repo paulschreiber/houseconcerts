@@ -38,7 +38,7 @@ class InvitesTest < ActionMailer::TestCase
 
     email = InvitesMailer.invite(person, show)
 
-    expected_src = tracking_pixel_url(tag: "#{show.slug}:invite", uniqid: person.uniqid)
+    expected_src = tracking_pixel_url(tag: "#{show.slug}:invite", uniqid: person.uniqid, kind: "person")
     assert_includes email.body.encoded, %(src="#{expected_src}")
   end
 
@@ -64,7 +64,7 @@ class InvitesTest < ActionMailer::TestCase
 
     email = InvitesMailer.waitlisted(rsvp)
 
-    expected_src = tracking_pixel_url(tag: "#{rsvp.show.slug}:waitlist", uniqid: rsvp.uniqid)
+    expected_src = tracking_pixel_url(tag: "#{rsvp.show.slug}:waitlist", uniqid: rsvp.uniqid, kind: "rsvp")
     assert_includes email.body.encoded, %(src="#{expected_src}")
   end
 
@@ -128,7 +128,7 @@ class InvitesTest < ActionMailer::TestCase
 
     email = InvitesMailer.confirm(rsvp)
 
-    expected_src = tracking_pixel_url(tag: "#{rsvp.show.slug}:confirm", uniqid: rsvp.uniqid)
+    expected_src = tracking_pixel_url(tag: "#{rsvp.show.slug}:confirm", uniqid: rsvp.uniqid, kind: "rsvp")
     assert_includes email.body.encoded, %(src="#{expected_src}")
   end
 
@@ -155,7 +155,7 @@ class InvitesTest < ActionMailer::TestCase
 
     email = InvitesMailer.remind(rsvp)
 
-    expected_src = tracking_pixel_url(tag: "#{rsvp.show.slug}:remind", uniqid: rsvp.uniqid)
+    expected_src = tracking_pixel_url(tag: "#{rsvp.show.slug}:remind", uniqid: rsvp.uniqid, kind: "rsvp")
     assert_includes email.body.encoded, %(src="#{expected_src}")
   end
 
@@ -169,7 +169,7 @@ class InvitesTest < ActionMailer::TestCase
 
   private
 
-    def tracking_pixel_url(tag:, uniqid:)
-      Rails.application.routes.url_helpers.open_tracking_url(tag: tag, uniqid: uniqid, host: "example.com")
+    def tracking_pixel_url(tag:, uniqid:, kind:)
+      Rails.application.routes.url_helpers.open_tracking_url(tag: tag, uniqid: uniqid, kind: kind, host: "example.com")
     end
 end
