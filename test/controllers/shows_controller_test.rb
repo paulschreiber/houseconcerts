@@ -86,7 +86,11 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
     assert_includes @response.body, "DTEND:#{show.end.utc.strftime('%Y%m%dT%H%M%SZ')}"
     assert_includes @response.body, "UID:event-#{show.slug}@#{Settings.domain}"
     assert_includes @response.body, rsvp_for_show_url(slug: show.slug)
-    assert_includes @response.body, "LOCATION:#{show.location.gsub(',', '\\,')}"
+    # Matches Icalendar::Values::Text#value_ical's own escaping order: a
+    # literal backslash must be doubled before the comma is escaped, or an
+    # input containing one would produce a different result than the gem's.
+    escaped_location = show.location.gsub("\\") { "\\\\" }.gsub(",", "\\,")
+    assert_includes @response.body, "LOCATION:#{escaped_location}"
   end
 
   test "calendar excludes past shows" do
