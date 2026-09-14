@@ -97,7 +97,7 @@ class RsvpsController < ApplicationController
 
   def thanks
     @rsvp = RSVP.find_by(uniqid: params[:uniqid])
-    redirect_to root_url if @rsvp.nil? || !@rsvp.show.confirmed? || @rsvp.show.occurred?
+    redirect_to root_url if @rsvp.nil? || @rsvp.show.nil? || !@rsvp.show.confirmed? || @rsvp.show.occurred?
   end
 
   def rsvp_params
@@ -111,7 +111,18 @@ class RsvpsController < ApplicationController
     @rsvp = RSVP.new(rsvp_params)
     @rsvp.save
   rescue ActiveRecord::RecordNotUnique
-    @rsvp = RSVP.find_by(show_id: @rsvp.show_id, email: @rsvp.email)
-    @rsvp.update(rsvp_params)
+    winner = RSVP.find_by(show_id: @rsvp.show_id, email: @rsvp.email)
+
+    # The unique index violation should mean the winning row is right there
+    # to recover by updating, but fall back to re-rendering the form with
+    # the submitted data instead of crashing if it's somehow not found (e.g.
+    # a different unique index, or the row was deleted in between).
+    if winner
+      @rsvp = winner
+      @rsvp.update(rsvp_params)
+    else
+      @rsvp.errors.add(:base, "couldn’t be saved. Please try again.")
+      false
+    end
   end
 end
