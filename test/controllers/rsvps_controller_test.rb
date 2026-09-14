@@ -81,6 +81,39 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Loser", winner.first_name
   end
 
+  test "create re-renders the form instead of crashing when the race-recovery lookup finds nothing" do
+    show = shows(:upcoming)
+    email = "phantom-race@example.com"
+
+    # Simulate a RecordNotUnique from some other constraint (not show_id +
+    # email), so the recovery's find_by(show_id:, email:) finds no row --
+    # this used to crash calling #update on nil instead of re-rendering the
+    # form.
+    original_save = RSVP.instance_method(:save)
+    RSVP.send(:define_method, :save) do |*_args, **_kwargs|
+      raise ActiveRecord::RecordNotUnique, "Duplicate entry for key 'index_rsvps_on_uniqid'"
+    end
+
+    begin
+      assert_no_difference("RSVP.count") do
+        post rsvps_path, params: {
+          rsvp: {
+            first_name: "Phantom",
+            last_name: "Race",
+            email: email,
+            show_id: show.id,
+            response: "yes",
+            seats_reserved: 1
+          }
+        }
+      end
+    ensure
+      RSVP.send(:define_method, :save, original_save)
+    end
+
+    assert_response :unprocessable_content
+  end
+
   test "create renders the form with 422 on validation failure" do
     assert_no_difference("RSVP.count") do
       post rsvps_path, params: {
@@ -251,6 +284,21 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
     rsvp.update!(show: shows(:past))
 
     get rsvp_thanks_path(uniqid: rsvp.uniqid)
+    assert_redirected_to root_url
+  end
+
+  test "thanks redirects home instead of crashing when the rsvp's show is unexpectedly nil" do
+    rsvp = rsvps(:one)
+
+    original_show = RSVP.instance_method(:show)
+    RSVP.send(:define_method, :show) { nil }
+
+    begin
+      get rsvp_thanks_path(uniqid: rsvp.uniqid)
+    ensure
+      RSVP.send(:define_method, :show, original_show)
+    end
+
     assert_redirected_to root_url
   end
 end
