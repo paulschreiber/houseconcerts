@@ -140,6 +140,14 @@ class RSVP < ApplicationRecord
     Current.attended_rsvp_ids_by_email.fetch(email, []).any? { |attended_id| attended_id != id }
   end
 
+  # All emails that already have an RSVP for the given show, so a caller
+  # with many people to check (e.g. rendering a page of the admin index)
+  # can look them up against a single preloaded query instead of one query
+  # per person.
+  def self.rsvpd_emails(show)
+    where(show: show).pluck(:email).to_set
+  end
+
   def self.next_show
     RSVP.where(show: Show.next)
   end
