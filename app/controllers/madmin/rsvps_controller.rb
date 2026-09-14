@@ -1,5 +1,7 @@
 module Madmin
   class RsvpsController < Madmin::ResourceController
+    include MemoizesNextShow
+
     before_action { Current.admin_scope = params[:scope] }
     before_action :next_show, if: -> { Current.admin_scope == "next_show_attendees" }
     skip_before_action :set_record, only: :print
@@ -7,7 +9,7 @@ module Madmin
     helper_method :attendee_totals
 
     def print
-      @show = Show.next
+      @show = next_show
       @rsvps = RSVP.next_show_attendees(@show).order(:last_name, :first_name).to_a
       @rsvp_count = @rsvps.size
       @total_seats = @rsvps.sum(&:seats_reserved)
@@ -34,7 +36,7 @@ module Madmin
     end
 
     def cancel
-      if @record.can_cancel? && @record.cancel!
+      if @record.can_cancel?(next_show) && @record.cancel!
         redirect_back_or_to resource.index_path, notice: "Cancelled #{@record.full_name}’s RSVP for #{@record.show&.name}."
       else
         redirect_back_or_to resource.index_path, alert: "#{@record.full_name}’s RSVP can’t be cancelled."
@@ -54,11 +56,6 @@ module Madmin
         return unless %w[next_show_attendees previous_show_attendees].include?(params[:scope])
 
         { count: @scoped_resources.count, seats_reserved: @scoped_resources.sum(:seats_reserved) }
-      end
-
-      # Avoid re-running the "find the next show" query once per row.
-      def next_show
-        @next_show ||= Show.next
       end
 
       # Preload attended_before? for the whole page in one query instead of

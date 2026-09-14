@@ -1,10 +1,12 @@
 module Madmin
   class PeopleController < Madmin::ResourceController
+    include MemoizesNextShow
+
     before_action { Current.admin_scope = params[:scope] }
     before_action :next_show, if: -> { action_name.in?(%w[index show]) }
 
     def invite
-      show = Show.next
+      show = next_show
       if @record.can_invite? && show
         InvitePerson.call(@record, show)
         redirect_back_or_to resource.index_path, notice: "Invited #{@record.full_name} to #{show.name}."
@@ -14,8 +16,8 @@ module Madmin
     end
 
     def rsvp_no
-      show = Show.next
-      if @record.can_rsvp_no? && show && RSVPNo.call(@record, show)
+      show = next_show
+      if @record.can_rsvp_no?(show) && show && RSVPNo.call(@record, show)
         redirect_back_or_to resource.index_path, notice: "Recorded a “no” RSVP for #{@record.full_name} for #{show.name}."
       else
         redirect_back_or_to resource.index_path, alert: "Can’t record a “no” RSVP for #{@record.full_name}."
@@ -31,11 +33,6 @@ module Madmin
         return resources.reorder(removed_at: :desc) if params[:scope] == "removed" && params[:sort].blank?
 
         resources
-      end
-
-      # Avoid re-running the "find the next show" query once per row.
-      def next_show
-        @next_show ||= Show.next
       end
 
       # Preload can_rsvp_no? for the whole page in one query instead of one
