@@ -5,8 +5,8 @@ def print_confirmation(count)
 end
 
 def find_unopened_invites(show)
-  people = Person.includes(:venue_groups)
-                 .where(venue_groups: { id: Settings.default_venue_group }, status: "active")
+  people = Person.active.includes(:venue_groups)
+                 .where(venue_groups: { id: Settings.default_venue_group })
                  .where("email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)", show.id)
                  .where("email NOT IN (SELECT email FROM opens WHERE tag LIKE ?)", "#{show.slug}:invite%")
                  .order(:last_name, :first_name)
@@ -25,8 +25,8 @@ namespace :next_show do
       exit
     end
 
-    people = Person.includes(:venue_groups)
-                   .where(venue_groups: { id: Settings.default_venue_group }, status: "active")
+    people = Person.active.includes(:venue_groups)
+                   .where(venue_groups: { id: Settings.default_venue_group })
                    .where("email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)", show.id)
                    .order(:last_name, :first_name)
 
@@ -59,8 +59,8 @@ namespace :next_show do
       exit
     end
 
-    unless person.active?
-      puts "Email #{email} is not active"
+    unless person.can_invite?
+      puts "Email #{email} can’t be invited"
       exit
     end
 
@@ -95,8 +95,8 @@ namespace :next_show do
       exit
     end
 
-    people = Person.includes(:venue_groups)
-                   .where(venue_groups: { id: Settings.default_venue_group }, status: "active")
+    people = Person.active.includes(:venue_groups)
+                   .where(venue_groups: { id: Settings.default_venue_group })
                    .where("email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)", show.id)
 
     puts "Can email #{people.size} people."
