@@ -37,6 +37,14 @@ class NextShowRakeTest < ActiveSupport::TestCase
     end
   end
 
+  test "invite_count excludes people who can't be invited" do
+    Person.create!(first_name: "Removed", last_name: "Person", email: "removed-bulk-invite@example.com", status: "removed")
+
+    out, = capture_io { Rake::Task["next_show:invite_count"].invoke }
+
+    assert_includes out, "Can email 0 people."
+  end
+
   test "invite_one emails a specific person for the next show" do
     person = Person.create!(first_name: "Direct", last_name: "Invite", email: "direct-invite@example.com", status: "active")
 
@@ -49,6 +57,18 @@ class NextShowRakeTest < ActiveSupport::TestCase
     assert_raises(SystemExit) do
       capture_io { Rake::Task["next_show:invite_one"].invoke("nonexistent@example.com") }
     end
+  end
+
+  test "invite_one exits without emailing a person who can't be invited" do
+    person = Person.create!(first_name: "Removed", last_name: "Person", email: "removed-invite@example.com", status: "removed")
+
+    out = nil
+    assert_no_emails do
+      out, = capture_io do
+        assert_raises(SystemExit) { Rake::Task["next_show:invite_one"].invoke(person.email) }
+      end
+    end
+    assert_includes out, "can’t be invited"
   end
 
   test "invite_unopened excludes people who already opened an invite for the show" do
