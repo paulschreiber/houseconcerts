@@ -162,6 +162,20 @@ module Madmin
       assert_match(/Cancelled #{Regexp.escape(@rsvp.full_name)}/, flash[:notice])
     end
 
+    test "cancel looks up the next show only once" do
+      @rsvp.update!(confirmed: "confirmed")
+
+      next_show_queries = 0
+      callback = ->(*, payload) { next_show_queries += 1 if payload[:sql]&.include?("ORDER BY `shows`.`start` ASC LIMIT 1") }
+
+      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+        patch cancel_madmin_rsvp_path(@rsvp)
+      end
+
+      assert_redirected_to madmin_rsvps_path
+      assert_equal 1, next_show_queries
+    end
+
     test "cancel does not change an already-no rsvp" do
       @rsvp.update!(response: "no")
 

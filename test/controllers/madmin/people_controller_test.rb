@@ -142,6 +142,18 @@ module Madmin
       assert_match(/Recorded a “no” RSVP for #{Regexp.escape(@person.full_name)}/, flash[:notice])
     end
 
+    test "rsvp_no looks up the next show only once, not once per can_rsvp_no?/RSVPNo call" do
+      next_show_queries = 0
+      callback = ->(*, payload) { next_show_queries += 1 if payload[:sql]&.include?("ORDER BY `shows`.`start` ASC LIMIT 1") }
+
+      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+        patch rsvp_no_madmin_person_path(@person)
+      end
+
+      assert_redirected_to madmin_people_path
+      assert_equal 1, next_show_queries
+    end
+
     test "rsvp_no does not record a no RSVP for a removed person" do
       @person.update!(status: "removed")
 
