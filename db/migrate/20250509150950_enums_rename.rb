@@ -7,21 +7,35 @@ class EnumsRename < ActiveRecord::Migration[8.0]
   end
 
   def up
+    # Guarded so a crash partway through this migration (e.g. the NOT NULL
+    # violation this migration used to hit during the backfill below) doesn't
+    # leave an environment permanently stuck: re-running it finds the rename
+    # already done and skips straight to the still-pending steps, instead of
+    # failing again on now-mismatched column names.
     change_table :rsvps, bulk: true do |t|
-      t.rename :response, :old_response
-      t.integer :response, null: false, default: 0
-      t.rename :confirmed, :old_confirmed
-      t.integer :confirmed, null: false, default: 0
+      unless column_exists?(:rsvps, :old_response)
+        t.rename :response, :old_response
+        t.integer :response, null: false, default: 0
+      end
+
+      unless column_exists?(:rsvps, :old_confirmed)
+        t.rename :confirmed, :old_confirmed
+        t.integer :confirmed, null: false, default: 0
+      end
     end
 
     change_table :shows, bulk: true do |t|
-      t.rename :status, :old_status
-      t.integer :status, null: false, default: 0
+      unless column_exists?(:shows, :old_status)
+        t.rename :status, :old_status
+        t.integer :status, null: false, default: 0
+      end
     end
 
     change_table :people, bulk: true do |t|
-      t.rename :status, :old_status
-      t.integer :status, null: false, default: 0
+      unless column_exists?(:people, :old_status)
+        t.rename :status, :old_status
+        t.integer :status, null: false, default: 0
+      end
     end
 
     # enum :response, { no: 0, yes: 1 }
@@ -75,20 +89,20 @@ class EnumsRename < ActiveRecord::Migration[8.0]
     # rubocop:enable Rails/SkipsModelValidations
 
     change_table :rsvps, bulk: true do |t|
-      t.index :response
-      t.index :confirmed
-      t.remove :old_response, type: :string
-      t.remove :old_confirmed, type: :string
+      t.index :response unless index_exists?(:rsvps, :response)
+      t.index :confirmed unless index_exists?(:rsvps, :confirmed)
+      t.remove :old_response, type: :string if column_exists?(:rsvps, :old_response)
+      t.remove :old_confirmed, type: :string if column_exists?(:rsvps, :old_confirmed)
     end
 
     change_table :shows, bulk: true do |t|
-      t.index :status
-      t.remove :old_status, type: :string
+      t.index :status unless index_exists?(:shows, :status)
+      t.remove :old_status, type: :string if column_exists?(:shows, :old_status)
     end
 
     change_table :people, bulk: true do |t|
-      t.index :status
-      t.remove :old_status, type: :string
+      t.index :status unless index_exists?(:people, :status)
+      t.remove :old_status, type: :string if column_exists?(:people, :old_status)
     end
   end
 end
