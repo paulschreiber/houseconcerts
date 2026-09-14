@@ -19,6 +19,8 @@ class TextMessagesController < ApplicationController
       if auth_token.present? && signature.present?
         validator = Twilio::Security::RequestValidator.new(auth_token)
         return if validator.validate(request.original_url, request.request_parameters, signature)
+
+        Rails.logger.warn("Twilio signature verification failed for #{request.original_url}")
       end
 
       head :forbidden
