@@ -1,7 +1,7 @@
 require "logger"
 
-def print_confirmation(count)
-  puts "Sent #{count} #{'email'.pluralize(count)}."
+def print_confirmation(sent, failed = 0)
+  puts "Sent #{sent} #{'email'.pluralize(sent)}, #{failed} failed."
 end
 
 def find_unopened_invites(show)
@@ -30,13 +30,15 @@ namespace :next_show do
                    .where("email NOT IN (SELECT email FROM rsvps WHERE show_id = ?)", show.id)
                    .order(:last_name, :first_name)
 
-    people.each do |p|
+    sent = people.count do |p|
       puts "Emailing #{p.email_address_with_name}..."
       InvitesMailer.invite(p, show).deliver_now
+      true
     rescue Net::SMTPServerBusy => e
       puts "Failed to email #{p.email_address_with_name} [#{e.message}]"
+      false
     end
-    print_confirmation(people.size)
+    print_confirmation(sent, people.size - sent)
   end
 
   desc "Send invites for next show to one person"
@@ -65,7 +67,11 @@ namespace :next_show do
     end
 
     puts "Emailing #{person.email_address_with_name}..."
-    InvitePerson.call(person, show)
+    if InvitePerson.call(person, show)
+      puts "Sent."
+    else
+      puts "Failed to send."
+    end
   end
 
   desc "Send invites for next show to people who have not opened the invitation"
@@ -78,13 +84,15 @@ namespace :next_show do
 
     people = find_unopened_invites(show)
 
-    people.each do |p|
+    sent = people.count do |p|
       puts "Emailing #{p.email_address_with_name}..."
       InvitesMailer.invite(p, show).deliver_now
+      true
     rescue Net::SMTPServerBusy => e
       puts "Failed to email #{p.email_address_with_name} [#{e.message}]"
+      false
     end
-    print_confirmation(people.size)
+    print_confirmation(sent, people.size - sent)
   end
 
   desc "Count invites for next show"
@@ -232,21 +240,22 @@ namespace :next_show do
     end
 
     rsvps = []
+    sent = 0
 
     if show.available?
       rsvps = RSVP.where(show: show, response: "yes", confirmed: %w[unconfirmed waitlisted])
-      rsvps.each do |rsvp|
+      sent = rsvps.count do |rsvp|
         puts "Emailing #{rsvp.email_address_with_name}..."
         ConfirmRSVP.call(rsvp)
       end
     elsif show.waitlisted?
       rsvps = RSVP.where(show: show, response: "yes", confirmed: [ "unconfirmed" ])
-      rsvps.each do |rsvp|
+      sent = rsvps.count do |rsvp|
         puts "Emailing #{rsvp.email_address_with_name}..."
         WaitlistRSVP.call(rsvp)
       end
     end
-    print_confirmation(rsvps.size)
+    print_confirmation(sent, rsvps.size - sent)
   end
 
   desc "Remind RSVPs for next show"
