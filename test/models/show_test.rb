@@ -105,4 +105,20 @@ class ShowTest < ActiveSupport::TestCase
 
     assert_equal "#{show.name} (#{show.start.to_date.iso8601})", show.summary
   end
+
+  test "destroying a show removes its artist_shows in a single bulk delete, not one per row" do
+    show = Show.create!(name: "Multi-artist show", venue: venues(:one), price: 20,
+                        artists: [ artists(:one), Artist.create!(name: "Second Artist") ],
+                        start: 2.months.from_now, end: 2.months.from_now + 2.hours)
+
+    delete_queries = 0
+    callback = ->(*, payload) { delete_queries += 1 if payload[:sql]&.match?(/\ADELETE FROM `artists_shows`/) }
+
+    ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+      show.destroy
+    end
+
+    assert_equal 1, delete_queries
+    assert_equal 0, ArtistShow.where(show_id: show.id).count
+  end
 end
