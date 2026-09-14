@@ -164,6 +164,17 @@ module Madmin
       assert_match(/Can’t record a “no” RSVP/, flash[:alert])
     end
 
+    test "rsvp_no shows an alert instead of a false success notice when the save fails" do
+      @person.update_column(:first_name, "") # rubocop:disable Rails/SkipsModelValidations
+
+      assert_no_difference "RSVP.count" do
+        patch rsvp_no_madmin_person_path(@person)
+      end
+
+      assert_redirected_to madmin_people_path
+      assert_match(/Can’t record a “no” RSVP/, flash[:alert])
+    end
+
     test "index shows an RSVP No button for an active person" do
       get madmin_people_path
 
