@@ -18,8 +18,7 @@ module Madmin
     end
 
     def confirm
-      if @record.can_confirm?
-        ConfirmRSVP.call(@record)
+      if @record.can_confirm? && ConfirmRSVP.call(@record)
         redirect_back_or_to resource.index_path, notice: "Confirmed #{@record.full_name}’s RSVP for #{@record.show&.name}."
       else
         redirect_back_or_to resource.index_path, alert: "#{@record.full_name}’s RSVP can’t be confirmed."
@@ -27,8 +26,7 @@ module Madmin
     end
 
     def waitlist
-      if @record.can_waitlist?
-        WaitlistRSVP.call(@record)
+      if @record.can_waitlist? && WaitlistRSVP.call(@record)
         redirect_back_or_to resource.index_path, notice: "Waitlisted #{@record.full_name}’s RSVP for #{@record.show&.name}."
       else
         redirect_back_or_to resource.index_path, alert: "#{@record.full_name}’s RSVP can’t be waitlisted."
