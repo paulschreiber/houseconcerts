@@ -52,6 +52,12 @@ class RSVP < ApplicationRecord
     self.seats_reserved = 0
     self.seats_used = nil
     self.confirmed = "unconfirmed"
+    # So a later re-RSVP "yes" gets its own fresh confirmation/waitlist
+    # email instead of being silently skipped by the mailer's one-time
+    # claim, which would otherwise still see this cancelled RSVP as
+    # already emailed.
+    self.confirmation_emailed_at = nil
+    self.waitlist_emailed_at = nil
   end
 
   def tickets_available?
