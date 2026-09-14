@@ -106,6 +106,13 @@ class ShowTest < ActiveSupport::TestCase
     assert_equal "#{show.name} (#{show.start.to_date.iso8601})", show.summary
   end
 
+  test "summary does not crash when start is nil" do
+    show = shows(:upcoming)
+    show.start = nil
+
+    assert_equal "#{show.name} ()", show.summary
+  end
+
   test "destroying a show removes its artist_shows in a single bulk delete, not one per row" do
     show = Show.create!(name: "Multi-artist show", venue: venues(:one), price: 20,
                         artists: [ artists(:one), Artist.create!(name: "Second Artist") ],
