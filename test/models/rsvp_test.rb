@@ -7,6 +7,13 @@ class RsvpTest < ActiveSupport::TestCase
     assert rsvps(:one).valid?
   end
 
+  test "defaults uniqid to a 16-character random token" do
+    rsvp = RSVP.create!(show: shows(:upcoming), first_name: "New", last_name: "Rsvp",
+                        email: "new-uniqid@example.com", response: "yes", seats_reserved: 1)
+
+    assert_equal 16, rsvp.uniqid.length
+  end
+
   test "requires a first and last name" do
     rsvp = RSVP.new(rsvps(:one).attributes.except("id").merge("first_name" => "", "last_name" => ""))
     assert_not rsvp.valid?
