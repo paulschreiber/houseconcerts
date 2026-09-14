@@ -42,6 +42,21 @@ class TextMessagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
+  test "receive logs a warning when a signature is present but invalid" do
+    log_output = StringIO.new
+    original_logger = Rails.logger
+    Rails.logger = Logger.new(log_output)
+
+    assert_no_emails do
+      post sms_url, params: { From: "+15551234567", Body: "hello" }, headers: { "X-Twilio-Signature" => "wrong-signature" }
+    end
+
+    assert_response :forbidden
+    assert_match(/Twilio signature verification failed/, log_output.string)
+  ensure
+    Rails.logger = original_logger
+  end
+
   private
 
     def twilio_signature_for(url, params)
