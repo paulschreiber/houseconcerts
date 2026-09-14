@@ -7,8 +7,7 @@ module Madmin
 
     def invite
       show = next_show
-      if @record.can_invite? && show
-        InvitePerson.call(@record, show)
+      if @record.can_invite? && show && InvitePerson.call(@record, show)
         redirect_back_or_to resource.index_path, notice: "Invited #{@record.full_name} to #{show.name}."
       else
         redirect_back_or_to resource.index_path, alert: "#{@record.full_name} can’t be invited."

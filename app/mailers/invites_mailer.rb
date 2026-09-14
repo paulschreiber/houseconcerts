@@ -31,8 +31,8 @@ class InvitesMailer < ApplicationMailer
       return
     end
 
-    unless person.active?
-      logger.warn "Cannnot email inactive person (#{person.email}, #{person.id}, #{person.status})"
+    unless person.can_invite?
+      logger.warn "Cannnot email ineligible person (#{person.email}, #{person.id}, #{person.status})"
       return
     end
 
