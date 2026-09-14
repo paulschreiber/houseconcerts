@@ -10,10 +10,16 @@ class NotifyMailer < ApplicationMailer
     # second attempt's claim fails and this becomes a no-op -- but a
     # genuinely later save (a real subsequent update/cancel) has a newer
     # updated_at and still claims and sends normally.
-    claimed = RSVP.where(id: rsvp.id)
-                  .where("admin_notified_at IS NULL OR admin_notified_at < ?", rsvp.updated_at)
-                  .update_all(admin_notified_at: rsvp.updated_at) # rubocop:disable Rails/SkipsModelValidations
+    #
+    # This doesn't fit ApplicationMailer#claim_delivery?'s plain nil check,
+    # but still registers the claim by hand so .handle_exception can
+    # release it if this job goes on to fail.
+    scope = RSVP.where(id: rsvp.id)
+    claimed = scope.where("admin_notified_at IS NULL OR admin_notified_at < ?", rsvp.updated_at)
+                   .update_all(admin_notified_at: rsvp.updated_at) # rubocop:disable Rails/SkipsModelValidations
     return unless claimed.positive?
+
+    Thread.current[:mailer_claim] = { scope: scope, column: :admin_notified_at }
 
     @rsvp = rsvp
     @old_seats = old_seats
