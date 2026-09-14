@@ -60,5 +60,14 @@ module Madmin
       def next_show
         @next_show ||= Show.next
       end
+
+      # Preload attended_before? for the whole page in one query instead of
+      # one per row, but only when the Attended Before column is actually
+      # shown for this scope.
+      def paginate_collection(collection)
+        pagy, records = super
+        Current.attended_rsvp_ids_by_email = RSVP.attended_before_map(records.map(&:email)) unless resource.attributes[:attended_before].field.hidden_on_index?
+        [ pagy, records ]
+      end
   end
 end
