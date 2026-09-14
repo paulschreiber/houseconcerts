@@ -372,4 +372,32 @@ class RsvpTest < ActiveSupport::TestCase
 
     assert_not rsvp.attended_before?
   end
+
+  test "attended_before_map groups attended rsvp ids by email" do
+    rsvp = rsvps(:one)
+    past = RSVP.create!(first_name: "Past", last_name: "Attendee", email: rsvp.email, show: shows(:past),
+                        response: "yes", confirmed: "confirmed", seats_reserved: 1)
+
+    assert_equal({ rsvp.email => [ past.id ] }, RSVP.attended_before_map([ rsvp.email ]))
+  end
+
+  test "attended_before? uses Current.attended_rsvp_ids_by_email when set, without querying" do
+    rsvp = rsvps(:one)
+    past = RSVP.create!(first_name: "Past", last_name: "Attendee", email: rsvp.email, show: shows(:past),
+                        response: "yes", confirmed: "confirmed", seats_reserved: 1)
+    Current.attended_rsvp_ids_by_email = { rsvp.email => [ past.id ] }
+
+    assert_no_queries { assert rsvp.attended_before? }
+  ensure
+    Current.attended_rsvp_ids_by_email = nil
+  end
+
+  test "attended_before? still excludes its own id when using the preloaded map" do
+    rsvp = rsvps(:one)
+    Current.attended_rsvp_ids_by_email = { rsvp.email => [ rsvp.id ] }
+
+    assert_not rsvp.attended_before?
+  ensure
+    Current.attended_rsvp_ids_by_email = nil
+  end
 end

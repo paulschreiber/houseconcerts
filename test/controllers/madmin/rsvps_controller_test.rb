@@ -298,6 +298,39 @@ module Madmin
       assert_equal "✔", cells[3].text.strip
     end
 
+    test "index computes Attended Before for the whole page in one query, not once per row" do
+      @rsvp.update!(confirmed: "confirmed")
+      other = RSVP.create!(first_name: "Other", last_name: "Attendee", email: "other-attendee@example.com",
+                           show: Show.next, response: "yes", confirmed: "confirmed", seats_reserved: 1)
+      [ @rsvp, other ].each do |rsvp|
+        RSVP.create!(first_name: "Past", last_name: "Attendee", email: rsvp.email, show: shows(:past),
+                     response: "yes", confirmed: "confirmed", seats_reserved: 1)
+      end
+
+      # Matches only a query shaped like the `attended` scope (joins shows,
+      # filters on response/confirmed/seats_reserved), regardless of whether
+      # it's scoped to one email (=) or a batch of emails (IN (...)); the
+      # INNER JOIN check excludes the unrelated next_show_attendees/totals
+      # queries, which also filter on response/confirmed but don't join
+      # shows. This fails with 2 (one per attended row) against the old
+      # per-row query and passes with 1 against the batched version.
+      attended_queries = 0
+      callback = lambda do |*, payload|
+        sql = payload[:sql]
+        attended_queries += 1 if sql&.include?("INNER JOIN") && sql.include?("`response`") &&
+                                 sql.include?("`confirmed`") && sql.include?("`seats_reserved`")
+      end
+
+      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+        get madmin_rsvps_path(scope: "next_show_attendees")
+      end
+
+      assert_response :success
+      assert_equal 1, attended_queries
+      assert_equal "✔", attendee_row_cells(@rsvp.full_name)[3].text.strip
+      assert_equal "✔", attendee_row_cells(other.full_name)[3].text.strip
+    end
+
     test "index shows a Confirm button for an rsvp that can be confirmed" do
       get madmin_rsvps_path
 
