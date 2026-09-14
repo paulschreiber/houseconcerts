@@ -210,6 +210,24 @@ module Madmin
       assert_no_match(%r{action="/backstage/people/#{@person.id}/rsvp_no"}, response.body)
     end
 
+    test "index computes RSVP No eligibility for the whole page in one query, not once per row" do
+      other = Person.create!(first_name: "Other", last_name: "Person", email: "other-person@example.com", status: "active")
+      RSVP.create!(first_name: @person.first_name, last_name: @person.last_name, email: @person.email,
+                   show: Show.next, response: "yes", seats_reserved: 2)
+
+      rsvp_exists_queries = 0
+      callback = ->(*, payload) { rsvp_exists_queries += 1 if payload[:sql]&.include?("SELECT 1 AS one FROM `rsvps`") }
+
+      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+        get madmin_people_path
+      end
+
+      assert_response :success
+      assert_equal 0, rsvp_exists_queries
+      assert_no_match(%r{action="/backstage/people/#{@person.id}/rsvp_no"}, response.body)
+      assert_match(%r{action="/backstage/people/#{other.id}/rsvp_no"}, response.body)
+    end
+
     test "rsvp_no does not record a second no RSVP once the person has already RSVPd" do
       RSVP.create!(first_name: @person.first_name, last_name: @person.last_name, email: @person.email,
                    show: Show.next, response: "yes", seats_reserved: 2)
