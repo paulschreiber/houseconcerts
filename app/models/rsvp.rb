@@ -140,7 +140,7 @@ class RSVP < ApplicationRecord
   end
 
   def can_waitlist?
-    !confirmed? && yes? && show&.can_waitlist_rsvps?
+    unconfirmed? && yes? && show&.can_waitlist_rsvps?
   end
 
   def can_cancel?(next_show = Show.next)

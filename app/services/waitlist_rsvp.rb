@@ -8,7 +8,10 @@ class WaitlistRSVP
   end
 
   def call
-    InvitesMailer.waitlisted(rsvp).deliver_later if rsvp.waitlist!
+    return false unless rsvp.waitlist!
+
+    InvitesMailer.waitlisted(rsvp).deliver_later
+    true
   end
 
   private

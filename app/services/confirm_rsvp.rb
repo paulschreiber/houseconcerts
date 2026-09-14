@@ -8,7 +8,10 @@ class ConfirmRSVP
   end
 
   def call
-    InvitesMailer.confirm(rsvp).deliver_later if rsvp.confirm!
+    return false unless rsvp.confirm!
+
+    InvitesMailer.confirm(rsvp).deliver_later
+    true
   end
 
   private
