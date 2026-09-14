@@ -186,6 +186,24 @@ module Madmin
       assert_match(/can’t be cancelled/, flash[:alert])
     end
 
+    test "confirm, waitlist, and cancel redirect with an alert and change nothing when the resource is readonly" do
+      RSVPResource.define_singleton_method(:readonly?) { true }
+      @rsvp.update!(confirmed: "confirmed")
+
+      assert_no_emails do
+        patch confirm_madmin_rsvp_path(@rsvp)
+        patch waitlist_madmin_rsvp_path(@rsvp)
+        patch cancel_madmin_rsvp_path(@rsvp)
+      end
+
+      @rsvp.reload
+      assert_equal "confirmed", @rsvp.confirmed
+      assert_equal "yes", @rsvp.response
+      assert_redirected_to madmin_rsvps_path
+    ensure
+      RSVPResource.singleton_class.remove_method(:readonly?)
+    end
+
     test "index shows a Cancel button for an rsvp in the next_show_attendees scope" do
       @rsvp.update!(confirmed: "confirmed")
 

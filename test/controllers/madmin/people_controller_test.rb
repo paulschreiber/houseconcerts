@@ -114,6 +114,21 @@ module Madmin
       assert_match(/can’t be invited/, flash[:alert])
     end
 
+    test "invite and rsvp_no redirect with an alert and change nothing when the resource is readonly" do
+      PersonResource.define_singleton_method(:readonly?) { true }
+
+      assert_no_emails do
+        assert_no_difference "RSVP.count" do
+          patch invite_madmin_person_path(@person)
+          patch rsvp_no_madmin_person_path(@person)
+        end
+      end
+
+      assert_redirected_to madmin_people_path
+    ensure
+      PersonResource.singleton_class.remove_method(:readonly?)
+    end
+
     test "index shows an Invite button for an active person" do
       get madmin_people_path
 
