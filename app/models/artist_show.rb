@@ -3,4 +3,6 @@ class ArtistShow < ApplicationRecord
 
   belongs_to :artist
   belongs_to :show
+
+  validates :artist_id, uniqueness: { scope: :show_id }
 end
