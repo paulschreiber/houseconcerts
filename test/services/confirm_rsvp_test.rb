@@ -7,10 +7,12 @@ class ConfirmRSVPTest < ActiveSupport::TestCase
     rsvp = rsvps(:one)
     rsvp.update!(confirmed: "unconfirmed")
 
+    result = nil
     assert_emails 1 do
-      ConfirmRSVP.call(rsvp)
+      result = ConfirmRSVP.call(rsvp)
     end
 
+    assert result
     assert_equal "confirmed", rsvp.reload.confirmed
   end
 
@@ -30,10 +32,12 @@ class ConfirmRSVPTest < ActiveSupport::TestCase
     rsvp.update!(confirmed: "unconfirmed")
     rsvp.first_name = ""
 
+    result = nil
     assert_no_emails do
-      ConfirmRSVP.call(rsvp)
+      result = ConfirmRSVP.call(rsvp)
     end
 
+    assert_not result
     assert_equal "unconfirmed", rsvp.reload.confirmed
   end
 end
