@@ -1,5 +1,22 @@
 require "active_support/core_ext/integer/time"
 
+# An IO-like object that fans out writes to multiple targets. See the
+# comment in Rails.application.configure below for why this is used
+# instead of ActiveSupport::BroadcastLogger.
+class MultiIO
+  def initialize(*targets)
+    @targets = targets
+  end
+
+  def write(...)
+    @targets.each { |target| target.write(...) }
+  end
+
+  def close
+    @targets.each(&:close)
+  end
+end
+
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -36,30 +53,30 @@ Rails.application.configure do
   # Log to STDOUT with the current request id as a default log tag.
   config.log_tags = [ :request_id ]
 
-  config.logger = ActiveSupport::BroadcastLogger.new(
-    ActiveSupport::TaggedLogging.new(ActiveSupport::Logger.new($stdout, formatter: Logger::Formatter.new)),
-    ActiveSupport::TaggedLogging.new(ActiveSupport::Logger.new("log/production.log", formatter: Logger::Formatter.new))
-  )
-
-  # ActiveJob::Base.logger defaults to Rails.logger (the BroadcastLogger
-  # above). ActiveJob::Logging wraps both #enqueue and #perform_now in
-  # logger.tagged(&block) -- a block that does real work, not just a log
-  # line -- and BroadcastLogger#method_missing maps a multi-target call
-  # across every broadcast, running the wrapped block once per target. With
-  # two targets, every job enqueue and perform ran twice, including the
-  # underlying solid_queue_jobs insert. Give ActiveJob its own
-  # non-broadcasting logger so this can't happen.
-
-  # Once Rails fixes this,
+  # ActiveJob::Base.logger defaults to Rails.logger. ActiveJob::Logging
+  # wraps both #enqueue and #perform_now in logger.tagged(&block) -- a
+  # block that does real work, not just a log line. A BroadcastLogger's
+  # #method_missing maps a multi-target call across every broadcast,
+  # running the wrapped block once per target. With two targets, every job
+  # enqueue and perform ran twice, including the underlying
+  # solid_queue_jobs insert (see 75b2925). A single Logger's #tagged only
+  # ever runs the block once, so fanning out at the IO layer instead of
+  # the Logger layer avoids the problem entirely -- and as a bonus, there's
+  # only one Logger instance and one log level to keep in sync, instead of
+  # a second, separately-configured logger for ActiveJob that this file
+  # used to set up by hand.
+  #
+  # Once Rails fixes this upstream, we can go back to a plain
+  # ActiveSupport::BroadcastLogger:
   # https://github.com/rails/rails/pull/53105
   # https://github.com/rails/rails/pull/53505
   # https://github.com/rails/rails/pull/58429
-  # we can remove the code change (75b2925).
-  config.after_initialize do
-    ActiveJob::Base.logger = ActiveSupport::TaggedLogging.new(
-      ActiveSupport::Logger.new("log/production.log", formatter: Logger::Formatter.new)
+  config.logger = ActiveSupport::TaggedLogging.new(
+    ActiveSupport::Logger.new(
+      MultiIO.new($stdout, File.open(Rails.root.join("log/production.log"), "a")),
+      formatter: Logger::Formatter.new
     )
-  end
+  )
 
   # Change to "debug" to log everything (including potentially personally-identifiable information!)
   config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "info")
