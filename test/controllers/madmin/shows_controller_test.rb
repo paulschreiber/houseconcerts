@@ -127,6 +127,11 @@ module Madmin
       assert_operator response.body.index("Later Show"), :<, response.body.index("Soon Show")
     end
 
+    test "ShowResource's default sort hooks match the actual default ordering" do
+      assert_equal "start", ShowResource.default_sort_column
+      assert_equal "desc", ShowResource.default_sort_direction
+    end
+
     test "destroy destroys the show and redirects to the index page" do
       show = shows(:past)
 
