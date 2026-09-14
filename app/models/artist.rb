@@ -3,7 +3,7 @@ class Artist < ApplicationRecord
 
   friendly_id :name_slug_candidates, use: :slugged
 
-  has_many :artist_shows, dependent: :destroy
+  has_many :artist_shows, dependent: :delete_all
   has_many :shows, through: :artist_shows
 
   validates :name, presence: true
