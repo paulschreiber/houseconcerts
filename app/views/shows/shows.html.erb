@@ -26,12 +26,11 @@
 
 			artist_for_photo = show.artists.sample
 			next unless artist_for_photo
-			artist_links = []
-			show.artists.each do |artist|
+			artist_links = show.artists.map do |artist|
 				if artist.url?
-					artist_links << "<a class='url fn' href='#{artist.url}'>#{artist.name}</a>"
+					link_to(artist.name, artist.url, class: "url fn")
 				else
-					artist_links << "<span class='fn'>#{artist.name}</span>"
+					content_tag(:span, artist.name, class: "fn")
 				end
 			end
 		%>
@@ -39,7 +38,8 @@
 		<li class='vevent <%= klass %>'>
 		<div class='vcard attendee summary'>
 
-			<a class='imagelink' href='<%= artist_for_photo.url %>'><img class='artist photo' src='/photos/headshots/thumb/<%= artist_for_photo.slug %>.jpg' width='50' height='50' alt='<%= artist_for_photo.name %>' /></a>
+			<% photo = tag.img(class: "artist photo", src: "/photos/headshots/thumb/#{artist_for_photo.slug}.jpg", width: 50, height: 50, alt: artist_for_photo.name) %>
+			<%= artist_for_photo.url? ? link_to(photo, artist_for_photo.url, class: "imagelink") : photo %>
 
 			<%= artist_links.to_sentence.html_safe %>
 
