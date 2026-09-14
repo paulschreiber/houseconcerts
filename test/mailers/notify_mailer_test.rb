@@ -49,6 +49,20 @@ class NotifyMailerTest < ActionMailer::TestCase
     end
   end
 
+  test "rsvp releases its claim if delivery fails, so a retry can resend" do
+    rsvp = rsvps(:one)
+
+    original_deliver = Mail::TestMailer.instance_method(:deliver!)
+    Mail::TestMailer.define_method(:deliver!) { |_mail| raise "simulated SMTP failure" }
+
+    job = ActionMailer::MailDeliveryJob.new("NotifyMailer", "rsvp", "deliver_now", args: [ rsvp, "new", nil ])
+    assert_raises(RuntimeError) { job.perform_now }
+
+    assert_nil rsvp.reload.admin_notified_at
+  ensure
+    Mail::TestMailer.define_method(:deliver!, original_deliver)
+  end
+
   test "text_message includes the matching rsvp's name when the phone number matches" do
     rsvp = rsvps(:one)
     rsvp.update!(phone_number: "2125551234")

@@ -82,6 +82,16 @@ class RsvpTest < ActiveSupport::TestCase
     assert_equal "unconfirmed", rsvp.confirmed
   end
 
+  test "clear_seats_if_no resets the confirmation/waitlist emailed_at flags so a later re-RSVP can resend" do
+    rsvp = rsvps(:one)
+    rsvp.update_columns(confirmation_emailed_at: Time.current, waitlist_emailed_at: Time.current) # rubocop:disable Rails/SkipsModelValidations
+
+    rsvp.update!(response: "no")
+
+    assert_nil rsvp.confirmation_emailed_at
+    assert_nil rsvp.waitlist_emailed_at
+  end
+
   test "an rsvp with recorded attendance can be corrected to response no" do
     rsvp = rsvps(:one)
     rsvp.update!(seats_used: 2)

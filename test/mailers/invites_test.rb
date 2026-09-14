@@ -83,6 +83,34 @@ class InvitesTest < ActionMailer::TestCase
     end
   end
 
+  test "confirm releases its claim if delivery fails, so a retry can resend" do
+    rsvp = rsvps(:one)
+
+    original_deliver = Mail::TestMailer.instance_method(:deliver!)
+    Mail::TestMailer.define_method(:deliver!) { |_mail| raise "simulated SMTP failure" }
+
+    job = ActionMailer::MailDeliveryJob.new("InvitesMailer", "confirm", "deliver_now", args: [ rsvp ])
+    assert_raises(RuntimeError) { job.perform_now }
+
+    assert_nil rsvp.reload.confirmation_emailed_at
+  ensure
+    Mail::TestMailer.define_method(:deliver!, original_deliver)
+  end
+
+  test "waitlisted releases its claim if delivery fails, so a retry can resend" do
+    rsvp = rsvps(:one)
+
+    original_deliver = Mail::TestMailer.instance_method(:deliver!)
+    Mail::TestMailer.define_method(:deliver!) { |_mail| raise "simulated SMTP failure" }
+
+    job = ActionMailer::MailDeliveryJob.new("InvitesMailer", "waitlisted", "deliver_now", args: [ rsvp ])
+    assert_raises(RuntimeError) { job.perform_now }
+
+    assert_nil rsvp.reload.waitlist_emailed_at
+  ensure
+    Mail::TestMailer.define_method(:deliver!, original_deliver)
+  end
+
   test "confirm delivers with a confirmation subject and a calendar link" do
     rsvp = rsvps(:one)
 
