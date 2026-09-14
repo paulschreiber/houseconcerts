@@ -5,6 +5,12 @@ class PersonTest < ActiveSupport::TestCase
     assert people(:one).valid?
   end
 
+  test "defaults uniqid to a 16-character random token" do
+    person = Person.create!(first_name: "New", last_name: "Person", email: "new-uniqid@example.com")
+
+    assert_equal 16, person.uniqid.length
+  end
+
   test "requires a first and last name" do
     person = Person.new(people(:one).attributes.except("id").merge("first_name" => "", "last_name" => ""))
     assert_not person.valid?
