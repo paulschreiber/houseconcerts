@@ -19,6 +19,15 @@ class PeopleRakeTest < ActiveSupport::TestCase
     assert_includes out, rsvp.email_address_with_name
   end
 
+  test "list_nonsubscribers lists an rsvp whose email belongs to a removed person" do
+    Person.create!(first_name: "Unsub", last_name: "Scribed", email: "resub@example.com", status: "removed")
+    rsvp = RSVP.create!(show: shows(:past), email: "resub@example.com", first_name: "Unsub", last_name: "Scribed", response: "yes", seats_reserved: 1)
+
+    out, = capture_io { Rake::Task["people:list_nonsubscribers"].invoke }
+
+    assert_includes out, rsvp.email_address_with_name
+  end
+
   test "add_phone_numbers backfills a person's phone number from a matching rsvp" do
     rsvp = RSVP.create!(show: shows(:upcoming), email: "backfill@example.com", first_name: "Back", last_name: "Fill", response: "yes", seats_reserved: 1, phone_number: "2125551234")
     person = Person.create!(first_name: "Back", last_name: "Fill", email: rsvp.email, status: "active")
