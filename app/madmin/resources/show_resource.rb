@@ -42,9 +42,9 @@ class ShowResource < Madmin::Resource
   def self.display_name(record) = "#{record.name} — #{record.start.strftime('%Y-%m-%d')}"
 
   # Customize the default sort column and direction.
-  # def self.default_sort_column = "created_at"
-  #
-  # def self.default_sort_direction = "desc"
+  def self.default_sort_column = "start"
+
+  def self.default_sort_direction = "desc"
 
   menu position: 20
 end
