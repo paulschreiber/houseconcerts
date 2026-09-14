@@ -74,12 +74,19 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "calendar returns an ics feed of upcoming shows" do
+    show = shows(:upcoming)
+
     get calendar_path
 
     assert_response :success
     assert_equal "text/calendar", @response.media_type
     assert_includes @response.body, "BEGIN:VCALENDAR"
-    assert_includes @response.body, "SUMMARY:#{shows(:upcoming).name} House Concert"
+    assert_includes @response.body, "SUMMARY:#{show.name} House Concert"
+    assert_includes @response.body, "DTSTART:#{show.start.utc.strftime('%Y%m%dT%H%M%SZ')}"
+    assert_includes @response.body, "DTEND:#{show.end.utc.strftime('%Y%m%dT%H%M%SZ')}"
+    assert_includes @response.body, "UID:event-#{show.slug}@#{Settings.domain}"
+    assert_includes @response.body, rsvp_for_show_url(slug: show.slug)
+    assert_includes @response.body, "LOCATION:#{show.location.gsub(',', '\\,')}"
   end
 
   test "calendar excludes past shows" do
