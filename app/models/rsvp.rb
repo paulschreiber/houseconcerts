@@ -180,8 +180,12 @@ class RSVP < ApplicationRecord
     RSVP.where(show: Show.previous, response: "yes", confirmed: "confirmed")
   end
 
-  def self.nonsubscribers
-    RSVP.where(show: Show.next, response: "yes").where("email NOT IN (SELECT email FROM people)")
+  # A person who unsubscribed (or is bouncing/moved) still has a row in
+  # people, so only an active person counts as a subscriber here -- someone
+  # who previously unsubscribed and RSVPs again should show up as a
+  # nonsubscriber, not be silently excluded.
+  def self.nonsubscribers(show = Show.next)
+    where(show: show, response: "yes").where.not(email: Person.active.select(:email))
   end
 
   def sms_reminder
