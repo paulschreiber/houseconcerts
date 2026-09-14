@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_31_171112) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_14_191415) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", precision: nil, null: false
@@ -71,7 +71,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_171112) do
   create_table "artists_shows", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "artist_id", null: false
     t.bigint "show_id", null: false
-    t.index ["artist_id", "show_id"], name: "index_artists_shows_on_artist_id_and_show_id"
+    t.index ["artist_id", "show_id"], name: "index_artists_shows_on_artist_id_and_show_id", unique: true
     t.index ["show_id", "artist_id"], name: "index_artists_shows_on_show_id_and_artist_id"
   end
 
@@ -121,7 +121,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_171112) do
   create_table "people_venue_groups", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.bigint "venue_group_id", null: false
-    t.index ["person_id", "venue_group_id"], name: "index_people_venue_groups_on_person_id_and_venue_group_id"
+    t.index ["person_id", "venue_group_id"], name: "index_people_venue_groups_on_person_id_and_venue_group_id", unique: true
     t.index ["venue_group_id", "person_id"], name: "index_people_venue_groups_on_venue_group_id_and_person_id"
   end
 
@@ -323,7 +323,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_171112) do
   create_table "venue_groups_venues", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "venue_group_id", null: false
     t.bigint "venue_id", null: false
-    t.index ["venue_group_id", "venue_id"], name: "index_venue_groups_venues_on_venue_group_id_and_venue_id"
+    t.index ["venue_group_id", "venue_id"], name: "index_venue_groups_venues_on_venue_group_id_and_venue_id", unique: true
     t.index ["venue_id", "venue_group_id"], name: "index_venue_groups_venues_on_venue_id_and_venue_group_id"
   end
 
@@ -359,6 +359,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_171112) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "artists_shows", "artists"
+  add_foreign_key "artists_shows", "shows"
+  add_foreign_key "people_venue_groups", "people"
+  add_foreign_key "people_venue_groups", "venue_groups"
   add_foreign_key "rsvps", "shows"
   add_foreign_key "shows", "venues"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
@@ -367,5 +371,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_171112) do
   add_foreign_key "solid_queue_ready_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_recurring_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_scheduled_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
+  add_foreign_key "venue_groups_venues", "venue_groups"
+  add_foreign_key "venue_groups_venues", "venues"
   add_foreign_key "webauthn_credentials", "admins"
 end

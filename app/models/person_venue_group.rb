@@ -3,4 +3,6 @@ class PersonVenueGroup < ApplicationRecord
 
   belongs_to :person
   belongs_to :venue_group
+
+  validates :person_id, uniqueness: { scope: :venue_group_id }
 end
