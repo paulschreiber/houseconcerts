@@ -58,6 +58,11 @@ body.shows.index .scopes a:nth-child(7) {
   margin-left: 1rem;
 }
 
+/* RSVPs index: group the scope buttons visually (next show / previous show)
+   with extra spacing. Positional — resource.scopes has no grouping concept,
+   so this must be updated if scope order/count changes: All | Next show,
+   Next show attendees, Unconfirmed RSVPs, Nonsubscribers | Previous show,
+   Previous show attendees. */
 body.rsvps.index .scopes a:nth-child(2),
 body.rsvps.index .scopes a:nth-child(6) {
   margin-left: 1rem;
