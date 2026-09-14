@@ -1,7 +1,15 @@
+# pull_request_target is deliberate here, not an oversight: this job never
+# checks out PR code, so it doesn't have the usual pull_request_target risk
+# (running untrusted code with write-level secrets). Using plain pull_request
+# instead would let any same-repo collaborator edit this file in their own PR
+# to neuter the dependabot-only check and self-approve, since pull_request
+# runs the workflow YAML from the PR's own branch rather than the base
+# branch. pull_request_target always reads the workflow from the base
+# branch, so a PR can't rewrite the rules it's judged by.
 name: Auto approve
 
 on:
-  pull_request:
+  pull_request_target:
 
 jobs:
   auto-approve:
