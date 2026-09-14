@@ -28,6 +28,31 @@ class NextShowRakeTest < ActiveSupport::TestCase
     assert_includes out, person.email_address_with_name
   end
 
+  test "invite reports failed sends separately from successful ones" do
+    ok_person = Person.create!(first_name: "Ok", last_name: "Person", email: "ok-invite@example.com", status: "active")
+    bad_person = Person.create!(first_name: "Bad", last_name: "Person", email: "bad-invite@example.com", status: "active")
+
+    original_invite = InvitesMailer.method(:invite)
+    InvitesMailer.define_singleton_method(:invite) do |person, show, *rest|
+      raise Net::SMTPServerBusy, "simulated" if person.email == bad_person.email
+
+      original_invite.call(person, show, *rest)
+    end
+
+    out = nil
+    begin
+      assert_emails 1 do
+        out, = capture_io { Rake::Task["next_show:invite"].invoke }
+      end
+    ensure
+      InvitesMailer.define_singleton_method(:invite, original_invite)
+    end
+
+    assert_includes out, ok_person.email_address_with_name
+    assert_includes out, "Failed to email #{bad_person.email_address_with_name}"
+    assert_includes out, "Sent 1 email, 1 failed."
+  end
+
   test "invite excludes people who already RSVPd for the show" do
     person = Person.create!(first_name: "Already", last_name: "Rsvpd", email: "already-rsvpd@example.com", status: "active")
     RSVP.create!(show: shows(:upcoming), email: person.email, first_name: "Already", last_name: "Rsvpd", response: "yes", seats_reserved: 1)
@@ -48,9 +73,29 @@ class NextShowRakeTest < ActiveSupport::TestCase
   test "invite_one emails a specific person for the next show" do
     person = Person.create!(first_name: "Direct", last_name: "Invite", email: "direct-invite@example.com", status: "active")
 
+    out = nil
     assert_emails 1 do
-      capture_io { Rake::Task["next_show:invite_one"].invoke(person.email) }
+      out, = capture_io { Rake::Task["next_show:invite_one"].invoke(person.email) }
     end
+    assert_includes out, "Sent."
+  end
+
+  test "invite_one reports a failed send instead of printing nothing" do
+    person = Person.create!(first_name: "Direct", last_name: "Invite", email: "direct-invite-fail@example.com", status: "active")
+
+    original_invite = InvitesMailer.method(:invite)
+    InvitesMailer.define_singleton_method(:invite) { |*_args| raise "simulated enqueue failure" }
+
+    out = nil
+    begin
+      assert_no_emails do
+        out, = capture_io { Rake::Task["next_show:invite_one"].invoke(person.email) }
+      end
+    ensure
+      InvitesMailer.define_singleton_method(:invite, original_invite)
+    end
+
+    assert_includes out, "Failed to send."
   end
 
   test "invite_one exits when the person cannot be found" do
@@ -139,12 +184,25 @@ class NextShowRakeTest < ActiveSupport::TestCase
     assert rsvp.reload.waitlisted?
   end
 
+  test "confirm reports a failed confirmation instead of miscounting it as sent" do
+    ok_rsvp = RSVP.create!(show: shows(:upcoming), email: "confirm-ok@example.com", first_name: "To", last_name: "Confirm", response: "yes", seats_reserved: 1)
+    bad_rsvp = RSVP.create!(show: shows(:upcoming), email: "confirm-fail@example.com", first_name: "To", last_name: "Fail", response: "yes", seats_reserved: 1)
+    bad_rsvp.update_column(:first_name, "") # rubocop:disable Rails/SkipsModelValidations
+
+    assert_emails 1 do
+      out, = capture_io { Rake::Task["next_show:confirm"].invoke }
+      assert_includes out, "Sent 1 email, 1 failed."
+    end
+    assert ok_rsvp.reload.confirmed?
+    assert_not bad_rsvp.reload.confirmed?
+  end
+
   test "confirm does not error and emails no one when the show is sold out" do
     shows(:upcoming).update!(availability: "sold_out")
 
     assert_no_emails do
       out, = capture_io { Rake::Task["next_show:confirm"].invoke }
-      assert_includes out, "Sent 0 emails."
+      assert_includes out, "Sent 0 emails, 0 failed."
     end
   end
 end
