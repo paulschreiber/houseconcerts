@@ -10,6 +10,10 @@ class InvitePerson
 
   def call
     InvitesMailer.invite(person, show).deliver_later
+    true
+  rescue StandardError => e
+    Rails.logger.error("InvitePerson failed to enqueue an invite for #{person.email}: #{e.message}")
+    false
   end
 
   private
