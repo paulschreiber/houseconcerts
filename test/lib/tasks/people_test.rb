@@ -88,6 +88,22 @@ class PeopleRakeTest < ActiveSupport::TestCase
     end
   end
 
+  test "import_subscribers keeps a multi-word first name together instead of splitting it into the last name" do
+    file = Tempfile.new
+    begin
+      file.write("Mary Jane Watson <mj-import@example.com>")
+      file.close
+
+      capture_io { Rake::Task["people:import_subscribers"].invoke(file.path) }
+
+      person = Person.find_by(email: "mj-import@example.com")
+      assert_equal "Mary Jane", person.first_name
+      assert_equal "Watson", person.last_name
+    ensure
+      file.close!
+    end
+  end
+
   test "import_subscribers reports duplicates instead of raising" do
     Person.create!(first_name: "Existing", last_name: "Person", email: "duplicate-import@example.com", status: "active")
 
