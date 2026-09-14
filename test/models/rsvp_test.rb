@@ -197,12 +197,20 @@ class RsvpTest < ActiveSupport::TestCase
 
       show_confirmed = status == "confirmed"
       expected_can_confirm = confirmed != "confirmed" && response == "yes" && show_confirmed && availability == "available"
-      expected_can_waitlist = confirmed != "confirmed" && response == "yes" && show_confirmed && availability == "waitlisted"
+      expected_can_waitlist = confirmed == "unconfirmed" && response == "yes" && show_confirmed && availability == "waitlisted"
       combo = "availability=#{availability} status=#{status} response=#{response} confirmed=#{confirmed}"
 
       assert_equal expected_can_confirm, rsvp.can_confirm?, "can_confirm? wrong for #{combo}"
       assert_equal expected_can_waitlist, rsvp.can_waitlist?, "can_waitlist? wrong for #{combo}"
     end
+  end
+
+  test "can_waitlist? is false for an rsvp that's already waitlisted" do
+    rsvp = rsvps(:one)
+    rsvp.show.update!(availability: "waitlisted")
+    rsvp.update!(confirmed: "waitlisted")
+
+    assert_not rsvp.can_waitlist?
   end
 
   test "can_cancel? is true only for a yes rsvp on the next upcoming show" do

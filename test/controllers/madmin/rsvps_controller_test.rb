@@ -113,6 +113,43 @@ module Madmin
       assert_match(/can’t be waitlisted/, flash[:alert])
     end
 
+    test "waitlist does not re-email an already-waitlisted rsvp" do
+      @rsvp.show.update!(availability: "waitlisted")
+      @rsvp.update!(confirmed: "waitlisted")
+
+      assert_no_emails do
+        patch waitlist_madmin_rsvp_path(@rsvp)
+      end
+
+      assert_redirected_to madmin_rsvps_path
+      assert_match(/can’t be waitlisted/, flash[:alert])
+    end
+
+    test "confirm shows an alert instead of a false success notice when the save fails" do
+      @rsvp.update_column(:first_name, "") # rubocop:disable Rails/SkipsModelValidations
+
+      assert_no_emails do
+        patch confirm_madmin_rsvp_path(@rsvp)
+      end
+
+      assert_equal "unconfirmed", @rsvp.reload.confirmed
+      assert_redirected_to madmin_rsvps_path
+      assert_match(/can’t be confirmed/, flash[:alert])
+    end
+
+    test "waitlist shows an alert instead of a false success notice when the save fails" do
+      @rsvp.show.update!(availability: "waitlisted")
+      @rsvp.update_column(:first_name, "") # rubocop:disable Rails/SkipsModelValidations
+
+      assert_no_emails do
+        patch waitlist_madmin_rsvp_path(@rsvp)
+      end
+
+      assert_equal "unconfirmed", @rsvp.reload.confirmed
+      assert_redirected_to madmin_rsvps_path
+      assert_match(/can’t be waitlisted/, flash[:alert])
+    end
+
     test "cancel cancels the rsvp and redirects with a notice" do
       @rsvp.update!(confirmed: "confirmed")
 

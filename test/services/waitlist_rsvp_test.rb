@@ -7,10 +7,12 @@ class WaitlistRSVPTest < ActiveSupport::TestCase
     rsvp = rsvps(:one)
     rsvp.update!(confirmed: "unconfirmed")
 
+    result = nil
     assert_emails 1 do
-      WaitlistRSVP.call(rsvp)
+      result = WaitlistRSVP.call(rsvp)
     end
 
+    assert result
     assert_equal "waitlisted", rsvp.reload.confirmed
   end
 
@@ -30,10 +32,12 @@ class WaitlistRSVPTest < ActiveSupport::TestCase
     rsvp.update!(confirmed: "unconfirmed")
     rsvp.first_name = ""
 
+    result = nil
     assert_no_emails do
-      WaitlistRSVP.call(rsvp)
+      result = WaitlistRSVP.call(rsvp)
     end
 
+    assert_not result
     assert_equal "unconfirmed", rsvp.reload.confirmed
   end
 end
