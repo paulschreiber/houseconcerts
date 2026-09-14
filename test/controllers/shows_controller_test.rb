@@ -39,6 +39,31 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 1, artist_queries
   end
 
+  test "shows escapes an artist name containing HTML instead of rendering it raw" do
+    artist = artists(:one)
+    # ModelCleaners strips HTML from string attributes on save, so bypass it
+    # to test the view's own escaping rather than relying on that callback.
+    artist.update_column(:name, "Evil<script>alert(1)</script>Artist") # rubocop:disable Rails/SkipsModelValidations
+    shows(:past).artists = [ artist ]
+
+    get past_shows_path
+
+    assert_response :success
+    assert_not_includes @response.body, "<script>alert(1)</script>"
+    assert_includes @response.body, "&lt;script&gt;"
+  end
+
+  test "shows omits the image link wrapper when the sampled artist has no url" do
+    artist = artists(:one)
+    artist.update!(url: nil)
+    shows(:past).artists = [ artist ]
+
+    get past_shows_path
+
+    assert_response :success
+    assert_no_match(/<a class=.imagelink./, @response.body)
+  end
+
   test "shows shows a message when there are no past shows" do
     Show.update_all(status: "cancelled") # rubocop:disable Rails/SkipsModelValidations
 
