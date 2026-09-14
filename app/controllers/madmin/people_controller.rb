@@ -4,6 +4,7 @@ module Madmin
 
     before_action { Current.admin_scope = params[:scope] }
     before_action :next_show, if: -> { action_name.in?(%w[index show]) }
+    before_action :enforce_readonly, only: %i[invite rsvp_no]
 
     def invite
       show = next_show
