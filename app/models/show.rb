@@ -99,7 +99,7 @@ class Show < ApplicationRecord
   end
 
   def summary
-    "#{name} (#{start.to_date.iso8601})"
+    "#{name} (#{start&.to_date&.iso8601})"
   end
 
   def set_end_time
