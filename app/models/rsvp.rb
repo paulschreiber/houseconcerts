@@ -127,8 +127,17 @@ class RSVP < ApplicationRecord
     joins(:show).merge(Show.occurred).where(email: emails, response: "yes", confirmed: "confirmed", seats_reserved: 1..)
   end
 
+  # Maps each email to the ids of its attended RSVPs, so a caller with many
+  # RSVPs to check (e.g. rendering a page of the admin index) can look up
+  # each one against a single preloaded query instead of one query per row.
+  def self.attended_before_map(emails)
+    attended(emails).pluck(:email, :id).group_by(&:first).transform_values { |pairs| pairs.map(&:last) }
+  end
+
   def attended_before?
-    self.class.attended(email).where.not(id: id).exists?
+    return self.class.attended(email).where.not(id: id).exists? unless Current.attended_rsvp_ids_by_email
+
+    Current.attended_rsvp_ids_by_email.fetch(email, []).any? { |attended_id| attended_id != id }
   end
 
   def self.next_show
