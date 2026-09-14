@@ -17,7 +17,7 @@ class RSVP < ApplicationRecord
   after_save -> { NotifyAdminOfRSVP.call(self) }, unless: :confirmed?
 
   default_value_for :uniqid do
-    SecureRandom.alphanumeric(8)
+    SecureRandom.alphanumeric(Settings.uniqid_length)
   end
 
   validates :first_name, presence: true, mixed_case: true, length: { minimum: 2 }, unless: :allowed_name_exception?

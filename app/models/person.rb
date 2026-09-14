@@ -16,7 +16,7 @@ class Person < ApplicationRecord
   before_save :ensure_venue_group
 
   default_value_for :uniqid do
-    SecureRandom.alphanumeric(8)
+    SecureRandom.alphanumeric(Settings.uniqid_length)
   end
 
   default_value_for :status, "active"
