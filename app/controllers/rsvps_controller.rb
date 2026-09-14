@@ -37,11 +37,7 @@ class RsvpsController < ApplicationController
 
         # no match; create a new object
         if rsvp.nil?
-          @rsvp.first_name = person.first_name
-          @rsvp.last_name = person.last_name
-          @rsvp.email = person.email
-          @rsvp.phone_number = person.phone_number
-          @rsvp.postcode = person.postcode
+          @rsvp.assign_attributes(person.rsvp_prefill_attributes)
 
         # existing RSVP found
         else

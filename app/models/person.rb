@@ -48,6 +48,10 @@ class Person < ApplicationRecord
     active? && !RSVP.exists?(email: email, show: next_show)
   end
 
+  def rsvp_prefill_attributes
+    { first_name: first_name, last_name: last_name, email: email, phone_number: phone_number, postcode: postcode }
+  end
+
   def attendance_history
     RSVP.attended(email).reorder("shows.start DESC").select(:start, :name, :seats_used, :seats_reserved)
   end

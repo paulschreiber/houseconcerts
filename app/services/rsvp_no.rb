@@ -8,14 +8,16 @@ class RSVPNo
     @show = show
   end
 
+  # Two concurrent clicks for the same person/show can both miss the
+  # find_or_initialize_by above and race to create; the DB's unique index
+  # rejects the loser, which we recover by updating the row the winner created.
   def call
+    attrs = person.rsvp_prefill_attributes.merge(response: "no")
     rsvp = RSVP.find_or_initialize_by(email: person.email, show: show)
-    rsvp.first_name = person.first_name
-    rsvp.last_name = person.last_name
-    rsvp.phone_number = person.phone_number
-    rsvp.postcode = person.postcode
-    rsvp.response = "no"
+    rsvp.assign_attributes(attrs)
     rsvp.save
+  rescue ActiveRecord::RecordNotUnique
+    RSVP.find_by(email: person.email, show: show).update(attrs)
   end
 
   private
