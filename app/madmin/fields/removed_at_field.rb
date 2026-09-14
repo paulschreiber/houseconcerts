@@ -2,15 +2,11 @@
 # new/edit form, and only as an index column on the People "removed" scope
 # (set via Current.admin_scope in Madmin::PeopleController).
 class RemovedAtField < ShortDateTimeField
-  def to_partial_path(name)
-    return "/madmin/fields/readonly_date_time_field/form" if name.to_s == "form"
+  include HideableOnScope
 
-    super
-  end
+  delegate_partial "form", to: "readonly_date_time_field"
 
-  def visible?(action)
-    return false if action.to_sym == :index && Current.admin_scope != "removed"
-
-    super
+  def hidden_on_index?
+    Current.admin_scope != "removed"
   end
 end
