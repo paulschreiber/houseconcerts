@@ -1,6 +1,6 @@
 def find_nonsubscribers
   show = Show.occurred.last
-  rsvps = RSVP.where(show: show, response: "yes").where("email NOT IN (SELECT email FROM people)")
+  rsvps = RSVP.nonsubscribers(show)
   puts "Found #{rsvps.size} who RSVPd for #{show.name} and are not subscribed"
   rsvps
 end
