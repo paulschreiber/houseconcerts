@@ -284,6 +284,23 @@ class RsvpTest < ActiveSupport::TestCase
     assert_not_includes RSVP.nonsubscribers, other_show_rsvp
   end
 
+  test "self.nonsubscribers includes an rsvp whose email belongs to a removed person" do
+    Person.create!(first_name: "Unsubscribed", last_name: "Person", email: "unsubscribed@example.com", status: "removed")
+    rsvp = RSVP.create!(show: Show.next, first_name: "Unsubscribed", last_name: "Person",
+                        email: "unsubscribed@example.com", response: "yes", seats_reserved: 2)
+
+    assert_includes RSVP.nonsubscribers, rsvp
+  end
+
+  test "self.nonsubscribers accepts a show argument, matching the rake task's use for the most recent past show" do
+    past_show = shows(:past)
+    rsvp = RSVP.create!(show: past_show, first_name: "Past", last_name: "Nonsub",
+                        email: "past-nonsub@example.com", response: "yes", seats_reserved: 2)
+
+    assert_includes RSVP.nonsubscribers(past_show), rsvp
+    assert_not_includes RSVP.nonsubscribers, rsvp
+  end
+
   test "rejects a new yes rsvp for a sold out show" do
     rsvp = RSVP.new(
       first_name: "Sold",
