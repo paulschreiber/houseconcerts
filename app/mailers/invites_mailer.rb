@@ -44,7 +44,7 @@ class InvitesMailer < ApplicationMailer
     @rsvp_url_yes = rsvp_response_url(slug: show.slug, uniqid: person.uniqid, response: :yes)
     @rsvp_url_no = rsvp_response_url(slug: show.slug, uniqid: person.uniqid, response: :no)
     @unsub_url = unsubscribe_url(uniqid: person.uniqid)
-    @track_url = open_tracking_url(tag: tag, uniqid: person.uniqid)
+    @track_url = open_tracking_url(tag: tag, uniqid: person.uniqid, kind: "person")
 
     subject = "You’re invited: #{show.name} house concert (#{show.start_date_short})"
 
@@ -77,7 +77,7 @@ class InvitesMailer < ApplicationMailer
 
     @rsvp = rsvp
     tag = "#{rsvp.show.slug}:#{email_type}"
-    @track_url = open_tracking_url(tag: tag, uniqid: rsvp.uniqid)
+    @track_url = open_tracking_url(tag: tag, uniqid: rsvp.uniqid, kind: "rsvp")
     @rsvp_url = modify_rsvp_url(slug: rsvp.show.slug, uniqid: rsvp.uniqid)
 
     subject = "Waitlisted: #{rsvp.show.name} house concert (#{rsvp.show.start_date_short})"
@@ -107,7 +107,7 @@ class InvitesMailer < ApplicationMailer
 
     @rsvp = rsvp
     tag = "#{rsvp.show.slug}:#{email_type}"
-    @track_url = open_tracking_url(tag: tag, uniqid: rsvp.uniqid)
+    @track_url = open_tracking_url(tag: tag, uniqid: rsvp.uniqid, kind: "rsvp")
     @rsvp_url = modify_rsvp_url(slug: rsvp.show.slug, uniqid: rsvp.uniqid)
     @calendar_url = make_calendar_url(rsvp)
 
@@ -135,7 +135,7 @@ class InvitesMailer < ApplicationMailer
     @rsvp_url = modify_rsvp_url(slug: rsvp.show.slug, uniqid: rsvp.uniqid)
     @rsvp_url_yes = rsvp_response_url(slug: rsvp.show.slug, uniqid: rsvp.uniqid, response: :yes)
     @rsvp_url_no = rsvp_response_url(slug: rsvp.show.slug, uniqid: rsvp.uniqid, response: :no)
-    @track_url = open_tracking_url(tag: tag, uniqid: rsvp.uniqid)
+    @track_url = open_tracking_url(tag: tag, uniqid: rsvp.uniqid, kind: "rsvp")
 
     subject = "Reminder: #{rsvp.show.name} house concert (#{rsvp.show.start_date_short})"
 
