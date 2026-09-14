@@ -188,7 +188,10 @@ main:has(> #sidebar) {
 }
 
 /* zebra striping for tables */
-table tbody tr:nth-child(even) {
-  background-color: var(--background-color);
-  print-color-adjust: exact;
+body.print,
+body.index {
+  table tbody tr:nth-child(even) {
+    background-color: var(--background-color);
+    print-color-adjust: exact;
+  }
 }
