@@ -266,6 +266,26 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/You.ll receive my address/, response.body)
   end
 
+  test "thanks pluralizes seats in both the headline and body for more than one seat" do
+    rsvp = rsvps(:one)
+    rsvp.update!(seats_reserved: 2)
+
+    get rsvp_thanks_path(uniqid: rsvp.uniqid)
+
+    assert_includes response.body, "Thanks for reserving two seats"
+    assert_includes response.body, "your two seats have been reserved"
+  end
+
+  test "thanks uses singular seat wording in both the headline and body for exactly one seat" do
+    rsvp = rsvps(:one)
+    rsvp.update!(seats_reserved: 1)
+
+    get rsvp_thanks_path(uniqid: rsvp.uniqid)
+
+    assert_includes response.body, "Thanks for reserving a seat"
+    assert_includes response.body, "your seat has been reserved"
+  end
+
   test "thanks redirects home for an invalid uniqid" do
     get rsvp_thanks_path(uniqid: "nonexistent-uniqid")
     assert_redirected_to root_url
