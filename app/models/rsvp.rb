@@ -165,11 +165,11 @@ class RSVP < ApplicationRecord
   end
 
   def self.next_show_attendees(show = Show.next)
-    RSVP.where(show: show, response: "yes", confirmed: "confirmed")
+    yes_rsvps(show, confirmed: "confirmed")
   end
 
   def self.unconfirmed_rsvps
-    RSVP.where(show: Show.next, response: "yes", confirmed: %w[unconfirmed waitlisted])
+    yes_rsvps(Show.next, confirmed: %w[unconfirmed waitlisted])
   end
 
   def self.previous_show
@@ -177,8 +177,13 @@ class RSVP < ApplicationRecord
   end
 
   def self.previous_show_attendees
-    RSVP.where(show: Show.previous, response: "yes", confirmed: "confirmed")
+    yes_rsvps(Show.previous, confirmed: "confirmed")
   end
+
+  def self.yes_rsvps(show, confirmed:)
+    RSVP.where(show: show, response: "yes", confirmed: confirmed)
+  end
+  private_class_method :yes_rsvps
 
   # A person who unsubscribed (or is bouncing/moved) still has a row in
   # people, so only an active person counts as a subscriber here -- someone
