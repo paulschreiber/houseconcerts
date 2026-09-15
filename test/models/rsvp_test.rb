@@ -262,6 +262,18 @@ class RsvpTest < ActiveSupport::TestCase
     assert_not_includes RSVP.unconfirmed_rsvps, rsvp
   end
 
+  test "self.previous_show_attendees includes only confirmed yes rsvps for the previous show" do
+    rsvp = RSVP.create!(show: Show.previous, first_name: "Previous", last_name: "Attendee",
+                        email: "previous-attendee@example.com", response: "yes", seats_reserved: 2, confirmed: "confirmed")
+    assert_includes RSVP.previous_show_attendees, rsvp
+
+    rsvp.update!(confirmed: "unconfirmed")
+    assert_not_includes RSVP.previous_show_attendees, rsvp
+
+    rsvp.update!(confirmed: "confirmed", show: Show.next)
+    assert_not_includes RSVP.previous_show_attendees, rsvp
+  end
+
   test "self.nonsubscribers includes a yes rsvp for the next show whose email isn't a subscribed person" do
     non_subscriber = RSVP.create!(show: Show.next, first_name: "Not", last_name: "Subscribed",
                                   email: "not-subscribed@example.com", response: "yes", seats_reserved: 2)
