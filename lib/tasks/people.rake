@@ -67,6 +67,13 @@ namespace :people do
 
     imported = []
     data.split("\n").each do |line|
+      # Same regex (and the same tradeoff) is duplicated in
+      # app/javascript/controllers/name_paste_controller.js -- keep both in
+      # sync. The greedy first group always treats everything before the
+      # last space as the first name: correct for multi-word first names
+      # ("Mary Jane Watson" -> first="Mary Jane", last="Watson"), but a
+      # middle initial lands in the first name too ("John Q Public" ->
+      # first="John Q", last="Public", not first="John", last="Q Public").
       matches = line.match(/(.*) (.*) <([^>]+)>/)
       if matches.nil? || matches.size != 4
         puts "Skipping: [#{line}]"
