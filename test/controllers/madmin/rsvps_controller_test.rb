@@ -16,6 +16,35 @@ module Madmin
       assert_response :success
     end
 
+    test "edit shows a Delete button that submits to the same delete route as the show page" do
+      get edit_madmin_rsvp_path(@rsvp)
+
+      assert_select "form[action=?][method=?] button[type=submit]", madmin_rsvp_path(@rsvp), "post", text: "Delete"
+    end
+
+    test "edit and show use the same delete confirmation copy" do
+      get edit_madmin_rsvp_path(@rsvp)
+      edit_confirm = response.body[/data-turbo-confirm="([^"]*)"/, 1]
+
+      get madmin_rsvp_path(@rsvp)
+      show_confirm = response.body[/data-turbo-confirm="([^"]*)"/, 1]
+
+      assert edit_confirm.present?
+      assert_equal show_confirm, edit_confirm
+    end
+
+    test "edit's delete button form keeps the default button_to class" do
+      get edit_madmin_rsvp_path(@rsvp)
+
+      assert_select "form.button_to button[type=submit]", text: "Delete"
+    end
+
+    test "new does not show a Delete button" do
+      get new_madmin_rsvp_path
+
+      assert_select "button[type=submit]", text: "Delete", count: 0
+    end
+
     test "new renders successfully" do
       get new_madmin_rsvp_path
 
