@@ -47,7 +47,7 @@ module Madmin
       batch_run = BatchRun.create!(show: show, kind: "remind", status: "completed", total_count: 3, failed_count: 3)
       3.times do |i|
         rsvp = RSVP.create!(show: show, email: "dashboard.reason.#{i}@example.com", first_name: "Failed", last_name: "Reminder#{i}",
-                            response: "yes", confirmed: "yes", seats_reserved: 1)
+                            response: "yes", confirmed: "confirmed", seats_reserved: 1)
         batch_run.batch_run_items.create!(recipient: rsvp, status: "failed", error_message: "Twilio credentials invalid")
       end
 
