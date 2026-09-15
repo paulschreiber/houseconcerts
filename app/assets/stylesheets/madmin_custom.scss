@@ -113,10 +113,10 @@ main:has(> #sidebar) {
    absolute) keeps the sidebar in normal flow. (Selectors here are scoped
    past Madmin's own bare `#sidebar`/`main` rules, which load after ours
    and would otherwise win ties on identical specificity.)
-   Scoped to Madmin's own desktop breakpoint (mobile, below 769px, keeps
+   Scoped to Madmin's own desktop breakpoint (mobile, below 768px, keeps
    Madmin's default off-canvas #sidebar drawer — sticky positioning would
    fight its position: fixed slide-in transform). */
-@media (width >= 769px) {
+@media (width >= 768px) {
   main:has(> #sidebar) {
     display: flex;
     align-items: flex-start;
