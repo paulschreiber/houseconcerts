@@ -64,6 +64,18 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
     assert_no_match(/<a class=.imagelink./, @response.body)
   end
 
+  test "shows renders an artist's name as plain text instead of a link when they have no url" do
+    artist = artists(:one)
+    artist.update!(url: nil)
+    shows(:past).artists = [ artist ]
+
+    get past_shows_path
+
+    assert_response :success
+    assert_select "span.fn", text: artist.name
+    assert_select "a.url.fn", false
+  end
+
   test "shows shows a message when there are no past shows" do
     Show.update_all(status: "cancelled") # rubocop:disable Rails/SkipsModelValidations
 
