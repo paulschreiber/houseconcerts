@@ -7,6 +7,6 @@ class HideableResponseField < RadioEnumField
   delegate_partial "form", to: "radio_enum_field"
 
   def hidden_on_index?
-    %w[next_show_attendees previous_show_attendees unconfirmed_rsvps].include?(Current.admin_scope)
+    [ "next_show_attendees", "previous_show_attendees", RSVP::UNCONFIRMED_RSVPS_SCOPE ].include?(Current.admin_scope)
   end
 end
