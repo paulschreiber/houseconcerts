@@ -184,8 +184,8 @@ class BatchRunFanOutJob < ApplicationJob
     end
 
     def invite_recipients(show)
-      Person.includes(:venue_groups)
-            .where(venue_groups: { id: Settings.default_venue_group }, status: "active")
+      Person.active.includes(:venue_groups)
+            .where(venue_groups: { id: Settings.default_venue_group })
             .where(
               "NOT EXISTS (SELECT 1 FROM rsvps WHERE rsvps.show_id = ? AND rsvps.email = people.email)",
               show.id
