@@ -312,7 +312,7 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   test "a reminder to an RSVP that's no longer a confirmed yes attendee is marked failed, not sent" do
     show = shows(:upcoming)
     rsvp = RSVP.create!(show: show, email: "waitlisted-by-now@example.com", first_name: "No", last_name: "Longer",
-                        response: "yes", confirmed: "yes", seats_reserved: 1)
+                        response: "yes", confirmed: "confirmed", seats_reserved: 1)
     # Bypasses callbacks (incl. the admin RSVP-change notification, which
     # isn't what this test is about) to simulate the RSVP having been
     # waitlisted after the batch snapshot but before this job ran.
@@ -336,7 +336,7 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   test "retrying a reminder whose email already went out does not resend the email, only the SMS" do
     show = shows(:upcoming)
     rsvp = RSVP.create!(show: show, email: "retry-remind@example.com", first_name: "Retry", last_name: "Remind",
-                        response: "yes", confirmed: "yes", seats_reserved: 1, phone_number: "5555550123")
+                        response: "yes", confirmed: "confirmed", seats_reserved: 1, phone_number: "5555550123")
     batch_run = BatchRun.create!(show: show, kind: "remind", status: "running", total_count: 1, failed_count: 0)
     # Mirrors the state after a first attempt where the reminder email
     # succeeded but the SMS step failed: email_sent_at is already set,
@@ -358,7 +358,7 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   test "retrying an item whose email and SMS already both went out does not resend either" do
     show = shows(:upcoming)
     rsvp = RSVP.create!(show: show, email: "retry-both-sent@example.com", first_name: "Retry", last_name: "Both",
-                        response: "yes", confirmed: "yes", seats_reserved: 1, phone_number: "5555550123")
+                        response: "yes", confirmed: "confirmed", seats_reserved: 1, phone_number: "5555550123")
     batch_run = BatchRun.create!(show: show, kind: "remind", status: "running", total_count: 1, failed_count: 0)
     original_sms_sent_at = 1.hour.ago
     # Mirrors a retry triggered after both channels already succeeded
