@@ -1,4 +1,8 @@
 class RSVP < ApplicationRecord
+  # Madmin scope name, also referenced by HideableResponseField and the
+  # String#humanize override for this scope's button label.
+  UNCONFIRMED_RSVPS_SCOPE = "unconfirmed_rsvps".freeze
+
   include NameRules
   include NameHelpers
   include NumberHelpers
