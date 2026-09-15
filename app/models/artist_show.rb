@@ -1,8 +1,7 @@
 class ArtistShow < ApplicationRecord
   self.table_name = "artists_shows"
 
-  belongs_to :artist
-  belongs_to :show
+  include JoinRecord
 
-  validates :artist_id, uniqueness: { scope: :show_id }
+  join_belongs_to :artist, :show
 end
