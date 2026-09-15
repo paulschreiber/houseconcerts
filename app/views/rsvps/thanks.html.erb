@@ -1,5 +1,5 @@
 <% if @rsvp.yes? %>
-<h1>Thanks for reserving <%= @rsvp.seats_reserved > 1 ? "#{@rsvp.seats_reserved.humanize} seats" : 'a seat' %> for <%= @rsvp.show.name %></h1>
+<h1>Thanks for reserving <%= seat_count_phrase(@rsvp.seats_reserved, "seats", "a seat") %> for <%= @rsvp.show.name %></h1>
 <% elsif @rsvp.no? %>
 <h1>Sorry you couldn’t make it, <%= @rsvp.first_name %></h1>
 <% end %>
@@ -8,7 +8,7 @@
 
 <% if @rsvp.yes? %>
 
-	<p><%= @rsvp.first_name %>, your <%= @rsvp.seats_reserved > 1 ? "#{@rsvp.seats_reserved.humanize} spots have" : 'spot has' %> been reserved for the <strong><%= @rsvp.show.name %></strong> show on <strong><%= @rsvp.show.start.to_date.to_fs(:long) %>.</strong></p>
+	<p><%= @rsvp.first_name %>, your <%= seat_count_phrase(@rsvp.seats_reserved, "seats have", "seat has") %> been reserved for the <strong><%= @rsvp.show.name %></strong> show on <strong><%= @rsvp.show.start.to_date.to_fs(:long) %>.</strong></p>
 
 	<% if @rsvp.show.next_show? %>
 	<p>You’ll receive my address and directions via email in a day or so.</p>
