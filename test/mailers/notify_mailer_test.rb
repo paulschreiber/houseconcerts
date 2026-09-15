@@ -78,6 +78,29 @@ class NotifyMailerTest < ActionMailer::TestCase
     assert_includes email.subject, "+15559999999"
   end
 
+  test "rsvp shows the attendance history section for an updated yes rsvp" do
+    person = Person.create!(first_name: "Repeat", last_name: "Attendee", email: "repeat.attendee@example.com")
+    create_past_rsvp(person, shows(:past), seats_reserved: 2, seats_used: 2)
+    rsvp = RSVP.create!(show: shows(:upcoming), first_name: person.first_name, last_name: person.last_name,
+                        email: person.email, response: "yes", confirmed: "confirmed", seats_reserved: 2)
+
+    body = NotifyMailer.rsvp(rsvp, "update", 1).body.encoded
+
+    assert_includes body, "Attendance History"
+  end
+
+  test "rsvp omits the attendance history section for a cancellation" do
+    person = Person.create!(first_name: "Cancelling", last_name: "Attendee", email: "cancelling.attendee@example.com")
+    create_past_rsvp(person, shows(:past), seats_reserved: 2, seats_used: 2)
+    rsvp = RSVP.create!(show: shows(:upcoming), first_name: person.first_name, last_name: person.last_name,
+                        email: person.email, response: "yes", confirmed: "confirmed", seats_reserved: 2)
+    rsvp.update!(response: "no")
+
+    body = NotifyMailer.rsvp(rsvp, "cancel", nil).body.encoded
+
+    assert_not_includes body, "Attendance History"
+  end
+
   test "rsvp shows no previous reservations for someone with no attendance history" do
     person = Person.create!(first_name: "No", last_name: "History", email: "no.history@example.com")
     rsvp = RSVP.create!(show: shows(:upcoming), first_name: person.first_name, last_name: person.last_name,
