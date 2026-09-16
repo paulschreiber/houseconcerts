@@ -1,4 +1,16 @@
-<%= form_with model: [:madmin, record], url: (record.persisted? ? resource.show_path(record) : resource.index_path), local: true do |form| %>
+<%
+  # Update/Create lives inside this form, but the form itself stays a
+  # normal block-level element (no display: contents -- that would drop
+  # its form landmark role for a screen reader) so it can't share a row
+  # with Delete/Cancel by normal flow. Capture the builder here so its
+  # submit button can be rendered *after* the form closes instead,
+  # associated back to it via the form="..." attribute, keeping the
+  # three actions on one line without collapsing the form's own box.
+  form_builder = nil
+  form_dom_id = "#{dom_id(record)}-form"
+%>
+<%= form_with model: [:madmin, record], url: (record.persisted? ? resource.show_path(record) : resource.index_path), local: true, html: { id: form_dom_id } do |form| %>
+  <% form_builder = form %>
   <% if form.object.errors.any? %>
     <div class="alert alert-danger">
       <div class=""><%= t("madmin.form.errors", count: form.object.errors.full_messages.count) %>:</div>
@@ -18,11 +30,11 @@
       <%= tag.div attribute.field.options.description, class: "form-description" if attribute.field.options.description.present? %>
     </div>
   <% end %>
-
-  <%= form.submit class: "btn btn-primary" %>
 <% end %>
 
 <div class="form-secondary-actions">
+  <%= tag.button form_builder.send(:submit_default_value), type: "submit", form: form_dom_id, class: "btn btn-primary" %>
+
   <% if record.persisted? && !resource.readonly? %>
     <%= button_to t("madmin.actions.delete"), resource.show_path(record), method: :delete, data: { turbo_confirm: t("madmin.confirmations.delete") }, class: "btn btn-danger" %>
   <% end %>
