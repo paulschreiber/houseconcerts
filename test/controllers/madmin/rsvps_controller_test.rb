@@ -280,7 +280,7 @@ module Madmin
       assert_equal "✖", cells[4].text
 
       assert_match(%r{RSVPs</h4>\s*<p>1<}, response.body)
-      assert_match(%r{Seats Reserved</h4>\s*<p>2<}, response.body)
+      assert_match(%r{Seats</h4>\s*<p>2<}, response.body)
     end
 
     test "print flags an attendee who is on the mailing list and has attended before" do
