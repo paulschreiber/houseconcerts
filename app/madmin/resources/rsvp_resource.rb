@@ -50,8 +50,8 @@ class RSVPResource < Madmin::Resource
     next unless (totals = attendee_totals)
 
     tag.div class: "metrics" do
-      tag.div(class: "metric") { tag.h4("Attendees") + tag.p(totals[:count]) } +
-        tag.div(class: "metric") { tag.h4("Seats Reserved") + tag.p(totals[:seats_reserved]) }
+      tag.div(class: "metric") { tag.h4("RSVPs") + tag.p(totals[:count]) } +
+        tag.div(class: "metric") { tag.h4("Seats") + tag.p(totals[:seats_reserved]) }
     end
   end
 
