@@ -207,6 +207,26 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     assert_equal 1, batch_run.failed_count
   end
 
+  test "retrying a failed item on a cancelled run completes it despite the cancelled items" do
+    show = shows(:upcoming)
+    person_a = Person.create!(first_name: "Cancel", last_name: "Aardvark", email: "cancel-a@example.com", status: "active")
+    person_b = Person.create!(first_name: "Cancel", last_name: "Baboon", email: "cancel-b@example.com", status: "active")
+    # As left by cancel_batch_run then reopened by retry_failed_batch_run:
+    # one item cancelled while still pending, one failed awaiting retry.
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 2, failed_count: 0)
+    batch_run.batch_run_items.create!(recipient: person_a, status: "cancelled")
+    item_b = batch_run.batch_run_items.create!(recipient: person_b, status: "failed", error_message: "boom")
+
+    assert_emails 1 do
+      BatchRunItemJob.perform_now(item_b.id)
+    end
+
+    batch_run.reload
+    assert batch_run.completed?, "cancelled items must not keep a reopened run from completing"
+    assert_equal 1, batch_run.sent_count
+    assert_equal 0, batch_run.failed_count
+  end
+
   test "a deleted item is a no-op instead of raising" do
     show = shows(:upcoming)
     person = Person.create!(first_name: "Deleted", last_name: "Item", email: "deleted-item@example.com", status: "active")

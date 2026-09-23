@@ -242,7 +242,14 @@ class BatchRunItemJob < ApplicationJob
           )
         end
 
-        if batch_run.processed_count >= batch_run.total_count
+        # Cancelled items still count toward total_count but will never
+        # resolve to sent/failed, so they're counted as done here --
+        # without that, a cancelled run that's later reopened by
+        # retry_failed_batch_run (it still has failed items) could never
+        # reach total_count again and would sit "running" forever.
+        cancelled_count = batch_run.batch_run_items.cancelled.count
+
+        if batch_run.processed_count + cancelled_count >= batch_run.total_count
           # Guarded by `status: "running"` so only the item that actually
           # finishes the run flips it to completed, even if two items
           # finish at the same time -- and so the failure notification
