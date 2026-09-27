@@ -16,6 +16,13 @@ class AdminLoginTest < ActionDispatch::IntegrationTest
     assert_redirected_to madmin_root_path
   end
 
+  test "wires up both login buttons to disable on submit, and the passkey form to re-enable on ceremony failure" do
+    get new_admin_session_path
+
+    assert_select "form[data-action*='disable-on-submit#disable'] input[type=submit][data-disable-on-submit-target=submit]", count: 2
+    assert_select "[data-controller=disable-on-submit][data-action*='webauthn:prompt:error->disable-on-submit#enable']", count: 1
+  end
+
   test "rejects invalid credentials and shows an error" do
     post admin_session_path, params: {
       admin: { email: admins(:one).email, password: "wrong password" }
