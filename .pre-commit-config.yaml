@@ -41,7 +41,7 @@ repos:
           - globals
 
   - repo: https://github.com/JoC0de/pre-commit-prettier
-    rev: v3.9.6
+    rev: v3.9.8
     hooks:
       - id: prettier
         files: \.js$
