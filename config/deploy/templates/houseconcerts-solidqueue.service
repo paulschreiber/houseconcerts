@@ -1,18 +1,27 @@
 # Solid Queue worker for houseconcerts, run outside of Passenger since
 # Passenger only manages the web process, not background workers.
 #
+# It runs as its own unprivileged user (houseconcerts-jobs), not the deploy
+# user. Before installing this unit, create that user and set up the shared
+# file permissions once with:
+#   sudo bash /data/sites/houseconcerts/current/config/deploy/setup_solidqueue_user.sh
+#
 # Install on the server:
-#   sudo cp config/deploy/templates/houseconcerts-solidqueue.service /etc/systemd/system/
+#   sudo cp /data/sites/houseconcerts/current/config/deploy/templates/houseconcerts-solidqueue.service /etc/systemd/system/
 #   sudo systemctl daemon-reload
 #   sudo systemctl enable --now houseconcerts-solidqueue
 #
-# Also requires passwordless sudo for the deploy user to restart this
-# service from the "solid_queue:restart" Capistrano task in deploy.rb:
-#   paul ALL=(ALL) NOPASSWD: /bin/systemctl restart houseconcerts-solidqueue
+# Also requires passwordless sudo for the deploy user (the "user" in
+# config/deploy/production.rb) to restart this service from the
+# "solid_queue:restart" Capistrano task in deploy.rb. In sudoers, with your
+# deploy user in place of DEPLOY_USER:
+#   DEPLOY_USER ALL=(ALL) NOPASSWD: /bin/systemctl restart houseconcerts-solidqueue
 #
-# The sandboxing below makes everything read-only except the shared log and
-# tmp directories. Create the bootsnap cache directory once before starting:
-#   mkdir -p /data/sites/houseconcerts/shared/tmp/cache
+# The sandboxing below makes everything read-only except the shared log
+# directory and the worker's cache directory (/var/cache/houseconcerts-jobs,
+# which systemd creates). It also hides /home: if Ruby or any gems live there
+# (e.g. rbenv in the deploy user's home), change ProtectHome=yes to
+# ProtectHome=read-only.
 #
 # After changing this file on the server, check it with:
 #   sudo systemd-analyze verify /etc/systemd/system/houseconcerts-solidqueue.service
@@ -24,21 +33,26 @@ After=network.target mysql.service
 
 [Service]
 Type=simple
-User=paul
+User=houseconcerts-jobs
+Group=houseconcerts
 WorkingDirectory=/data/sites/houseconcerts/current
 Environment=RAILS_ENV=production
-Environment=BOOTSNAP_CACHE_DIR=/data/sites/houseconcerts/shared/tmp/cache
+Environment=BOOTSNAP_CACHE_DIR=/var/cache/houseconcerts-jobs
+CacheDirectory=houseconcerts-jobs
 ExecStart=/usr/bin/ruby bin/jobs
 Restart=always
 RestartSec=1
 
 # Sandboxing
-UMask=0027
+# Group-writable, so log files the worker creates stay writable for the web app
+# (which runs as the deploy user, also in the houseconcerts group), and not
+# readable by anyone else.
+UMask=0007
 NoNewPrivileges=yes
 CapabilityBoundingSet=
 ProtectSystem=strict
-ProtectHome=read-only
-ReadWritePaths=/data/sites/houseconcerts/shared/log /data/sites/houseconcerts/shared/tmp
+ProtectHome=yes
+ReadWritePaths=/data/sites/houseconcerts/shared/log
 PrivateTmp=yes
 PrivateDevices=yes
 ProtectKernelTunables=yes
