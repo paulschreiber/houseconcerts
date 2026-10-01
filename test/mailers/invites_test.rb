@@ -132,6 +132,30 @@ class InvitesTest < ActionMailer::TestCase
     assert_includes email.body.encoded, %(src="#{expected_src}")
   end
 
+  test "confirm embeds the reservation as parseable JSON-LD" do
+    rsvp = rsvps(:one)
+
+    email = InvitesMailer.confirm(rsvp)
+
+    html = email.html_part ? email.html_part.decoded : email.body.decoded
+    script = Nokogiri::HTML(html).at_css('script[type="application/ld+json"]')
+    data = JSON.parse(script.text)
+    assert_equal "EventReservation", data["@type"]
+    assert_equal rsvp.uniqid, data["reservationNumber"]
+  end
+
+  test "confirm escapes markup in JSON-LD values so they can't close the script tag" do
+    rsvp = rsvps(:one)
+    rsvp.update_column(:first_name, "</script><b>x") # rubocop:disable Rails/SkipsModelValidations
+
+    email = InvitesMailer.confirm(rsvp)
+
+    html = email.html_part ? email.html_part.decoded : email.body.decoded
+    assert_not_includes html, "</script><b>x"
+    script = Nokogiri::HTML(html).at_css('script[type="application/ld+json"]')
+    assert_includes JSON.parse(script.text).dig("underName", "name"), "</script><b>x"
+  end
+
   test "confirm is a no-op if it has already sent for this rsvp" do
     rsvp = rsvps(:one)
     rsvp.update_column(:confirmation_emailed_at, Time.current) # rubocop:disable Rails/SkipsModelValidations
