@@ -128,4 +128,17 @@ class ShowTest < ActiveSupport::TestCase
     assert_equal 1, delete_queries
     assert_equal 0, ArtistShow.where(show_id: show.id).count
   end
+
+  test "accepting_rsvps? only for confirmed shows that haven't happened" do
+    show = shows(:upcoming)
+    assert_predicate show, :accepting_rsvps?
+
+    show.status = "cancelled"
+    assert_not show.accepting_rsvps?
+
+    show.status = "unconfirmed"
+    assert_not show.accepting_rsvps?
+
+    assert_not shows(:past).accepting_rsvps?
+  end
 end

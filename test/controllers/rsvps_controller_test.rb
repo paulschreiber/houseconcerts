@@ -44,6 +44,30 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 1, past_rsvp.reload.seats_reserved
   end
 
+  test "create refuses rsvps for cancelled and unconfirmed shows" do
+    %w[cancelled unconfirmed].each do |status|
+      shows(:upcoming).update!(status: status)
+
+      assert_no_difference("RSVP.count") do
+        post rsvps_path, params: {
+          rsvp: { first_name: "Hopeful", last_name: "Guest", email: "hopeful.#{status}@example.com",
+                  show_id: shows(:upcoming).id, response: "yes", seats_reserved: 1 }
+        }
+      end
+      assert_redirected_to root_url, status
+    end
+  end
+
+  test "new redirects home for cancelled and unconfirmed shows" do
+    %w[cancelled unconfirmed].each do |status|
+      shows(:upcoming).update!(status: status)
+
+      get rsvp_for_show_path(slug: shows(:upcoming).slug)
+
+      assert_redirected_to root_url, status
+    end
+  end
+
   test "create redirects home for a show that doesn't exist" do
     assert_no_difference("RSVP.count") do
       post rsvps_path, params: {
