@@ -50,7 +50,7 @@ class InvitesMailer < ApplicationMailer
 
     logger.debug "Emailing #{person.email} [#{tag}]"
 
-    headers["List-Unsubscribe"] = @unsub_url
+    headers["List-Unsubscribe"] = "<#{@unsub_url}>"
 
     mail(to: person.email_address_with_name,
          subject: subject)
