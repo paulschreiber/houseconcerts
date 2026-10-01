@@ -9,8 +9,7 @@
 server "shrub.ca",
        roles: %w[app db web],
        ssh_options: {
-         user: "paul",
-         forward_agent: true
+         user: "paul"
        }
 
 set :deploy_to, "/data/sites/houseconcerts"
