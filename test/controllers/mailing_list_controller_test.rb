@@ -22,6 +22,22 @@ class MailingListControllerTest < ActionDispatch::IntegrationTest
     assert person.reload.removed?
   end
 
+  # Older records can fail newer validations (e.g. ZIP codes saved before
+  # validation_kit 2.0 checked their length); opting out must still work.
+  test "unsubscribe works for a person whose saved data no longer validates" do
+    person = people(:one)
+    { postcode: "1234567", last_name: "X" * 150, first_name: "jane", phone_number: "n/a" }.each do |attribute, value|
+      person.update_columns(status: Person.statuses[:active], removed_at: nil, attribute => value) # rubocop:disable Rails/SkipsModelValidations
+      assert_not person.reload.valid?, "#{attribute} should make the fixture invalid"
+
+      get unsubscribe_path(uniqid: person.uniqid)
+
+      assert_response :success, attribute
+      assert_predicate person.reload, :removed?, attribute
+      assert_not_nil person.removed_at, attribute
+    end
+  end
+
   test "unsubscribe shows an already-removed message for a person already removed" do
     person = people(:one)
     person.update!(status: "removed")
