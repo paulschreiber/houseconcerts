@@ -116,14 +116,11 @@ Rails.application.configure do
   # Only use :id for inspections in production.
   config.active_record.attributes_for_inspect = [ :id ]
 
-  # Enable DNS rebinding protection and other `Host` header attacks.
-  # config.hosts = [
-  #   "example.com",     # Allow requests from example.com
-  #   /.*\.example\.com/ # Allow requests from subdomains like `www.example.com`
-  # ]
-  #
-  # Skip DNS rebinding protection for the default health check endpoint.
-  # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+  # Enable DNS rebinding protection and other `Host` header attacks: only
+  # answer requests for our own domain and its subdomains (the leading dot), so
+  # a spoofed Host or X-Forwarded-Host can't change the canonical, social-sharing,
+  # or redirect URLs the app generates. (There's no /up health check to exclude.)
+  config.hosts = [ ".#{Settings.domain}" ]
 
   # Set host to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: Settings.domain, protocol: "https" }
