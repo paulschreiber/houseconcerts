@@ -71,7 +71,15 @@ class RsvpsController < ApplicationController
     email   = rsvp_params[:email]
     show_id = rsvp_params[:show_id].to_i
 
-    @rsvp = RSVP.find_by(show_id: show_id, email: email) if email.present? && show_id.positive?
+    # don't allow RSVPs for past (or nonexistent) shows, as in #new; checked
+    # here too because the form can be posted directly
+    show = Show.find_by(id: show_id)
+    if show.nil? || show.occurred?
+      redirect_to root_url
+      return
+    end
+
+    @rsvp = RSVP.find_by(show_id: show_id, email: email) if email.present?
 
     # create a new reservation
     saved = if @rsvp.nil?
@@ -85,14 +93,7 @@ class RsvpsController < ApplicationController
     if saved
       redirect_to rsvp_thanks_path(uniqid: @rsvp.uniqid)
     else
-      @show = Show.find_by(id: show_id)
-
-      # can't render the form without a show to reserve seats for
-      if @show.nil?
-        redirect_to root_url
-        return
-      end
-
+      @show = show
       render :create, status: :unprocessable_content
     end
   end
