@@ -7,6 +7,48 @@ class RsvpTest < ActiveSupport::TestCase
     assert rsvps(:one).valid?
   end
 
+  test "rejects values longer than the form allows" do
+    { first_name: 100, last_name: 100, postcode: 10 }.each do |attribute, maximum|
+      record = rsvps(:one)
+      record[attribute] = "A" * (maximum + 1)
+
+      assert_not record.valid?, "#{attribute} should be invalid"
+      assert_includes record.errors[attribute], "is too long (maximum is #{maximum} characters)"
+    end
+  end
+
+  test "rejects an email longer than 200 characters" do
+    record = rsvps(:one)
+    record.email = "#{'a' * 189}@example.com"
+
+    assert_not record.valid?
+    assert_includes record.errors[:email], "is too long (maximum is 200 characters)"
+  end
+
+  test "rejects a phone number longer than 30 characters once formatted" do
+    record = rsvps(:one)
+    record.phone_number = "2125551234 ext 1234567890123"
+
+    assert_not record.valid?
+    assert_includes record.errors[:phone_number], "is too long (maximum is 30 characters)"
+  end
+
+  test "accepts a phone number with an extension that the form allows" do
+    record = rsvps(:one)
+    record.phone_number = "212-555-1234 x12345"
+
+    assert record.valid?, record.errors.full_messages.to_sentence
+    assert_equal "(212) 555-1234 x12345", record.phone_number
+  end
+
+  test "accepts names at the maximum length" do
+    record = rsvps(:one)
+    record.first_name = "A#{'a' * 99}"
+    record.last_name = "B#{'b' * 99}"
+
+    assert record.valid?, record.errors.full_messages.to_sentence
+  end
+
   test "defaults uniqid to a 16-character random token" do
     rsvp = RSVP.create!(show: shows(:upcoming), first_name: "New", last_name: "Rsvp",
                         email: "new-uniqid@example.com", response: "yes", seats_reserved: 1)
