@@ -188,6 +188,38 @@ class RsvpTest < ActiveSupport::TestCase
     end
   end
 
+  test "notify_admin delivers an update email when a confirmed rsvp changes its seats" do
+    rsvp = rsvps(:one)
+    assert rsvp.confirmed?
+
+    assert_emails 1 do
+      rsvp.update!(seats_reserved: rsvp.seats_reserved + 1)
+    end
+
+    email = ActionMailer::Base.deliveries.last
+    assert_equal "Updated RSVP from #{rsvp.full_name} [#{rsvp.show.name}]", email.subject
+    assert rsvp.reload.confirmed?
+  end
+
+  test "notify_admin delivers an update email when a confirmed rsvp changes its name" do
+    rsvp = rsvps(:one)
+    assert rsvp.confirmed?
+
+    assert_emails 1 do
+      rsvp.update!(first_name: "Renamed")
+    end
+  end
+
+  test "notify_admin does not email the admin when an rsvp is confirmed" do
+    rsvp = rsvps(:one)
+    rsvp.update_column(:confirmed, RSVP.confirmeds[:unconfirmed]) # rubocop:disable Rails/SkipsModelValidations
+
+    assert_no_emails do
+      rsvp.confirm!
+    end
+    assert rsvp.reload.confirmed?
+  end
+
   test "can_confirm? and can_waitlist? across every show/rsvp state combination" do
     rsvp = rsvps(:one)
     show = rsvp.show
