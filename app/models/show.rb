@@ -82,6 +82,11 @@ class Show < ApplicationRecord
     start < Time.zone.now
   end
 
+  # Public RSVPs are only taken for confirmed shows that haven't happened yet.
+  def accepting_rsvps?
+    confirmed? && !occurred?
+  end
+
   def location
     venue&.location
   end
