@@ -156,6 +156,15 @@ class InvitesTest < ActionMailer::TestCase
     assert_includes JSON.parse(script.text).dig("underName", "name"), "</script><b>x"
   end
 
+  test "confirm sends only to the rsvp's email even if the name contains addresses" do
+    rsvp = rsvps(:one)
+    rsvp.update_column(:first_name, 'Bob", attacker@evil.com, "X') # rubocop:disable Rails/SkipsModelValidations
+
+    email = InvitesMailer.confirm(rsvp)
+
+    assert_equal [ rsvp.email ], email.to
+  end
+
   test "confirm is a no-op if it has already sent for this rsvp" do
     rsvp = rsvps(:one)
     rsvp.update_column(:confirmation_emailed_at, Time.current) # rubocop:disable Rails/SkipsModelValidations
