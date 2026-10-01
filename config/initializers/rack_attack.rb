@@ -5,7 +5,7 @@
 module Rack
   class Attack
     throttle("uniqid-lookups/ip", limit: 20, period: 1.minute) do |req|
-      req.ip if req.path.match?(%r{\A/(rsvps/(show|thanks)|list/thanks|unsubscribe|open)/})
+      req.ip if req.path.match?(%r{\A/(rsvps/(show|thanks)|list/(thanks|rejoin)|unsubscribe|open)/})
     end
 
     # Admin sign-in and password reset: limit password guessing, and stop the

@@ -16,6 +16,9 @@ Rails.application.routes.draw do
   get "list", to: "mailing_list#index", as: "mailing_list"
   get "list/thanks/:uniqid", to: "mailing_list#thanks", as: "mailing_list_thanks"
   get "list/already_subscribed", to: "mailing_list#already_subscribed", as: "mailing_list_already_subscribed"
+  get "list/rejoin_requested", to: "mailing_list#rejoin_requested", as: "mailing_list_rejoin_requested"
+  get "list/rejoin/:uniqid", to: "mailing_list#rejoin", as: "mailing_list_rejoin"
+  post "list/rejoin/:uniqid", to: "mailing_list#confirm_rejoin"
   get "unsubscribe/:uniqid", to: "mailing_list#unsubscribe", as: "unsubscribe"
   get "calendar/", to: "shows#calendar", as: "calendar"
 
