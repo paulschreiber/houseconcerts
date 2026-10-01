@@ -51,4 +51,22 @@ module ApplicationHelper
   def apple_touch_icon
     "/concerts.png"
   end
+
+  # A URL as sent to Google Analytics: link tokens (uniqid) replaced with
+  # ":uniqid", and only utm_* campaign parameters kept from the query string
+  # (pre-filled RSVP links can carry an email address there), so GA never sees
+  # a token or personal details. UNIQID_IN_PATH is defined in
+  # config/initializers/filter_parameter_logging.rb.
+  def analytics_url(url)
+    return if url.blank?
+
+    uri = URI.parse(url)
+    uri.path = uri.path.gsub(UNIQID_IN_PATH) { "#{Regexp.last_match(1)}:uniqid" }
+    campaign_params = URI.decode_www_form(uri.query.to_s).select { |name, _| name.start_with?("utm_") }
+    uri.query = campaign_params.empty? ? nil : URI.encode_www_form(campaign_params)
+    uri.fragment = nil
+    uri.to_s
+  rescue URI::InvalidURIError, ArgumentError
+    nil
+  end
 end

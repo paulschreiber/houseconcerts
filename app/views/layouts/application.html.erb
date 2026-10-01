@@ -26,15 +26,7 @@
 	<title><%= yield :title %></title>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
 
-	<% if Rails.env.production? %>
-	<script async src="https://www.googletagmanager.com/gtag/js?id=<%= Settings.google_analytics_id %>"></script>
-	<script nonce="<%= content_security_policy_nonce %>">
-	  window.dataLayer = window.dataLayer || [];
-	  function gtag(){dataLayer.push(arguments);}
-	  gtag('js', new Date());
-	  gtag('config', '<%= Settings.google_analytics_id %>');
-	</script>
-	<% end %>
+	<%= render "google_analytics" if Rails.env.production? %>
 	<%= csrf_meta_tags %>
 	<%= csp_meta_tag %>
     <%= javascript_importmap_tags %>
