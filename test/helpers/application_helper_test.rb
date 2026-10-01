@@ -66,4 +66,51 @@ class ApplicationHelperTest < ActionView::TestCase
 
     assert_equal "#{root_url}concerts.png", social_media_image(nil)
   end
+
+  test "analytics_url replaces link tokens in every tokened path" do
+    {
+      "https://houseconcerts.nyc/rsvps/show/jen-lowe-4/abc123" => "https://houseconcerts.nyc/rsvps/show/jen-lowe-4/:uniqid",
+      "https://houseconcerts.nyc/rsvps/show/jen-lowe-4/abc123/no" => "https://houseconcerts.nyc/rsvps/show/jen-lowe-4/:uniqid/no",
+      "https://houseconcerts.nyc/rsvps/thanks/abc123" => "https://houseconcerts.nyc/rsvps/thanks/:uniqid",
+      "https://houseconcerts.nyc/list/thanks/abc123" => "https://houseconcerts.nyc/list/thanks/:uniqid",
+      "https://houseconcerts.nyc/unsubscribe/abc123" => "https://houseconcerts.nyc/unsubscribe/:uniqid"
+    }.each do |url, expected|
+      assert_equal expected, analytics_url(url), url
+    end
+  end
+
+  test "analytics_url leaves ordinary pages alone" do
+    assert_equal "https://houseconcerts.nyc/about", analytics_url("https://houseconcerts.nyc/about")
+    assert_equal "https://houseconcerts.nyc/rsvps/show/jen-lowe-4", analytics_url("https://houseconcerts.nyc/rsvps/show/jen-lowe-4")
+  end
+
+  test "analytics_url keeps only utm_ query parameters" do
+    url = "https://houseconcerts.nyc/rsvps/show/jen-lowe-4?rsvp%5Bemail%5D=jane%40example.com&utm_source=email&utm_campaign=invite#top"
+
+    assert_equal "https://houseconcerts.nyc/rsvps/show/jen-lowe-4?utm_source=email&utm_campaign=invite", analytics_url(url)
+    assert_equal "https://houseconcerts.nyc/list", analytics_url("https://houseconcerts.nyc/list?first_name=Jane")
+  end
+
+  test "analytics_url returns nil for blank or unparseable input" do
+    assert_nil analytics_url(nil)
+    assert_nil analytics_url("")
+    assert_nil analytics_url("http://exa mple.com/ bad")
+  end
+
+  test "the Google Analytics snippet sends the page and referrer without tokens" do
+    env = Rack::MockRequest.env_for(
+      "https://houseconcerts.nyc/rsvps/show/jen-lowe-4/abc123?rsvp%5Bemail%5D=jane%40example.com",
+      "HTTP_REFERER" => "https://houseconcerts.nyc/unsubscribe/def456"
+    )
+    controller.request = ActionDispatch::TestRequest.create(env)
+    controller.request.session = ActionController::TestSession.new # for the CSP nonce
+
+    html = render(partial: "application/google_analytics")
+
+    assert_match %r{"page_location":"https://[^"/]+/rsvps/show/jen-lowe-4/:uniqid"}, html
+    assert_includes html, %("page_referrer":"https://houseconcerts.nyc/unsubscribe/:uniqid")
+    assert_not_includes html, "abc123"
+    assert_not_includes html, "def456"
+    assert_not_includes html, "jane"
+  end
 end
