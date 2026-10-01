@@ -19,14 +19,15 @@ repos:
         # which isn't valid plain YAML.
         exclude: ^test/fixtures/
 
-  - repo: https://github.com/rubocop/rubocop
-    rev: v1.91.0
+  # Run the rubocop and plugin versions from Gemfile.lock (kept current by
+  # Dependabot) instead of a separate copy that would drift from them.
+  - repo: local
     hooks:
       - id: rubocop
-        additional_dependencies:
-          - rubocop-performance
-          - rubocop-rake
-          - rubocop-rails
+        name: rubocop
+        entry: bundle exec rubocop --force-exclusion
+        language: system
+        types: [ruby]
 
   - repo: https://github.com/pre-commit/mirrors-eslint
     rev: v10.11.0
