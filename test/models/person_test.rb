@@ -5,6 +5,26 @@ class PersonTest < ActiveSupport::TestCase
     assert people(:one).valid?
   end
 
+  test "email_address_with_name formats the name and email as one address" do
+    person = Person.new(first_name: "Jane", last_name: "Smith", email: "jane@example.com")
+
+    assert_equal "Jane Smith <jane@example.com>", person.email_address_with_name
+  end
+
+  test "email_address_with_name is just the email when there's no name" do
+    person = Person.new(email: "noname@example.com")
+
+    assert_equal "noname@example.com", person.email_address_with_name
+  end
+
+  test "email_address_with_name quotes names so they can't add recipients" do
+    person = Person.new(first_name: 'Bob", attacker@evil.com, "X', last_name: "Y", email: "bob@example.com")
+
+    addresses = Mail::AddressList.new(person.email_address_with_name).addresses
+    assert_equal [ "bob@example.com" ], addresses.map(&:address)
+    assert_equal 'Bob", attacker@evil.com, "X Y', addresses.first.display_name
+  end
+
   test "defaults uniqid to a 16-character random token" do
     person = Person.create!(first_name: "New", last_name: "Person", email: "new-uniqid@example.com")
 
