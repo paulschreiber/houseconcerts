@@ -28,7 +28,7 @@
 
 	<% if Rails.env.production? %>
 	<script async src="https://www.googletagmanager.com/gtag/js?id=<%= Settings.google_analytics_id %>"></script>
-	<script type="text/javascript">
+	<script nonce="<%= content_security_policy_nonce %>">
 	  window.dataLayer = window.dataLayer || [];
 	  function gtag(){dataLayer.push(arguments);}
 	  gtag('js', new Date());
