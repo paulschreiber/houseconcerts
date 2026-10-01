@@ -5,12 +5,11 @@ class RegexpTimeoutTest < ActiveSupport::TestCase
     assert_equal 1.0, Regexp.timeout
   end
 
-  test "a catastrophically backtracking email is cut off instead of hanging" do
-    rsvp = rsvps(:one)
-    rsvp.email = "a@#{'a.' * 30}!"
-
+  # Ruby's match cache makes most backtracking patterns linear, but not ones
+  # with backreferences, so this one still runs until the timeout.
+  test "a catastrophically backtracking regex is cut off instead of hanging" do
     started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-    assert_raises(Regexp::TimeoutError) { rsvp.valid? }
+    assert_raises(Regexp::TimeoutError) { /\A(a|aa)+\1b\z/.match?("#{'a' * 40}bX") }
     assert_operator Process.clock_gettime(Process::CLOCK_MONOTONIC) - started, :<, 5
   end
 end
