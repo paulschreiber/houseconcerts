@@ -12,28 +12,35 @@ module Rack
     # reset form being used to flood an admin's inbox. Each is limited per IP
     # and per email address, so neither rotating IPs nor rotating emails gets
     # around it.
-    ADMIN_SIGN_IN_PATH = "/#{Settings.admin_prefix}/sign_in".freeze
-    ADMIN_PASSWORD_PATH = "/#{Settings.admin_prefix}/password".freeze
+    #
+    # The routes also answer with a format suffix (/sign_in.json, .html), so
+    # match that too; an exact path match let suffixed requests skip the limits.
+    def self.admin_path(name)
+      %r{\A/#{Regexp.escape(Settings.admin_prefix)}/#{name}(?:\.[^/]+)?/?\z}
+    end
+    ADMIN_SIGN_IN_PATH = admin_path("sign_in")
+    ADMIN_PASSWORD_PATH = admin_path("password")
 
     def self.admin_email(req)
-      email = req.params.dig("admin", "email")
+      admin = req.params["admin"]
+      email = admin["email"] if admin.is_a?(Hash)
       email.to_s.strip.downcase.presence if email.is_a?(String)
     end
 
     throttle("admin-sign-in/ip", limit: 5, period: 20.seconds) do |req|
-      req.ip if req.post? && req.path == ADMIN_SIGN_IN_PATH
+      req.ip if req.post? && req.path.match?(ADMIN_SIGN_IN_PATH)
     end
 
     throttle("admin-sign-in/email", limit: 10, period: 1.hour) do |req|
-      admin_email(req) if req.post? && req.path == ADMIN_SIGN_IN_PATH
+      admin_email(req) if req.post? && req.path.match?(ADMIN_SIGN_IN_PATH)
     end
 
     throttle("admin-password-reset/ip", limit: 5, period: 1.hour) do |req|
-      req.ip if req.post? && req.path == ADMIN_PASSWORD_PATH
+      req.ip if req.post? && req.path.match?(ADMIN_PASSWORD_PATH)
     end
 
     throttle("admin-password-reset/email", limit: 3, period: 1.hour) do |req|
-      admin_email(req) if req.post? && req.path == ADMIN_PASSWORD_PATH
+      admin_email(req) if req.post? && req.path.match?(ADMIN_PASSWORD_PATH)
     end
   end
 end
