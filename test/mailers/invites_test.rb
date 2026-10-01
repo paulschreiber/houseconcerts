@@ -29,7 +29,8 @@ class InvitesTest < ActionMailer::TestCase
     end
     assert_equal [ person.email ], email.to
     assert_includes email.subject, show.name
-    assert_equal email.header["List-Unsubscribe"].to_s, email["List-Unsubscribe"].to_s
+    unsub_url = Rails.application.routes.url_helpers.unsubscribe_url(uniqid: person.uniqid, host: "example.com")
+    assert_equal "<#{unsub_url}>", email["List-Unsubscribe"].to_s
   end
 
   test "invite includes an open-tracking pixel keyed to the person's uniqid" do
