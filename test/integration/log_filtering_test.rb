@@ -47,6 +47,26 @@ class LogFilteringTest < ActionDispatch::IntegrationTest
     end
   end
 
+  # Guards against a new tokened route being added without updating
+  # UNIQID_IN_PATH (config/initializers/filter_parameter_logging.rb).
+  test "the token pattern covers every route with a :uniqid segment" do
+    routes = Rails.application.routes.routes.map { |route| route.path.spec.to_s }.grep(/:uniqid/)
+
+    assert_not_empty routes
+    routes.each do |spec|
+      path = spec.sub("(.:format)", "").gsub(":uniqid", "TOKEN123").gsub(/:\w+/, "segment")
+      filtered = path.gsub(UNIQID_IN_PATH) { "#{Regexp.last_match(1)}[FILTERED]" }
+
+      assert_not_includes filtered, "TOKEN123", "#{spec} isn't covered by UNIQID_IN_PATH"
+    end
+  end
+
+  # The rejoin route (/list/rejoin/:uniqid) arrives with the mailing-list
+  # rejoin flow; the route-coverage test above checks it once it exists.
+  test "the token pattern covers rejoin links" do
+    assert_equal "/list/rejoin/[FILTERED]", "/list/rejoin/abc123".gsub(UNIQID_IN_PATH) { "#{Regexp.last_match(1)}[FILTERED]" }
+  end
+
   private
 
     def assert_token_filtered(log, token)
