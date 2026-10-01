@@ -15,7 +15,7 @@ class MailingListController < ApplicationController
       @already_removed = true
     else
       @already_removed = false
-      @person.removed!
+      @person.unsubscribe!
     end
   end
 

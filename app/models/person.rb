@@ -33,6 +33,14 @@ class Person < ApplicationRecord
     venue_groups << VenueGroup.find(Settings.default_venue_group)
   end
 
+  # Opting out must always work, even when older data no longer passes
+  # validation (e.g. a ZIP code or name saved before stricter checks), so skip
+  # validations. The before_save callbacks still record removed_at and the IP.
+  def unsubscribe!
+    self.status = :removed
+    save!(validate: false)
+  end
+
   def update_removal_status
     return if !status_changed? || !removed?
 
