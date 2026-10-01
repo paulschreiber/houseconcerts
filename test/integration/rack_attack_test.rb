@@ -78,4 +78,34 @@ class RackAttackTest < ActionDispatch::IntegrationTest
 
     assert_response :success
   end
+
+  test "admin sign-in throttles also apply with a format suffix" do
+    %w[.json .html].each_with_index do |suffix, i|
+      Rack::Attack.cache.store.clear
+      ip = "198.51.100.#{i}"
+      5.times { post "#{admin_session_path}#{suffix}", params: { admin: { email: "x#{rand}@example.com", password: "guess" } }, env: { "REMOTE_ADDR" => ip } }
+
+      assert_not_equal 429, response.status, suffix
+
+      post "#{admin_session_path}#{suffix}", params: { admin: { email: "y@example.com", password: "guess" } }, env: { "REMOTE_ADDR" => ip }
+
+      assert_response :too_many_requests, suffix
+    end
+  end
+
+  test "password reset throttles also apply with a format suffix" do
+    3.times do |i|
+      post "#{admin_password_path}.json", params: { admin: { email: admins(:one).email } }, env: { "REMOTE_ADDR" => "198.51.100.#{i}" }
+    end
+
+    post "#{admin_password_path}.json", params: { admin: { email: admins(:one).email } }, env: { "REMOTE_ADDR" => "198.51.100.200" }
+
+    assert_response :too_many_requests
+  end
+
+  test "a malformed admin param doesn't break the email throttles" do
+    post admin_session_path, params: "admin=not-a-hash", headers: { "CONTENT_TYPE" => "application/x-www-form-urlencoded" }
+
+    assert_not_equal 500, response.status
+  end
 end
