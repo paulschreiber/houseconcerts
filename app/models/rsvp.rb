@@ -18,7 +18,7 @@ class RSVP < ApplicationRecord
   before_save :set_ip_address
   before_save :update_confirmation_date
   after_save :update_phone_number
-  after_save -> { NotifyAdminOfRSVP.call(self) }, unless: :confirmed?
+  after_save -> { NotifyAdminOfRSVP.call(self) }
 
   default_value_for :uniqid do
     SecureRandom.alphanumeric(Settings.uniqid_length)
