@@ -15,8 +15,8 @@ class RsvpsController < ApplicationController
     begin
       @show = Show.friendly.find(params.expect(:slug))
 
-      # don't allow RSVPs for past shows
-      if @show.occurred?
+      # only allow RSVPs for confirmed, upcoming shows
+      unless @show.accepting_rsvps?
         redirect_to root_url
         return
       end
@@ -69,10 +69,10 @@ class RsvpsController < ApplicationController
     email   = params.dig(:rsvp, :email)
     show_id = params.dig(:rsvp, :show_id).to_i
 
-    # don't allow RSVPs for past (or nonexistent) shows, as in #new; checked
-    # here too because the form can be posted directly
+    # only allow RSVPs for confirmed, upcoming shows, as in #new; checked here
+    # too because the form can be posted directly
     show = Show.find_by(id: show_id)
-    if show.nil? || show.occurred?
+    unless show&.accepting_rsvps?
       redirect_to root_url
       return
     end
