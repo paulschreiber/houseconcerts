@@ -6,7 +6,7 @@ default_stages: [pre-commit]
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # frozen: v6.0.0
     hooks:
       - id: end-of-file-fixer
         name: Enforce end of file format
@@ -25,8 +25,10 @@ repos:
         # which isn't valid plain YAML.
         exclude: ^test/fixtures/
 
-  # Run the rubocop and plugin versions from Gemfile.lock (kept current by
-  # Dependabot) instead of a separate copy that would drift from them.
+  # Run the linters from the project's own dependencies, at the versions in
+  # Gemfile.lock and package-lock.json (kept current by Dependabot), instead
+  # of separate, unpinned copies that would drift from them. Needs
+  # `bundle install` and `npm install`.
   - repo: local
     hooks:
       - id: rubocop
@@ -35,37 +37,26 @@ repos:
         language: system
         types: [ruby]
 
-  - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v10.11.0
-    hooks:
       - id: eslint
+        name: eslint
+        entry: npx --no-install eslint
+        language: system
         files: \.js$
-        additional_dependencies:
-          - eslint
-          - "@eslint/js"
-          - eslint-config-prettier
-          - eslint-plugin-import-x
-          - globals
 
-  - repo: https://github.com/JoC0de/pre-commit-prettier
-    rev: v3.9.9
-    hooks:
       - id: prettier
+        name: prettier
+        entry: npx --no-install prettier --write --ignore-unknown
+        language: system
         files: \.js$
-        additional_dependencies:
-          - prettier
 
-  - repo: https://github.com/thibaudcolas/pre-commit-stylelint
-    rev: v17.15.0
-    hooks:
       - id: stylelint
+        name: stylelint
+        entry: npx --no-install stylelint
+        language: system
         files: \.scss$
-        additional_dependencies:
-          - stylelint
-          - stylelint-config-standard-scss
 
   - repo: https://github.com/compilerla/conventional-pre-commit
-    rev: v4.4.0
+    rev: 91ab4bf57e58b32adf1a122681f6ebe164d081c8 # frozen: v4.4.0
     hooks:
       - id: conventional-pre-commit
         stages: [commit-msg]
