@@ -32,6 +32,6 @@ class ApplicationMailer < ActionMailer::Base
     end
 
     def formatted_address(name, username)
-      Mail::Address.new("#{username}@#{Settings.domain}").tap { |address| address.display_name = name }.format
+      email_address_with_name("#{username}@#{Settings.domain}", name)
     end
 end

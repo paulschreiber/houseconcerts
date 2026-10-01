@@ -8,10 +8,6 @@ module NameHelpers
   def email_address_with_name
     return if email.blank?
 
-    if full_name.present?
-      "\"#{full_name}\" <#{email}>"
-    else
-      email
-    end
+    ActionMailer::Base.email_address_with_name(email, full_name)
   end
 end
