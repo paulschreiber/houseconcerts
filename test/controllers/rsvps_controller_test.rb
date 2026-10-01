@@ -20,6 +20,41 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to rsvp_thanks_path(uniqid: new_rsvp.uniqid)
   end
 
+  test "create refuses a new rsvp for a past show" do
+    assert_no_difference("RSVP.count") do
+      post rsvps_path, params: {
+        rsvp: { first_name: "Late", last_name: "Arrival", email: "late@example.com",
+                show_id: shows(:past).id, response: "yes", seats_reserved: 4 }
+      }
+    end
+
+    assert_redirected_to root_url
+  end
+
+  test "create doesn't change an existing rsvp for a past show" do
+    past_rsvp = RSVP.create!(first_name: "Was", last_name: "There", email: "was.there@example.com",
+                             show: shows(:past), response: "yes", seats_reserved: 1)
+
+    post rsvps_path, params: {
+      rsvp: { first_name: "Was", last_name: "There", email: past_rsvp.email,
+              show_id: shows(:past).id, response: "yes", seats_reserved: 4 }
+    }
+
+    assert_redirected_to root_url
+    assert_equal 1, past_rsvp.reload.seats_reserved
+  end
+
+  test "create redirects home for a show that doesn't exist" do
+    assert_no_difference("RSVP.count") do
+      post rsvps_path, params: {
+        rsvp: { first_name: "No", last_name: "Show", email: "no.show@example.com",
+                show_id: 0, response: "yes", seats_reserved: 1 }
+      }
+    end
+
+    assert_redirected_to root_url
+  end
+
   test "create updates an existing reservation for the same email and show instead of creating a new one" do
     assert_no_difference("RSVP.count") do
       post rsvps_path, params: {
