@@ -32,6 +32,14 @@ module Madmin
         return
       end
 
+      # Invites and reminders for a show that's already happened are useless,
+      # so a past show's failures stay visible (on its own page) but can't be
+      # retried. BatchRunItemJob#send_to rechecks this at send time too.
+      if @record.occurred?
+        redirect_back_or_to resource.show_path(@record), alert: "#{@record.name} has already happened, so its failed #{kind_label} sends can't be retried."
+        return
+      end
+
       retry_count = failed_items.count
       kind = batch_run.kind
 

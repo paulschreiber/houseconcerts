@@ -6,6 +6,13 @@ class BatchRunItemJob < ApplicationJob
   # from a genuine unexpected failure.
   class InvalidRecipient < StandardError; end
 
+  # Raised when a send is no longer wanted at all and never will be (the
+  # show has happened, or the person has already RSVP'd). The item is
+  # marked "cancelled" with the reason, not "failed": it isn't a delivery
+  # problem, so it shouldn't alert the admin or offer a retry that can't
+  # succeed.
+  class SkippedRecipient < StandardError; end
+
   # Claimable starting states: "pending" for a first attempt, "failed" so
   # an admin can retry a specific failed send. "sent" is deliberately
   # excluded -- once an item is sent, nothing can ever reclaim it, which
@@ -49,6 +56,8 @@ class BatchRunItemJob < ApplicationJob
       else
         begin
           send_to(item)
+        rescue SkippedRecipient => e
+          with_transient_retries(item: item, label: "marking it skipped") { item.update!(status: :cancelled, error_message: e.message, sent_at: nil) }
         rescue StandardError => e
           # Retried locally (not via ActiveJob's retry_on), not just for
           # emphasis: retry_on would re-invoke this whole method, which
@@ -64,7 +73,14 @@ class BatchRunItemJob < ApplicationJob
           # real timestamp in a column named sent_at despite never having
           # been delivered -- misleading for anything that trusts
           # "sent_at IS NOT NULL" as "this was actually sent."
-          with_transient_retries(item: item, label: "marking it failed") { item.update!(status: :failed, error_message: e.message, sent_at: nil) }
+          #
+          # The message is truncated to fit error_message (a varchar(255)):
+          # SMTP/Twilio errors are often longer, and MySQL strict mode would
+          # otherwise reject the write with ValueTooLong, leaving this item
+          # claimed as "sent" despite never being delivered and its run stuck
+          # "running" forever.
+          error_message = e.message.to_s.truncate(BatchRunItem.columns_hash["error_message"].limit || 255)
+          with_transient_retries(item: item, label: "marking it failed") { item.update!(status: :failed, error_message: error_message, sent_at: nil) }
         end
       end
     end
@@ -132,10 +148,17 @@ class BatchRunItemJob < ApplicationJob
       batch_run = item.batch_run
       recipient = item.recipient
       raise InvalidRecipient, "recipient no longer exists" if recipient.nil?
+      # Rechecked at send time: a retry (or a job that sat in the queue)
+      # can run after the show has already happened, when an invite or
+      # reminder is useless.
+      raise SkippedRecipient, "#{batch_run.show.name} has already happened" if batch_run.show.occurred?
 
       case batch_run.kind
       when "invite", "invite_unopened"
         raise InvalidRecipient, "#{recipient.email} is no longer active" unless recipient.active?
+        # Also rechecked at send time, like active? above: the batch snapshots
+        # people who hadn't RSVP'd when it started, but they may have since.
+        raise SkippedRecipient, "#{recipient.email} has already RSVP'd" if RSVP.exists?(show: batch_run.show, email: recipient.email)
 
         # batch_run.kind ("invite" or "invite_unopened") is passed through
         # as the tracking tag's email_type so opens from the two kinds are
@@ -224,13 +247,12 @@ class BatchRunItemJob < ApplicationJob
     # would already equal total_count the instant a retried run reopens,
     # before any of the retries have actually run.
     def record_progress(item)
-      # Only sent/failed items count toward sent_count/failed_count.
-      # "cancelled" is the one other status this can see: this job may
-      # have already been sitting enqueued for an item when an admin
-      # cancelled its run out from under it, and claim() finding
-      # "cancelled" not claimable (correctly) still lets this method run
-      # -- it just has nothing to count.
-      return unless item.sent? || item.failed?
+      # Only sent/failed items count toward sent_count/failed_count, but a
+      # "cancelled" item still runs the completion check below: a skipped
+      # send (SkippedRecipient) can be the last item a running run is
+      # waiting on. For an item cancelled along with its run, the recount
+      # is a no-op and the completion check finds the run already completed.
+      return if item.pending?
 
       batch_run = item.batch_run
 

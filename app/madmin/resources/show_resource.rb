@@ -4,8 +4,32 @@ class ShowResource < Madmin::Resource
   # first request's redirect replaces the page. A fresh hash every call
   # (not a shared frozen constant): button_to mutates whatever's passed
   # as :form in place (setting :class, :method, :action on it).
+  #
+  # Disabled on turbo:submit-start rather than submit: Turbo shows a button's
+  # data-turbo-confirm dialog after the submit event, so disabling on submit
+  # would leave the button stuck disabled if the admin dismissed the dialog.
+  # The controller only disables buttons marked as its submit target -- see
+  # submit_button_data.
   def self.disable_on_submit
-    { data: { controller: "disable-on-submit", action: "submit->disable-on-submit#disable" } }
+    { data: { controller: "disable-on-submit", action: "turbo:submit-start->disable-on-submit#disable" } }
+  end
+
+  # The button's half of disable_on_submit, plus any other data attributes
+  # (e.g. turbo_confirm) for that button.
+  def self.submit_button_data(**data)
+    data.merge(disable_on_submit_target: "submit")
+  end
+
+  # Starting a batch emails everyone eligible, so it asks first -- and says so
+  # when a batch of this kind has already gone out for this show, since
+  # "Send Invites" again re-sends to everyone who still hasn't RSVP'd. Only
+  # runs that sent something count: a run cancelled before sending, or one
+  # where every send failed, is also "completed".
+  def self.start_confirmation(show, kind, description)
+    previous = show.batch_runs.where(kind: kind, sent_count: 1..).completed.maximum(:completed_at)
+    return "Send #{description} for #{show.name}?" unless previous
+
+    "#{BatchRun.kind_label(kind)} already went out for #{show.name} on #{previous.to_date.to_fs(:long)}. Send #{description} again?"
   end
 
   # Attributes
@@ -40,16 +64,23 @@ class ShowResource < Madmin::Resource
   # Pass collection: true to also render it in each row on the index page
   member_action do |record|
     # Only the next show can have a new batch started, but batch history
-    # (and any retry buttons for still-failed items) stays visible for
-    # every other show that has ever had one -- otherwise a past show's
-    # failed sends would be invisible and unretryable from its own page.
+    # stays visible for every other show that has ever had one, so a past
+    # show's failed sends are still visible from its own page. Retry
+    # buttons appear only until the show has happened (see
+    # _batch_run_progress), since sends for a past show are useless.
     send_buttons = if record.next_show?
       gate = ShowResource.invite_gate_options(record)
+      # A lambda, so every button gets fresh hashes (button_to mutates :form).
+      options = lambda do |kind, description|
+        { method: :patch, class: "btn btn-secondary", form: ShowResource.disable_on_submit,
+          data: ShowResource.submit_button_data(turbo_confirm: ShowResource.start_confirmation(record, kind, description)) }
+      end
 
       safe_join([
-                  button_to("Send Invites", send_invites_madmin_show_path(record), method: :patch, class: "btn btn-secondary", form: ShowResource.disable_on_submit),
-                  button_to("Send to Unopened", send_invites_unopened_madmin_show_path(record), method: :patch, class: "btn btn-secondary", form: ShowResource.disable_on_submit, **gate),
-                  button_to("Send Reminders", send_reminders_madmin_show_path(record), method: :patch, class: "btn btn-secondary", form: ShowResource.disable_on_submit, **gate)
+                  button_to("Send Invites", send_invites_madmin_show_path(record), **options.call("invite", "invites")),
+                  button_to("Send to Unopened", send_invites_unopened_madmin_show_path(record),
+                            **options.call("invite_unopened", "invites to unopened recipients"), **gate),
+                  button_to("Send Reminders", send_reminders_madmin_show_path(record), **options.call("remind", "reminders"), **gate)
                 ])
     end
 

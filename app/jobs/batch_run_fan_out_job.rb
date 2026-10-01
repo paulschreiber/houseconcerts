@@ -174,7 +174,7 @@ class BatchRunFanOutJob < ApplicationJob
       when "invite_unopened"
         invite_recipients(show).where(
           "NOT EXISTS (SELECT 1 FROM opens WHERE opens.tag LIKE ? AND opens.email = people.email)",
-          "#{show.slug}:invite%"
+          "#{ActiveRecord::Base.sanitize_sql_like(show.slug)}:invite%"
         )
       when "remind"
         show.attendees
