@@ -2,6 +2,8 @@
 
 en:
   devise:
+    passkeys:
+      current_password_invalid: "Enter your current password to add a passkey."
     confirmations:
       confirmed: "Your email address has been successfully confirmed."
       send_instructions: "You will receive an email with instructions for how to confirm your email address in a few minutes."

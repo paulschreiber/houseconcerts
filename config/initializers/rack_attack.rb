@@ -74,6 +74,19 @@ module Rack
       req.ip if req.post? && req.path.match?(SES_EVENTS_PATH)
     end
 
+    # Adding a passkey checks the admin's current password, so a stolen session
+    # mustn't be able to guess it there without limit.
+    ADMIN_PASSKEYS_PATH = exact_path("#{Regexp.escape(Settings.admin_prefix)}/passkeys")
+    throttle("passkey-creation/ip", limit: 5, period: 1.minute) do |req|
+      req.ip if req.post? && req.path.match?(ADMIN_PASSKEYS_PATH)
+    end
+
+    # Per signed-in admin as well, so someone with a stolen session can't get
+    # around the limit by switching IPs. (Warden runs before Rack::Attack.)
+    throttle("passkey-creation/admin", limit: 10, period: 1.hour) do |req|
+      req.env["warden"]&.user(:admin)&.id if req.post? && req.path.match?(ADMIN_PASSKEYS_PATH)
+    end
+
     # Public forms. Each RSVP save emails the admin, and each signup can later
     # get invites, so limit bulk submissions per IP. RSVPs are also limited per
     # email, so one guest's RSVP can't be submitted over and over. The per-IP
