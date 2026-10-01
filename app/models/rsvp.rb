@@ -24,11 +24,11 @@ class RSVP < ApplicationRecord
     SecureRandom.alphanumeric(Settings.uniqid_length)
   end
 
-  validates :first_name, presence: true, mixed_case: true, length: { minimum: 2 }, unless: :allowed_name_exception?
-  validates :last_name, presence: true, mixed_case: true, length: { minimum: 2 }, unless: :allowed_name_exception?
-  validates :email, email: true
-  validates :phone_number, phone: { country: Settings.default_country, set: true }, allow_blank: true
-  validates :postcode, postal_code: { country: Settings.default_country }, allow_blank: true
+  validates :first_name, presence: true, mixed_case: true, length: { minimum: 2, maximum: 100 }, unless: :allowed_name_exception?
+  validates :last_name, presence: true, mixed_case: true, length: { minimum: 2, maximum: 100 }, unless: :allowed_name_exception?
+  validates :email, email: true, length: { maximum: 200 }
+  validates :phone_number, phone: { country: Settings.default_country, set: true }, length: { maximum: 30 }, allow_blank: true
+  validates :postcode, postal_code: { country: Settings.default_country }, length: { maximum: 10 }, allow_blank: true
   validates :seats_reserved, numericality: {
     only_integer: true,
     greater_than_or_equal_to: Settings.show.min_seats,
