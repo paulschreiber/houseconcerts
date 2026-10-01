@@ -1,0 +1,10 @@
+<%# The page and referrer URLs are sent without link tokens or query
+    parameters (see ApplicationHelper#analytics_url). %>
+<% analytics_config = { page_location: analytics_url(request.original_url), page_referrer: analytics_url(request.referer) }.compact %>
+<script async src="https://www.googletagmanager.com/gtag/js?id=<%= Settings.google_analytics_id %>"></script>
+<script nonce="<%= content_security_policy_nonce %>">
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '<%= j Settings.google_analytics_id %>', <%= json_escape(analytics_config.to_json).html_safe %>);
+</script>
