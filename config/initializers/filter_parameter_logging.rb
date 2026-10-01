@@ -23,7 +23,7 @@ Rails.application.config.filter_parameters += [
 
 # The URL paths that carry a uniqid, as they appear in "Started GET ..." lines
 # and redirect locations. The token is the path segment after the prefix.
-UNIQID_IN_PATH = %r{(/(?:list/thanks|unsubscribe|rsvps/thanks|rsvps/show/[^/"?]+|open/[^/"?]+)/)[^/"?.]+}
+UNIQID_IN_PATH = %r{(/(?:list/(?:thanks|rejoin)|unsubscribe|rsvps/thanks|rsvps/show/[^/"?]+|open/[^/"?]+)/)[^/"?.]+}
 
 # "Redirected to [FILTERED]" instead of the full URL with its token.
 Rails.application.config.filter_redirect << UNIQID_IN_PATH
