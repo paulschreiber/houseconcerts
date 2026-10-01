@@ -71,5 +71,25 @@ module Madmin
       get madmin_root_path
       assert_select ".dashboard-warning", count: 0
     end
+
+    test "doesn't list failed sends for shows that have already happened" do
+      batch_run = BatchRun.create!(show: shows(:past), kind: "invite", status: "completed", total_count: 1, failed_count: 1)
+      person = Person.create!(first_name: "Past", last_name: "Send", email: "dashboard.past@example.com", status: "active")
+      batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
+
+      get madmin_root_path
+
+      assert_select ".dashboard-warning", count: 0
+    end
+
+    test "the retry button is wired to disable on submit" do
+      batch_run = BatchRun.create!(show: shows(:upcoming), kind: "invite", status: "completed", total_count: 1, failed_count: 1)
+      person = Person.create!(first_name: "Retry", last_name: "Button", email: "dashboard.retry@example.com", status: "active")
+      batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
+
+      get madmin_root_path
+
+      assert_select "form[data-controller='disable-on-submit'] button[data-disable-on-submit-target='submit']", text: "Retry"
+    end
   end
 end

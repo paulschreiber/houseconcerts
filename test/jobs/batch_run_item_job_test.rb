@@ -602,4 +602,57 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     assert item.cancelled?
     assert_nil item.sent_at
   end
+
+  test "a delivery error longer than error_message holds is truncated, not left claimed as sent" do
+    show = shows(:upcoming)
+    person = Person.create!(first_name: "Long", last_name: "Error", email: "long-error@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    item = batch_run.batch_run_items.create!(recipient: person)
+
+    original_invite = InvitesMailer.method(:invite)
+    InvitesMailer.define_singleton_method(:invite) { |*| raise "550 #{'x' * 400}" }
+    begin
+      BatchRunItemJob.perform_now(item.id)
+    ensure
+      InvitesMailer.define_singleton_method(:invite, original_invite)
+    end
+
+    item.reload
+    assert_predicate item, :failed?
+    assert_operator item.error_message.length, :<=, 255
+    assert item.error_message.start_with?("550 x")
+    assert_predicate batch_run.reload, :completed?
+    assert_equal 1, batch_run.failed_count
+  end
+
+  test "an invite to someone who has RSVP'd since the batch started is skipped, not sent or failed" do
+    show = shows(:upcoming)
+    person = Person.create!(first_name: "Already", last_name: "Coming", email: "already.coming@example.com", status: "active")
+    RSVP.create!(first_name: "Already", last_name: "Coming", email: person.email, show: show, response: "yes", seats_reserved: 1)
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    item = batch_run.batch_run_items.create!(recipient: person)
+
+    # Neither the guest nor the admin (no failed-sends notice) gets anything.
+    assert_no_enqueued_emails { assert_no_emails { BatchRunItemJob.perform_now(item.id) } }
+
+    assert_predicate item.reload, :cancelled?
+    assert_includes item.error_message, "already RSVP'd"
+    assert_predicate batch_run.reload, :completed?
+    assert_equal 0, batch_run.failed_count
+  end
+
+  test "nothing is sent for a show that has already happened" do
+    show = shows(:past)
+    person = Person.create!(first_name: "Too", last_name: "Late", email: "too.late@example.com", status: "active")
+    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    item = batch_run.batch_run_items.create!(recipient: person)
+
+    # Neither the guest nor the admin (no failed-sends notice) gets anything.
+    assert_no_enqueued_emails { assert_no_emails { BatchRunItemJob.perform_now(item.id) } }
+
+    assert_predicate item.reload, :cancelled?
+    assert_includes item.error_message, "already happened"
+    assert_predicate batch_run.reload, :completed?
+    assert_equal 0, batch_run.failed_count
+  end
 end

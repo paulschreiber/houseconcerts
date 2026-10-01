@@ -392,6 +392,60 @@ module Madmin
       assert_match(/Retrying 1 failed invites/, flash[:notice])
     end
 
+    test "retry_failed_batch_run refuses a show that has already happened" do
+      show = shows(:past)
+      person = Person.create!(first_name: "Retry", last_name: "Late", email: "retry-late@example.com", status: "active")
+      batch_run = BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 1, failed_count: 1, completed_at: Time.current)
+      batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
+
+      assert_no_enqueued_jobs(only: BatchRunFanOutJob) do
+        patch retry_failed_batch_run_madmin_show_path(show, batch_run_id: batch_run.id)
+      end
+
+      assert_predicate batch_run.reload, :completed?
+      assert_match(/already happened/, flash[:alert])
+    end
+
+    test "a past show's page shows its failed sends without a retry button" do
+      show = shows(:past)
+      person = Person.create!(first_name: "Past", last_name: "Failure", email: "past-failure@example.com", status: "active")
+      batch_run = BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 1, failed_count: 1, completed_at: Time.current)
+      batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
+
+      get madmin_show_path(show)
+
+      assert_select ".batch-progress-status", text: /1 failed/
+      assert_select "form[action^='#{retry_failed_batch_run_madmin_show_path(show)}']", count: 0
+    end
+
+    test "the batch buttons ask for confirmation and are wired to disable on submit" do
+      get madmin_show_path(shows(:upcoming))
+
+      assert_select "form[data-controller='disable-on-submit'][data-action='turbo:submit-start->disable-on-submit#disable']", minimum: 3
+      [ "Send Invites", "Send to Unopened", "Send Reminders" ].each do |label|
+        assert_select "button[data-disable-on-submit-target='submit'][data-turbo-confirm]", text: label
+      end
+    end
+
+    test "the Send Invites confirmation says when invites already went out" do
+      show = shows(:upcoming)
+      BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 1, sent_count: 1, completed_at: Time.zone.parse("2026-09-20 12:00"))
+
+      get madmin_show_path(show)
+
+      assert_select "button[data-turbo-confirm*='already went out'][data-turbo-confirm*='September 20, 2026']", text: "Send Invites"
+    end
+
+    test "the Send Invites confirmation ignores an invite run that sent nothing" do
+      show = shows(:upcoming)
+      # e.g. cancelled before anything went out, or every send failed.
+      BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 2, failed_count: 1, completed_at: Time.zone.parse("2026-09-20 12:00"))
+
+      get madmin_show_path(show)
+
+      assert_select "button[data-turbo-confirm='Send invites for #{show.name}?']", text: "Send Invites"
+    end
+
     test "retry_failed_batch_run recovers an item stranded by a crash during an earlier retry attempt" do
       show = shows(:upcoming)
       person = Person.create!(first_name: "Retry", last_name: "Stranded", email: "retry-stranded-claim@example.com", status: "active")
