@@ -28,4 +28,54 @@ class RackAttackTest < ActionDispatch::IntegrationTest
 
     assert_response :success
   end
+
+  test "throttles repeated admin sign-in attempts from the same ip" do
+    5.times { post admin_session_path, params: { admin: { email: "admin-#{rand}@example.com", password: "guess" } } }
+
+    assert_not_equal 429, response.status
+
+    post admin_session_path, params: { admin: { email: "another@example.com", password: "guess" } }
+
+    assert_response :too_many_requests
+  end
+
+  test "throttles repeated admin sign-in attempts for the same email from different ips" do
+    10.times do |i|
+      post admin_session_path, params: { admin: { email: "Admin-One@Example.com ", password: "guess" } }, env: { "REMOTE_ADDR" => "198.51.100.#{i}" }
+    end
+
+    assert_not_equal 429, response.status
+
+    post admin_session_path, params: { admin: { email: "admin-one@example.com", password: "guess" } }, env: { "REMOTE_ADDR" => "198.51.100.200" }
+
+    assert_response :too_many_requests
+  end
+
+  test "throttles repeated password reset requests from the same ip" do
+    5.times { |i| post admin_password_path, params: { admin: { email: "reset-#{i}@example.com" } } }
+
+    assert_not_equal 429, response.status
+
+    post admin_password_path, params: { admin: { email: "reset-6@example.com" } }
+
+    assert_response :too_many_requests
+  end
+
+  test "throttles repeated password reset requests for the same email from different ips" do
+    3.times do |i|
+      post admin_password_path, params: { admin: { email: admins(:one).email } }, env: { "REMOTE_ADDR" => "198.51.100.#{i}" }
+    end
+
+    assert_not_equal 429, response.status
+
+    post admin_password_path, params: { admin: { email: admins(:one).email.upcase } }, env: { "REMOTE_ADDR" => "198.51.100.200" }
+
+    assert_response :too_many_requests
+  end
+
+  test "does not throttle viewing the sign-in page" do
+    10.times { get new_admin_session_path }
+
+    assert_response :success
+  end
 end
