@@ -65,4 +65,24 @@ class VenueTest < ActiveSupport::TestCase
     assert_not_includes venue.formatted_contact_info, "<img"
     assert_includes venue.formatted_contact_info, "&lt;img"
   end
+
+  test "formatted_directions keeps http, https, and mailto links" do
+    venue = venues(:one)
+    venue.directions = "[Map](https://maps.example.com), [site](http://example.com), [email](mailto:host@example.com)"
+
+    assert_includes venue.formatted_directions, %(<a href="https://maps.example.com">Map</a>)
+    assert_includes venue.formatted_directions, %(<a href="http://example.com">site</a>)
+    assert_includes venue.formatted_directions, %(<a href="mailto:host@example.com">email</a>)
+  end
+
+  test "formatted_directions and formatted_contact_info don't turn javascript: links into anchors" do
+    venue = venues(:one)
+    venue.directions = "[click me](javascript:alert(document.cookie))"
+    venue.contact_info = "[call](JavaScript:alert(1))"
+
+    [ venue.formatted_directions, venue.formatted_contact_info ].each do |html|
+      assert_not_includes html, "<a"
+      assert_not_includes html, "href"
+    end
+  end
 end
