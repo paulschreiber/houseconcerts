@@ -217,4 +217,36 @@ class RackAttackTest < ActionDispatch::IntegrationTest
 
     assert_nil Rack::Attack.form_email(req, "rsvp")
   end
+
+  test "throttles repeated passkey creation attempts from the same ip" do
+    5.times { post admin_passkeys_path }
+
+    assert_not_equal 429, response.status
+
+    post admin_passkeys_path
+
+    assert_response :too_many_requests
+  end
+
+  test "passkey creation throttle also applies with a format suffix" do
+    5.times { post "#{admin_passkeys_path}.json" }
+
+    assert_not_equal 429, response.status
+
+    post "#{admin_passkeys_path}.json"
+
+    assert_response :too_many_requests
+  end
+
+  test "throttles passkey creation per signed-in admin across ips" do
+    sign_in admins(:one)
+
+    10.times { |i| post admin_passkeys_path, env: { "REMOTE_ADDR" => "198.51.100.#{i}" } }
+
+    assert_not_equal 429, response.status
+
+    post admin_passkeys_path, env: { "REMOTE_ADDR" => "198.51.100.200" }
+
+    assert_response :too_many_requests
+  end
 end
