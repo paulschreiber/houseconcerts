@@ -548,7 +548,7 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
     rsvp = rsvps(:one) # confirmed, yes, 2 seats
 
     [ { response: "no", seats_reserved: 0 }, { response: "yes", seats_reserved: 1 } ].each do |change|
-      assert_enqueued_email_with InvitesMailer, :rsvp_change_requested, args: [ rsvp ] do
+      assert_enqueued_email_with InvitesMailer, :rsvp_change_requested, args: [ rsvp, 2 ] do
         post rsvps_path, params: { rsvp: { first_name: "Test", last_name: "Rsvp", email: rsvp.email, show_id: rsvp.show_id, **change } }
       end
 
@@ -579,5 +579,33 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to rsvp_thanks_path(uniqid: rsvp.uniqid)
     assert_equal "no", rsvp.reload.response
+  end
+
+  test "without the token, a confirmed RSVP with no response chosen is a validation error, not a change request" do
+    rsvp = rsvps(:one)
+
+    post rsvps_path, params: { rsvp: { first_name: "Test", last_name: "Rsvp", email: rsvp.email, show_id: rsvp.show_id,
+                                       response: "", seats_reserved: 1 } }
+
+    assert_response :unprocessable_content
+    assert(enqueued_jobs.none? { |job| job[:args].include?("rsvp_change_requested") })
+    assert_equal [ "yes", 2 ], [ rsvp.reload.response, rsvp.seats_reserved ]
+  end
+
+  test "repeated change requests for a confirmed RSVP send at most one email an hour" do
+    rsvp = rsvps(:one)
+    # The test environment's null_store cache can't hold the limit.
+    original_cache = Rails.cache
+    Rails.cache = ActiveSupport::Cache::MemoryStore.new
+
+    3.times do
+      post rsvps_path, params: { rsvp: { first_name: "Test", last_name: "Rsvp", email: rsvp.email, show_id: rsvp.show_id,
+                                         response: "no", seats_reserved: 0 } }
+    end
+
+    assert_redirected_to rsvp_updated_path
+    assert_equal(1, enqueued_jobs.count { |job| job[:args].include?("rsvp_change_requested") })
+  ensure
+    Rails.cache = original_cache
   end
 end
