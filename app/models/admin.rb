@@ -14,6 +14,8 @@ class Admin < ApplicationRecord
   # A password reset removes every passkey, so resetting the password also
   # locks out anyone who added their own passkey with a stolen session.
   def reset_password(new_password, new_password_confirmation)
-    super.tap { |reset| passkeys.destroy_all if reset }
+    reset = super
+    passkeys.destroy_all if reset
+    reset
   end
 end
