@@ -111,4 +111,34 @@ class MailingListControllerTest < ActionDispatch::IntegrationTest
 
     assert_operator response.status, :<, 500
   end
+
+  test "one-click unsubscribe removes the person without a CSRF token" do
+    person = people(:one)
+    ActionController::Base.allow_forgery_protection = true
+
+    post unsubscribe_path(uniqid: person.uniqid), params: "List-Unsubscribe=One-Click",
+                                                  headers: { "CONTENT_TYPE" => "application/x-www-form-urlencoded" }
+
+    assert_response :ok
+    assert_predicate person.reload, :removed?
+  ensure
+    ActionController::Base.allow_forgery_protection = false
+  end
+
+  test "one-click unsubscribe is a no-op for someone already removed, and a 404 for an unknown token" do
+    person = people(:one)
+    person.removed!
+    removed_at = person.reload.removed_at
+
+    travel 1.day do
+      post unsubscribe_path(uniqid: person.uniqid), params: "List-Unsubscribe=One-Click"
+    end
+
+    assert_response :ok
+    assert_equal removed_at, person.reload.removed_at
+
+    post unsubscribe_path(uniqid: "nonexistent-uniqid"), params: "List-Unsubscribe=One-Click"
+
+    assert_response :not_found
+  end
 end
