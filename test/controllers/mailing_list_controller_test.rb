@@ -98,4 +98,17 @@ class MailingListControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.body, "Jane, you’re already subscribed"
   end
+
+  test "create answers malformed person params without crashing" do
+    form = { "CONTENT_TYPE" => "application/x-www-form-urlencoded" }
+
+    post people_path, params: "person=not-a-hash", headers: form
+
+    assert_response :bad_request
+
+    # Strong params drops a non-scalar email, so it's treated as missing.
+    post people_path, params: "person[email][]=a@example.com&person[first_name]=Jane", headers: form
+
+    assert_operator response.status, :<, 500
+  end
 end
