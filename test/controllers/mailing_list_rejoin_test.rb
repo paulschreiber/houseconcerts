@@ -27,8 +27,16 @@ class MailingListRejoinTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to mailing_list_rejoin_requested_path
     follow_redirect!
-    assert_select "h1", "Check your email"
+    assert_select "h1", "Confirm your rejoin request via email"
+    assert_select "p", text: /This email address \(#{Regexp.escape(@person.email)}\) was unsubscribed/
     assert_predicate @person.reload, :removed?
+  end
+
+  test "the rejoin request page still makes sense without the address, e.g. on reload" do
+    get mailing_list_rejoin_requested_path
+
+    assert_response :success
+    assert_select "p", text: /\AThis email address was unsubscribed/
   end
 
   test "bouncing and moved addresses also get a rejoin link" do
@@ -59,7 +67,7 @@ class MailingListRejoinTest < ActionDispatch::IntegrationTest
     get mailing_list_rejoin_path(uniqid: @person.uniqid)
 
     assert_response :success
-    assert_select "form[action='#{mailing_list_rejoin_path(uniqid: @person.uniqid)}'][method=post] button", "Rejoin the mailing list"
+    assert_select "form[action='#{mailing_list_rejoin_path(uniqid: @person.uniqid)}'][method=post] button", "Add me back to the mailing list"
     assert_predicate @person.reload, :removed?
   end
 

@@ -8,5 +8,7 @@ class MailingListMailerTest < ActionMailer::TestCase
     assert_equal [ person.email ], email.to
     assert_includes email.subject, "rejoin"
     assert_includes email.body.encoded, "/list/rejoin/#{person.uniqid}"
+    assert_includes email.body.decoded, "this email address (#{person.email})"
+    assert_match %r{To rejoin, <a href="[^"]+">confirm your request</a>\.}, email.body.decoded
   end
 end
