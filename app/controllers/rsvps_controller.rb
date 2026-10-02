@@ -161,7 +161,7 @@ class RsvpsController < ApplicationController
         @verified_link = true
         return redirect_to rsvp_thanks_path(uniqid: @rsvp.uniqid) if @rsvp.update(rsvp_params)
       elsif reduces_confirmed_rsvp?
-        InvitesMailer.rsvp_change_requested(@rsvp).deliver_later
+        InvitesMailer.rsvp_change_requested(@rsvp, @rsvp.seats_reserved).deliver_later if change_request_email_allowed?
         redirect_to rsvp_updated_path, flash: { rsvp_updated_show_id: show.id, rsvp_updated_email: @rsvp.email, rsvp_update_result: "link_sent" }
         return
       else
@@ -191,10 +191,20 @@ class RsvpsController < ApplicationController
       render :create, status: :unprocessable_content
     end
 
+    # A real "no", or a valid smaller seat count. Anything else (blank or
+    # invalid seats, a missing response) goes on to fail validation instead.
     def reduces_confirmed_rsvp?
       return false unless @rsvp.confirmed_confirmed?
+      return true if rsvp_params[:response] == "no"
 
-      rsvp_params[:response] != "yes" || rsvp_params[:seats_reserved].to_i < @rsvp.seats_reserved
+      seats = Integer(rsvp_params[:seats_reserved].to_s, exception: false)
+      rsvp_params[:response] == "yes" && seats.present? && seats < @rsvp.seats_reserved
+    end
+
+    # At most one of these emails per RSVP per hour: each says the same thing,
+    # so repeating the request can't flood the guest's inbox.
+    def change_request_email_allowed?
+      Rails.cache.write("rsvp/change_requested/#{@rsvp.id}", true, expires_in: 1.hour, unless_exist: true)
     end
 
     def rsvp_token_matches?

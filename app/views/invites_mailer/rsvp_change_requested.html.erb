@@ -2,7 +2,7 @@
 
 <p>Someone, hopefully you, used the RSVP form to cancel or reduce the confirmed reservation for this email address (<%= @rsvp.email %>) for the <%= @rsvp.show.name %> house concert on <%= @rsvp.show.start_date %>.</p>
 
-<p>Confirmed reservations can only be cancelled or reduced from your own link, so nothing has changed yet: you still have <%= pluralize(@rsvp.seats_reserved, "seat") %>. To make the change, <%= link_to "update your reservation", @rsvp_url %>.</p>
+<p>Confirmed reservations can only be cancelled or reduced from your own link, so nothing has changed yet: you still have <%= pluralize(@seats, "seat") %>. To make the change, <%= link_to "update your reservation", @rsvp_url %>.</p>
 
 <p>If you didn’t ask for this, you don’t need to do anything.</p>
 
