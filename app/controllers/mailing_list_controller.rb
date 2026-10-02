@@ -1,6 +1,13 @@
 class MailingListController < ApplicationController
   include HtmlOnly
 
+  # RFC 8058 one-click unsubscribe: a mail client's built-in "Unsubscribe"
+  # POSTs List-Unsubscribe=One-Click to the email's List-Unsubscribe URL, with
+  # no CSRF token, and expects no page back. The token in the URL authorizes
+  # it, as it does for the emailed link.
+  skip_forgery_protection only: :one_click_unsubscribe
+  skip_before_action :require_html, only: :one_click_unsubscribe
+
   def unsubscribe
     unless params[:uniqid]
       redirect_to root_url
@@ -19,6 +26,14 @@ class MailingListController < ApplicationController
       @already_removed = false
       @person.removed!
     end
+  end
+
+  def one_click_unsubscribe
+    person = Person.find_by(uniqid: params[:uniqid])
+    return head :not_found if person.nil?
+
+    person.removed! unless person.removed?
+    head :ok
   end
 
   def index
