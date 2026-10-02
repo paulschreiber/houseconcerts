@@ -23,10 +23,17 @@ module Rack
 
     # The normalized email submitted in a form (params[model][email]), or nil
     # if there isn't one or the params are malformed.
+    #
+    # Parsed the way Rails parses them, not with Rack's req.params: that only
+    # reads form-encoded bodies, so a JSON body (which Rails, and so Devise,
+    # still accepts) skipped every per-email throttle. Unparseable JSON counts
+    # as no email; Rails rejects that request with a 400 anyway.
     def self.form_email(req, model)
-      fields = req.params[model]
+      fields = ActionDispatch::Request.new(req.env).params[model]
       email = fields["email"] if fields.is_a?(Hash)
       email.to_s.strip.downcase.presence if email.is_a?(String)
+    rescue ActionDispatch::Http::Parameters::ParseError
+      nil
     end
 
     def self.admin_email(req) = form_email(req, "admin")
