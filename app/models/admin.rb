@@ -1,8 +1,8 @@
 class Admin < ApplicationRecord
   # Include default devise modules. Others available are:
-  # :confirmable, :lockable, :timeoutable and :omniauthable
+  # :confirmable, :lockable and :omniauthable
   devise :database_authenticatable, :passkey_authenticatable,
-         :recoverable, :rememberable, :trackable, :validatable
+         :recoverable, :rememberable, :timeoutable, :trackable, :validatable
 
   # Devise mail (password reset instructions) goes out in the background.
   # Delivering it inline made a reset request for a real admin's email
