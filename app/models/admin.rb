@@ -10,4 +10,12 @@ class Admin < ApplicationRecord
   def send_devise_notification(notification, *)
     devise_mailer.send(notification, self, *).deliver_later
   end
+
+  # A password reset removes every passkey, so resetting the password also
+  # locks out anyone who added their own passkey with a stolen session.
+  def reset_password(new_password, new_password_confirmation)
+    reset = super
+    passkeys.destroy_all if reset
+    reset
+  end
 end
