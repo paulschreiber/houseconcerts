@@ -1,4 +1,6 @@
 class RsvpsController < ApplicationController
+  include HtmlOnly
+
   def index
     redirect_to new_rsvp_path
   end
