@@ -16,7 +16,9 @@ class OpenResource < Madmin::Resource
   # mangled into "Emails Openeds". Returning a string whose #pluralize is a
   # no-op keeps the fix local to this resource, without a global inflection.
   def self.friendly_name
-    "Emails Opened".dup.tap { |s| def s.pluralize = self }
+    name = +"Emails Opened"
+    def name.pluralize = self
+    name
   end
 
   # Customize the default sort column and direction.
