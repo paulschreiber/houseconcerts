@@ -23,6 +23,7 @@ Rails.application.routes.draw do
     get "list/rejoin/:uniqid", to: "mailing_list#rejoin", as: "mailing_list_rejoin"
     post "list/rejoin/:uniqid", to: "mailing_list#confirm_rejoin"
     get "unsubscribe/:uniqid", to: "mailing_list#unsubscribe", as: "unsubscribe"
+    post "unsubscribe/:uniqid", to: "mailing_list#one_click_unsubscribe"
   end
   get "calendar/", to: "shows#calendar", as: "calendar"
 

@@ -51,6 +51,8 @@ class InvitesMailer < ApplicationMailer
     logger.debug "Emailing #{person.email} [#{tag}]"
 
     headers["List-Unsubscribe"] = "<#{@unsub_url}>"
+    # RFC 8058: lets mail clients unsubscribe with one POST to that URL.
+    headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
 
     mail(to: person.email_address_with_name,
          subject: subject)
