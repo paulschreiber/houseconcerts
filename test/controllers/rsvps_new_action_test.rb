@@ -137,4 +137,17 @@ class RsvpsNewActionTest < ActionDispatch::IntegrationTest
     assert_equal shows(:past), past_rsvp.reload.show
     assert_equal "yes", past_rsvp.response
   end
+
+  test "a hand-built 'no' link for an email that already has an RSVP shows the form instead of crashing" do
+    rsvp = rsvps(:one)
+
+    assert_no_difference("RSVP.count") do
+      get rsvp_for_show_path(slug: rsvp.show.slug, response: "no", rsvp: { email: rsvp.email, first_name: "Some", last_name: "One" })
+    end
+
+    assert_response :success
+    assert_select "form[action='#{rsvps_path}']"
+    assert_not_includes response.body, rsvp.uniqid
+    assert_equal [ "yes", 2, "Test" ], [ rsvp.reload.response, rsvp.seats_reserved, rsvp.first_name ]
+  end
 end
