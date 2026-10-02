@@ -42,6 +42,9 @@ class HtmlOnlyTest < ActionDispatch::IntegrationTest
   end
 
   test "a JSON body gets a 415 and changes nothing" do
+    # With CSRF protection on, as in production: the 415 comes first.
+    ActionController::Base.allow_forgery_protection = true
+
     assert_no_difference -> { RSVP.count } do
       post rsvps_path, params: rsvp_params.to_json, headers: JSON_BODY
     end
@@ -51,6 +54,18 @@ class HtmlOnlyTest < ActionDispatch::IntegrationTest
       post people_path, params: person_params.to_json, headers: JSON_BODY
     end
     assert_response :unsupported_media_type
+  ensure
+    ActionController::Base.allow_forgery_protection = false
+  end
+
+  test "asking for JSON gets a 406 before the CSRF check" do
+    ActionController::Base.allow_forgery_protection = true
+
+    post rsvps_path, params: rsvp_params, headers: { "Accept" => "application/json" }
+
+    assert_response :not_acceptable
+  ensure
+    ActionController::Base.allow_forgery_protection = false
   end
 
   test "Turbo form submissions still work" do
@@ -64,6 +79,18 @@ class HtmlOnlyTest < ActionDispatch::IntegrationTest
     post rsvps_path, params: { rsvp: { email: "not-an-email", show_id: @show.id } }, headers: turbo
 
     assert_response :unprocessable_content
+  end
+
+  test "any Accept list that includes HTML, or no Accept at all, gets the page" do
+    [ "application/xml, text/html", "image/webp, text/html", "text/html;q=0.9, application/json", "text/*", "" ].each do |accept|
+      get rsvp_for_show_path(slug: @show.slug), headers: { "Accept" => accept }
+
+      assert_response :success, accept.inspect
+    end
+
+    get rsvp_for_show_path(slug: @show.slug), headers: { "Accept" => "application/json, application/xml" }
+
+    assert_response :not_acceptable
   end
 
   test "*/* still gets the HTML page, so link previews work" do
