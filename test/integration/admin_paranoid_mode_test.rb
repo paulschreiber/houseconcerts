@@ -28,6 +28,13 @@ class AdminParanoidModeTest < ActionDispatch::IntegrationTest
     assert_no_emails { post admin_password_path, params: { admin: { email: "nobody@example.com" } } }
   end
 
+  # Delivering inline (an SMTP round trip) would make a real admin's reset
+  # request measurably slower than an unknown email's.
+  test "the reset email is sent in the background, not during the request" do
+    assert_enqueued_emails(1) { post admin_password_path, params: { admin: { email: admins(:one).email } } }
+    assert_empty ActionMailer::Base.deliveries
+  end
+
   # A failed sign-in for a real admin runs bcrypt to check the password; one for
   # an unknown email must do the same amount of bcrypt work, or it's measurably
   # faster.
