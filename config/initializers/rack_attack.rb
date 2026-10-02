@@ -15,17 +15,21 @@ module Rack
     #
     # The routes also answer with a format suffix (/sign_in.json, .html), so
     # match that too; an exact path match let suffixed requests skip the limits.
-    def self.admin_path(name)
-      %r{\A/#{Regexp.escape(Settings.admin_prefix)}/#{name}(?:\.[^/]+)?/?\z}
+    def self.exact_path(path)
+      %r{\A/#{path}(?:\.[^/]+)?/?\z}
     end
-    ADMIN_SIGN_IN_PATH = admin_path("sign_in")
-    ADMIN_PASSWORD_PATH = admin_path("password")
+    ADMIN_SIGN_IN_PATH = exact_path("#{Regexp.escape(Settings.admin_prefix)}/sign_in")
+    ADMIN_PASSWORD_PATH = exact_path("#{Regexp.escape(Settings.admin_prefix)}/password")
 
-    def self.admin_email(req)
-      admin = req.params["admin"]
-      email = admin["email"] if admin.is_a?(Hash)
+    # The normalized email submitted in a form (params[model][email]), or nil
+    # if there isn't one or the params are malformed.
+    def self.form_email(req, model)
+      fields = req.params[model]
+      email = fields["email"] if fields.is_a?(Hash)
       email.to_s.strip.downcase.presence if email.is_a?(String)
     end
+
+    def self.admin_email(req) = form_email(req, "admin")
 
     throttle("admin-sign-in/ip", limit: 5, period: 20.seconds) do |req|
       req.ip if req.post? && req.path.match?(ADMIN_SIGN_IN_PATH)
@@ -41,6 +45,42 @@ module Rack
 
     throttle("admin-password-reset/email", limit: 3, period: 1.hour) do |req|
       admin_email(req) if req.post? && req.path.match?(ADMIN_PASSWORD_PATH)
+    end
+
+    # Public forms. Each RSVP save emails the admin, and each signup can later
+    # get invites, so limit bulk submissions per IP. RSVPs are also limited per
+    # email, so one guest's RSVP can't be submitted over and over. The per-IP
+    # limits leave room for several people sharing one network (a household,
+    # an office) right after an invite goes out.
+    RSVP_PATH = exact_path("rsvps")
+    SIGNUP_PATH = exact_path("people")
+
+    def self.rsvp_submission?(req) = (req.post? || req.patch?) && req.path.match?(RSVP_PATH)
+
+    throttle("rsvp/ip", limit: 20, period: 10.minutes) do |req|
+      req.ip if rsvp_submission?(req)
+    end
+
+    throttle("rsvp/email", limit: 10, period: 1.hour) do |req|
+      form_email(req, "rsvp") if rsvp_submission?(req)
+    end
+
+    throttle("signup/ip", limit: 10, period: 10.minutes) do |req|
+      req.ip if req.post? && req.path.match?(SIGNUP_PATH)
+    end
+
+    throttle("signup/ip/day", limit: 40, period: 1.day) do |req|
+      req.ip if req.post? && req.path.match?(SIGNUP_PATH)
+    end
+
+    # Guests who hit a limit get a page saying to try again, not Rack::Attack's
+    # bare "Retry later".
+    THROTTLED_PAGE = Rails.public_path.join("429.html").read.freeze
+
+    self.throttled_responder = lambda do |req|
+      match = req.env["rack.attack.match_data"] || {}
+      retry_after = match[:period] ? match[:period] - (match[:epoch_time] % match[:period]) : 60
+      [ 429, { "content-type" => "text/html; charset=utf-8", "retry-after" => retry_after.to_s }, [ THROTTLED_PAGE ] ]
     end
   end
 end
