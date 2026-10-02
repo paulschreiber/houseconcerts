@@ -1,4 +1,6 @@
 class MailingListController < ApplicationController
+  include HtmlOnly
+
   def unsubscribe
     unless params[:uniqid]
       redirect_to root_url
