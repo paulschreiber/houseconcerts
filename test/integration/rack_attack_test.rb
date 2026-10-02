@@ -189,4 +189,32 @@ class RackAttackTest < ActionDispatch::IntegrationTest
       assert_nil Rack::Attack.form_email(req, "rsvp"), body
     end
   end
+
+  test "the per-email throttles also count JSON bodies" do
+    json = { "CONTENT_TYPE" => "application/json" }
+
+    10.times do |i|
+      post admin_session_path, params: { admin: { email: admins(:one).email, password: "guess" } }.to_json,
+                               headers: json, env: { "REMOTE_ADDR" => "198.51.100.#{i}" }
+    end
+    post admin_session_path, params: { admin: { email: admins(:one).email, password: "guess" } }.to_json,
+                             headers: json, env: { "REMOTE_ADDR" => "198.51.100.200" }
+
+    assert_response :too_many_requests
+
+    10.times do |i|
+      post rsvps_path, params: { rsvp: { email: "guest@example.com", show_id: 0 } }.to_json,
+                       headers: json, env: { "REMOTE_ADDR" => "198.51.100.#{i}" }
+    end
+    post rsvps_path, params: { rsvp: { email: "guest@example.com", show_id: 0 } }.to_json,
+                     headers: json, env: { "REMOTE_ADDR" => "198.51.100.200" }
+
+    assert_response :too_many_requests
+  end
+
+  test "form_email treats unparseable JSON as no email" do
+    req = Rack::Attack::Request.new(Rack::MockRequest.env_for("/rsvps", method: "POST", input: "{not json", "CONTENT_TYPE" => "application/json"))
+
+    assert_nil Rack::Attack.form_email(req, "rsvp")
+  end
 end
