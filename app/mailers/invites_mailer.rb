@@ -166,7 +166,7 @@ class InvitesMailer < ApplicationMailer
   end
 
   # Sent instead of applying a form submission without the RSVP's token that
-  # would cancel or reduce a confirmed RSVP (see
+  # would cancel or reduce a "yes" RSVP (see
   # RsvpsController#update_existing_rsvp): the guest makes that change with
   # their own link. seats is the RSVP's seat count when that was asked for.
   def rsvp_change_requested(rsvp, seats)

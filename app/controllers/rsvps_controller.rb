@@ -151,16 +151,17 @@ class RsvpsController < ApplicationController
     # and seats, lands on a page without the token or the guest's details,
     # and (if it changed anything) emails the guest, so a stranger can't read
     # or rewrite their details, and a change they didn't make doesn't go
-    # unnoticed. It can't cancel or reduce a confirmed RSVP at all: on a
-    # sold-out show that couldn't be undone, so the guest is emailed their
-    # link to make that change themselves.
+    # unnoticed. It can't cancel or reduce a "yes" RSVP at all, whether it's
+    # confirmed, unconfirmed or waitlisted: on a sold-out show that couldn't
+    # be undone, so the guest is emailed their link to make that change
+    # themselves.
     def update_existing_rsvp(show)
       @show = show
 
       if rsvp_token_matches?
         @verified_link = true
         return redirect_to rsvp_thanks_path(uniqid: @rsvp.uniqid) if @rsvp.update(rsvp_params)
-      elsif reduces_confirmed_rsvp?
+      elsif reduces_yes_rsvp?
         InvitesMailer.rsvp_change_requested(@rsvp, @rsvp.seats_reserved).deliver_later if change_request_email_allowed?
         redirect_to rsvp_updated_path, flash: { rsvp_updated_show_id: show.id, rsvp_updated_email: @rsvp.email, rsvp_update_result: "link_sent" }
         return
@@ -193,8 +194,8 @@ class RsvpsController < ApplicationController
 
     # A real "no", or a valid smaller seat count. Anything else (blank or
     # invalid seats, a missing response) goes on to fail validation instead.
-    def reduces_confirmed_rsvp?
-      return false unless @rsvp.confirmed_confirmed?
+    def reduces_yes_rsvp?
+      return false unless @rsvp.yes?
       return true if rsvp_params[:response] == "no"
 
       seats = Integer(rsvp_params[:seats_reserved].to_s, exception: false)
