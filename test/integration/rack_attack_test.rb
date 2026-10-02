@@ -108,4 +108,85 @@ class RackAttackTest < ActionDispatch::IntegrationTest
 
     assert_not_equal 500, response.status
   end
+
+  test "throttles repeated RSVP submissions from the same ip" do
+    20.times { |i| post rsvps_path, params: { rsvp: { email: "guest-#{i}@example.com", show_id: 0 } } }
+
+    assert_not_equal 429, response.status
+
+    patch rsvps_path, params: { rsvp: { email: "guest-21@example.com", show_id: 0 } }
+
+    assert_response :too_many_requests
+
+    post rsvps_path, params: { rsvp: { email: "guest-22@example.com", show_id: 0 } }, env: { "REMOTE_ADDR" => "198.51.100.200" }
+
+    assert_not_equal 429, response.status
+  end
+
+  test "throttles repeated RSVP submissions for the same email from different ips" do
+    10.times do |i|
+      post rsvps_path, params: { rsvp: { email: "Guest@Example.com ", show_id: 0 } }, env: { "REMOTE_ADDR" => "198.51.100.#{i}" }
+    end
+
+    assert_not_equal 429, response.status
+
+    patch rsvps_path, params: { rsvp: { email: "guest@example.com", show_id: 0 } }, env: { "REMOTE_ADDR" => "198.51.100.200" }
+
+    assert_response :too_many_requests
+  end
+
+  test "throttles repeated mailing list signups from the same ip" do
+    10.times { |i| post people_path, params: { person: { email: "signup-#{i}@example.com" } } }
+
+    assert_not_equal 429, response.status
+
+    post people_path, params: { person: { email: "signup-11@example.com" } }
+
+    assert_response :too_many_requests
+  end
+
+  test "limits mailing list signups from the same ip per day" do
+    4.times do |window|
+      travel_to Time.zone.parse("2026-10-02 00:00") + (window * 15).minutes do
+        10.times { |i| post people_path, params: { person: { email: "signup-#{window}-#{i}@example.com" } } }
+
+        assert_not_equal 429, response.status, "window #{window}"
+      end
+    end
+
+    travel_to Time.zone.parse("2026-10-02 01:00") do
+      post people_path, params: { person: { email: "one-more@example.com" } }
+
+      assert_response :too_many_requests
+    end
+  end
+
+  test "public form throttles also apply with a format suffix" do
+    20.times { |i| post "#{rsvps_path}.json", params: { rsvp: { email: "guest-#{i}@example.com", show_id: 0 } } }
+    post "#{rsvps_path}.json", params: { rsvp: { email: "guest-21@example.com", show_id: 0 } }
+
+    assert_response :too_many_requests
+
+    10.times { |i| post "#{people_path}.html", params: { person: { email: "signup-#{i}@example.com" } } }
+    post "#{people_path}.html", params: { person: { email: "signup-11@example.com" } }
+
+    assert_response :too_many_requests
+  end
+
+  test "a throttled request gets the try-again page and a Retry-After header" do
+    11.times { |i| post people_path, params: { person: { email: "signup-#{i}@example.com" } } }
+
+    assert_response :too_many_requests
+    assert_equal "text/html; charset=utf-8", response.headers["content-type"]
+    assert_includes response.body, "Please wait a few minutes and try again."
+    assert_includes 1..600, response.headers["retry-after"].to_i
+  end
+
+  test "form_email ignores malformed params" do
+    [ "rsvp=not-a-hash", "rsvp[email][]=a@example.com", "" ].each do |body|
+      req = Rack::Attack::Request.new(Rack::MockRequest.env_for("/rsvps", method: "POST", input: body, "CONTENT_TYPE" => "application/x-www-form-urlencoded"))
+
+      assert_nil Rack::Attack.form_email(req, "rsvp"), body
+    end
+  end
 end
