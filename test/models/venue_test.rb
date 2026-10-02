@@ -111,21 +111,12 @@ class VenueTest < ActiveSupport::TestCase
     assert_includes venue.formatted_directions, %(title="say &quot;hi&quot; &lt;b&gt;")
   end
 
-  test "formatted_directions links safe autolinks and escapes them" do
+  test "formatted_directions doesn't autolink" do
     venue = venues(:one)
-    venue.directions = "<https://example.com/?a=1&b=2> <host@example.com> <mailto:other@example.com> <tel:+15550100>"
-
-    assert_includes venue.formatted_directions, %(<a href="https://example.com/?a=1&amp;b=2">https://example.com/?a=1&amp;b=2</a>)
-    assert_includes venue.formatted_directions, %(<a href="mailto:host@example.com">host@example.com</a>)
-    assert_includes venue.formatted_directions, %(<a href="mailto:other@example.com">other@example.com</a>)
-    assert_includes venue.formatted_directions, %(<a href="tel:+15550100">tel:+15550100</a>)
-  end
-
-  test "formatted_directions doesn't autolink other schemes" do
-    venue = venues(:one)
-    venue.directions = "<ftp://files.example.com> <javascript:alert(1)>"
+    venue.directions = "<https://example.com> <host@example.com> <ftp://files.example.com> <javascript:alert(1)>"
 
     assert_not_includes venue.formatted_directions, "<a"
+    assert_includes venue.formatted_directions, "&lt;https://example.com&gt;"
   end
 
   test "formatted_directions doesn't link other schemes or protocol-relative URLs" do
