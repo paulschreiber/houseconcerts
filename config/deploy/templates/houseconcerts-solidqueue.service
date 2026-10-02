@@ -1,6 +1,11 @@
 # Solid Queue worker for houseconcerts, run outside of Passenger since
 # Passenger only manages the web process, not background workers.
 #
+# It runs as its own unprivileged user (houseconcerts-jobs), not the deploy
+# user. Before installing this unit, create that user and set up the shared
+# file permissions once with:
+#   sudo bash /data/sites/houseconcerts/current/config/deploy/setup_solidqueue_user.sh
+#
 # Install on the server:
 #   sudo cp config/deploy/templates/houseconcerts-solidqueue.service /etc/systemd/system/
 #   sudo systemctl daemon-reload
@@ -11,8 +16,8 @@
 #   paul ALL=(ALL) NOPASSWD: /bin/systemctl restart houseconcerts-solidqueue
 #
 # The sandboxing below makes everything read-only except the shared log and
-# tmp directories. Create the bootsnap cache directory once before starting:
-#   mkdir -p /data/sites/houseconcerts/shared/tmp/cache
+# tmp directories, and hides /home (see the script above if Ruby or gems live
+# there).
 #
 # After changing this file on the server, check it with:
 #   sudo systemd-analyze verify /etc/systemd/system/houseconcerts-solidqueue.service
@@ -24,7 +29,8 @@ After=network.target mysql.service
 
 [Service]
 Type=simple
-User=paul
+User=houseconcerts-jobs
+Group=houseconcerts
 WorkingDirectory=/data/sites/houseconcerts/current
 Environment=RAILS_ENV=production
 Environment=BOOTSNAP_CACHE_DIR=/data/sites/houseconcerts/shared/tmp/cache
@@ -33,11 +39,13 @@ Restart=always
 RestartSec=1
 
 # Sandboxing
-UMask=0027
+# Group-writable, so log files the worker creates stay writable for the web app
+# (which runs as the deploy user, also in the houseconcerts group).
+UMask=0002
 NoNewPrivileges=yes
 CapabilityBoundingSet=
 ProtectSystem=strict
-ProtectHome=read-only
+ProtectHome=yes
 ReadWritePaths=/data/sites/houseconcerts/shared/log /data/sites/houseconcerts/shared/tmp
 PrivateTmp=yes
 PrivateDevices=yes
