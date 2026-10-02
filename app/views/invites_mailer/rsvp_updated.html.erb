@@ -1,0 +1,14 @@
+<% summary = ->(response, seats) { response == "yes" ? "Attending, #{pluralize(seats, 'seat')}" : "Not attending" } %>
+<p>Hi <%= @rsvp.first_name %>,</p>
+
+<p>Someone, hopefully you, used the RSVP form to update the RSVP for this email address (<%= @rsvp.email %>) for the <%= @rsvp.show.name %> house concert on <%= @rsvp.show.start_date %>.</p>
+
+<ul class="summary">
+<li>Before: <%= summary.call(@previous[:response], @previous[:seats]) %></li>
+<li>Now: <%= summary.call(@current[:response], @current[:seats]) %></li>
+</ul>
+
+<p>If you didn’t make this change, or want to update your name, phone number or zip code, <%= link_to "update your reservation", @rsvp_url %>.</p>
+
+<p>thanks!
+<br />Paul</p>

@@ -7,7 +7,7 @@
 <% show_errors = @rsvp.errors.select{|s| s.attribute == :show } %>
 <%= content_tag :p, show_errors.first.message, class: "error" unless show_errors.empty? %>
 
-<% if @show.nil? || !(@show.confirmed? && @show.sold_out?) || !@rsvp.new_record? %>
+<% if @show.nil? || !(@show.confirmed? && @show.sold_out?) || !@rsvp.new_record? || @updating_existing %>
 	<div class="pagetext">
 	<%= form_with model: @rsvp, url: rsvps_path, html: { data: { controller: "name-paste seat-selection" } } do |f| %>
 
@@ -65,6 +65,8 @@
 
 	<div>
 		<%= f.hidden_field :show_id, value: @show.id %>
+		<%# Only when opened from the guest's own link; see RsvpsController#update_existing_rsvp. %>
+		<%= hidden_field_tag :uniqid, @rsvp.uniqid if @verified_link %>
 		<%= f.hidden_field :referrer %>
 		<%= f.submit "Reserve Seats" %>
 	</div>
