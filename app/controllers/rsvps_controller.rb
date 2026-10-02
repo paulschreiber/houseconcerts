@@ -49,7 +49,18 @@ class RsvpsController < ApplicationController
       # See if the uniqid is for an RSVP
       else
         rsvp = RSVP.find_by(uniqid: params[:uniqid])
-        @rsvp = rsvp if rsvp
+
+        if rsvp&.show_id == @show.id
+          @rsvp = rsvp
+
+        # An RSVP token under a different show's slug (only possible by
+        # editing the URL). Treat it like a person's link -- this show's RSVP
+        # for that email, or a new one prefilled from it -- instead of moving
+        # that RSVP onto this show.
+        elsif rsvp
+          @rsvp = RSVP.find_by(email: rsvp.email, show_id: @show.id) ||
+                  @rsvp.tap { |new_rsvp| new_rsvp.assign_attributes(rsvp.slice(:first_name, :last_name, :email, :phone_number, :postcode)) }
+        end
       end
     end
 
