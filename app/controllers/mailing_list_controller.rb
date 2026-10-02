@@ -25,11 +25,13 @@ class MailingListController < ApplicationController
 
   def create
     # look for an existing subscription
-    email = params.dig(:person, :email)
+    # Read through person_params, not params.dig: malformed params (person
+    # sent as a string, or email as an array) are a 400 there, not a crash.
+    email = person_params[:email]
     @person = Person.find_by(email: email) if email.present?
 
     if @person.present?
-      redirect_to mailing_list_already_subscribed_path(first_name: params.dig(:person, :first_name))
+      redirect_to mailing_list_already_subscribed_path(first_name: person_params[:first_name])
       return
     end
 

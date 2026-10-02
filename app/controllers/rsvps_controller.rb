@@ -66,8 +66,10 @@ class RsvpsController < ApplicationController
 
   def create
     # look for an existing reservation
-    email   = params.dig(:rsvp, :email)
-    show_id = params.dig(:rsvp, :show_id).to_i
+    # Read through rsvp_params, not params.dig: malformed params (rsvp sent as
+    # a string, or email as an array) are a 400 there, not a crash.
+    email   = rsvp_params[:email]
+    show_id = rsvp_params[:show_id].to_i
 
     @rsvp = RSVP.find_by(show_id: show_id, email: email) if email.present? && show_id.positive?
 
