@@ -137,10 +137,10 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
 
     winner = RSVP.find_by(show_id: show.id, email: email)
     assert_equal 1, RSVP.where(show_id: show.id, email: email).count
-    # Updated like any other existing RSVP without its token: seats and
-    # response only, and not the private thanks page.
+    # Handled like any other existing RSVP without its token: not the private
+    # thanks page, and (asking for fewer seats than the winner's) unchanged.
     assert_redirected_to rsvp_updated_path
-    assert_equal 1, winner.seats_reserved
+    assert_equal 2, winner.seats_reserved
     assert_equal "Winner", winner.first_name
   end
 
@@ -412,15 +412,15 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
 
   test "an update without the RSVP's token changes only the response and seats, and emails the guest" do
     rsvp = rsvps(:one)
-    rsvp.update!(phone_number: "212-555-0100", postcode: "10001", confirmed: "unconfirmed")
+    rsvp.update!(phone_number: "212-555-0100", postcode: "10001", response: "no")
 
-    assert_enqueued_email_with InvitesMailer, :rsvp_updated, args: [ rsvp, { response: "yes", seats: 2 }, { response: "no", seats: 0 } ] do
+    assert_enqueued_email_with InvitesMailer, :rsvp_updated, args: [ rsvp, { response: "no", seats: 0 }, { response: "yes", seats: 3 } ] do
       post rsvps_path, params: { rsvp: { first_name: "Someone", last_name: "Else", email: rsvp.email, show_id: rsvp.show_id,
-                                         phone_number: "917-555-0199", postcode: "90210", response: "no", seats_reserved: 0 } }
+                                         phone_number: "917-555-0199", postcode: "90210", response: "yes", seats_reserved: 3 } }
     end
 
     rsvp.reload
-    assert_equal "no", rsvp.response
+    assert_equal [ "yes", 3 ], [ rsvp.response, rsvp.seats_reserved ]
     assert_equal %w[Test Rsvp 10001], [ rsvp.first_name, rsvp.last_name, rsvp.postcode ]
     assert_includes rsvp.phone_number, "0100"
 
@@ -607,5 +607,20 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
     assert_equal(1, enqueued_jobs.count { |job| job[:args].include?("rsvp_change_requested") })
   ensure
     Rails.cache = original_cache
+  end
+
+  test "without the token, unconfirmed and waitlisted 'yes' RSVPs can't be cancelled or reduced either" do
+    rsvp = rsvps(:one)
+
+    %w[unconfirmed waitlisted].each do |status|
+      rsvp.update!(confirmed: status, response: "yes", seats_reserved: 2)
+
+      post rsvps_path, params: { rsvp: { first_name: "Test", last_name: "Rsvp", email: rsvp.email, show_id: rsvp.show_id,
+                                         response: "no", seats_reserved: 0 } }
+
+      assert_equal [ "yes", 2, status ], [ rsvp.reload.response, rsvp.seats_reserved, rsvp.confirmed ]
+      follow_redirect!
+      assert_select "h1", "Check your email to change your RSVP for #{rsvp.show.name}"
+    end
   end
 end
