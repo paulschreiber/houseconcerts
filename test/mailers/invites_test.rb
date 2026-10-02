@@ -228,7 +228,7 @@ class InvitesTest < ActionMailer::TestCase
   test "rsvp_change_requested sends the guest their link and says nothing changed" do
     rsvp = rsvps(:one)
 
-    email = InvitesMailer.rsvp_change_requested(rsvp)
+    email = InvitesMailer.rsvp_change_requested(rsvp, 2)
     body = email.body.decoded
 
     assert_equal [ rsvp.email ], email.to
@@ -236,6 +236,12 @@ class InvitesTest < ActionMailer::TestCase
     assert_includes body, "this email address (#{rsvp.email})"
     assert_includes body, "nothing has changed yet: you still have 2 seats"
     assert_includes body, "/rsvps/show/#{rsvp.show.slug}/#{rsvp.uniqid}"
+  end
+
+  test "rsvp_change_requested states the seats as of the request" do
+    body = InvitesMailer.rsvp_change_requested(rsvps(:one), 4).body.decoded
+
+    assert_includes body, "you still have 4 seats"
   end
 
   private
