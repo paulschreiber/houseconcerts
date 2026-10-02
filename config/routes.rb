@@ -43,7 +43,6 @@ Rails.application.routes.draw do
     get "rsvps/show/:slug", to: "rsvps#new", as: "rsvp_for_show"
     get "rsvps/show/:slug/:uniqid", to: "rsvps#new", as: "modify_rsvp"
     get "rsvps/show/:slug/:uniqid/:response", to: "rsvps#new", as: "rsvp_response"
-    post "rsvps/show/:slug", to: "rsvps#new"
   end
 
   post "sms", to: "text_messages#receive"

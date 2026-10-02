@@ -29,7 +29,7 @@ class RsvpsController < ApplicationController
     end
 
     # pre-fill form (from link)
-    prefill_from_link(params[:uniqid]) if params[:uniqid]
+    link_source = prefill_from_link(params[:uniqid]) if params[:uniqid].present?
 
     @rsvp.referrer = request.referer
 
@@ -38,7 +38,10 @@ class RsvpsController < ApplicationController
       @rsvp.show_id = @show.id if @show.id
     end
 
-    return unless params[:response] == "no" && save_no_from_link
+    # A "no" from an emailed link saves right away, in one click. It needs the
+    # link's token: without one, ?response=no&rsvp[email]=... would save a
+    # "no" for any email, so it only prefills the form.
+    return unless params[:response] == "no" && link_source && save_no_from_link
 
     # show a "no" RSVP
     redirect_to rsvp_thanks_path(uniqid: @rsvp.uniqid)
@@ -129,7 +132,8 @@ class RsvpsController < ApplicationController
     # confirmation email). Either way, use this show's RSVP for that email if
     # there is one, or prefill a new one from their details. So an RSVP token
     # under a different show's slug (only possible by editing the URL) never
-    # moves that RSVP onto this show.
+    # moves that RSVP onto this show. Returns the person or RSVP the token
+    # belongs to, or nil.
     def prefill_from_link(uniqid)
       source = Person.find_by(uniqid: uniqid) || RSVP.find_by(uniqid: uniqid)
       return if source.nil?
@@ -142,6 +146,7 @@ class RsvpsController < ApplicationController
       else
         @rsvp.assign_attributes(source.slice(:first_name, :last_name, :email, :phone_number, :postcode))
       end
+      source
     end
 
     # Anyone who knows a guest's email can update their RSVP from the form.
