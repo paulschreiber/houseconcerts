@@ -393,4 +393,16 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
 
     assert_operator response.status, :<, 500
   end
+
+  test "updating an RSVP with a blank or non-numeric seat count is a validation error, not a crash" do
+    rsvp = rsvps(:one)
+
+    [ "", "abc" ].each do |seats|
+      post rsvps_path, params: { rsvp: { first_name: "Test", last_name: "Rsvp", email: rsvp.email, show_id: rsvp.show_id,
+                                         response: "yes", seats_reserved: seats } }
+
+      assert_response :unprocessable_content, seats.inspect
+    end
+    assert_equal 2, rsvp.reload.seats_reserved
+  end
 end
