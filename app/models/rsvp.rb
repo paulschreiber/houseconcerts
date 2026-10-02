@@ -71,8 +71,10 @@ class RSVP < ApplicationRecord
     false
   end
 
+  # to_i: a blank or non-numeric seat count casts to nil, which the
+  # numericality validation reports; comparing it would raise instead.
   def requesting_more_seats?
-    new_record? || seats_reserved > seats_reserved_was
+    new_record? || seats_reserved.to_i > seats_reserved_was.to_i
   end
 
   def confirm!
