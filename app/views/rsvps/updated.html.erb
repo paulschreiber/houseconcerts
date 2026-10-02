@@ -1,0 +1,22 @@
+<% content_for :title do %><%= page_title(@show) %><% end %>
+
+<% case @result %>
+<% when "changed" %>
+<h1>Thanks, your RSVP for <%= @show.name %> is updated</h1>
+
+<div class="pagetext">
+<p>I’ve emailed the details to <%= @email %>. To change your name, phone number or zip code, use the link in that email.</p>
+</div>
+<% when "link_sent" %>
+<h1>Check your email to change your RSVP for <%= @show.name %></h1>
+
+<div class="pagetext">
+<p>A confirmed reservation can only be cancelled or reduced from your own link. I’ve emailed it to <%= @email %>.</p>
+</div>
+<% else %>
+<h1>Thanks, your RSVP for <%= @show.name %> is up to date</h1>
+
+<div class="pagetext">
+<p>Nothing changed. To change your name, phone number or zip code, use the link in the invitation or confirmation email sent to <%= @email %>.</p>
+</div>
+<% end %>
