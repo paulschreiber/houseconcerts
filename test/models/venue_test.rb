@@ -85,4 +85,39 @@ class VenueTest < ActiveSupport::TestCase
       assert_not_includes html, "href"
     end
   end
+
+  test "formatted_contact_info links tel: phone numbers" do
+    venue = venues(:one)
+    venue.contact_info = "[Call the host](tel:+1-555-0100), or [(555) 0101](tel:(555)0101)"
+
+    assert_includes venue.formatted_contact_info, %(<a href="tel:+1-555-0100">Call the host</a>)
+    assert_includes venue.formatted_contact_info, %(<a href="tel:(555)0101">(555) 0101</a>)
+  end
+
+  test "formatted_directions keeps relative links, titles, and formatted link text" do
+    venue = venues(:one)
+    venue.directions = %([Parking](/parking "Where to park"), [below](#entrance), [*map*](https://maps.example.com))
+
+    assert_includes venue.formatted_directions, %(<a href="/parking" title="Where to park">Parking</a>)
+    assert_includes venue.formatted_directions, %(<a href="#entrance">below</a>)
+    assert_includes venue.formatted_directions, %(<a href="https://maps.example.com"><em>map</em></a>)
+  end
+
+  test "formatted_directions escapes link attributes" do
+    venue = venues(:one)
+    venue.directions = %([x](https://example.com/?a=1&b=2 "say "hi" <b>"))
+
+    assert_includes venue.formatted_directions, %(href="https://example.com/?a=1&amp;b=2")
+    assert_includes venue.formatted_directions, %(title="say &quot;hi&quot; &lt;b&gt;")
+  end
+
+  test "formatted_directions doesn't link other schemes or protocol-relative URLs" do
+    venue = venues(:one)
+
+    [ "data:text/html,<b>x</b>", "vbscript:msgbox(1)", "//evil.example/x", "tel:javascript:alert(1)", " javascript:alert(1)" ].each do |url|
+      venue.directions = "[click](#{url})"
+
+      assert_not_includes venue.formatted_directions, "<a", "#{url} should not become a link"
+    end
+  end
 end
