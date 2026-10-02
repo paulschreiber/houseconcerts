@@ -38,7 +38,7 @@ class RsvpsController < ApplicationController
       @rsvp.show_id = @show.id if @show.id
     end
 
-    return unless params[:response] == "no" && @rsvp.save
+    return unless params[:response] == "no" && save_no_from_link
 
     # show a "no" RSVP
     redirect_to rsvp_thanks_path(uniqid: @rsvp.uniqid)
@@ -110,6 +110,17 @@ class RsvpsController < ApplicationController
   end
 
   private
+
+    # A "no" from a link. Real links carry a token, which loads the guest's
+    # existing RSVP. A hand-built one (?response=no&rsvp[email]=...) for an
+    # email that already has an RSVP for this show would hit the unique
+    # index; it isn't saved, the existing RSVP isn't touched, and the form
+    # shows instead.
+    def save_no_from_link
+      @rsvp.save
+    rescue ActiveRecord::RecordNotUnique
+      false
+    end
 
     # A link's token is a person's (from an invite) or an RSVP's (from a
     # confirmation email). Either way, use this show's RSVP for that email if
