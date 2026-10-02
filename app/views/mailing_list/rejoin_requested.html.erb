@@ -1,5 +1,5 @@
-<h1>Check your email</h1>
+<h1>Confirm your rejoin request via email</h1>
 
 <div class="pagetext">
-<p>This address was unsubscribed from my mailing list. I’ve sent it an email with a link to rejoin; click it and you’ll be added back.</p>
+<p>This email address<%= " (#{flash[:rejoin_email]})" if flash[:rejoin_email] %> was unsubscribed from my mailing list. I’ve sent it an email with a link to rejoin. Follow that link to be added back.</p>
 </div>

@@ -4,7 +4,7 @@
 <% if @person.active? %>
 <p><%= @person.first_name %>, you’re already on my mailing list.</p>
 <% else %>
-<p><%= @person.first_name %>, confirm that you’d like to be added back to my mailing list.</p>
-<%= button_to "Rejoin the mailing list", mailing_list_rejoin_path(uniqid: @person.uniqid) %>
+<p><%= @person.first_name %>, confirm you’d like to be added back to my mailing list.</p>
+<%= button_to "Add me back to the mailing list", mailing_list_rejoin_path(uniqid: @person.uniqid) %>
 <% end %>
 </div>
