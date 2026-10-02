@@ -321,4 +321,17 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to root_url
   end
+
+  test "create answers malformed rsvp params without crashing" do
+    form = { "CONTENT_TYPE" => "application/x-www-form-urlencoded" }
+
+    post rsvps_path, params: "rsvp=not-a-hash", headers: form
+
+    assert_response :bad_request
+
+    # Strong params drops a non-scalar email, so it's treated as missing.
+    post rsvps_path, params: "rsvp[email][]=a@example.com&rsvp[show_id]=1", headers: form
+
+    assert_operator response.status, :<, 500
+  end
 end
