@@ -61,21 +61,24 @@ class RsvpsController < ApplicationController
 
     @rsvp = RSVP.find_by(show_id: show_id, email: email) if email.present?
 
-    # create a new reservation
-    saved = if @rsvp.nil?
-      create_rsvp
-
-    # update an existing reservation
-    else
-      @rsvp.update(rsvp_params)
-    end
-
-    if saved
+    if @rsvp.nil? && create_rsvp
       redirect_to rsvp_thanks_path(uniqid: @rsvp.uniqid)
+    elsif @rsvp.persisted?
+      # an existing RSVP, or one a concurrent request created first
+      update_existing_rsvp(show)
     else
       @show = show
       render :create, status: :unprocessable_content
     end
+  end
+
+  # Where an update without the RSVP's token lands (see update_existing_rsvp):
+  # a page with no token in its URL and none of the guest's details.
+  def updated
+    @show = Show.find_by(id: flash[:rsvp_updated_show_id])
+    @email = flash[:rsvp_updated_email]
+    @result = flash[:rsvp_update_result]
+    redirect_to root_url if @show.nil? || @email.blank?
   end
 
   def thanks
@@ -89,24 +92,24 @@ class RsvpsController < ApplicationController
 
   # Two concurrent submissions for the same show/email can both miss the
   # find_by above and race to create; the DB's unique index rejects the
-  # loser, which we recover by updating the row the winner created.
+  # loser. Then @rsvp is the row the winner created, for create to update
+  # like any other existing RSVP.
   def create_rsvp
     @rsvp = RSVP.new(rsvp_params)
     @rsvp.save
   rescue ActiveRecord::RecordNotUnique
     winner = RSVP.find_by(show_id: @rsvp.show_id, email: @rsvp.email)
 
-    # The unique index violation should mean the winning row is right there
-    # to recover by updating, but fall back to re-rendering the form with
-    # the submitted data instead of crashing if it's somehow not found (e.g.
-    # a different unique index, or the row was deleted in between).
+    # The unique index violation should mean the winning row is right there,
+    # but fall back to re-rendering the form with the submitted data instead
+    # of crashing if it's somehow not found (e.g. a different unique index,
+    # or the row was deleted in between).
     if winner
       @rsvp = winner
-      @rsvp.update(rsvp_params)
     else
       @rsvp.errors.add(:base, "couldn’t be saved. Please try again.")
-      false
     end
+    false
   end
 
   private
@@ -135,8 +138,77 @@ class RsvpsController < ApplicationController
 
       if existing
         @rsvp = existing
+        @verified_link = true
       else
         @rsvp.assign_attributes(source.slice(:first_name, :last_name, :email, :phone_number, :postcode))
       end
+    end
+
+    # Anyone who knows a guest's email can update their RSVP from the form.
+    # Only a submission carrying the RSVP's token (the form includes it when
+    # opened from the guest's own link) gets the full update and the RSVP's
+    # private thanks page. Any other submission only changes the response
+    # and seats, lands on a page without the token or the guest's details,
+    # and (if it changed anything) emails the guest, so a stranger can't read
+    # or rewrite their details, and a change they didn't make doesn't go
+    # unnoticed. It can't cancel or reduce a "yes" RSVP at all, whether it's
+    # confirmed, unconfirmed or waitlisted: on a sold-out show that couldn't
+    # be undone, so the guest is emailed their link to make that change
+    # themselves.
+    def update_existing_rsvp(show)
+      @show = show
+
+      if rsvp_token_matches?
+        @verified_link = true
+        return redirect_to rsvp_thanks_path(uniqid: @rsvp.uniqid) if @rsvp.update(rsvp_params)
+      elsif reduces_yes_rsvp?
+        InvitesMailer.rsvp_change_requested(@rsvp, @rsvp.seats_reserved).deliver_later if change_request_email_allowed?
+        redirect_to rsvp_updated_path, flash: { rsvp_updated_show_id: show.id, rsvp_updated_email: @rsvp.email, rsvp_update_result: "link_sent" }
+        return
+      else
+        previous_response = @rsvp.response
+        previous_seats = @rsvp.seats_reserved
+
+        if @rsvp.update(rsvp_params.slice(:response, :seats_reserved))
+          changed = @rsvp.saved_changes.keys.intersect?(%w[response seats_reserved])
+          if changed
+            InvitesMailer.rsvp_updated(@rsvp, { response: previous_response, seats: previous_seats },
+                                       { response: @rsvp.response, seats: @rsvp.seats_reserved }).deliver_later
+          end
+          redirect_to rsvp_updated_path, flash: { rsvp_updated_show_id: show.id, rsvp_updated_email: @rsvp.email,
+                                                  rsvp_update_result: changed ? "changed" : "unchanged" }
+          return
+        end
+
+        # Re-render with what was submitted, not the stored RSVP's details.
+        # @updating_existing keeps the form showing on a sold-out show, as it
+        # would for the stored RSVP.
+        errors = @rsvp.errors
+        @rsvp = RSVP.new(rsvp_params)
+        @rsvp.errors.merge!(errors)
+        @updating_existing = true
+      end
+
+      render :create, status: :unprocessable_content
+    end
+
+    # A real "no", or a valid smaller seat count. Anything else (blank or
+    # invalid seats, a missing response) goes on to fail validation instead.
+    def reduces_yes_rsvp?
+      return false unless @rsvp.yes?
+      return true if rsvp_params[:response] == "no"
+
+      seats = Integer(rsvp_params[:seats_reserved].to_s, exception: false)
+      rsvp_params[:response] == "yes" && seats.present? && seats < @rsvp.seats_reserved
+    end
+
+    # At most one of these emails per RSVP per hour: each says the same thing,
+    # so repeating the request can't flood the guest's inbox.
+    def change_request_email_allowed?
+      Rails.cache.write("rsvp/change_requested/#{@rsvp.id}", true, expires_in: 1.hour, unless_exist: true)
+    end
+
+    def rsvp_token_matches?
+      params[:uniqid].is_a?(String) && ActiveSupport::SecurityUtils.secure_compare(params[:uniqid], @rsvp.uniqid)
     end
 end

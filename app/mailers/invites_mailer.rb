@@ -144,4 +144,41 @@ class InvitesMailer < ApplicationMailer
     mail(to: rsvp.email_address_with_name,
          subject: subject)
   end
+
+  # Sent when the RSVP form updates an existing RSVP without the RSVP's token
+  # (see RsvpsController#update_existing_rsvp), so the guest finds out about
+  # a change they didn't make and has their link to fix it.
+  #
+  # previous and current are { response:, seats: } as of the change, not
+  # read from rsvp when this is sent, in case it has changed again since.
+  def rsvp_updated(rsvp, previous, current)
+    return unless rsvp
+
+    @rsvp = rsvp
+    @previous = previous.symbolize_keys
+    @current = current.symbolize_keys
+    @rsvp_url = modify_rsvp_url(slug: rsvp.show.slug, uniqid: rsvp.uniqid)
+
+    subject = "Your RSVP was updated: #{rsvp.show.name} house concert (#{rsvp.show.start_date_short})"
+
+    mail(to: rsvp.email_address_with_name,
+         subject: subject)
+  end
+
+  # Sent instead of applying a form submission without the RSVP's token that
+  # would cancel or reduce a "yes" RSVP (see
+  # RsvpsController#update_existing_rsvp): the guest makes that change with
+  # their own link. seats is the RSVP's seat count when that was asked for.
+  def rsvp_change_requested(rsvp, seats)
+    return unless rsvp
+
+    @rsvp = rsvp
+    @seats = seats
+    @rsvp_url = modify_rsvp_url(slug: rsvp.show.slug, uniqid: rsvp.uniqid)
+
+    subject = "Changing your RSVP: #{rsvp.show.name} house concert (#{rsvp.show.start_date_short})"
+
+    mail(to: rsvp.email_address_with_name,
+         subject: subject)
+  end
 end

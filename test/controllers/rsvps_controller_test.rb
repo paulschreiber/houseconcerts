@@ -94,7 +94,8 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_equal 3, rsvps(:one).reload.seats_reserved
-    assert_redirected_to rsvp_thanks_path(uniqid: rsvps(:one).uniqid)
+    # Without the RSVP's token, so not its private thanks page.
+    assert_redirected_to rsvp_updated_path
   end
 
   test "create recovers when a concurrent request wins the race for the same show and email" do
@@ -136,8 +137,11 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
 
     winner = RSVP.find_by(show_id: show.id, email: email)
     assert_equal 1, RSVP.where(show_id: show.id, email: email).count
-    assert_redirected_to rsvp_thanks_path(uniqid: winner.uniqid)
-    assert_equal "Loser", winner.first_name
+    # Handled like any other existing RSVP without its token: not the private
+    # thanks page, and (asking for fewer seats than the winner's) unchanged.
+    assert_redirected_to rsvp_updated_path
+    assert_equal 2, winner.seats_reserved
+    assert_equal "Winner", winner.first_name
   end
 
   test "create re-renders the form instead of crashing when the race-recovery lookup finds nothing" do
@@ -404,5 +408,219 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
       assert_response :unprocessable_content, seats.inspect
     end
     assert_equal 2, rsvp.reload.seats_reserved
+  end
+
+  test "an update without the RSVP's token changes only the response and seats, and emails the guest" do
+    rsvp = rsvps(:one)
+    rsvp.update!(phone_number: "212-555-0100", postcode: "10001", response: "no")
+
+    assert_enqueued_email_with InvitesMailer, :rsvp_updated, args: [ rsvp, { response: "no", seats: 0 }, { response: "yes", seats: 3 } ] do
+      post rsvps_path, params: { rsvp: { first_name: "Someone", last_name: "Else", email: rsvp.email, show_id: rsvp.show_id,
+                                         phone_number: "917-555-0199", postcode: "90210", response: "yes", seats_reserved: 3 } }
+    end
+
+    rsvp.reload
+    assert_equal [ "yes", 3 ], [ rsvp.response, rsvp.seats_reserved ]
+    assert_equal %w[Test Rsvp 10001], [ rsvp.first_name, rsvp.last_name, rsvp.postcode ]
+    assert_includes rsvp.phone_number, "0100"
+
+    assert_redirected_to rsvp_updated_path
+    follow_redirect!
+    assert_select "h1", "Thanks, your RSVP for #{rsvp.show.name} is updated"
+    assert_includes response.body, "I’ve emailed the details to #{rsvp.email}."
+    assert_not_includes response.body, rsvp.uniqid
+  end
+
+  test "an update with the RSVP's token is a full update and shows its thanks page" do
+    rsvp = rsvps(:one)
+
+    patch rsvps_path, params: { uniqid: rsvp.uniqid, rsvp: { first_name: "Renamed", last_name: rsvp.last_name, email: rsvp.email,
+                                                             show_id: rsvp.show_id, response: "yes", seats_reserved: 3 } }
+
+    assert(enqueued_jobs.none? { |job| job[:args].include?("rsvp_updated") }, "no change notice for the guest's own update")
+
+    assert_redirected_to rsvp_thanks_path(uniqid: rsvp.uniqid)
+    rsvp.reload
+    assert_equal "Renamed", rsvp.first_name
+    assert_equal 3, rsvp.seats_reserved
+  end
+
+  test "a wrong token is treated like no token" do
+    rsvp = rsvps(:one)
+
+    patch rsvps_path, params: { uniqid: "not-the-token", rsvp: { first_name: "Renamed", last_name: rsvp.last_name, email: rsvp.email,
+                                                                 show_id: rsvp.show_id, response: "yes", seats_reserved: 3 } }
+
+    assert_redirected_to rsvp_updated_path
+    assert_equal "Test", rsvp.reload.first_name
+  end
+
+  test "a failed update without the token doesn't show the guest's stored details or token" do
+    rsvp = rsvps(:one)
+    rsvp.update!(phone_number: "212-555-0100", postcode: "10001")
+
+    post rsvps_path, params: { rsvp: { first_name: "Someone", last_name: "Else", email: rsvp.email, show_id: rsvp.show_id,
+                                       response: "yes", seats_reserved: 99 } }
+
+    assert_response :unprocessable_content
+    assert_not_includes response.body, "10001"
+    assert_not_includes response.body, "555-0100"
+    assert_not_includes response.body, rsvp.uniqid
+    assert_select "input[name='rsvp[first_name]'][value='Someone']"
+    assert_equal 2, rsvp.reload.seats_reserved
+  end
+
+  test "the form carries the RSVP's token only when opened from the guest's link" do
+    rsvp = rsvps(:one)
+
+    get modify_rsvp_path(slug: rsvp.show.slug, uniqid: rsvp.uniqid)
+
+    assert_select "input[type=hidden][name=uniqid][value='#{rsvp.uniqid}']"
+
+    get rsvp_for_show_path(slug: rsvp.show.slug)
+
+    assert_select "input[name=uniqid]", count: 0
+  end
+
+  test "the updated page needs the details from the redirect" do
+    get rsvp_updated_path
+
+    assert_redirected_to root_url
+  end
+
+  test "an update without the token that changes nothing sends no email" do
+    rsvp = rsvps(:one)
+
+    post rsvps_path, params: { rsvp: { first_name: "Test", last_name: "Rsvp", email: rsvp.email, show_id: rsvp.show_id,
+                                       response: "yes", seats_reserved: 2 } }
+
+    assert(enqueued_jobs.none? { |job| job[:args].include?("rsvp_updated") }, "no notice when nothing changed")
+    follow_redirect!
+    assert_select "h1", "Thanks, your RSVP for #{rsvp.show.name} is up to date"
+    assert_not_includes response.body, "I’ve emailed"
+  end
+
+  test "an invite link to a guest's existing RSVP carries the RSVP's token" do
+    rsvp = rsvps(:one)
+    person = people(:one)
+    person.update!(email: rsvp.email)
+
+    get modify_rsvp_path(slug: rsvp.show.slug, uniqid: person.uniqid)
+
+    assert_select "input[type=hidden][name=uniqid][value='#{rsvp.uniqid}']"
+  end
+
+  test "a prefill link never carries the token" do
+    rsvp = rsvps(:one)
+
+    get rsvp_for_show_path(slug: rsvp.show.slug, rsvp: { email: rsvp.email, first_name: "Test" })
+
+    assert_response :success
+    assert_select "input[name=uniqid]", count: 0
+    assert_not_includes response.body, rsvp.uniqid
+  end
+
+  test "a failed update with the token keeps the token in the form" do
+    rsvp = rsvps(:one)
+
+    patch rsvps_path, params: { uniqid: rsvp.uniqid, rsvp: { first_name: "", last_name: rsvp.last_name, email: rsvp.email,
+                                                             show_id: rsvp.show_id, response: "yes", seats_reserved: 2 } }
+
+    assert_response :unprocessable_content
+    assert_select "input[type=hidden][name=uniqid][value='#{rsvp.uniqid}']"
+  end
+
+  test "a failed update without the token on a sold-out show still shows the form" do
+    show = shows(:upcoming)
+    rsvp = RSVP.create!(first_name: "Jo", last_name: "Guest", email: "jo.guest@example.com", show: show,
+                        response: "yes", seats_reserved: 1)
+    show.update!(availability: "sold_out")
+
+    post rsvps_path, params: { rsvp: { first_name: "Jo", last_name: "Guest", email: rsvp.email, show_id: rsvp.show_id,
+                                       response: "yes", seats_reserved: 4 } }
+
+    assert_response :unprocessable_content
+    assert_select "form[action='#{rsvps_path}']"
+    assert_select "input[name=uniqid]", count: 0
+  end
+
+  test "without the token, a confirmed RSVP can't be cancelled or reduced; the guest is emailed their link" do
+    rsvp = rsvps(:one) # confirmed, yes, 2 seats
+
+    [ { response: "no", seats_reserved: 0 }, { response: "yes", seats_reserved: 1 } ].each do |change|
+      assert_enqueued_email_with InvitesMailer, :rsvp_change_requested, args: [ rsvp, 2 ] do
+        post rsvps_path, params: { rsvp: { first_name: "Test", last_name: "Rsvp", email: rsvp.email, show_id: rsvp.show_id, **change } }
+      end
+
+      rsvp.reload
+      assert_equal [ "yes", 2, "confirmed" ], [ rsvp.response, rsvp.seats_reserved, rsvp.confirmed ], change.inspect
+      assert_redirected_to rsvp_updated_path
+      follow_redirect!
+      assert_select "h1", "Check your email to change your RSVP for #{rsvp.show.name}"
+      assert_includes response.body, "I’ve emailed it to #{rsvp.email}."
+    end
+  end
+
+  test "without the token, a confirmed RSVP can still add seats" do
+    rsvp = rsvps(:one)
+
+    post rsvps_path, params: { rsvp: { first_name: "Test", last_name: "Rsvp", email: rsvp.email, show_id: rsvp.show_id,
+                                       response: "yes", seats_reserved: 3 } }
+
+    assert_equal 3, rsvp.reload.seats_reserved
+    assert(enqueued_jobs.none? { |job| job[:args].include?("rsvp_change_requested") })
+  end
+
+  test "with the token, a confirmed RSVP can be cancelled" do
+    rsvp = rsvps(:one)
+
+    patch rsvps_path, params: { uniqid: rsvp.uniqid, rsvp: { first_name: "Test", last_name: "Rsvp", email: rsvp.email,
+                                                             show_id: rsvp.show_id, response: "no", seats_reserved: 0 } }
+
+    assert_redirected_to rsvp_thanks_path(uniqid: rsvp.uniqid)
+    assert_equal "no", rsvp.reload.response
+  end
+
+  test "without the token, a confirmed RSVP with no response chosen is a validation error, not a change request" do
+    rsvp = rsvps(:one)
+
+    post rsvps_path, params: { rsvp: { first_name: "Test", last_name: "Rsvp", email: rsvp.email, show_id: rsvp.show_id,
+                                       response: "", seats_reserved: 1 } }
+
+    assert_response :unprocessable_content
+    assert(enqueued_jobs.none? { |job| job[:args].include?("rsvp_change_requested") })
+    assert_equal [ "yes", 2 ], [ rsvp.reload.response, rsvp.seats_reserved ]
+  end
+
+  test "repeated change requests for a confirmed RSVP send at most one email an hour" do
+    rsvp = rsvps(:one)
+    # The test environment's null_store cache can't hold the limit.
+    original_cache = Rails.cache
+    Rails.cache = ActiveSupport::Cache::MemoryStore.new
+
+    3.times do
+      post rsvps_path, params: { rsvp: { first_name: "Test", last_name: "Rsvp", email: rsvp.email, show_id: rsvp.show_id,
+                                         response: "no", seats_reserved: 0 } }
+    end
+
+    assert_redirected_to rsvp_updated_path
+    assert_equal(1, enqueued_jobs.count { |job| job[:args].include?("rsvp_change_requested") })
+  ensure
+    Rails.cache = original_cache
+  end
+
+  test "without the token, unconfirmed and waitlisted 'yes' RSVPs can't be cancelled or reduced either" do
+    rsvp = rsvps(:one)
+
+    %w[unconfirmed waitlisted].each do |status|
+      rsvp.update!(confirmed: status, response: "yes", seats_reserved: 2)
+
+      post rsvps_path, params: { rsvp: { first_name: "Test", last_name: "Rsvp", email: rsvp.email, show_id: rsvp.show_id,
+                                         response: "no", seats_reserved: 0 } }
+
+      assert_equal [ "yes", 2, status ], [ rsvp.reload.response, rsvp.seats_reserved, rsvp.confirmed ]
+      follow_redirect!
+      assert_select "h1", "Check your email to change your RSVP for #{rsvp.show.name}"
+    end
   end
 end
