@@ -40,7 +40,9 @@ class MailingListController < ApplicationController
     # typing in their address.
     if @person.present?
       MailingListMailer.rejoin(@person).deliver_later if rejoin_email_allowed?(@person)
-      redirect_to mailing_list_rejoin_requested_path
+      # In the flash (the encrypted session cookie), not the URL, so the
+      # address stays out of logs and analytics.
+      redirect_to mailing_list_rejoin_requested_path, flash: { rejoin_email: @person.email }
       return
     end
 
