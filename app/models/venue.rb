@@ -1,10 +1,10 @@
 class Venue < ApplicationRecord
   # Links in venue markdown are limited to SAFE_LINK: http, https, mailto,
   # tel, and relative "/" and "#" links. Redcarpet's safe_links_only list
-  # can't be changed (it has ftp, not tel), so #link and #autolink replace
-  # Redcarpet's own versions, check, and escaping. As with Redcarpet's check,
-  # "/" and "#" need a letter or digit next, which keeps out "//evil.example".
-  # Returning nil leaves an unsafe link as escaped plain text.
+  # can't be changed (it has ftp, not tel), so #link replaces Redcarpet's own
+  # version, check, and escaping. As with Redcarpet's check, "/" and "#" need
+  # a letter or digit next, which keeps out "//evil.example". Returning nil
+  # leaves an unsafe link as escaped plain text.
   class MarkdownRenderer < Redcarpet::Render::HTML
     SAFE_LINK = %r{\A(?:https?://[[:alnum:]]|mailto:|tel:\+?[\d(]|[/#][[:alnum:]])}i
 
@@ -16,14 +16,9 @@ class Venue < ApplicationRecord
       %(<a href="#{ERB::Util.html_escape(link)}"#{title_attribute}>#{content}</a>)
     end
 
-    # <url> and <email>
-    def autolink(link, link_type)
-      text = link.sub(/\Amailto:/i, "")
-      href = link_type == :email ? "mailto:#{text}" : link
-      return unless href.match?(SAFE_LINK)
-
-      %(<a href="#{ERB::Util.html_escape(href)}">#{ERB::Util.html_escape(text)}</a>)
-    end
+    # <url> and <email> stay plain text. Without this, Redcarpet's own
+    # autolink would link them, ftp included.
+    def autolink(*) = nil
   end
 
   include Geography
