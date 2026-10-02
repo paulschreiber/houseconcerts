@@ -38,12 +38,25 @@ module Rack
 
     def self.admin_email(req) = form_email(req, "admin")
 
-    throttle("admin-sign-in/ip", limit: 5, period: 20.seconds) do |req|
-      req.ip if req.post? && req.path.match?(ADMIN_SIGN_IN_PATH)
+    def self.admin_sign_in?(req) = req.post? && req.path.match?(ADMIN_SIGN_IN_PATH)
+
+    # The browser's AdminTrustedDevice id for the submitted email, or nil.
+    def self.trusted_device_id(req)
+      AdminTrustedDevice.device_id(ActionDispatch::Request.new(req.env), admin_email(req))
     end
 
+    throttle("admin-sign-in/ip", limit: 5, period: 20.seconds) do |req|
+      req.ip if admin_sign_in?(req)
+    end
+
+    # Browsers the admin has signed in from before skip this one, so it can't
+    # be used to lock the admin out (see AdminTrustedDevice).
     throttle("admin-sign-in/email", limit: 10, period: 1.hour) do |req|
-      admin_email(req) if req.post? && req.path.match?(ADMIN_SIGN_IN_PATH)
+      admin_email(req) if admin_sign_in?(req) && !trusted_device_id(req)
+    end
+
+    throttle("admin-sign-in/trusted-device", limit: 10, period: 1.hour) do |req|
+      trusted_device_id(req) if admin_sign_in?(req)
     end
 
     throttle("admin-password-reset/ip", limit: 5, period: 1.hour) do |req|

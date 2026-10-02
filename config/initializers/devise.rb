@@ -273,3 +273,8 @@ Devise.setup do |config|
   config.responder.error_status = :unprocessable_entity
   config.responder.redirect_status = :see_other
 end
+
+# Remember browsers admins sign in from; see AdminTrustedDevice.
+Warden::Manager.after_authentication do |record, warden, options|
+  AdminTrustedDevice.remember(ActionDispatch::Request.new(warden.env), record) if options[:scope] == :admin
+end
