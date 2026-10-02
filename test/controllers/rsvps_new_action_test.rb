@@ -87,4 +87,54 @@ class RsvpsNewActionTest < ActionDispatch::IntegrationTest
     assert_equal "no", new_rsvp.response
     assert_redirected_to rsvp_thanks_path(uniqid: new_rsvp.uniqid)
   end
+
+  test "a 'no' link with another show's RSVP token doesn't move that RSVP" do
+    past_rsvp = RSVP.create!(first_name: "Jo", last_name: "Guest", email: "jo.guest@example.com", show: shows(:past),
+                             response: "yes", seats_reserved: 2)
+
+    assert_difference("RSVP.count", 1) do
+      get rsvp_response_path(slug: shows(:upcoming).slug, uniqid: past_rsvp.uniqid, response: "no")
+    end
+
+    past_rsvp.reload
+    assert_equal shows(:past), past_rsvp.show
+    assert_equal "yes", past_rsvp.response
+    assert_equal 2, past_rsvp.seats_reserved
+
+    new_rsvp = RSVP.find_by!(email: past_rsvp.email, show: shows(:upcoming))
+    assert_equal "no", new_rsvp.response
+    assert_redirected_to rsvp_thanks_path(uniqid: new_rsvp.uniqid)
+  end
+
+  test "another show's RSVP token prefills a new RSVP for this show" do
+    past_rsvp = RSVP.create!(first_name: "Jo", last_name: "Guest", email: "jo.guest@example.com", show: shows(:past),
+                             response: "yes", seats_reserved: 2)
+
+    assert_no_difference("RSVP.count") do
+      get modify_rsvp_path(slug: shows(:upcoming).slug, uniqid: past_rsvp.uniqid)
+    end
+
+    assert_response :success
+    assert_select "input[name='rsvp[email]'][value='jo.guest@example.com']"
+    assert_select "input[name='rsvp[first_name]'][value='Jo']"
+    # Submitting the form RSVPs for this show, not the other one.
+    assert_select "input[name='rsvp[show_id]'][value='#{shows(:upcoming).id}']"
+    assert_equal shows(:past), past_rsvp.reload.show
+  end
+
+  test "another show's RSVP token uses the guest's existing RSVP for this show" do
+    past_rsvp = RSVP.create!(first_name: "Jo", last_name: "Guest", email: "jo.guest@example.com", show: shows(:past),
+                             response: "yes", seats_reserved: 2)
+    upcoming_rsvp = RSVP.create!(first_name: "Jo", last_name: "Guest", email: "jo.guest@example.com", show: shows(:upcoming),
+                                 response: "yes", seats_reserved: 1)
+
+    assert_no_difference("RSVP.count") do
+      get rsvp_response_path(slug: shows(:upcoming).slug, uniqid: past_rsvp.uniqid, response: "no")
+    end
+
+    assert_redirected_to rsvp_thanks_path(uniqid: upcoming_rsvp.uniqid)
+    assert_equal "no", upcoming_rsvp.reload.response
+    assert_equal shows(:past), past_rsvp.reload.show
+    assert_equal "yes", past_rsvp.response
+  end
 end
