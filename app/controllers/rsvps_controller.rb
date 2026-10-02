@@ -29,40 +29,7 @@ class RsvpsController < ApplicationController
     end
 
     # pre-fill form (from link)
-    if params[:uniqid]
-      # See if the uniqid is for a person
-      person = Person.find_by(uniqid: params[:uniqid])
-
-      if person
-        # determine if an RSVP exists for this email/show combo
-        rsvp = RSVP.where(email: person.email, show_id: @show.id).first
-
-        # no match; create a new object
-        if rsvp.nil?
-          @rsvp.assign_attributes(person.rsvp_prefill_attributes)
-
-        # existing RSVP found
-        else
-          @rsvp = rsvp
-        end
-
-      # See if the uniqid is for an RSVP
-      else
-        rsvp = RSVP.find_by(uniqid: params[:uniqid])
-
-        if rsvp&.show_id == @show.id
-          @rsvp = rsvp
-
-        # An RSVP token under a different show's slug (only possible by
-        # editing the URL). Treat it like a person's link -- this show's RSVP
-        # for that email, or a new one prefilled from it -- instead of moving
-        # that RSVP onto this show.
-        elsif rsvp
-          @rsvp = RSVP.find_by(email: rsvp.email, show_id: @show.id) ||
-                  @rsvp.tap { |new_rsvp| new_rsvp.assign_attributes(rsvp.slice(:first_name, :last_name, :email, :phone_number, :postcode)) }
-        end
-      end
-    end
+    prefill_from_link(params[:uniqid]) if params[:uniqid]
 
     @rsvp.referrer = request.referer
 
@@ -141,4 +108,24 @@ class RsvpsController < ApplicationController
       false
     end
   end
+
+  private
+
+    # A link's token is a person's (from an invite) or an RSVP's (from a
+    # confirmation email). Either way, use this show's RSVP for that email if
+    # there is one, or prefill a new one from their details. So an RSVP token
+    # under a different show's slug (only possible by editing the URL) never
+    # moves that RSVP onto this show.
+    def prefill_from_link(uniqid)
+      source = Person.find_by(uniqid: uniqid) || RSVP.find_by(uniqid: uniqid)
+      return if source.nil?
+
+      existing = RSVP.find_by(email: source.email, show_id: @show.id)
+
+      if existing
+        @rsvp = existing
+      else
+        @rsvp.assign_attributes(source.slice(:first_name, :last_name, :email, :phone_number, :postcode))
+      end
+    end
 end
