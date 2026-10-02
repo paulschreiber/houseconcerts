@@ -202,6 +202,42 @@ class InvitesTest < ActionMailer::TestCase
     assert_includes url, CGI.escape(rsvp.show.name)
   end
 
+  test "rsvp_updated tells the guest what changed and links to their RSVP" do
+    rsvp = rsvps(:one)
+
+    email = InvitesMailer.rsvp_updated(rsvp, { response: "yes", seats: 2 }, { response: "no", seats: 0 })
+    body = email.body.decoded
+
+    assert_equal [ rsvp.email ], email.to
+    assert_includes email.subject, "Your RSVP was updated"
+    assert_includes body, "this email address (#{rsvp.email})"
+    assert_includes body, "Before: Attending, 2 seats"
+    assert_includes body, "Now: Not attending"
+    assert_includes body, "/rsvps/show/#{rsvp.show.slug}/#{rsvp.uniqid}"
+  end
+
+  test "rsvp_updated reports the change it was sent for, even if the RSVP changed again since" do
+    rsvp = rsvps(:one) # now yes, 2 seats
+
+    body = InvitesMailer.rsvp_updated(rsvp, { response: "yes", seats: 3 }, { response: "no", seats: 0 }).body.decoded
+
+    assert_includes body, "Before: Attending, 3 seats"
+    assert_includes body, "Now: Not attending"
+  end
+
+  test "rsvp_change_requested sends the guest their link and says nothing changed" do
+    rsvp = rsvps(:one)
+
+    email = InvitesMailer.rsvp_change_requested(rsvp)
+    body = email.body.decoded
+
+    assert_equal [ rsvp.email ], email.to
+    assert_includes email.subject, "Changing your RSVP"
+    assert_includes body, "this email address (#{rsvp.email})"
+    assert_includes body, "nothing has changed yet: you still have 2 seats"
+    assert_includes body, "/rsvps/show/#{rsvp.show.slug}/#{rsvp.uniqid}"
+  end
+
   private
 
     def tracking_pixel_url(tag:, uniqid:, kind:)
