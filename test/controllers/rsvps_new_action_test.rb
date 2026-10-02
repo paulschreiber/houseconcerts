@@ -150,4 +150,41 @@ class RsvpsNewActionTest < ActionDispatch::IntegrationTest
     assert_not_includes response.body, rsvp.uniqid
     assert_equal [ "yes", 2, "Test" ], [ rsvp.reload.response, rsvp.seats_reserved, rsvp.first_name ]
   end
+
+  test "a 'no' from the query string without a token only prefills the form" do
+    show = shows(:upcoming)
+
+    assert_no_difference("RSVP.count") do
+      get rsvp_for_show_path(slug: show.slug, response: "no",
+                             rsvp: { email: "someone.else@example.com", first_name: "Someone", last_name: "Else" })
+    end
+
+    assert_response :success
+    assert_select "input[name='rsvp[email]'][value='someone.else@example.com']"
+    assert_select "input[name='rsvp[response]'][value=no][checked]"
+  end
+
+  test "a 'no' link with an unknown token saves nothing" do
+    assert_no_difference("RSVP.count") do
+      get rsvp_response_path(slug: shows(:upcoming).slug, uniqid: "not-a-real-token", response: "no",
+                             rsvp: { email: "someone.else@example.com", first_name: "Someone", last_name: "Else" })
+    end
+
+    assert_response :success
+  end
+
+  test "a 'no' link with the RSVP's own token still cancels it in one click" do
+    rsvp = rsvps(:one)
+
+    get rsvp_response_path(slug: rsvp.show.slug, uniqid: rsvp.uniqid, response: "no")
+
+    assert_redirected_to rsvp_thanks_path(uniqid: rsvp.uniqid)
+    assert_equal "no", rsvp.reload.response
+  end
+
+  test "the RSVP page doesn't accept a POST" do
+    post rsvp_for_show_path(slug: shows(:upcoming).slug), params: { response: "no", rsvp: { email: "someone.else@example.com" } }
+
+    assert_response :not_found
+  end
 end
