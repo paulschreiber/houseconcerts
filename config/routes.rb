@@ -46,6 +46,7 @@ Rails.application.routes.draw do
   end
 
   post "sms", to: "text_messages#receive"
+  post "ses/events", to: "ses_events#create", format: false
 
   get "open/:tag/:uniqid", to: "opens#index", as: "open_tracking"
 
