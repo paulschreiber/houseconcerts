@@ -84,6 +84,11 @@ Rails.application.configure do
   # Prevent health checks from clogging up the logs.
   config.silence_healthcheck_path = "/up"
 
+  # Don't log template, partial and layout renders ("Rendered layout
+  # layouts/mailer.html.erb ..."), for web requests and emails alike. Each
+  # request's "Completed" line still includes its total view time.
+  config.action_view.logger = nil
+
   # Don't log any deprecations.
   config.active_support.report_deprecations = false
 
