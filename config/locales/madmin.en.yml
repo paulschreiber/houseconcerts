@@ -2,3 +2,6 @@ en:
   madmin:
     layout:
       admin_suffix: ""
+    confirmations:
+      # %{record} is filled in by Madmin::ApplicationController#translate.
+      delete: "Are you sure you want to delete the %{record}?"

@@ -282,5 +282,27 @@ module Madmin
       assert_redirected_to madmin_people_path
       assert_match(/Can’t record a “no” RSVP/, flash[:alert])
     end
+
+    test "the delete confirmation names the person" do
+      get madmin_person_path(@person)
+
+      assert_select "form[action='#{madmin_person_path(@person)}'] button[data-turbo-confirm=?]",
+                    "Are you sure you want to delete the person #{@person.full_name}?"
+    end
+
+    test "the edit page's delete confirmation names the person too" do
+      get edit_madmin_person_path(@person)
+
+      assert_select "form[action='#{madmin_person_path(@person)}'] button[data-turbo-confirm=?]",
+                    "Are you sure you want to delete the person #{@person.full_name}?"
+    end
+
+    # Other t calls keep their options (here count:), which the override passes
+    # through untouched.
+    test "other Madmin translations keep their options" do
+      patch madmin_person_path(@person), params: { person: { first_name: "" } }
+
+      assert_select ".alert-danger", text: /There were \d+ errors with your submission/
+    end
   end
 end

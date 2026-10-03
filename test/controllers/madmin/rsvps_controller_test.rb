@@ -57,6 +57,13 @@ module Madmin
       assert_response :success
     end
 
+    test "the delete confirmation names the RSVP's guest" do
+      get madmin_rsvp_path(@rsvp)
+
+      assert_select "form[action='#{madmin_rsvp_path(@rsvp)}'] button[data-turbo-confirm=?]",
+                    "Are you sure you want to delete the RSVP for #{@rsvp.full_name}?"
+    end
+
     test "create creates an rsvp and redirects to its show page" do
       assert_difference "RSVP.count", 1 do
         post madmin_rsvps_path, params: { rsvp: {
