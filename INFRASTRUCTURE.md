@@ -230,13 +230,34 @@ don't touch them. Cloudflare changes its ranges occasionally: compare them with
 the date. A missing range doesn't open a hole; those visitors just appear as
 Cloudflare's address.
 
-The access log uses `%a` (the address `mod_remoteip` worked out) rather than
-`%h` (the connecting address, i.e. Cloudflare) in its `LogFormat`, in
-`/etc/apache2/apache2.conf`:
+#### Access log
+
+The site's `CustomLog` uses Apache's `vhost_combined` format, redefined in
+`/etc/apache2/apache2.conf` to log the visitor's address:
 
 ```apache
 LogFormat "%v:%p %a %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\"" vhost_combined
 ```
+
+| Field              | Meaning                                                                           |
+| ------------------ | --------------------------------------------------------------------------------- |
+| `%v:%p`            | the virtual host's name and port, e.g. `houseconcerts.example:443`                |
+| `%a`               | the visitor's IP address, as worked out by `mod_remoteip` from `CF-Connecting-IP` |
+| `%l`               | the remote logname (identd); always `-`                                           |
+| `%u`               | the authenticated user (HTTP auth); usually `-`                                   |
+| `%t`               | the time the request was received                                                 |
+| `"%r"`             | the request line, e.g. `"GET /shows HTTP/2.0"`                                    |
+| `%>s`              | the final response status                                                         |
+| `%O`               | bytes sent, including headers                                                     |
+| `"%{Referer}i"`    | the `Referer` request header                                                      |
+| `"%{User-Agent}i"` | the `User-Agent` request header                                                   |
+
+`%a` is used rather than `%h`, the connecting address, which behind Cloudflare
+is always one of Cloudflare's. An earlier version also logged the raw
+`"%{Cf-Connecting-Ip}i"` header as an extra column. That column is gone:
+anyone connecting to the server directly could put anything in that header,
+whereas `%a` only trusts it from Cloudflare. Anything that parses these logs
+(fail2ban filters, log analysers) should expect one field fewer than before.
 
 After changing any of these: `sudo apachectl configtest && sudo systemctl reload apache2`.
 To check: `sudo apachectl -M | grep remoteip` should print `remoteip_module`, and
