@@ -219,12 +219,12 @@ class RackAttackTest < ActionDispatch::IntegrationTest
   end
 
   test "throttles SES event posts per ip, with or without a trailing slash" do
-    150.times { post "/ses/events" }
-    150.times { post "/ses/events/" }
+    150.times { post "/ses" }
+    150.times { post "/ses/" }
 
     assert_not_equal 429, response.status
 
-    post "/ses/events/"
+    post "/ses/"
 
     assert_response :too_many_requests
   end
