@@ -3,6 +3,9 @@
 What houseconcerts relies on outside this repo, and how it's configured. All
 AWS resources are in **us-east-1 (N. Virginia)**.
 
+Examples use the placeholder domain `houseconcerts.example`; substitute your
+own.
+
 ```
 visitor ──▶ Cloudflare (proxy, DNS, WAF) ──▶ Apache + Passenger ──▶ Rails
                                                                     │
@@ -19,21 +22,21 @@ Rails ──SMTP──▶ Amazon SES ──▶ recipients                       
 The app sends all email through SES's SMTP interface
 (`config/environments/production.rb`).
 
-| Setting                  | Value                                                                                                     |
-| ------------------------ | --------------------------------------------------------------------------------------------------------- |
-| Verified identity        | the domain `houseconcerts.nyc`                                                                            |
-| DKIM                     | Easy DKIM for the domain: three CNAME records in Cloudflare DNS                                           |
-| Custom MAIL FROM domain  | `mail.houseconcerts.nyc` (an MX record and an SPF TXT record in Cloudflare DNS)                          |
-| DMARC                    | `p=reject` on `houseconcerts.nyc`                                                                         |
-| SMTP credentials         | `credentials.amazon.username`, `.password` and `.server` (the SMTP endpoint), port 587                    |
-| Default configuration set | `houseconcerts` (see below)                                                                              |
+| Setting                   | Value                                                                                  |
+| ------------------------- | -------------------------------------------------------------------------------------- |
+| Verified identity         | the domain `houseconcerts.example`                                                     |
+| DKIM                      | Easy DKIM for the domain: three CNAME records in Cloudflare DNS                        |
+| Custom MAIL FROM domain   | `mail.houseconcerts.example` (an MX record and an SPF TXT record in Cloudflare DNS)    |
+| DMARC                     | `p=reject` on `houseconcerts.example`                                                  |
+| SMTP credentials          | `credentials.amazon.username`, `.password` and `.server` (the SMTP endpoint), port 587 |
+| Default configuration set | `houseconcerts` (see below)                                                            |
 
 Invite emails carry `List-Unsubscribe` and `List-Unsubscribe-Post` headers
 (one-click unsubscribe, RFC 8058). SES's Easy DKIM signature covers both, which
 Gmail and Yahoo require before showing their own Unsubscribe button. To check,
 send yourself an invite, choose **Show original** in Gmail, and look for
 `List-Unsubscribe` and `List-Unsubscribe-Post` in the `h=` list of the
-`DKIM-Signature` for `houseconcerts.nyc`.
+`DKIM-Signature` for `houseconcerts.example`.
 
 ## Amazon SES: events, bounces and complaints
 
@@ -44,17 +47,17 @@ mailing list automatically (`SesEventsController`, `SesEvent`):
 - a **permanent bounce** marks the person `bouncing`, so they're no longer invited
 - a **complaint** (marked as spam) marks them `removed`, like an unsubscribe
 
-| Resource                    | Name                               | Settings                                                                                                                     |
-| --------------------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| SES configuration set       | `houseconcerts`                    | default for the `houseconcerts.nyc` identity                                                                                 |
-| SES event destination       | `eventbridge`                      | in `houseconcerts`; Amazon EventBridge, default bus; sends, deliveries, hard bounces, complaints, rejects                     |
-| EventBridge rule            | `ses-all-events`                   | default bus; pattern `{"source": ["aws.ses"]}`; target the log group below                                                   |
-| CloudWatch log group        | `/aws/events/ses`                  | 90-day retention (it contains recipients' addresses)                                                                         |
-| EventBridge connection      | `houseconcerts`                    | public API, custom configuration, API key `X-SES-Events-Token` = the app's `credentials.amazon.ses_events_token`             |
-| EventBridge API destination | `houseconcerts-ses-events`         | `POST https://houseconcerts.nyc/ses`, 5 invocations/second, connection `houseconcerts`                                       |
-| EventBridge rule            | `ses-bounces-complaints-to-app`    | default bus; pattern below; target the API destination, role below, default retries, dead-letter queue below                 |
-| IAM role                    | `eventbridge-houseconcerts-ses-events` | trusted by `events.amazonaws.com`; allows `events:InvokeApiDestination` on the API destination                           |
-| SQS queue                   | `ses-events-dlq`                   | standard queue; events the app still refuses after retries end up here                                                      |
+| Resource                    | Name                                   | Settings                                                                                                         |
+| --------------------------- | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| SES configuration set       | `houseconcerts`                        | default for the `houseconcerts.example` identity                                                                 |
+| SES event destination       | `eventbridge`                          | in `houseconcerts`; Amazon EventBridge, default bus; sends, deliveries, hard bounces, complaints, rejects        |
+| EventBridge rule            | `ses-all-events`                       | default bus; pattern `{"source": ["aws.ses"]}`; target the log group below                                       |
+| CloudWatch log group        | `/aws/events/ses`                      | 90-day retention (it contains recipients' addresses)                                                             |
+| EventBridge connection      | `houseconcerts`                        | public API, custom configuration, API key `X-SES-Events-Token` = the app's `credentials.amazon.ses_events_token` |
+| EventBridge API destination | `houseconcerts-ses-events`             | `POST https://houseconcerts.example/ses`, 5 invocations/second, connection `houseconcerts`                       |
+| EventBridge rule            | `ses-bounces-complaints-to-app`        | default bus; pattern below; target the API destination, role below, default retries, dead-letter queue below     |
+| IAM role                    | `eventbridge-houseconcerts-ses-events` | trusted by `events.amazonaws.com`; allows `events:InvokeApiDestination` on the API destination                   |
+| SQS queue                   | `ses-events-dlq`                       | standard queue; events the app still refuses after retries end up here                                           |
 
 Pattern for `ses-bounces-complaints-to-app` (the app ignores transient bounces
 itself):
@@ -86,7 +89,7 @@ With SES's mailbox simulator:
 
 1. In Madmin, create people with the emails `bounce@simulator.amazonses.com`
    and `complaint@simulator.amazonses.com`.
-2. **SES → Identities → `houseconcerts.nyc` → Send test email**, with the
+2. **SES → Identities → `houseconcerts.example` → Send test email**, with the
    **Bounce** scenario, then the **Complaint** scenario.
 3. Within a minute or two, the first person should be **bouncing** and the
    second **removed**, and `production.log` should show `POST "/ses"` …
@@ -114,7 +117,7 @@ In the console's **Search log group**, put the ID in double quotes.
 ### Recreating it from scratch
 
 The console steps above work, but the CLI is quicker and less error-prone. From
-AWS CloudShell (assumes the `houseconcerts.nyc` identity already exists, and
+AWS CloudShell (assumes the `houseconcerts.example` identity already exists, and
 `SECRET` is the app's `ses_events_token`):
 
 ```bash
@@ -131,7 +134,7 @@ aws sesv2 create-configuration-set-event-destination --region $R --configuration
     \"EventBridgeDestination\": { \"EventBusArn\": \"arn:aws:events:$R:$ACCOUNT:event-bus/default\" }
   }"
 aws sesv2 put-email-identity-configuration-set-attributes --region $R \
-  --email-identity houseconcerts.nyc --configuration-set-name houseconcerts
+  --email-identity houseconcerts.example --configuration-set-name houseconcerts
 
 # Log every SES event
 aws logs create-log-group --region $R --log-group-name /aws/events/ses
@@ -152,7 +155,7 @@ CONN_ARN=$(aws events create-connection --region $R --name houseconcerts --autho
   --auth-parameters "{\"ApiKeyAuthParameters\":{\"ApiKeyName\":\"X-SES-Events-Token\",\"ApiKeyValue\":\"$SECRET\"}}" \
   --query ConnectionArn --output text)
 DEST_ARN=$(aws events create-api-destination --region $R --name houseconcerts-ses-events \
-  --connection-arn "$CONN_ARN" --invocation-endpoint https://houseconcerts.nyc/ses \
+  --connection-arn "$CONN_ARN" --invocation-endpoint https://houseconcerts.example/ses \
   --http-method POST --invocation-rate-limit-per-second 5 --query ApiDestinationArn --output text)
 Q=$(aws sqs create-queue --region $R --queue-name ses-events-dlq \
   --attributes MessageRetentionPeriod=1209600 --query QueueUrl --output text)
@@ -180,17 +183,65 @@ handles them.
 
 ## Cloudflare
 
-`houseconcerts.nyc` is proxied through Cloudflare, which also hosts its DNS,
+`houseconcerts.example` is proxied through Cloudflare, which also hosts its DNS,
 including the SES records above.
 
-### Real visitor IPs
+### Real visitor IPs (Apache)
 
-Apache only sees Cloudflare's addresses unless it trusts Cloudflare's
-`CF-Connecting-IP` header. The server has `mod_remoteip` enabled with
-`RemoteIPHeader CF-Connecting-IP` and a `RemoteIPTrustedProxy` line for each of
-[Cloudflare's IP ranges](https://www.cloudflare.com/ips/), so Rails, Rack::Attack's
-per-IP throttles and the access log (`%a` in its `LogFormat`) see the visitor's
-address. Re-check the ranges against Cloudflare's list now and then.
+Behind Cloudflare, every request reaches Apache from a Cloudflare address.
+`mod_remoteip` replaces it with the visitor's address from Cloudflare's
+`CF-Connecting-IP` header, so Rails (`request.remote_ip`), Rack::Attack's
+per-IP throttles and the access log all see the real visitor. It only trusts
+that header from Cloudflare's own address ranges, so someone connecting to the
+server directly can't fake their IP with it.
+
+Two files, on Debian/Ubuntu:
+
+`/etc/apache2/mods-available/remoteip.conf`, which comes with the module
+(enabled with `sudo a2enmod remoteip`):
+
+```apache
+<IfModule remoteip_module>
+    RemoteIPHeader CF-Connecting-IP
+    RemoteIPTrustedProxy 127.0.0.1 ::1
+</IfModule>
+```
+
+`/etc/apache2/conf-available/cloudflare-remoteip.conf`, added for Cloudflare
+(enabled with `sudo a2enconf cloudflare-remoteip`):
+
+```apache
+<IfModule remoteip_module>
+    # Cloudflare's IP ranges (https://www.cloudflare.com/ips/), checked 2026-10-02
+    RemoteIPHeader CF-Connecting-IP
+    RemoteIPTrustedProxy 173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22
+    RemoteIPTrustedProxy 141.101.64.0/18 108.162.192.0/18 190.93.240.0/20 188.114.96.0/20
+    RemoteIPTrustedProxy 197.234.240.0/22 198.41.128.0/17 162.158.0.0/15 104.16.0.0/13
+    RemoteIPTrustedProxy 104.24.0.0/14 172.64.0.0/13 131.0.72.0/22
+    RemoteIPTrustedProxy 2400:cb00::/32 2606:4700::/32 2803:f800::/32 2405:b500::/32
+    RemoteIPTrustedProxy 2405:8100::/32 2a06:98c0::/29 2c0f:f248::/32
+</IfModule>
+```
+
+`RemoteIPTrustedProxy` lines add up, so both files' addresses are trusted. The
+Cloudflare ranges are in their own file, not the module's, so package upgrades
+don't touch them. Cloudflare changes its ranges occasionally: compare them with
+[cloudflare.com/ips](https://www.cloudflare.com/ips/) now and then, and update
+the date. A missing range doesn't open a hole; those visitors just appear as
+Cloudflare's address.
+
+The access log uses `%a` (the address `mod_remoteip` worked out) rather than
+`%h` (the connecting address, i.e. Cloudflare) in its `LogFormat`, in
+`/etc/apache2/apache2.conf`:
+
+```apache
+LogFormat "%v:%p %a %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\"" vhost_combined
+```
+
+After changing any of these: `sudo apachectl configtest && sudo systemctl reload apache2`.
+To check: `sudo apachectl -M | grep remoteip` should print `remoteip_module`, and
+after visiting the site, the newest `Started GET … for <IP>` line in
+`production.log` should show your own address, not one of Cloudflare's.
 
 ### Security rules
 
@@ -206,12 +257,12 @@ their RSVP without them clicking anything. A Managed Challenge stops those
 automated visits; people opening the links in a browser almost always pass it
 invisibly.
 
-| Field      | Value                                       |
-| ---------- | ------------------------------------------- |
-| Rule name  | Unsubscribe or RSVP no                      |
-| Expression | below                                       |
-| Action     | **Managed Challenge**                       |
-| Order      | first (it stops evaluating later rules)     |
+| Field      | Value                                   |
+| ---------- | --------------------------------------- |
+| Rule name  | Unsubscribe or RSVP no                  |
+| Expression | below                                   |
+| Action     | **Managed Challenge**                   |
+| Order      | first (it stops evaluating later rules) |
 
 ```
 (http.request.method eq "GET" and (starts_with(http.request.uri.path, "/unsubscribe/") or http.request.uri.path wildcard r"/rsvps/show/*/no"))
