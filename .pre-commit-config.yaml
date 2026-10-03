@@ -1,6 +1,8 @@
 # `pre-commit install` installs both hook types, so conventional-pre-commit
 # (a commit-msg hook) checks commit messages without a separate -t commit-msg.
 default_install_hook_types: [pre-commit, commit-msg]
+# Hooks without their own stages run only at pre-commit, not again at commit-msg.
+default_stages: [pre-commit]
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
