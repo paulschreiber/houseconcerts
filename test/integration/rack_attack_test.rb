@@ -217,4 +217,15 @@ class RackAttackTest < ActionDispatch::IntegrationTest
 
     assert_nil Rack::Attack.form_email(req, "rsvp")
   end
+
+  test "throttles SES event posts per ip, with or without a trailing slash" do
+    150.times { post "/ses/events" }
+    150.times { post "/ses/events/" }
+
+    assert_not_equal 429, response.status
+
+    post "/ses/events/"
+
+    assert_response :too_many_requests
+  end
 end
