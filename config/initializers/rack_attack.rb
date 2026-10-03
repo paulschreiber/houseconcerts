@@ -67,6 +67,13 @@ module Rack
       admin_email(req) if req.post? && req.path.match?(ADMIN_PASSWORD_PATH)
     end
 
+    # SES events from EventBridge (SesEventsController). Requests also need the
+    # shared secret; this just caps what a flood of bad ones can cost.
+    SES_EVENTS_PATH = exact_path("ses/events")
+    throttle("ses-events/ip", limit: 300, period: 1.minute) do |req|
+      req.ip if req.post? && req.path.match?(SES_EVENTS_PATH)
+    end
+
     # Public forms. Each RSVP save emails the admin, and each signup can later
     # get invites, so limit bulk submissions per IP. RSVPs are also limited per
     # email, so one guest's RSVP can't be submitted over and over. The per-IP

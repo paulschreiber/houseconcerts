@@ -18,7 +18,8 @@ end
 # the logs. (Names and phone numbers are fine to log.)
 Rails.application.config.filter_parameters += [
   :uniqid,
-  /\ABody\z/ # Twilio's SMS text (TextMessagesController); /i would also match e.g. "body_html"
+  /\ABody\z/, # Twilio's SMS text (TextMessagesController); /i would also match e.g. "body_html"
+  /\Adetail\z/ # an SES event's details (SesEventsController), full of email addresses
 ]
 
 # The URL paths that carry a uniqid, as they appear in "Started GET ..." lines
