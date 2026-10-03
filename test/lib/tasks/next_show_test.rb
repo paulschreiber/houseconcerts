@@ -80,11 +80,21 @@ class NextShowRakeTest < ActiveSupport::TestCase
     assert_includes out, "Sent."
   end
 
+  test "invite_one sends the invite immediately instead of enqueueing it" do
+    person = Person.create!(first_name: "Direct", last_name: "Invite", email: "direct-invite-now@example.com", status: "active")
+
+    assert_no_enqueued_emails do
+      assert_difference -> { ActionMailer::Base.deliveries.size }, 1 do
+        capture_io { Rake::Task["next_show:invite_one"].invoke(person.email) }
+      end
+    end
+  end
+
   test "invite_one reports a failed send instead of printing nothing" do
     person = Person.create!(first_name: "Direct", last_name: "Invite", email: "direct-invite-fail@example.com", status: "active")
 
     original_invite = InvitesMailer.method(:invite)
-    InvitesMailer.define_singleton_method(:invite) { |*_args| raise "simulated enqueue failure" }
+    InvitesMailer.define_singleton_method(:invite) { |*_args| raise "simulated send failure" }
 
     out = nil
     begin

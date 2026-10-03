@@ -11,6 +11,20 @@ class InvitePersonTest < ActiveSupport::TestCase
     end
   end
 
+  test "enqueues the invite by default" do
+    assert_enqueued_emails 1 do
+      InvitePerson.call(people(:one), shows(:upcoming))
+    end
+  end
+
+  test "sends the invite immediately with deliver_now" do
+    assert_no_enqueued_emails do
+      assert_difference -> { ActionMailer::Base.deliveries.size }, 1 do
+        InvitePerson.call(people(:one), shows(:upcoming), deliver_now: true)
+      end
+    end
+  end
+
   test "does not deliver an email for an inactive person" do
     person = people(:one)
     person.update!(status: "removed")
