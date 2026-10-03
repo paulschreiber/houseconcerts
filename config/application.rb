@@ -28,6 +28,10 @@ module Houseconcerts
     config.time_zone = "Eastern Time (US & Canada)"
     config.i18n.load_path += Rails.root.glob("config/locales/**/*.{rb,yml}")
 
+    # Lets a model's locale file set its own full_messages format (see
+    # config/locales/models/*/en.yml).
+    config.active_model.i18n_customize_full_message = true
+
     # Gate Mission Control - Jobs behind the existing admin login instead of
     # its default HTTP Basic auth.
     config.mission_control.jobs.base_controller_class = "AdminController"
