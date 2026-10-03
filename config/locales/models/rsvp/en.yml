@@ -3,6 +3,11 @@ en:
     errors:
       models:
         rsvp:
+          # These messages are full sentences, shown on their own under each
+          # field, so full_messages (e.g. in Madmin) uses them as written rather
+          # than putting the attribute name in front. Needs
+          # config.active_model.i18n_customize_full_message.
+          format: "%{message}"
           attributes:
             first_name:
               blank: "Enter your first name"
