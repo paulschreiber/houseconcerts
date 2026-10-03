@@ -67,7 +67,7 @@ namespace :next_show do
     end
 
     puts "Emailing #{person.email_address_with_name}..."
-    if InvitePerson.call(person, show)
+    if InvitePerson.call(person, show, deliver_now: true)
       puts "Sent."
     else
       puts "Failed to send."
