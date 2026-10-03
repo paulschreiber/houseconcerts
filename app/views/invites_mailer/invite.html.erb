@@ -1,7 +1,9 @@
 <div>
 <p>Hi <%= @person.first_name %>,</p>
 
-<p>Jen’s playing in a couple days, and there are a handful of spots left. Let’s fill those seats!</p>
+<p>Happy October! This week, the Liberty beat the top-seeded Lynx, the PWHL announced its 2026–27 schedule and lots of folks learned about the difference between a Hawk and a Hawkeye.</p>
+
+<p>Next up: Damon Castillo! Damon last played my series in 2008, back when it was in San Francisco. I’m thrilled to have him back, and to introduce him to Brooklyn.</p>
 
 <ul class="summary">
 <li><%= @show.name %></li>
@@ -16,13 +18,15 @@
 </strong></p>
 
 <h2>A bit about <%= @show.name %></h2>
-<p>Jen Lowe is a songwriter with a gift for turning real life into a good story.</p>
+<p>Damon Castillo is a songwriter, producer and mixer whose eclectic, jazz-informed rock, funk and soul paint a sun-bleached portrait of life and love in the Golden State.</p>
 
-<p>Now based in Tavares, Florida, Jen writes songs that sit at the crossroads of country, rock and honest Southern storytelling — songs about love and loss, resilience and reinvention, and moving forward.</p>
+<p>Born in Santa Maria, California, Damon headed east after high school to study jazz at — where else — Berklee. He then returned west and settled in San Luis Obispo, where he leads the Damon Castillo Band. He also runs a studio, producing and mixing records for other artists. His music has turned up in campaigns for Target, Starbucks, Miller Lite and MTV, so there’s a chance you’ve heard Damon without knowing it.</p>
 
-<p>Jen has shared the stage with Jason Mraz, Zac Brown, Kevin Griffin of Better Than Ezra, Ed Kowalczyk of Live, Emerson Hart of Tonic and Ed Roland of Collective Soul.</p>
+<p>Damon’s albums, including <cite>Mess of Me</cite>, <cite>Laurel Lane</cite>, <cite>Live at the Mission</cite> and <cite>Revolving Door</cite>, feature Grammy winners Ross Hogarth and F. Reid Shippen. He has a publishing deal with Warner Chappell and has shared the stage with Chicago, John Scofield, The Temptations, Train and Chris Isaak.</p>
 
-<p><%= link_to "Celebrate the end of the summer with #{@show.name}", @rsvp_url_yes %>.</p>
+<p>Get ready for the show with his recent singles “Say It Now,” “Blue Sky” and “My Kind of Jam.”</p>
+
+<p><%= link_to "Spend #{@show.day_of_week} evening with #{@show.name}", @rsvp_url_yes %>.</p>
 
 <p><br/>Paul</p>
 
