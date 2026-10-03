@@ -1,10 +1,10 @@
 # Infrastructure
 
-What houseconcerts relies on outside this repo, and how it's configured. All
-AWS resources are in **us-east-1 (N. Virginia)**.
+What houseconcerts relies on outside this repo, and how it's configured.
 
 Examples use the placeholder domain `houseconcerts.example`; substitute your
-own.
+own. All the AWS resources below must be in the same region as your SES
+identity; the scripts read it from `R`.
 
 ```
 visitor ──▶ Cloudflare (proxy, DNS, WAF) ──▶ Apache + Passenger ──▶ Rails
@@ -105,8 +105,9 @@ has the original message's ID in its `In-Reply-To` header
 in AWS CloudShell with the part before the `@`:
 
 ```bash
+R=…  # your AWS region, e.g. us-east-1
 ID=010001a10382efb8-18c49095-5b62-4e7d-b58a-95324e4f081e-000000
-aws logs filter-log-events --region us-east-1 --log-group-name /aws/events/ses \
+aws logs filter-log-events --region $R --log-group-name /aws/events/ses \
   --start-time $(( ($(date +%s) - 30*86400) * 1000 )) --filter-pattern "\"$ID\"" \
   --query 'events[].message' --output text \
   | jq -r '[.time, ."detail-type", (.detail.mail.destination | join(","))] | @tsv'
@@ -121,7 +122,7 @@ AWS CloudShell (assumes the `houseconcerts.example` identity already exists, and
 `SECRET` is the app's `ses_events_token`):
 
 ```bash
-R=us-east-1
+R=…  # your AWS region, e.g. us-east-1
 ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
 SECRET=…
 
