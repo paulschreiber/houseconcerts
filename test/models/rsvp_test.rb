@@ -510,4 +510,22 @@ class RsvpTest < ActiveSupport::TestCase
   ensure
     Current.attended_rsvp_ids_by_email = nil
   end
+
+  # The messages are full sentences shown under each field, so full_messages
+  # (e.g. in Madmin) uses them as written, without the attribute name in front.
+  test "full_messages use the messages as written" do
+    record = RSVP.new(first_name: "JANE", last_name: "doe", email: "not-an-email", show: shows(:upcoming))
+    record.valid?
+
+    assert_includes record.errors.full_messages, "Your first name cannot be in all caps"
+    assert_includes record.errors.full_messages, "Your last name cannot be in all lowercase"
+    assert_includes record.errors.full_messages, "Enter your email address"
+  end
+
+  test "a too-short first name asks for the first name" do
+    record = RSVP.new(first_name: "J", last_name: "doe", email: "not-an-email", show: shows(:upcoming))
+    record.valid?
+
+    assert_includes record.errors.full_messages, "Enter your first name"
+  end
 end

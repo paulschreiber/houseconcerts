@@ -167,4 +167,22 @@ class PersonTest < ActiveSupport::TestCase
   ensure
     Current.next_show_rsvpd_emails = nil
   end
+
+  # The messages are full sentences shown under each field, so full_messages
+  # (e.g. in Madmin) uses them as written, without the attribute name in front.
+  test "full_messages use the messages as written" do
+    record = Person.new(first_name: "JANE", last_name: "doe", email: "not-an-email")
+    record.valid?
+
+    assert_includes record.errors.full_messages, "Your first name cannot be in all caps"
+    assert_includes record.errors.full_messages, "Your last name cannot be in all lowercase"
+    assert_includes record.errors.full_messages, "Enter your email address"
+  end
+
+  test "a too-short first name asks for the first name" do
+    record = Person.new(first_name: "J", last_name: "doe", email: "not-an-email")
+    record.valid?
+
+    assert_includes record.errors.full_messages, "Enter your first name"
+  end
 end
