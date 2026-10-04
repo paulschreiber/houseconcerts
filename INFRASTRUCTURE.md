@@ -103,9 +103,12 @@ Rules**, and connections and API destinations under **Integration**. Log groups
 are under **CloudWatch → Logs → Log Management**.
 
 Don’t also turn on SES’s per-identity SNS notifications for bounces and
-complaints: the app would get each event twice. SES’s email feedback forwarding
-(bounces and complaints emailed to the sender) is optional now that the app
-handles them.
+complaints: the app would get each event twice.
+
+Keep SES’s email feedback forwarding on (Identities → your domain →
+Notifications). Besides bounces and complaints, it’s how auto-replies, such as
+out-of-office messages, reach the sender: they go to the return address SES
+owns, and SES counts them as transient bounces.
 
 #### Testing bounce and complaint handling
 
