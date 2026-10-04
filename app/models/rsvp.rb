@@ -17,6 +17,7 @@ class RSVP < ApplicationRecord
   before_save :downcase_email
   before_save :set_ip_address
   before_save :update_confirmation_date
+  before_save :update_cancellation_date
   after_save :update_phone_number
   after_save -> { NotifyAdminOfRSVP.call(self) }
 
@@ -48,6 +49,15 @@ class RSVP < ApplicationRecord
     return if !confirmed_changed? || !confirmed?
 
     self.confirmed_at = Time.zone.now
+  end
+
+  # A yes changing to no is a cancellation. A later yes clears it.
+  def update_cancellation_date
+    if response_changed?(from: "yes", to: "no")
+      self.cancelled_at = Time.zone.now
+    elsif response_changed?(to: "yes")
+      self.cancelled_at = nil
+    end
   end
 
   def clear_seats_if_no
