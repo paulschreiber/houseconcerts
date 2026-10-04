@@ -132,7 +132,9 @@ class RSVP < ApplicationRecord
   end
 
   def update_phone_number
-    person = Person.find_by(email: email, phone_number: nil)
+    return if phone_number.blank?
+
+    person = Person.find_by(email: email, phone_number: [ nil, "" ])
     person&.update(phone_number: phone_number)
   end
 

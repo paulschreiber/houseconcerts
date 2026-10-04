@@ -32,6 +32,29 @@ module Madmin
       end
     end
 
+    # Adds the people who RSVPd yes to this show but aren't on the mailing
+    # list. Anyone who unsubscribed (or is bouncing or moved) isn't re-added.
+    def add_nonsubscribers
+      result = AddNonsubscribers.call(@record)
+      messages = []
+      messages << "Added #{people_sentence(result.added)} to the mailing list." if result.added.any?
+      messages << "Didn’t re-add #{people_sentence(result.skipped)}, who unsubscribed, bounced or moved." if result.skipped.any?
+      messages << "Everyone who RSVPd yes is already on the mailing list." if messages.empty? && result.failed.empty?
+      if result.failed.any?
+        failures = result.failed.map { |rsvp, errors| "#{rsvp.full_name} (#{errors})" }.to_sentence
+        flash[:alert] = "Couldn’t add #{failures}."
+      end
+      flash[:notice] = messages.join(" ") if messages.any?
+      redirect_to main_app.madmin_show_path(@record)
+    end
+
+    # Fills in missing phone numbers on the mailing list from this show's RSVPs.
+    def add_phone_numbers
+      people = AddPhoneNumbers.call(@record)
+      notice = people.any? ? "Added phone numbers for #{people_sentence(people)}." : "No phone numbers to add."
+      redirect_to main_app.madmin_show_path(@record), notice:
+    end
+
     # A printable list of the show's attendees, for the door.
     def print_attendance
       emails = @rsvps.map(&:email)
@@ -40,6 +63,10 @@ module Madmin
     end
 
     private
+
+      def people_sentence(records)
+        records.map(&:full_name).to_sentence
+      end
 
       def load_attendees
         @show = @record

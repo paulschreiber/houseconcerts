@@ -20,6 +20,8 @@ namespace :madmin, path: Settings.admin_prefix do
       get :attendance
       patch :attendance, action: :update_attendance
       get "attendance/print", action: :print_attendance, as: :print_attendance
+      post :add_nonsubscribers
+      post :add_phone_numbers
     end
   end
   resources :venues
