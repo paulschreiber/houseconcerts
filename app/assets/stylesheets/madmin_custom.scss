@@ -224,3 +224,22 @@ body.shows.update_attendance {
     margin-top: 1.5rem;
   }
 }
+
+/* Passkeys page (Admins::PasskeysController, in Madmin's layout): striped
+   like Madmin's tables, with labels above their inputs like Madmin's forms. */
+body.passkeys {
+  table tbody tr:nth-child(even) {
+    background-color: var(--background-color);
+  }
+
+  .passkey-form label {
+    display: block;
+  }
+
+  /* Full width on phones only, like Madmin's 768px breakpoint */
+  @media (width >= 768px) {
+    .passkey-form .form-input {
+      max-width: 24rem;
+    }
+  }
+}

@@ -1,0 +1,49 @@
+<% content_for :title, "Passkeys" %>
+<%= javascript_import_module_tag "devise/webauthn" %>
+
+<%= render "madmin/application/flash" %>
+
+<header class="header">
+  <h1>Passkeys</h1>
+</header>
+
+<% if @passkeys.any? %>
+  <div class="table-scroll">
+    <table class="passkeys">
+      <thead>
+        <tr><th>Name</th><th>Added</th><th></th></tr>
+      </thead>
+      <tbody>
+        <% @passkeys.each do |passkey| %>
+          <tr>
+            <td><%= passkey.name %></td>
+            <td><%= passkey.created_at.to_fs(:long) %></td>
+            <td class="actions">
+              <%= button_to "Remove", admin_passkey_path(passkey), method: :delete, class: "btn btn-danger",
+                                                                   form: { data: { turbo_confirm: "Remove the passkey “#{passkey.name}”?" } } %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  <p>If you don’t recognize a passkey, remove it and reset your password.</p>
+<% else %>
+  <p>You don’t have any passkeys yet.</p>
+<% end %>
+
+<h2>Add a passkey</h2>
+
+<%= passkey_creation_form_for(resource_name, class: "passkey-form") do |form| %>
+  <div class="form-group">
+    <%= form.label :name, "Passkey name" %>
+    <%= form.text_field :name, required: true, class: "form-input", autocomplete: "off", data: { "1p-ignore": true, lpignore: true } %>
+  </div>
+  <div class="form-group">
+    <%= label_tag :current_password, "Password" %>
+    <%# Chrome ignores autocomplete="off" on password fields. "new-password"
+        tells it not to fill in the saved password for this site. %>
+    <%= password_field_tag :current_password, nil, required: true, class: "form-input", autocomplete: "new-password", data: { "1p-ignore": true, lpignore: true } %>
+  </div>
+  <%= form.submit "Create Passkey", class: "btn btn-primary" %>
+<% end %>

@@ -6,10 +6,25 @@ module Admins
   # - the page lists existing passkeys so unknown ones can be spotted and removed
   # - the admin is emailed whenever a passkey is added or removed
   class PasskeysController < Devise::PasskeysController
+    # Rendered in Madmin's layout, like the rest of the admin area. The
+    # layout's partials (head tags, flash, sidebar) are found in
+    # madmin/application, and the sidebar needs Madmin's nav_link_to.
+    layout "madmin/application"
+    helper Madmin::NavHelper
+
     before_action :require_current_password, only: :create
 
-    def new
+    def _prefixes
+      super | [ "madmin/application" ]
+    end
+
+    def index
       @passkeys = resource.passkeys.order(:created_at)
+    end
+
+    # The page lives at index; this keeps older links working.
+    def new
+      redirect_to admin_passkeys_path
     end
 
     def create
@@ -29,6 +44,10 @@ module Admins
     end
 
     private
+
+      def after_update_path
+        admin_passkeys_path
+      end
 
       def require_current_password
         return if resource.valid_password?(params[:current_password].to_s)
