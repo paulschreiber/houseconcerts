@@ -1,17 +1,22 @@
 <%
-  # Overridden only to inject the shared admin <header> below, matching
-  # madmin's own -- Mission Control has no config hook for that. Everything
-  # else here (including the "Back to main app" link, driven by the
-  # back_to_main_app_path config in config/initializers/mission_control_jobs.rb)
-  # is kept identical to the gem's own partial so it doesn't silently drift.
+  # Overridden only to inject the shared admin <header> and sidebar below,
+  # matching madmin's own -- Mission Control has no config hook for that.
+  # Everything else here (including the "Back to main app" link, driven by
+  # the back_to_main_app_path config in
+  # config/initializers/mission_control_jobs.rb) is kept identical to the
+  # gem's own partial so it doesn't silently drift.
 %>
-<%= stylesheet_link_tag "mission_control_custom", "data-turbo-track": "reload" %>
+<%= stylesheet_link_tag "madmin/sidebar", "mission_control_custom", "data-turbo-track": "reload" %>
 
 <header id="navbar">
   <div class="nav-group">
     <%= link_to Madmin.site_name, main_app.madmin_root_path(server_id: nil), data: { turbo: false } %>
   </div>
 </header>
+
+<aside id="sidebar">
+  <%= render "madmin/application/navigation" %>
+</aside>
 
 <nav class="navbar" role="navigation" aria-label="main navigation">
   <div class="navbar-menu is-active mb-4">

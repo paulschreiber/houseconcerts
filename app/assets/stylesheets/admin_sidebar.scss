@@ -1,0 +1,32 @@
+// Shared between madmin and Mission Control - Jobs, which both show the
+// admin sidebar (madmin/application/_navigation). Madmin styles the sidebar
+// itself; these are this app's changes to it.
+
+/* Sidebar section dividers (plain horizontal rules, no visible label) */
+nav h4 {
+  height: 0;
+  margin: 0.75rem 0;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid var(--border-color, rgb(229 231 235));
+  text-indent: -9999px;
+  overflow: hidden;
+}
+
+/* Divider between the Dashboard link and the resource menu */
+#sidebar nav > a:first-child {
+  border-bottom: 1px solid var(--border-color, rgb(229 231 235));
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Pin the sign out link (last nav link) to the bottom of the sidebar */
+#sidebar nav {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+#sidebar nav > a:last-child {
+  margin-top: auto;
+}
