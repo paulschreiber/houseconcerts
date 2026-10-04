@@ -372,6 +372,19 @@ module Madmin
       assert_select "a[href=?]", attendance_madmin_show_path(shows(:past)), count: 0
     end
 
+    test "next_show_attendees shows a Date Modified column, and other scopes don't" do
+      @rsvp.update!(confirmed: "confirmed")
+
+      get madmin_rsvps_path(scope: "next_show_attendees")
+      assert_select "thead th", text: /Date Modified/
+      assert_select "tbody td", text: @rsvp.reload.updated_at.strftime("%Y-%m-%d %H:%M")
+
+      [ nil, "previous_show_attendees" ].each do |scope|
+        get madmin_rsvps_path(scope:)
+        assert_select "thead th", text: /Date Modified/, count: 0
+      end
+    end
+
     test "the attendee scopes list RSVPs by last name, then first name" do
       { "next_show_attendees" => Show.next, "previous_show_attendees" => Show.previous }.each do |scope, show|
         RSVP.where(show:).delete_all
