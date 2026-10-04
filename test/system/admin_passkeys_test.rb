@@ -26,9 +26,9 @@ class AdminPasskeysTest < ApplicationSystemTestCase
     @admin.update!(password: "correct horse battery staple")
     sign_in_with_password
 
-    visit new_admin_passkey_path
+    visit admin_passkeys_path
     fill_in "Passkey name", with: "Test laptop"
-    fill_in "Current password", with: "correct horse battery staple"
+    fill_in "Password", with: "correct horse battery staple"
     click_button "Create Passkey"
 
     assert_text "Passkey created successfully."
@@ -39,9 +39,9 @@ class AdminPasskeysTest < ApplicationSystemTestCase
     @admin.update!(password: "correct horse battery staple")
     sign_in_with_password
 
-    visit new_admin_passkey_path
+    visit admin_passkeys_path
     fill_in "Passkey name", with: "Stolen session"
-    fill_in "Current password", with: "a guess"
+    fill_in "Password", with: "a guess"
     click_button "Create Passkey"
 
     assert_text "Enter your current password to add a passkey."

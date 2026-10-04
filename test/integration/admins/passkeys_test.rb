@@ -14,17 +14,25 @@ module Admins
     end
 
     test "redirects to sign in when not authenticated" do
-      get new_admin_passkey_path
+      get admin_passkeys_path
 
       assert_redirected_to new_admin_session_path
     end
 
-    test "renders the new passkey page when authenticated" do
+    test "renders the passkeys page when authenticated" do
+      sign_in @admin
+
+      get admin_passkeys_path
+
+      assert_response :success
+    end
+
+    test "the old new-passkey address redirects to the passkeys page" do
       sign_in @admin
 
       get new_admin_passkey_path
 
-      assert_response :success
+      assert_redirected_to admin_passkeys_path
     end
 
     test "creates a passkey with a valid credential" do
@@ -38,7 +46,7 @@ module Admins
         post admin_passkeys_path, params: { name: "My Passkey", current_password: PASSWORD, public_key_credential: credential.to_json }
       end
 
-      assert_redirected_to new_admin_passkey_path
+      assert_redirected_to admin_passkeys_path
       assert_nil session[:webauthn_challenge]
     end
 
@@ -73,7 +81,7 @@ module Admins
         assert_no_difference("@admin.passkeys.count") do
           post admin_passkeys_path, params: { name: "Stolen", current_password: password, public_key_credential: credential.to_json }.compact
         end
-        assert_redirected_to new_admin_passkey_path
+        assert_redirected_to admin_passkeys_path
         assert_equal "Enter your current password to add a passkey.", flash[:alert]
         assert_nil session[:webauthn_challenge]
       end
@@ -103,7 +111,7 @@ module Admins
       passkey = @admin.passkeys.create!(external_id: "listed-id", public_key: "key", name: "Laptop", sign_count: 0)
       sign_in @admin
 
-      get new_admin_passkey_path
+      get admin_passkeys_path
 
       assert_select "table.passkeys td", text: "Laptop"
       assert_select "form[action='#{admin_passkey_path(passkey)}'] button", text: "Remove"

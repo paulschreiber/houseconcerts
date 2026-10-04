@@ -8,7 +8,7 @@ class AdminMailerTest < ActionMailer::TestCase
     assert_equal "A passkey was added to your #{Settings.site_name} admin account", email.subject
     assert_includes email.body.encoded, "Laptop"
     assert_includes email.body.encoded, "203.0.113.7"
-    assert_includes email.body.encoded, "/#{Settings.admin_prefix}/passkeys/new"
+    assert_includes email.body.encoded, "/#{Settings.admin_prefix}/passkeys\""
   end
 
   test "passkey_removed tells the admin which passkey was removed" do
