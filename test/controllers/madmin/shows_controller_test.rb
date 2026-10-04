@@ -132,6 +132,28 @@ module Madmin
     test "ShowResource's default sort hooks match the actual default ordering" do
       assert_equal "start", ShowResource.default_sort_column
       assert_equal "desc", ShowResource.default_sort_direction
+
+      Current.set(admin_scope: "upcoming") do
+        assert_equal "asc", ShowResource.default_sort_direction
+      end
+    end
+
+    test "start is labelled Start on the show page and form, and Date only in the index" do
+      get madmin_show_path(shows(:past))
+      assert_select "th.label", text: "Start"
+      assert_select "th.label", text: "Date", count: 0
+
+      get edit_madmin_show_path(shows(:past))
+      assert_select "label", text: "Start"
+    end
+
+    test "index has a Date column, date only, with the sort arrow on it" do
+      get madmin_shows_path
+
+      assert_select "thead th a[href*='sort=start']", text: /Date/ do
+        assert_select "svg"
+      end
+      assert_select "tbody td", text: shows(:past).start.to_date.iso8601
     end
 
     test "destroy destroys the show and redirects to the index page" do
