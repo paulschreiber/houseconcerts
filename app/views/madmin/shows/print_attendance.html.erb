@@ -1,0 +1,46 @@
+<% content_for :title, "Attendees — #{@show.name}" %>
+
+<header class="header">
+  <h1><%= @show.name %></h1>
+  <p><%= @show.start.strftime("%A, %B %-d, %Y") %></p>
+
+  <div class="actions">
+    <%= link_to "Back", madmin_show_path(@show), class: "btn btn-secondary" %>
+  </div>
+</header>
+
+<div class="table-scroll">
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Phone Number</th>
+        <th>Seats</th>
+        <th>On Mailing List</th>
+        <th>Attended Before</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @rsvps.each do |rsvp| %>
+        <tr>
+          <td><%= rsvp.full_name %></td>
+          <td><%= rsvp.phone_number_formatted(rsvp.phone_number) if rsvp.phone_number.present? %></td>
+          <td><%= rsvp.seats_reserved %></td>
+          <td><%= @subscribed_emails.include?(rsvp.email) ? "✔" : "✖" %></td>
+          <td><%= @attended_emails.include?(rsvp.email) ? "✔" : "✖" %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<div class="metrics">
+  <div class="metric">
+    <h4>RSVPs</h4>
+    <p><%= @rsvps.size %></p>
+  </div>
+  <div class="metric">
+    <h4>Seats</h4>
+    <p><%= @rsvps.sum(&:seats_reserved) %></p>
+  </div>
+</div>

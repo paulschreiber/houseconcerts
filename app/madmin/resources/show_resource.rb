@@ -29,9 +29,21 @@ class ShowResource < Madmin::Resource
 
   # Add actions to the resource's show page
   # Pass collection: true to also render it in each row on the index page
-  # member_action do |record|
-  #   link_to "Do Something", some_path
-  # end
+  member_action do |record|
+    link_to("Attendance", attendance_madmin_show_path(record), class: "btn btn-secondary") +
+      link_to("Print Attendance", print_attendance_madmin_show_path(record), class: "btn btn-secondary", target: "_blank", rel: "noopener")
+  end
+
+  # On the index, beside View and Edit: print the list for upcoming shows,
+  # record attendance for past ones. (The show page has both, above.)
+  member_action(collection: true) do |record|
+    case params[:scope]
+    when "upcoming"
+      link_to "Print Attendance", print_attendance_madmin_show_path(record), class: "btn btn-secondary", target: "_blank", rel: "noopener"
+    when "past"
+      link_to "Record Attendance", attendance_madmin_show_path(record), class: "btn btn-secondary"
+    end
+  end
 
   # Add actions to the resource's index page
   # collection_action do

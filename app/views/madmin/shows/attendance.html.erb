@@ -1,0 +1,45 @@
+<% content_for :title, "Attendance — #{@show.name}" %>
+
+<header class="header">
+  <h1><%= @show.name %></h1>
+  <p><%= @show.start.strftime("%A, %B %-d, %Y") %></p>
+
+  <div class="actions">
+    <%= link_to "Back", madmin_show_path(@show), class: "btn btn-secondary" %>
+  </div>
+</header>
+
+<%= form_with url: attendance_madmin_show_path(@show), method: :patch do %>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Seats</th>
+          <th>Seats Used</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @rsvps.each do |rsvp| %>
+          <%# Prefilled with the seats reserved until attendance is recorded,
+              and with what was typed if the save failed. %>
+          <% value = rsvp.seats_used_came_from_user? ? rsvp.seats_used_before_type_cast : (rsvp.seats_used || rsvp.seats_reserved) %>
+          <tr>
+            <td><%= label_tag "seats_used_#{rsvp.id}", rsvp.full_name %></td>
+            <td><%= rsvp.seats_reserved %></td>
+            <td>
+              <%= number_field_tag "seats_used[#{rsvp.id}]", value, id: "seats_used_#{rsvp.id}", min: 0, max: Settings.show.max_seats_used, step: 1 %>
+              <% rsvp.errors.full_messages.each do |message| %>
+                <p class="error"><%= message %></p>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="actions">
+    <%= submit_tag "Save Attendance", class: "btn btn-primary" %>
+  </div>
+<% end %>

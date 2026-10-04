@@ -31,3 +31,4 @@
   :max_price: 100
   :min_seats: 1
   :max_seats: 4
+  :max_seats_used: 10

@@ -5,20 +5,8 @@ module Madmin
     before_action { Current.admin_scope = params[:scope] }
     before_action :next_show, if: -> { Current.admin_scope == "next_show_attendees" }
     before_action :enforce_readonly, only: %i[confirm waitlist cancel]
-    skip_before_action :set_record, only: :print
 
     helper_method :attendee_totals
-
-    def print
-      @show = next_show
-      @rsvps = RSVP.next_show_attendees(@show).order(:last_name, :first_name).to_a
-      @rsvp_count = @rsvps.size
-      @total_seats = @rsvps.sum(&:seats_reserved)
-
-      emails = @rsvps.map(&:email)
-      @subscribed_emails = Person.where(email: emails).pluck(:email).to_set
-      @attended_emails = RSVP.attended(emails).reorder(nil).pluck(:email).to_set
-    end
 
     def confirm
       if @record.can_confirm? && ConfirmRSVP.call(@record)
