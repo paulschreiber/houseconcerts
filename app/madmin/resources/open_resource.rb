@@ -9,6 +9,11 @@ class OpenResource < Madmin::Resource
   attribute :created_at, field: ShortDateTimeField, index: true
   attribute :updated_at
 
+  # Add scopes to easily filter records
+  scope :invite
+  scope :confirm
+  scope :remind
+
   def self.readonly? = true
 
   # Madmin calls .pluralize on friendly_name in several of its own templates
