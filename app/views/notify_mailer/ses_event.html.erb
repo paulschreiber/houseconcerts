@@ -1,0 +1,12 @@
+<h1><%= @subject %></h1>
+
+<p>Person: <%= link_to @person.full_name, madmin_person_url(@person) %>
+<br>Email: <%= @person.email %>
+<br>Status: <%= @person.status %>
+</p>
+
+<%- if @event_type == "bounce" -%>
+<p>Mail to <%= @person.email %> bounced permanently, so they’re no longer invited.</p>
+<%- else -%>
+<p>They marked an email to <%= @person.email %> as spam, so they’ve been removed from the mailing list.</p>
+<%- end -%>
