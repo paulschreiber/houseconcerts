@@ -2,6 +2,8 @@ require "test_helper"
 
 module Madmin
   class ShowsControllerTest < ActionDispatch::IntegrationTest
+    include ActionMailer::TestHelper
+
     setup do
       sign_in admins(:one)
     end
@@ -141,5 +143,161 @@ module Madmin
 
       assert_redirected_to madmin_shows_path
     end
+
+    test "show links to the show's attendance and printable attendee list" do
+      get madmin_show_path(shows(:past))
+
+      assert_select "a[href=?]", attendance_madmin_show_path(shows(:past)), text: "Attendance"
+      assert_select "a[href=?]", print_attendance_madmin_show_path(shows(:past)), text: "Print Attendance"
+    end
+
+    test "index rows link to Print Attendance for upcoming shows and Record Attendance for past ones" do
+      get madmin_shows_path(scope: "upcoming")
+      assert_select "td.actions a[href=?]", print_attendance_madmin_show_path(shows(:upcoming)), text: "Print Attendance"
+      assert_select "td.actions a", text: "Record Attendance", count: 0
+
+      get madmin_shows_path(scope: "past")
+      assert_select "td.actions a[href=?]", attendance_madmin_show_path(shows(:past)), text: "Record Attendance"
+      assert_select "td.actions a", text: "Print Attendance", count: 0
+
+      get madmin_shows_path
+      assert_select "td.actions a", text: /Attendance/, count: 0
+    end
+
+    test "print_attendance lists the show's attendees and totals" do
+      rsvp = attendee(shows(:upcoming), "Jane", seats_reserved: 2, phone_number: "2125551234")
+
+      get print_attendance_madmin_show_path(shows(:upcoming))
+
+      assert_response :success
+      assert_match shows(:upcoming).name, response.body
+      cells = attendee_row_cells(rsvp.full_name)
+      assert_equal "(212) 555-1234", cells[1].text
+      assert_equal "2", cells[2].text
+      assert_equal "✖", cells[3].text
+      assert_equal "✖", cells[4].text
+      assert_match(%r{Seats</h4>\s*<p>#{RSVP.attendees(shows(:upcoming)).sum(:seats_reserved)}<}, response.body)
+    end
+
+    test "print_attendance flags someone on the mailing list who attended an earlier show" do
+      rsvp = attendee(shows(:upcoming), "Test", email: people(:one).email)
+      attendee(shows(:past), "Test", email: people(:one).email)
+
+      get print_attendance_madmin_show_path(shows(:upcoming))
+
+      cells = attendee_row_cells(rsvp.full_name)
+      assert_equal "✔", cells[3].text
+      assert_equal "✔", cells[4].text
+    end
+
+    test "print_attendance doesn't count the show itself as attending before" do
+      rsvp = attendee(shows(:past), "Jane")
+
+      get print_attendance_madmin_show_path(shows(:past))
+
+      assert_equal "✖", attendee_row_cells(rsvp.full_name)[4].text
+    end
+
+    test "print_attendance leaves out RSVPs that aren't a confirmed yes" do
+      rsvp = attendee(shows(:past), "Jane")
+      rsvp.update!(confirmed: "unconfirmed")
+
+      get print_attendance_madmin_show_path(shows(:past))
+
+      assert_response :success
+      assert_no_match(/Jane Smith/, response.body)
+    end
+
+    test "attendance lists the show's attendees with seats used prefilled" do
+      unrecorded = attendee(shows(:past), "Jane", seats_reserved: 3)
+      recorded = attendee(shows(:past), "John", seats_reserved: 2, seats_used: 1)
+      other_show = attendee(shows(:upcoming), "Joan")
+
+      get attendance_madmin_show_path(shows(:past))
+
+      assert_response :success
+      assert_select "input[name=?][value=?]", "seats_used[#{unrecorded.id}]", "3"
+      assert_select "input[name=?][value=?]", "seats_used[#{recorded.id}]", "1"
+      assert_select "input[name=?]", "seats_used[#{other_show.id}]", count: 0
+    end
+
+    test "attendance works for any show, not just the most recent one" do
+      older = Show.create!(name: "Older Show", venue: venues(:one), start: 3.months.ago, price: 20, blurb: "An older show.")
+      rsvp = attendee(older, "Jane", seats_reserved: 2)
+
+      patch attendance_madmin_show_path(older), params: { seats_used: { rsvp.id => "2" } }
+
+      assert_redirected_to attendance_madmin_show_path(older)
+      assert_equal 2, rsvp.reload.seats_used
+    end
+
+    test "update_attendance saves seats used without emailing the admin" do
+      jane = attendee(shows(:past), "Jane", seats_reserved: 3)
+      john = attendee(shows(:past), "John", seats_reserved: 2)
+
+      assert_no_enqueued_emails do
+        patch attendance_madmin_show_path(shows(:past)), params: { seats_used: { jane.id => "3", john.id => "0" } }
+      end
+
+      assert_redirected_to attendance_madmin_show_path(shows(:past))
+      assert_equal 3, jane.reload.seats_used
+      assert_equal 0, john.reload.seats_used
+    end
+
+    test "update_attendance ignores RSVPs for other shows" do
+      other_show = attendee(shows(:upcoming), "Joan")
+
+      patch attendance_madmin_show_path(shows(:past)), params: { seats_used: { other_show.id => "1" } }
+
+      assert_nil other_show.reload.seats_used
+    end
+
+    test "update_attendance saves nothing when any value is invalid" do
+      jane = attendee(shows(:past), "Jane", seats_reserved: 3)
+      john = attendee(shows(:past), "John", seats_reserved: 2)
+
+      patch attendance_madmin_show_path(shows(:past)), params: { seats_used: { jane.id => "3", john.id => "-1" } }
+
+      assert_response :unprocessable_content
+      assert_select "input[name=?][value=?]", "seats_used[#{john.id}]", "-1"
+      assert_select ".error", text: /greater than or equal to 0/
+      assert_nil jane.reload.seats_used
+      assert_nil john.reload.seats_used
+    end
+
+    test "update_attendance saves nothing when a seats used is left blank" do
+      jane = attendee(shows(:past), "Jane", seats_reserved: 3)
+      john = attendee(shows(:past), "John", seats_reserved: 2)
+
+      patch attendance_madmin_show_path(shows(:past)), params: { seats_used: { jane.id => "3", john.id => "" } }
+
+      assert_response :unprocessable_content
+      assert_select ".alert-danger", text: I18n.t("madmin.shows.attendance.not_saved")
+      assert_select ".error", text: I18n.t("madmin.shows.attendance.seats_used_blank"), count: 1
+      assert_nil jane.reload.seats_used
+    end
+
+    test "update_attendance ignores a seats_used that isn't a list" do
+      jane = attendee(shows(:past), "Jane", seats_reserved: 3)
+
+      patch attendance_madmin_show_path(shows(:past)), params: { seats_used: "3" }
+
+      assert_redirected_to attendance_madmin_show_path(shows(:past))
+      assert_nil jane.reload.seats_used
+    end
+
+    private
+
+      def attendee(show, first_name, seats_reserved: 2, **attrs)
+        RSVP.create!(show:, first_name:, last_name: "Smith", email: "#{first_name.downcase}.smith@example.com",
+                     response: "yes", confirmed: "confirmed", seats_reserved:, **attrs)
+      end
+
+      # The print view's row for an attendee, as its <td> cells.
+      def attendee_row_cells(full_name)
+        row = response.parsed_body.css("tbody tr").find { |tr| tr.text.include?(full_name) }
+        assert row, "no attendee row found for #{full_name}"
+        row.css("td")
+      end
   end
 end

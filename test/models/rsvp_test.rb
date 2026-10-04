@@ -158,6 +158,17 @@ class RsvpTest < ActiveSupport::TestCase
     assert_not_nil rsvp.confirmed_at
   end
 
+  test "seats_used can be at most show.max_seats_used" do
+    rsvp = rsvps(:one)
+
+    rsvp.seats_used = Settings.show.max_seats_used
+    assert_predicate rsvp, :valid?
+
+    rsvp.seats_used = Settings.show.max_seats_used + 1
+    assert_not rsvp.valid?
+    assert_predicate rsvp.errors[:seats_used], :any?
+  end
+
   test "cancelled_at is set when a yes changes to no, and cleared by a later yes" do
     rsvp = rsvps(:one)
     assert_nil rsvp.cancelled_at
