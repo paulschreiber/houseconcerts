@@ -1,6 +1,11 @@
 Madmin.stylesheets << "madmin_custom"
 Madmin.site_name = Settings.site_name
 
+# Madmin pages use Madmin's own importmap, not the app's. The passkeys page
+# (Admins::PasskeysController renders in Madmin's layout) needs devise-webauthn's
+# JavaScript to create a passkey.
+Madmin.importmap.pin "devise/webauthn", to: "devise/webauthn.js"
+
 # dartsass-rails only compiles scss files listed here (default: just
 # application.scss), so madmin_custom.scss needs its own entry.
 Rails.application.config.dartsass.builds["madmin_custom.scss"] = "madmin_custom.css"

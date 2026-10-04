@@ -18,7 +18,7 @@ The admin UI lives at `/backstage/`. To access it, create an admin user with `bi
 Admin.create!(email: "you@example.com", password: "changeme", password_confirmation: "changeme")
 ```
 
-Admins can also sign in with a passkey instead of a password. Password login stays enabled because it's required to register the first passkey: sign in with your password, then go to `/backstage/passkeys/new` and follow your browser/OS prompt to create one.
+Admins can also sign in with a passkey instead of a password. Password login stays enabled because it's required to register the first passkey: sign in with your password, then go to `/backstage/passkeys` and follow your browser/OS prompt to create one.
 
 ## Deployment notes
 
