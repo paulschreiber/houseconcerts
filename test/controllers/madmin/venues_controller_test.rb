@@ -76,5 +76,18 @@ module Madmin
 
       assert_redirected_to madmin_venues_path
     end
+
+    test "index lists venues by name, with the sort arrow on Name" do
+      zebra = venues(:one).dup.tap { |venue| venue.name = "Zebra Hall" }
+      zebra.save!
+      venues(:one).update!(name: "Aardvark Hall")
+      # Newest first (the old default) would put Zebra first.
+      venues(:one).update_column(:created_at, 1.day.ago) # rubocop:disable Rails/SkipsModelValidations
+
+      get madmin_venues_path
+
+      assert_operator response.body.index("Aardvark Hall"), :<, response.body.index("Zebra Hall")
+      assert_select "thead th a[href*='sort=name'] svg"
+    end
   end
 end

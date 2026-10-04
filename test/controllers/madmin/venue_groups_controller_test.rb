@@ -73,5 +73,16 @@ module Madmin
 
       assert_redirected_to madmin_venue_groups_path
     end
+
+    test "index lists venue groups by name, with the sort arrow on Name" do
+      # Newest first (the old default) would put Zebra first.
+      VenueGroup.create!(name: "Aardvark Group").update_column(:created_at, 1.day.ago) # rubocop:disable Rails/SkipsModelValidations
+      VenueGroup.create!(name: "Zebra Group")
+
+      get madmin_venue_groups_path
+
+      assert_operator response.body.index("Aardvark Group"), :<, response.body.index("Zebra Group")
+      assert_select "thead th a[href*='sort=name'] svg"
+    end
   end
 end
