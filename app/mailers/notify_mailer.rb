@@ -39,6 +39,17 @@ class NotifyMailer < ApplicationMailer
          subject: @subject)
   end
 
+  # A permanent bounce or a complaint from SES (see SesEvent) has taken this
+  # person off the invite list.
+  def ses_event(person, event_type)
+    @person = person
+    @event_type = event_type
+    @subject = "#{event_type.capitalize} from #{person.full_name}"
+
+    mail(to: formatted_address(Settings.invites_from_name, Settings.invites_from_email),
+         subject: @subject)
+  end
+
   def text_message(sender, body)
     @body = body
 

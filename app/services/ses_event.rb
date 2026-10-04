@@ -2,8 +2,9 @@
 # SesEventsController) to the mailing list:
 # - a permanent bounce marks the person bouncing, so they're no longer invited
 # - a complaint (marked as spam) removes them, like an unsubscribe
-# Anything else (transient bounces, deliveries, opens, ...) is ignored.
-# Receiving the same event twice changes nothing the second time.
+# and emails the admin about it. Anything else (transient bounces, deliveries,
+# opens, ...) is ignored. Receiving the same event twice changes nothing (and
+# sends nothing) the second time.
 class SesEvent
   def self.call(event)
     new(event).call
@@ -36,11 +37,20 @@ class SesEvent
     end
 
     # Someone already removed stays removed: a bounce shouldn't undo an
-    # unsubscribe or an earlier complaint.
+    # unsubscribe or an earlier complaint. The status is checked again under a
+    # lock, so two copies of an event arriving at once don't both email the
+    # admin.
     def update(emails, status)
       Person.where(email: emails).where.not(status: [ :removed, status ]).find_each do |person|
-        person.update!(status:)
+        changed = person.with_lock do
+          next false if person.removed? || person.status == status.to_s
+
+          person.update!(status:)
+        end
+        next unless changed
+
         Rails.logger.info("SES #{event_type}: person #{person.id} is now #{status}")
+        NotifyMailer.ses_event(person, event_type).deliver_later
       end
     end
 end
