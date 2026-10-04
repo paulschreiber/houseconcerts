@@ -158,6 +158,27 @@ class RsvpTest < ActiveSupport::TestCase
     assert_not_nil rsvp.confirmed_at
   end
 
+  test "cancelled_at is set when a yes changes to no, and cleared by a later yes" do
+    rsvp = rsvps(:one)
+    assert_nil rsvp.cancelled_at
+
+    freeze_time do
+      rsvp.update!(response: "no")
+      assert_equal Time.current, rsvp.reload.cancelled_at
+    end
+
+    rsvp.update!(response: "yes", seats_reserved: 2)
+    assert_nil rsvp.reload.cancelled_at
+  end
+
+  test "cancelled_at stays nil for an rsvp that was always no" do
+    rsvp = RSVP.create!(show: shows(:upcoming), first_name: "Jane", last_name: "Smith",
+                        email: "jane.smith@example.com", response: "no")
+
+    rsvp.update!(first_name: "Janet")
+    assert_nil rsvp.reload.cancelled_at
+  end
+
   test "confirm! sets confirmed to confirmed only for a yes rsvp" do
     yes_rsvp = rsvps(:one)
     assert yes_rsvp.confirm!

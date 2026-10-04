@@ -125,6 +125,23 @@ class NotifyMailerTest < ActionMailer::TestCase
     assert_includes email.body.encoded, "No previous reservations."
   end
 
+  test "rsvp lists attended and cancelled shows together, newest first" do
+    person = Person.create!(first_name: "Jane", last_name: "Smith", email: "jane.smith@example.com")
+    create_past_rsvp(person, create_past_show("Oldest Show", 3), seats_reserved: 2, seats_used: 2)
+    cancelled = create_past_rsvp(person, create_past_show("Middle Show", 2), seats_reserved: 2, seats_used: nil)
+    travel_to Time.zone.local(2026, 9, 1, 12) do
+      cancelled.update!(response: "no")
+    end
+    create_past_rsvp(person, create_past_show("Newest Show", 1), seats_reserved: 2, seats_used: 1)
+    rsvp = RSVP.create!(show: shows(:upcoming), first_name: person.first_name, last_name: person.last_name,
+                        email: person.email, response: "yes", confirmed: "confirmed", seats_reserved: 2)
+
+    body = NotifyMailer.rsvp(rsvp, "new", nil).body.encoded
+
+    assert_match(%r{Newest Show\s*\(1 / 2\).*Middle Show\s*\(cancelled 2026-09-01\).*Oldest Show\s*\(2 / 2\)}m, body)
+    assert_not_includes body, "No previous reservations."
+  end
+
   test "rsvp lists a single past show for someone who attended one show" do
     person = Person.create!(first_name: "One", last_name: "Show", email: "one.show@example.com")
     attended = create_past_rsvp(person, shows(:past), seats_reserved: 2, seats_used: 2)
