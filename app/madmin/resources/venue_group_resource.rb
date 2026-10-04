@@ -27,9 +27,9 @@ class VenueGroupResource < Madmin::Resource
   def self.display_name(record) = record.name
 
   # Customize the default sort column and direction.
-  # def self.default_sort_column = "created_at"
-  #
-  # def self.default_sort_direction = "desc"
+  def self.default_sort_column = "name"
+
+  def self.default_sort_direction = "asc"
 
   menu position: 60
 end

@@ -1,7 +1,7 @@
 class ShowResource < Madmin::Resource
   # Attributes
   attribute :id
-  attribute :start
+  attribute :start, field: ShortDateTimeField, format: "%Y-%m-%d", index_label: "Date", index: true
   attribute :end
   attribute :name, field: LinkedStringField
   attribute :slug, field: ReadonlyStringField, form: false, new: true, edit: true
@@ -56,7 +56,8 @@ class ShowResource < Madmin::Resource
   # Customize the default sort column and direction.
   def self.default_sort_column = "start"
 
-  def self.default_sort_direction = "desc"
+  # Upcoming shows are soonest first, everything else most recent first.
+  def self.default_sort_direction = Current.admin_scope == "upcoming" ? "asc" : "desc"
 
   menu position: 20
 end

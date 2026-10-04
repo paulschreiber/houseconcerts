@@ -1,5 +1,9 @@
 module Madmin
   class ShowsController < Madmin::ResourceController
+    before_action do
+      Current.admin_scope = params[:scope]
+      Current.admin_action = action_name
+    end
     before_action :load_attendees, only: %i[attendance update_attendance print_attendance]
 
     # Records how many seats each of the show's attendees used.
@@ -40,17 +44,6 @@ module Madmin
       def load_attendees
         @show = @record
         @rsvps = RSVP.attendees(@show).order(:last_name, :first_name).to_a
-      end
-
-      # Every scope but "upcoming" is already sorted most-recent-first by
-      # ShowResource.default_sort_column/default_sort_direction. Upcoming
-      # shows need the opposite direction (soonest first), unless the admin
-      # has explicitly clicked a column to sort by.
-      def scoped_resources
-        resources = super
-        return resources.reorder(start: :asc) if params[:scope] == "upcoming" && params[:sort].blank?
-
-        resources
       end
   end
 end
