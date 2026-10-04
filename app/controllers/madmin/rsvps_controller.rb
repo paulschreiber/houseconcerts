@@ -1,9 +1,12 @@
 module Madmin
   class RsvpsController < Madmin::ResourceController
     include MemoizesNextShow
+    include SortsByFullName
 
     before_action { Current.admin_scope = params[:scope] }
     before_action :next_show, if: -> { Current.admin_scope == "next_show_attendees" }
+
+    ATTENDEE_SCOPES = %w[next_show_attendees previous_show_attendees].freeze
 
     helper_method :attendee_totals
 
@@ -41,7 +44,7 @@ module Madmin
       end
 
       def attendee_totals
-        return unless %w[next_show_attendees previous_show_attendees].include?(params[:scope])
+        return unless ATTENDEE_SCOPES.include?(params[:scope])
 
         { count: @scoped_resources.count, seats_reserved: @scoped_resources.sum(:seats_reserved) }
       end

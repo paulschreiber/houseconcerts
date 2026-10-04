@@ -70,10 +70,18 @@ class RSVPResource < Madmin::Resource
   # Customize the display name of records in the admin area.
   def self.display_name(record) = "#{record.full_name} — #{record.show&.name} #{record.show&.start&.strftime('%Y-%m-%d')}"
 
-  # Customize the default sort column and direction.
-  # def self.default_sort_column = "created_at"
-  #
-  # def self.default_sort_direction = "desc"
+  # Customize the default sort column and direction. full_name sorts by last
+  # name, then first name (see SortsByFullName); the attendee lists default
+  # to it, and everything else to Madmin's default (newest first).
+  def self.sortable_columns = super + [ "full_name" ]
+
+  def self.default_sort_column
+    "full_name" if Madmin::RsvpsController::ATTENDEE_SCOPES.include?(Current.admin_scope)
+  end
+
+  def self.default_sort_direction
+    Madmin::RsvpsController::ATTENDEE_SCOPES.include?(Current.admin_scope) ? "asc" : "desc"
+  end
 
   menu position: 40
 end
