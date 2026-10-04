@@ -181,13 +181,13 @@ main:has(> #sidebar) {
 /* Attendee print view: hide the admin chrome so only the attendee list
    itself ends up on paper. */
 @media print {
-  body.rsvps.print #navbar,
-  body.rsvps.print #sidebar,
-  body.rsvps.print .header .actions {
+  body.shows.print_attendance #navbar,
+  body.shows.print_attendance #sidebar,
+  body.shows.print_attendance .header .actions {
     display: none;
   }
 
-  body.rsvps.print {
+  body.shows.print_attendance {
     td,
     th {
       padding-top: 0.5rem;
@@ -197,10 +197,30 @@ main:has(> #sidebar) {
 }
 
 /* zebra striping for tables */
-body.print,
+body.print_attendance,
+body.attendance,
+body.update_attendance,
 body.index {
   table tbody tr:nth-child(even) {
     background-color: var(--background-color);
     print-color-adjust: exact;
+  }
+}
+
+/* Attendance view (and its re-render after a failed save): a narrow
+   seats-used input, with any error under it */
+body.shows.attendance,
+body.shows.update_attendance {
+  input[type="number"] {
+    width: 5em;
+  }
+
+  .error {
+    color: oklch(44.4% 0.177 26.899deg); /* Madmin's .alert-danger text */
+    margin: 0.25em 0 0;
+  }
+
+  form > .actions {
+    margin-top: 1.5rem;
   }
 }

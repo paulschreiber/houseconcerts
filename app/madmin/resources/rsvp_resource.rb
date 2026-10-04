@@ -56,9 +56,15 @@ class RSVPResource < Madmin::Resource
   end
 
   collection_action do
-    next unless Current.admin_scope == "next_show_attendees"
+    next unless Current.admin_scope == "next_show_attendees" && @next_show
 
-    link_to "Print", print_madmin_rsvps_path, class: "btn btn-secondary", target: "_blank", rel: "noopener"
+    link_to "Print", print_attendance_madmin_show_path(@next_show), class: "btn btn-secondary", target: "_blank", rel: "noopener"
+  end
+
+  collection_action do
+    next unless Current.admin_scope == "previous_show_attendees" && (show = Show.previous)
+
+    link_to "Record Attendance", attendance_madmin_show_path(show), class: "btn btn-secondary"
   end
 
   # Customize the display name of records in the admin area.

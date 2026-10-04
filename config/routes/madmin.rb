@@ -14,11 +14,14 @@ namespace :madmin, path: Settings.admin_prefix do
       patch :waitlist
       patch :cancel
     end
-    collection do
-      get :print
+  end
+  resources :shows do
+    member do
+      get :attendance
+      patch :attendance, action: :update_attendance
+      get "attendance/print", action: :print_attendance, as: :print_attendance
     end
   end
-  resources :shows
   resources :venues
   resources :venue_groups
   root to: "dashboard#show"

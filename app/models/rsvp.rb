@@ -38,7 +38,8 @@ class RSVP < ApplicationRecord
   validates :seats_used, absence: true, if: :no?
   validates :seats_used, numericality: {
     only_integer: true,
-    greater_than_or_equal_to: 0
+    greater_than_or_equal_to: 0,
+    less_than_or_equal_to: Settings.show.max_seats_used
   }, allow_blank: true, if: :yes?
   validates :show_id, inclusion: { in: ->(_) { Show.all.collect(&:id) } }
   validate :tickets_available?, unless: :no?, if: :requesting_more_seats?
@@ -180,8 +181,12 @@ class RSVP < ApplicationRecord
     yes? && show.present? && show.id == next_show&.id && !show.occurred?
   end
 
-  def self.next_show_attendees(show = Show.next)
+  def self.attendees(show)
     yes_rsvps(show, confirmed: "confirmed")
+  end
+
+  def self.next_show_attendees(show = Show.next)
+    attendees(show)
   end
 
   def self.unconfirmed_rsvps

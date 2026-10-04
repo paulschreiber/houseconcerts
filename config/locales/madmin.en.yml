@@ -2,3 +2,7 @@ en:
   madmin:
     layout:
       admin_suffix: ""
+    shows:
+      attendance:
+        not_saved: "Attendance wasn’t saved. Enter a valid number of seats used for each attendee."
+        seats_used_blank: "Enter the seats used."
