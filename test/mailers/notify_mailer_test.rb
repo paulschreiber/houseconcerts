@@ -63,6 +63,20 @@ class NotifyMailerTest < ActionMailer::TestCase
     Mail::TestMailer.define_method(:deliver!, original_deliver)
   end
 
+  test "a mailer job that fails before its action runs leaves an earlier job's claim alone" do
+    rsvp = rsvps(:one)
+    perform_enqueued_jobs { NotifyMailer.rsvp(rsvp, "new", nil).deliver_later }
+    notified_at = rsvp.reload.admin_notified_at
+    assert_not_nil notified_at
+
+    # An RSVP deleted after the job was queued: loading it fails before the
+    # mailer action (and its before_action) ever runs.
+    job = ActionMailer::MailDeliveryJob.new("NotifyMailer", "rsvp", "deliver_now", args: [ RSVP.new(id: -1), "new", nil ])
+    assert_raises(ActiveJob::DeserializationError) { ActiveJob::Base.execute(job.serialize) }
+
+    assert_equal notified_at, rsvp.reload.admin_notified_at
+  end
+
   test "text_message includes the matching rsvp's name when the phone number matches" do
     rsvp = rsvps(:one)
     rsvp.update!(phone_number: "2125551234")
