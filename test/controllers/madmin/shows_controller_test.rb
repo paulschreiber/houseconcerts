@@ -186,6 +186,54 @@ module Madmin
       assert_select "td.actions a", text: /Attendance/, count: 0
     end
 
+    test "show has Nonsubscribers and Add Phone Numbers buttons" do
+      get madmin_show_path(shows(:past))
+
+      assert_select "form[action=?] button", add_nonsubscribers_madmin_show_path(shows(:past)), text: "Add Nonsubscribers"
+      assert_select "form[action=?] button", add_phone_numbers_madmin_show_path(shows(:past)), text: "Add Phone Numbers"
+    end
+
+    test "add_nonsubscribers adds the show's yes RSVPs to the mailing list and says who" do
+      attendee(shows(:past), "Jane")
+      Person.create!(first_name: "John", last_name: "Smith", email: "john.smith@example.com", status: "removed")
+      attendee(shows(:past), "John")
+
+      assert_difference("Person.count", 1) { post add_nonsubscribers_madmin_show_path(shows(:past)) }
+
+      assert_redirected_to madmin_show_path(shows(:past))
+      assert_equal "Added Jane Smith to the mailing list. Didn’t re-add John Smith, who unsubscribed, bounced or moved.", flash[:notice]
+      assert_predicate Person.find_by(email: "john.smith@example.com"), :removed?
+    end
+
+    test "add_nonsubscribers reports someone who couldn't be added as an error" do
+      attendee(shows(:past), "Jane").update_column(:first_name, "J") # rubocop:disable Rails/SkipsModelValidations
+
+      post add_nonsubscribers_madmin_show_path(shows(:past))
+
+      assert_match(/\ACouldn’t add J Smith \(.+\)\.\z/, flash[:alert])
+      assert_nil flash[:notice]
+    end
+
+    test "add_nonsubscribers says so when there's no one to add" do
+      post add_nonsubscribers_madmin_show_path(shows(:past))
+
+      assert_equal "Everyone who RSVPd yes is already on the mailing list.", flash[:notice]
+    end
+
+    test "add_phone_numbers fills in missing phone numbers from the show's RSVPs" do
+      attendee(shows(:past), "Jane", phone_number: "2125551234")
+      person = Person.create!(first_name: "Jane", last_name: "Smith", email: "jane.smith@example.com")
+
+      post add_phone_numbers_madmin_show_path(shows(:past))
+
+      assert_redirected_to madmin_show_path(shows(:past))
+      assert_equal "Added phone numbers for Jane Smith.", flash[:notice]
+      assert_predicate person.reload.phone_number, :present?
+
+      post add_phone_numbers_madmin_show_path(shows(:past))
+      assert_equal "No phone numbers to add.", flash[:notice]
+    end
+
     test "print_attendance lists the show's attendees and totals" do
       rsvp = attendee(shows(:upcoming), "Jane", seats_reserved: 2, phone_number: "2125551234")
 

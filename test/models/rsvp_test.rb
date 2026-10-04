@@ -169,6 +169,15 @@ class RsvpTest < ActiveSupport::TestCase
     assert_predicate rsvp.errors[:seats_used], :any?
   end
 
+  test "an RSVP without a phone number doesn't blank out the person's" do
+    person = Person.create!(first_name: "Jane", last_name: "Smith", email: "jane.smith@example.com")
+
+    RSVP.create!(show: shows(:past), first_name: "Jane", last_name: "Smith", email: person.email, response: "yes",
+                 seats_reserved: 1, phone_number: "")
+
+    assert_nil person.reload.phone_number
+  end
+
   test "cancelled_at is set when a yes changes to no, and cleared by a later yes" do
     rsvp = rsvps(:one)
     assert_nil rsvp.cancelled_at
