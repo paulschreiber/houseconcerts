@@ -58,4 +58,17 @@ class Person < ApplicationRecord
   def attendance_history
     RSVP.attended(email).reorder("shows.start DESC").select(:start, :name, :seats_used, :seats_reserved)
   end
+
+  def cancellation_history
+    RSVP.joins(:show).where(email: email).where.not(cancelled_at: nil)
+        .reorder("shows.start DESC").select(:start, :name, :cancelled_at)
+  end
+
+  # Shows attended and RSVPs cancelled, as [kind, rsvp] pairs (kind is
+  # :attended or :cancelled), newest show first.
+  def rsvp_history
+    entries = attendance_history.map { |rsvp| [ :attended, rsvp ] } +
+              cancellation_history.map { |rsvp| [ :cancelled, rsvp ] }
+    entries.sort_by { |_, rsvp| rsvp.start }.reverse
+  end
 end

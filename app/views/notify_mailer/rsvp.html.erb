@@ -16,17 +16,22 @@
 
 <%- if @rsvp.response == "yes" -%>
 <h2>Attendance History</h2>
-<%- if @shows_attended.any? %>
+<%- if @history.any? %>
 <ul>
-  <%- @shows_attended.each do |attended_rsvp| %>
-    <%- my_tag = attended_rsvp.seats_used.to_i < attended_rsvp.seats_reserved.to_i ? "strong" : "span" -%>
-
+  <%- @history.each do |kind, past_rsvp| %>
     <li>
-        <%= tag.public_send(my_tag) do %>
-          <%= attended_rsvp.start.to_date.iso8601 %>:
-          <%= attended_rsvp.name %>
-          (<%= attended_rsvp.seats_used.to_i %> / <%= attended_rsvp.seats_reserved.to_i %>)
-        <%- end -%>
+    <%- if kind == :cancelled -%>
+      <%= past_rsvp.start.to_date.iso8601 %>:
+      <%= past_rsvp.name %>
+      (cancelled <%= past_rsvp.cancelled_at.to_date.iso8601 %>)
+    <%- else -%>
+      <%- my_tag = past_rsvp.seats_used.to_i < past_rsvp.seats_reserved.to_i ? "strong" : "span" -%>
+      <%= tag.public_send(my_tag) do %>
+        <%= past_rsvp.start.to_date.iso8601 %>:
+        <%= past_rsvp.name %>
+        (<%= past_rsvp.seats_used.to_i %> / <%= past_rsvp.seats_reserved.to_i %>)
+      <%- end -%>
+    <%- end -%>
     </li>
   <%- end -%>
 </ul>
