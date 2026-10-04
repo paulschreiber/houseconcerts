@@ -54,5 +54,19 @@ module Madmin
 
       assert_redirected_to madmin_opens_path
     end
+
+    test "index has invite, confirm and remind scopes" do
+      Open.create!(tag: "some-show:invite", email: "invitee@example.com")
+      Open.create!(tag: "some-show:remind", email: "reminded@example.com")
+
+      get madmin_opens_path
+      %w[invite confirm remind].each do |scope|
+        assert_select ".scopes a[href*='scope=#{scope}']"
+      end
+
+      get madmin_opens_path(scope: "invite")
+      assert_includes response.body, "invitee@example.com"
+      assert_not_includes response.body, "reminded@example.com"
+    end
   end
 end
