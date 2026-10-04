@@ -15,12 +15,12 @@ class RSVPResource < Madmin::Resource
   attribute :ip_address, field: ReadonlyStringField, form: false, new: true, edit: true, searchable: false
   attribute :confirmed_at, field: ReadonlyDateTimeField, form: false, new: true, edit: true
   attribute :created_at
-  attribute :updated_at
   attribute :referrer, field: ReadonlyStringField, form: false, new: true, edit: true, searchable: false
   attribute :response, field: HideableResponseField, index: true
   attribute :confirmed, field: RadioEnumField
   attribute :attended_before, field: HideableAttendedBeforeField, label: "Attended Before", form: false, show: false, index: true,
                               compute: ->(record) { record.attended_before? ? "✔" : "✖" }
+  attribute :updated_at, field: HideableDateModifiedField, label: "Date Modified", index: true
 
   # Associations
   attribute :show
