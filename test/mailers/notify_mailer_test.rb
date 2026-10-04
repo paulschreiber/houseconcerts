@@ -206,6 +206,24 @@ class NotifyMailerTest < ActionMailer::TestCase
     assert_row_wrapped_in("span", body, show)
   end
 
+  test "ses_event tells the admin who bounced, with a link to them" do
+    person = people(:one)
+    email = NotifyMailer.ses_event(person, "bounce")
+
+    assert_equal "Bounce from #{person.full_name}", email.subject
+    assert_equal [ "#{Settings.invites_from_email}@#{Settings.domain}" ], email.to
+    assert_includes email.body.to_s, person.email
+    assert_includes email.body.to_s, "bounced permanently"
+    assert_includes email.body.to_s, "/backstage/people/#{person.id}"
+  end
+
+  test "ses_event explains a complaint" do
+    email = NotifyMailer.ses_event(people(:one), "complaint")
+
+    assert_equal "Complaint from #{people(:one).full_name}", email.subject
+    assert_includes email.body.to_s, "as spam"
+  end
+
   private
 
     def assert_row_wrapped_in(tag, body, show)

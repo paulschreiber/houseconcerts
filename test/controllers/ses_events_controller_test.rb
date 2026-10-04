@@ -15,22 +15,28 @@ class SesEventsControllerTest < ActionDispatch::IntegrationTest
     ENV["SES_EVENTS_TOKEN"] = @original_token
   end
 
-  test "a permanent bounce marks the person bouncing" do
-    deliver(bounce("Permanent", @person.email.upcase))
+  test "a permanent bounce marks the person bouncing and tells the admin" do
+    assert_enqueued_email_with NotifyMailer, :ses_event, args: [ @person, "bounce" ] do
+      deliver(bounce("Permanent", @person.email.upcase))
+    end
 
     assert_response :no_content
     assert_predicate @person.reload, :bouncing?
   end
 
   test "a transient bounce changes nothing" do
-    deliver(bounce("Transient", @person.email))
+    assert_no_enqueued_emails do
+      deliver(bounce("Transient", @person.email))
+    end
 
     assert_response :no_content
     assert_predicate @person.reload, :active?
   end
 
-  test "a complaint removes the person" do
-    deliver(complaint(@person.email))
+  test "a complaint removes the person and tells the admin" do
+    assert_enqueued_email_with NotifyMailer, :ses_event, args: [ @person, "complaint" ] do
+      deliver(complaint(@person.email))
+    end
 
     assert_response :no_content
     @person.reload
@@ -41,7 +47,9 @@ class SesEventsControllerTest < ActionDispatch::IntegrationTest
   test "a bounce doesn't undo an unsubscribe" do
     @person.removed!
 
-    deliver(bounce("Permanent", @person.email))
+    assert_no_enqueued_emails do
+      deliver(bounce("Permanent", @person.email))
+    end
 
     assert_response :no_content
     assert_predicate @person.reload, :removed?
@@ -53,7 +61,7 @@ class SesEventsControllerTest < ActionDispatch::IntegrationTest
     removed_at = @person.reload.removed_at
 
     travel 1.hour do
-      deliver(event)
+      assert_no_enqueued_emails { deliver(event) }
     end
 
     assert_response :no_content
