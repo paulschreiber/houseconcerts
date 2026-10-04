@@ -4,7 +4,6 @@ module Madmin
 
     before_action { Current.admin_scope = params[:scope] }
     before_action :next_show, if: -> { Current.admin_scope == "next_show_attendees" }
-    before_action :enforce_readonly, only: %i[confirm waitlist cancel]
 
     helper_method :attendee_totals
 
