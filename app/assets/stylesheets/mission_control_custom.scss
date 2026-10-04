@@ -1,4 +1,24 @@
-@use "admin_navbar";
+@use "admin_sidebar";
+
+/* The admin top bar and sidebar come from Madmin's own sidebar.css, loaded
+   in the overridden application_selection partial. It uses these variables
+   from Madmin's base.css, which isn't loaded because the rest of it restyles
+   the page (body, links, tables) that Mission Control's Bulma styles. */
+:root {
+  --primary-color: rgb(37 99 235);
+  --border-color: rgb(229 231 235);
+  --background-color: rgb(249 250 251);
+  --text-color: rgb(2 6 23);
+  --sidebar-width: 16rem;
+}
+
+/* Madmin's 14px system font, which Madmin sets on the whole page; Bulma's is
+   16px and a different font. */
+#navbar,
+#sidebar {
+  font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  font-size: 14px;
+}
 
 /* Mission Control wraps every page in Bulma's .section > .container, which
    adds padding/centering that madmin's flush, full-width #navbar doesn't
@@ -10,5 +30,69 @@
 
   @media screen and (width >= 1024px) {
     margin: -3rem -3rem 1.5rem;
+  }
+}
+
+/* Lay the sidebar out beside Mission Control's content, under the full-width
+   #navbar, flush against the page's left edge like Madmin's. Bulma's .section
+   padding is undone the same way as #navbar's above. Phones keep Mission
+   Control's own layout without the sidebar (Madmin's hamburger menu needs
+   Madmin's JavaScript). */
+@media screen and (width > 768px) {
+  .section > .container {
+    display: grid;
+
+    /* The sidebar is 16rem wide like Madmin's, part of it in the section's
+       left padding (see the negative margin below), with 1rem before the
+       content, also like Madmin's. */
+    grid-template-columns: calc(var(--sidebar-width) - 1.5rem) minmax(0, 1fr);
+    column-gap: 1rem;
+
+    /* A row per piece of Mission Control's content (it has fewer than 20),
+       then one flexible row. The sidebar spans them all, and a spanned
+       flexible row takes all of the sidebar's extra height, so the content
+       rows stay their natural height. */
+    grid-template-rows: auto repeat(19, auto) 1fr;
+
+    /* Full width, like Madmin's pages. Bulma caps .container at each
+       breakpoint with selectors like
+       .container:not(.is-max-tablet):not(.is-max-desktop):not(.is-max-widescreen) */
+    max-width: none !important;
+
+    > * {
+      grid-column: 2;
+    }
+
+    > #navbar {
+      grid-column: 1 / -1;
+    }
+
+    /* In the grid rather than Madmin's absolutely positioned sidebar, which
+       relies on Madmin's <main> */
+    > #sidebar {
+      grid-column: 1;
+      grid-row: 2 / -1;
+      position: static;
+      height: auto;
+      width: auto;
+      margin: -1.5rem 0 -3rem -1.5rem;
+      min-height: calc(100vh - 4rem);
+    }
+  }
+}
+
+@media screen and (width >= 1024px) {
+  .section > .container {
+    grid-template-columns: calc(var(--sidebar-width) - 3rem) minmax(0, 1fr);
+
+    > #sidebar {
+      margin-left: -3rem;
+    }
+  }
+}
+
+@media screen and (width <= 768px) {
+  #sidebar {
+    display: none;
   }
 }

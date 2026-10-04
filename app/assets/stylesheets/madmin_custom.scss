@@ -1,4 +1,4 @@
-@use "admin_navbar";
+@use "admin_sidebar";
 
 /* .form-group label beats Madmin's bare `label` rule on specificity, so this
    doesn't depend on stylesheet load order. */
@@ -72,24 +72,6 @@ body.rsvps.index .scopes a:nth-child(6) {
   margin-left: 1rem;
 }
 
-/* Sidebar section dividers (plain horizontal rules, no visible label) */
-nav h4 {
-  height: 0;
-  margin: 0.75rem 0;
-  padding: 0;
-  border: 0;
-  border-top: 1px solid var(--border-color);
-  text-indent: -9999px;
-  overflow: hidden;
-}
-
-/* Divider between the Dashboard link and the resource menu */
-#sidebar nav > a:first-child {
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 0.75rem;
-  margin-bottom: 0.75rem;
-}
-
 /* Madmin's body is `min-height: 100dvh`, not `height`, so on pages with
    content taller than one viewport, body (and its grid) grows to fit that
    content rather than staying capped at the viewport. That, plus grid
@@ -117,10 +99,11 @@ main:has(> #sidebar) {
    absolute) keeps the sidebar in normal flow. (Selectors here are scoped
    past Madmin's own bare `#sidebar`/`main` rules, which load after ours
    and would otherwise win ties on identical specificity.)
-   Scoped to Madmin's own desktop breakpoint (mobile, below 768px, keeps
+   Scoped to Madmin's own desktop breakpoint (mobile, 768px and below, keeps
    Madmin's default off-canvas #sidebar drawer — sticky positioning would
-   fight its position: fixed slide-in transform). */
-@media (width >= 768px) {
+   fight its position: fixed slide-in transform). Madmin's mobile styles are
+   max-width: 768px, so desktop starts above that. */
+@media (width > 768px) {
   main:has(> #sidebar) {
     display: flex;
     align-items: flex-start;
@@ -147,17 +130,6 @@ main:has(> #sidebar) {
     flex: 1;
     min-width: 0;
   }
-}
-
-/* Pin the sign out link (last nav link) to the bottom of the sidebar */
-#sidebar nav {
-  display: flex;
-  flex-direction: column;
-  min-height: 100%;
-}
-
-#sidebar nav > a:last-child {
-  margin-top: auto;
 }
 
 .actions .metrics {
@@ -237,7 +209,7 @@ body.passkeys {
   }
 
   /* Full width on phones only, like Madmin's 768px breakpoint */
-  @media (width >= 768px) {
+  @media (width > 768px) {
     .passkey-form .form-input {
       max-width: 24rem;
     }
