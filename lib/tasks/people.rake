@@ -15,21 +15,19 @@ namespace :people do
 
   desc "Add phone numbers from RSVPs table to people in the people table"
   task add_phone_numbers: :environment do
-    people = Person.where(phone_number: nil).where(email: RSVP.where.not(phone_number: nil).select(:email))
-    people.each do |person|
-      rsvp = RSVP.where(email: person.email).where.not(phone_number: nil).order(id: :desc).first
-      next unless rsvp && rsvp.phone_number.present?
-
-      puts "Adding phone number #{rsvp.phone_number} to person #{person.email}"
-      person.update(phone_number: rsvp.phone_number)
+    AddPhoneNumbers.call.each do |person|
+      puts "Added phone number #{person.phone_number} to person #{person.email}"
     end
   end
 
   desc "Add people who RSVPd for the most recent show, and aren't on the list, to the list"
   task add_nonsubscribers: :environment do
-    rsvps = find_nonsubscribers
-    rsvps.each(&:create_person)
-    puts "Added #{rsvps.collect(&:email).to_sentence}" unless rsvps.empty?
+    show = Show.occurred.last
+    result = AddNonsubscribers.call(show)
+    puts "Found #{result.added.size + result.skipped.size + result.failed.size} who RSVPd for #{show.name} and are not subscribed"
+    puts "Added #{result.added.collect(&:email).to_sentence}" unless result.added.empty?
+    puts "Skipped #{result.skipped.collect(&:email).to_sentence} (unsubscribed, bouncing or moved)" unless result.skipped.empty?
+    result.failed.each { |rsvp, errors| puts "Couldn't add #{rsvp.email}: #{errors}" }
   end
 
   desc "List people who unsubscribed"

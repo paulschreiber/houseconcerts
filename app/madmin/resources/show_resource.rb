@@ -34,6 +34,11 @@ class ShowResource < Madmin::Resource
       link_to("Print Attendance", print_attendance_madmin_show_path(record), class: "btn btn-secondary", target: "_blank", rel: "noopener")
   end
 
+  member_action do |record|
+    button_to("Add Nonsubscribers", add_nonsubscribers_madmin_show_path(record), class: "btn btn-secondary") +
+      button_to("Add Phone Numbers", add_phone_numbers_madmin_show_path(record), class: "btn btn-secondary")
+  end
+
   # On the index, beside View and Edit: print the list for upcoming shows,
   # record attendance for past ones. (The show page has both, above.)
   member_action(collection: true) do |record|
