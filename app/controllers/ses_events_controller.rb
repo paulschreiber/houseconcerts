@@ -27,7 +27,10 @@ class SesEventsController < ActionController::API
       given = request.headers[TOKEN_HEADER].to_s
       return if expected.present? && ActiveSupport::SecurityUtils.secure_compare(given, expected)
 
+      # 401, not 403: EventBridge retries a 401 (for up to 24 hours) but sends
+      # a 403 straight to the dead-letter queue, so events sent while the
+      # token is being rotated aren't lost.
       Rails.logger.warn("SES events: refused a request without a valid #{TOKEN_HEADER}")
-      head :forbidden
+      head :unauthorized
     end
 end
