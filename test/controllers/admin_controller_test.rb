@@ -14,4 +14,14 @@ class AdminControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
   end
+
+  test "shows the admin sidebar on the jobs page" do
+    sign_in admins(:one)
+
+    get "/backstage/jobs"
+
+    assert_select "aside#sidebar a[href=?]", "/#{Settings.admin_prefix}", text: "Dashboard"
+    assert_select "aside#sidebar a[href=?]", "/#{Settings.admin_prefix}/people", text: "People"
+    assert_select "aside#sidebar a.active", text: "Jobs"
+  end
 end
