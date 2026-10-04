@@ -372,6 +372,50 @@ module Madmin
       assert_select "a[href=?]", attendance_madmin_show_path(shows(:past)), count: 0
     end
 
+    test "the attendee scopes list RSVPs by last name, then first name" do
+      { "next_show_attendees" => Show.next, "previous_show_attendees" => Show.previous }.each do |scope, show|
+        RSVP.where(show:).delete_all
+        [ %w[Zed Adams], %w[Amy Baker], %w[Bob Adams] ].each do |first_name, last_name|
+          RSVP.create!(show:, first_name:, last_name:, email: "#{first_name}.#{last_name}@example.com".downcase,
+                       response: "yes", confirmed: "confirmed", seats_reserved: 1)
+        end
+
+        get madmin_rsvps_path(scope:)
+
+        names = response.parsed_body.css("tbody tr").map { |row| row.text[/(Bob Adams|Zed Adams|Amy Baker)/] }
+        assert_equal [ "Bob Adams", "Zed Adams", "Amy Baker" ], names, scope
+      end
+    end
+
+    test "sorting by Name orders RSVPs by last name, then first name" do
+      RSVP.delete_all
+      [ %w[Zed Adams], %w[Amy Baker], %w[Bob Adams] ].each do |first_name, last_name|
+        RSVP.create!(show: shows(:upcoming), first_name:, last_name:, email: "#{first_name}.#{last_name}@example.com".downcase,
+                     response: "yes", seats_reserved: 1)
+      end
+
+      { "asc" => [ "Bob Adams", "Zed Adams", "Amy Baker" ], "desc" => [ "Amy Baker", "Zed Adams", "Bob Adams" ] }.each do |direction, expected|
+        get madmin_rsvps_path(sort: "full_name", direction:)
+
+        names = response.parsed_body.css("tbody tr").map { |row| row.text[/(Bob Adams|Zed Adams|Amy Baker)/] }
+        assert_equal expected, names, direction
+      end
+    end
+
+    test "a clicked column still sorts the attendee scopes" do
+      show = Show.next
+      RSVP.where(show:).delete_all
+      [ %w[Amy Baker], %w[Bob Adams] ].each do |first_name, last_name|
+        RSVP.create!(show:, first_name:, last_name:, email: "#{first_name}@example.com".downcase,
+                     response: "yes", confirmed: "confirmed", seats_reserved: 1)
+      end
+
+      get madmin_rsvps_path(scope: "next_show_attendees", sort: "first_name", direction: "desc")
+
+      names = response.parsed_body.css("tbody tr").map { |row| row.text[/(Bob Adams|Amy Baker)/] }
+      assert_equal [ "Bob Adams", "Amy Baker" ], names
+    end
+
     private
 
       # Finds an RSVP's table row by name and returns its <td> cells, so

@@ -267,5 +267,33 @@ module Madmin
       assert_redirected_to madmin_people_path
       assert_match(/Can’t record a “no” RSVP/, flash[:alert])
     end
+    test "sorting by Name orders people by last name, then first name" do
+      Person.delete_all
+      [ %w[Zed Adams], %w[Amy Baker], %w[Bob Adams] ].each do |first_name, last_name|
+        Person.create!(first_name:, last_name:, email: "#{first_name}.#{last_name}@example.com".downcase)
+      end
+
+      { "asc" => [ "Bob Adams", "Zed Adams", "Amy Baker" ], "desc" => [ "Amy Baker", "Zed Adams", "Bob Adams" ] }.each do |direction, expected|
+        get madmin_people_path(sort: "full_name", direction:)
+
+        names = response.parsed_body.css("tbody tr").map { |row| row.text[/(Bob Adams|Zed Adams|Amy Baker)/] }
+        assert_equal expected, names, direction
+      end
+    end
+
+    test "the removed scope lists the most recently removed first, with the sort arrow on Removed At" do
+      older = Person.create!(first_name: "Amy", last_name: "Adams", email: "amy@example.com")
+      newer = Person.create!(first_name: "Zed", last_name: "Zane", email: "zed@example.com")
+      # Removing someone sets removed_at to now, so backdate them afterwards.
+      [ older, newer ].each(&:removed!)
+      older.update_column(:removed_at, 2.days.ago) # rubocop:disable Rails/SkipsModelValidations
+      newer.update_column(:removed_at, 1.day.ago) # rubocop:disable Rails/SkipsModelValidations
+
+      get madmin_people_path(scope: "removed")
+
+      assert_operator response.body.index("Zed Zane"), :<, response.body.index("Amy Adams")
+      assert_select "thead th a[href*='sort=removed_at'] svg"
+      assert_select "thead th a[href*='sort=full_name'][href*='direction=asc']"
+    end
   end
 end
