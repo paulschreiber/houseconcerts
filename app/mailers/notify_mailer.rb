@@ -19,7 +19,7 @@ class NotifyMailer < ApplicationMailer
                    .update_all(admin_notified_at: rsvp.updated_at) # rubocop:disable Rails/SkipsModelValidations
     return unless claimed.positive?
 
-    Thread.current[:mailer_claim] = { scope: scope, column: :admin_notified_at }
+    Current.mailer_claim = { scope: scope, column: :admin_notified_at }
 
     @rsvp = rsvp
     @old_seats = old_seats

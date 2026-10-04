@@ -2,7 +2,7 @@ class ApplicationMailer < ActionMailer::Base
   default from: -> { formatted_address(Settings.invites_from_name, Settings.invites_from_email) }
   layout "mailer"
 
-  before_action { Thread.current[:mailer_claim] = nil }
+  before_action { Current.mailer_claim = nil }
 
   # Mailer actions that must send at most once (confirm/waitlisted/rsvp)
   # call #claim_delivery? to atomically mark a record before building the
@@ -11,8 +11,12 @@ class ApplicationMailer < ActionMailer::Base
   # find the claim already taken and silently skip resending -- release
   # the claim on any exception during that job (processing or delivery)
   # so a retry can actually resend, then let it fail/retry as normal.
+  #
+  # The claim lives on Current, which Rails resets around every job, so a job
+  # that fails before its action runs (e.g. its record was deleted) can't
+  # release a claim left over from an earlier job.
   def self.handle_exception(exception)
-    if (claim = Thread.current[:mailer_claim])
+    if (claim = Current.mailer_claim)
       claim[:scope].update_all(claim[:column] => nil) # rubocop:disable Rails/SkipsModelValidations
     end
     super
@@ -27,7 +31,7 @@ class ApplicationMailer < ActionMailer::Base
     # it if this job goes on to fail.
     def claim_delivery?(scope, column)
       claimed = scope.where(column => nil).update_all(column => Time.current) # rubocop:disable Rails/SkipsModelValidations
-      Thread.current[:mailer_claim] = { scope: scope, column: column } if claimed.positive?
+      Current.mailer_claim = { scope: scope, column: column } if claimed.positive?
       claimed.positive?
     end
 
