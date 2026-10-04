@@ -77,7 +77,7 @@ class SesEventsControllerTest < ActionDispatch::IntegrationTest
       headers[SesEventsController::TOKEN_HEADER] = token if token
       post ses_events_path, params: complaint(@person.email).to_json, headers: headers
 
-      assert_response :forbidden, token.inspect
+      assert_response :unauthorized, token.inspect
     end
     assert_predicate @person.reload, :active?
   end
@@ -87,7 +87,7 @@ class SesEventsControllerTest < ActionDispatch::IntegrationTest
 
     deliver(complaint(@person.email), token: "")
 
-    assert_response :forbidden
+    assert_response :unauthorized
     assert_predicate @person.reload, :active?
   end
 
