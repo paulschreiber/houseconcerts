@@ -30,7 +30,7 @@ class RSVPNoTest < ActiveSupport::TestCase
     person = people(:one)
     show = shows(:upcoming)
 
-    # Simulate two requests that both miss the find_or_initialize_by above:
+    # Simulate two requests that both miss RSVPNo's find_or_initialize_by:
     # the first call to #save creates the "winning" row out from under us and
     # raises the DB's unique-index violation, exactly like a concurrent
     # request would; the second call (our recovery update) behaves normally.
@@ -57,5 +57,23 @@ class RSVPNoTest < ActiveSupport::TestCase
 
     assert_equal 1, RSVP.where(show_id: show.id, email: person.email).count
     assert RSVP.find_by(show_id: show.id, email: person.email).no?
+  end
+
+  test "returns false instead of raising when the collision is on another unique index" do
+    person = people(:one)
+    show = shows(:upcoming)
+
+    original_save = RSVP.instance_method(:save)
+    RSVP.send(:define_method, :save) do |*_args, **_kwargs|
+      raise ActiveRecord::RecordNotUnique, "Duplicate entry for key 'index_rsvps_on_uniqid'"
+    end
+
+    begin
+      assert_no_difference "RSVP.count" do
+        assert_equal false, RSVPNo.call(person, show)
+      end
+    ensure
+      RSVP.send(:define_method, :save, original_save)
+    end
   end
 end
