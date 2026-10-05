@@ -50,11 +50,6 @@ class ShowResource < Madmin::Resource
     end
   end
 
-  # Add actions to the resource's index page
-  # collection_action do
-  #   link_to "Bulk Import", bulk_import_path, class: "btn btn-secondary"
-  # end
-
   # Customize the display name of records in the admin area.
   def self.display_name(record) = "#{record.name} — #{record.start.strftime('%Y-%m-%d')}"
 

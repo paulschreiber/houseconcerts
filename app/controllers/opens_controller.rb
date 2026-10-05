@@ -19,11 +19,9 @@ class OpensController < ApplicationController
 
   private
 
-    # Every tracking pixel we generate now includes a "kind" hint so opens
-    # aren't misattributed if a Person's uniqid ever collides with an
-    # unrelated RSVP's (uniqid is only unique per-table, not across both).
-    # Pixels from emails sent before this change won't have a kind, so we
-    # fall back to the old best-effort Person-then-RSVP lookup for those.
+    # A tracking pixel's "kind" says whether its uniqid is a Person's or an
+    # RSVP's (uniqid is only unique within each table). A pixel without one
+    # is looked up as a Person, then an RSVP.
     def find_record(kind, uniqid)
       case kind
       when "person" then Person.find_by(uniqid: uniqid)
