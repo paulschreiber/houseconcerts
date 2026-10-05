@@ -63,6 +63,14 @@ class Dashboard
     Show.where(slug: slugs).index_by(&:slug)
   end
 
+  # Who each open's email belongs to, keyed by email: their Person, or for
+  # someone not on the mailing list, their latest RSVP.
+  def openers_by_email(opens)
+    emails = opens.filter_map(&:email).uniq
+    openers = Person.where(email: emails).index_by(&:email)
+    RSVP.where(email: emails - openers.keys).order(:id).index_by(&:email).merge(openers)
+  end
+
   def recent_unsubscribes
     Person.removed.order(removed_at: :desc).limit(RECENT_LIMIT)
   end
