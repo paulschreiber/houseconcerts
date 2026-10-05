@@ -138,7 +138,8 @@ class NotifyMailerTest < ActionMailer::TestCase
 
     body = NotifyMailer.rsvp(rsvp, "new", nil).body.encoded
 
-    assert_match(%r{Newest Show\s*\(1 / 2\).*Middle Show\s*\(cancelled 2026-09-01\).*Oldest Show\s*\(2 / 2\)}m, body)
+    rows = history_rows(body).map { |row| row.css("td")[1..].map { |td| td.text.strip } }
+    assert_equal [ [ "Newest Show", "1 / 2" ], [ "Middle Show", "Cancelled 2026-09-01" ], [ "Oldest Show", "2 / 2" ] ], rows
     assert_not_includes body, "No previous reservations."
   end
 
@@ -152,8 +153,8 @@ class NotifyMailerTest < ActionMailer::TestCase
     body = email.body.encoded
 
     assert_includes body, attended.show.name
-    assert_equal 1, body.scan("<li>").count
-    assert_row_wrapped_in("span", body, attended.show)
+    assert_equal 1, history_rows(body).count
+    assert_row_bold(false, body, attended.show)
   end
 
   test "rsvp lists three past shows for someone who attended three shows" do
@@ -175,10 +176,10 @@ class NotifyMailerTest < ActionMailer::TestCase
     assert_includes body, show_a.name
     assert_includes body, show_b.name
     assert_includes body, show_c.name
-    assert_equal 3, body.scan("<li>").count
-    assert_row_wrapped_in("span", body, show_a)
-    assert_row_wrapped_in("span", body, show_b)
-    assert_row_wrapped_in("span", body, show_c)
+    assert_equal 3, history_rows(body).count
+    assert_row_bold(false, body, show_a)
+    assert_row_bold(false, body, show_b)
+    assert_row_bold(false, body, show_c)
   end
 
   test "rsvp bolds a past show where fewer seats were used than reserved" do
@@ -192,10 +193,10 @@ class NotifyMailerTest < ActionMailer::TestCase
     email = NotifyMailer.rsvp(rsvp, "new", nil)
     body = email.body.encoded
 
-    assert_row_wrapped_in("strong", body, show)
+    assert_row_bold(true, body, show)
   end
 
-  test "rsvp uses a span for a past show where seats used equals seats reserved" do
+  test "rsvp does not bold a past show where seats used equals seats reserved" do
     person = Person.create!(first_name: "Exact", last_name: "Seats", email: "exact.seats@example.com")
     show = create_past_show("Exact Seats", 1)
     create_past_rsvp(person, show, seats_reserved: 2, seats_used: 2)
@@ -206,10 +207,10 @@ class NotifyMailerTest < ActionMailer::TestCase
     email = NotifyMailer.rsvp(rsvp, "new", nil)
     body = email.body.encoded
 
-    assert_row_wrapped_in("span", body, show)
+    assert_row_bold(false, body, show)
   end
 
-  test "rsvp uses a span for a past show where more seats were used than reserved" do
+  test "rsvp does not bold a past show where more seats were used than reserved" do
     person = Person.create!(first_name: "Extra", last_name: "Seats", email: "extra.seats@example.com")
     show = create_past_show("Extra Seats", 1)
     create_past_rsvp(person, show, seats_reserved: 2, seats_used: 3)
@@ -220,7 +221,7 @@ class NotifyMailerTest < ActionMailer::TestCase
     email = NotifyMailer.rsvp(rsvp, "new", nil)
     body = email.body.encoded
 
-    assert_row_wrapped_in("span", body, show)
+    assert_row_bold(false, body, show)
   end
 
   test "ses_event tells the admin who bounced, with a link to them" do
@@ -243,8 +244,14 @@ class NotifyMailerTest < ActionMailer::TestCase
 
   private
 
-    def assert_row_wrapped_in(tag, body, show)
-      assert_match(/<#{tag}>\s*#{Regexp.escape(show.start.to_date.iso8601)}.*#{Regexp.escape(show.name)}/m, body)
+    def history_rows(body)
+      Nokogiri::HTML(body).css(".history tbody tr")
+    end
+
+    def assert_row_bold(bold, body, show)
+      row = history_rows(body).find { |tr| tr.css("td").map { |td| td.text.strip }.first(2) == [ show.start.to_date.iso8601, show.name ] }
+      assert row, "no history row for #{show.name}"
+      assert_equal bold, row.classes.include?("unused-seats")
     end
 
     def create_past_show(name, months_ago)
