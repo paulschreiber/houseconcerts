@@ -44,47 +44,34 @@ namespace :people do
 
     unless import_target
       puts "Please enter an a filename"
-      exit
+      exit 1
     end
 
-    unless File.exist?(import_target)
-      puts "#{import_target} does not exist"
-      exit
+    unless File.file?(import_target)
+      puts "#{import_target} does not exist, or isn't a file"
+      exit 1
     end
 
     begin
-      data = File.read(import_target)
+      data = File.binread(import_target)
       if data.empty?
         puts "#{import_target} is blank"
-        exit
+        exit 1
       end
     rescue Errno::EACCES => e
       puts "#{import_target} cannot be read (#{e.message})"
-      exit
+      exit 1
     end
 
-    imported = []
-    data.split("\n").each do |line|
-      # Same regex (and the same tradeoff) is duplicated in
-      # app/javascript/controllers/name_paste_controller.js -- keep both in
-      # sync. The greedy first group always treats everything before the
-      # last space as the first name: correct for multi-word first names
-      # ("Mary Jane Watson" -> first="Mary Jane", last="Watson"), but a
-      # middle initial lands in the first name too ("John Q Public" ->
-      # first="John Q", last="Public", not first="John", last="Q Public").
-      matches = line.match(/(.*) (.*) <([^>]+)>/)
-      if matches.nil? || matches.size != 4
-        puts "Skipping: [#{line}]"
-      else
-        begin
-          Person.create(first_name: matches[1], last_name: matches[2], email: matches[3])
-          imported << matches[3]
-        rescue ActiveRecord::RecordNotUnique
-          puts "Duplicate: [#{line}]"
-        end
-      end
+    begin
+      result = ImportPeople.call(data, filename: import_target)
+    rescue ImportPeople::Error => e
+      puts e.message
+      exit 1
     end
 
-    puts "Import #{imported.to_sentence}" unless imported.empty?
+    result.invalid.each { |line| puts "Skipping: [#{line.text}] (#{line.reason})" }
+    result.skipped.each { |line| puts "Duplicate: [#{line.text}] (#{line.reason})" }
+    puts "Imported #{result.added.collect(&:email).to_sentence}" unless result.added.empty?
   end
 end

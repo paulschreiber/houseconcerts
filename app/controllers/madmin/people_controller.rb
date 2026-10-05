@@ -5,6 +5,27 @@ module Madmin
 
     before_action { Current.admin_scope = params[:scope] }
     before_action :next_show, if: -> { action_name.in?(%w[index show]) }
+    skip_before_action :set_record, only: %i[import run_import]
+
+    # Bulk import: paste text or upload a file (see ImportPeople for the
+    # formats).
+    def import; end
+
+    def run_import
+      file = params[:file].presence
+      file = nil unless file.respond_to?(:read)
+      text = params[:text].to_s
+      return import_error(t("madmin.people.import.text_and_file")) if file && text.present?
+
+      # One byte over the limit is enough for ImportPeople to reject it.
+      data = file ? file.read(Settings.import.max_bytes + 1).to_s : text
+      return import_error(t("madmin.people.import.nothing_to_import")) if data.strip.empty?
+
+      @result = ImportPeople.call(data, filename: file&.original_filename)
+      render :import
+    rescue ImportPeople::Error => e
+      import_error(e.message)
+    end
 
     def invite
       show = next_show
@@ -25,6 +46,11 @@ module Madmin
     end
 
     private
+
+      def import_error(message)
+        flash.now[:alert] = message
+        render :import, status: :unprocessable_content
+      end
 
       # Preload can_rsvp_no? for the whole page in one query instead of one
       # per row.

@@ -6,3 +6,7 @@ en:
       attendance:
         not_saved: "Attendance wasn’t saved. Enter a valid number of seats used for each attendee."
         seats_used_blank: "Enter the seats used."
+    people:
+      import:
+        nothing_to_import: "Paste some names and email addresses, or choose a file."
+        text_and_file: "Paste text or choose a file, not both."

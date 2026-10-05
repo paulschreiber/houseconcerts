@@ -1,0 +1,67 @@
+<% content_for :title, "Import People" %>
+
+<header class="header">
+  <h1>Import People</h1>
+
+  <div class="actions">
+    <%= link_to "Back", madmin_people_path, class: "btn btn-secondary" %>
+  </div>
+</header>
+
+<% if @result %>
+  <section class="import-result">
+    <% if @result.added.any? %>
+      <p>Added <%= pluralize(@result.added.size, "person") %>: <%= @result.added.map(&:full_name).to_sentence %>.</p>
+    <% else %>
+      <p>No one was added.</p>
+    <% end %>
+
+    <% { "Skipped" => @result.skipped, "Couldn’t import" => @result.invalid }.each do |heading, lines| %>
+      <% next if lines.empty? %>
+      <h2><%= heading %> (<%= lines.size %>)</h2>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Line</th><th>Text</th><th>Reason</th></tr>
+          </thead>
+          <tbody>
+            <% lines.each do |line| %>
+              <tr><td><%= line.number %></td><td><%= line.text %></td><td><%= line.reason %></td></tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  </section>
+<% end %>
+
+<p>One person per line, in any of these forms:</p>
+<ul class="import-formats">
+  <li><code>First Last &lt;email@example.com&gt;</code></li>
+  <li><code>First,Last,email@example.com</code></li>
+  <li><code>First⇥Last⇥email@example.com</code> (separated by tabs)</li>
+</ul>
+<p>Up to <%= number_with_delimiter(Settings.import.max_lines) %> lines. Anyone already on file, including people who unsubscribed, is skipped.</p>
+
+<%# A normal submit, not Turbo: the results are rendered in place rather than
+    redirected to, since they can list many lines. %>
+<%= form_with url: import_madmin_people_path, method: :post, multipart: true, class: "import-form", data: { turbo: false } do %>
+  <div class="form-group">
+    <%= label_tag :text, "Paste names and email addresses" %>
+    <%# Kept after an error to fix and resubmit, cleared after an import. %>
+    <%= text_area_tag :text, (params[:text] unless @result), rows: 10, class: "form-input" %>
+  </div>
+
+  <div class="form-group">
+    <span class="form-label">Or upload a file</span>
+    <div class="drop-zone" data-controller="drop-zone">
+      <%= file_field_tag :file, accept: ".csv,.tsv,.txt", aria: { label: "Upload a .csv, .tsv or .txt file" },
+                                data: { drop_zone_target: "input",
+                                        action: "dragenter->drop-zone#highlight dragleave->drop-zone#unhighlight " \
+                                                "drop->drop-zone#unhighlight change->drop-zone#showFilename" } %>
+      <p data-drop-zone-target="label">Drop a .csv, .tsv or .txt file here, or click to choose one</p>
+    </div>
+  </div>
+
+  <%= submit_tag "Import", class: "btn btn-primary" %>
+<% end %>
