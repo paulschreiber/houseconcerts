@@ -10,6 +10,8 @@ module Madmin
       unconfirmed = rsvp(shows(:upcoming), "Jane")
       rsvp(shows(:past), "John", confirmed: "confirmed", phone_number: "2125551234")
       Person.create!(first_name: "Joan", last_name: "Smith", email: "joan.smith@example.com", status: "removed")
+      opener = Person.create!(first_name: "Pat", last_name: "Lee", email: "pat.lee@example.com")
+      Open.create!(tag: "#{shows(:upcoming).slug}:invite", email: opener.email, open: true)
 
       get madmin_root_path
 
@@ -20,6 +22,8 @@ module Madmin
       assert_select "p", text: "Attendance isn’t recorded yet"
       assert_select "form[action=?] button", add_nonsubscribers_madmin_show_path(shows(:past)), text: "Add to mailing list"
       assert_select "td", text: "joan.smith@example.com"
+      assert_select "td a[href=?]", madmin_person_path(opener), text: "Pat Lee"
+      assert_select "td", text: "pat.lee@example.com", count: 0
       assert_select "svg path", minimum: 2
     end
 
