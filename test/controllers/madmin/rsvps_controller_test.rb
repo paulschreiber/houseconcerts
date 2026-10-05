@@ -247,7 +247,7 @@ module Madmin
       assert_no_match(/>Print</, response.body)
     end
 
-    test "index renders Show and Seats columns instead of Show Name/Show Date/Seats Reserved" do
+    test "index combines the show name and date into a Show column, and labels seats reserved Seats" do
       get madmin_rsvps_path
 
       assert_response :success
@@ -317,8 +317,7 @@ module Madmin
       # it's scoped to one email (=) or a batch of emails (IN (...)); the
       # INNER JOIN check excludes the unrelated next_show_attendees/totals
       # queries, which also filter on response/confirmed but don't join
-      # shows. This fails with 2 (one per attended row) against the old
-      # per-row query and passes with 1 against the batched version.
+      # shows. A per-row lookup would run it once per attended row.
       attended_queries = 0
       callback = lambda do |*, payload|
         sql = payload[:sql]

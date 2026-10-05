@@ -85,6 +85,15 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
     assert_select "h2", text: "No shows found"
   end
 
+  test "the calendar feed is at /calendar and /calendar.ics, and no other format" do
+    get "/calendar.ics"
+    assert_response :success
+    assert_equal "text/calendar", @response.media_type
+
+    get "/calendar.json"
+    assert_response :not_found
+  end
+
   test "calendar returns an ics feed of upcoming shows" do
     show = shows(:upcoming)
 

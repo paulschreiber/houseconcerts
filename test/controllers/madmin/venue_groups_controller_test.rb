@@ -75,7 +75,7 @@ module Madmin
     end
 
     test "index lists venue groups by name, with the sort arrow on Name" do
-      # Newest first (the old default) would put Zebra first.
+      # Newest first (Madmin's default) would put Zebra first.
       VenueGroup.create!(name: "Aardvark Group").update_column(:created_at, 1.day.ago) # rubocop:disable Rails/SkipsModelValidations
       VenueGroup.create!(name: "Zebra Group")
 

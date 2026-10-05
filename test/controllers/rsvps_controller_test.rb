@@ -149,9 +149,8 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
     email = "phantom-race@example.com"
 
     # Simulate a RecordNotUnique from some other constraint (not show_id +
-    # email), so the recovery's find_by(show_id:, email:) finds no row --
-    # this used to crash calling #update on nil instead of re-rendering the
-    # form.
+    # email), so the recovery's find_by(show_id:, email:) finds no row: the
+    # form is re-rendered instead of crashing.
     original_save = RSVP.instance_method(:save)
     RSVP.send(:define_method, :save) do |*_args, **_kwargs|
       raise ActiveRecord::RecordNotUnique, "Duplicate entry for key 'index_rsvps_on_uniqid'"
