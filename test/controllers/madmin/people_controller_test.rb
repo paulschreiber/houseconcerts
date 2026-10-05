@@ -295,5 +295,90 @@ module Madmin
       assert_select "thead th a[href*='sort=removed_at'] svg"
       assert_select "thead th a[href*='sort=full_name'][href*='direction=asc']"
     end
+
+    test "index links to the import page" do
+      get madmin_people_path
+
+      assert_select "a[href=?]", import_madmin_people_path, text: "Import"
+    end
+
+    test "import shows the form" do
+      get import_madmin_people_path
+
+      assert_response :success
+      assert_select "form[action=?][enctype='multipart/form-data'] textarea[name=text]", import_madmin_people_path
+      assert_select ".drop-zone[data-controller=drop-zone] input[type=file][name=file][accept='.csv,.tsv,.txt']"
+    end
+
+    test "run_import imports pasted text and lists what happened" do
+      Person.create!(first_name: "John", last_name: "Doe", email: "john.doe@example.com")
+
+      post import_madmin_people_path, params: { text: "Jane Smith <jane.smith@example.com>\nJohn,Doe,john.doe@example.com\nnonsense" }
+
+      assert_response :success
+      assert Person.exists?(email: "jane.smith@example.com")
+      assert_includes response.body, "Added 1 person: Jane Smith."
+      assert_select "h2", text: "Skipped (1)"
+      assert_select "h2", text: "Couldn’t import (1)"
+      assert_select "textarea[name=text]", text: ""
+    end
+
+    test "run_import imports an uploaded file" do
+      file = Tempfile.new([ "people", ".csv" ])
+      file.write("Jane,Smith,jane.smith@example.com\n")
+      file.close
+
+      post import_madmin_people_path, params: { file: Rack::Test::UploadedFile.new(file.path, "text/csv") }
+
+      assert_response :success
+      assert Person.exists?(email: "jane.smith@example.com")
+    ensure
+      file&.unlink
+    end
+
+    test "run_import rejects a file with the wrong extension, one that isn't text, or nothing at all" do
+      file = Tempfile.new([ "people", ".png" ])
+      file.binmode
+      file.write("\x89PNG\r\n\x1A\n\x00\x00".b)
+      file.close
+
+      post import_madmin_people_path, params: { file: Rack::Test::UploadedFile.new(file.path, "image/png") }
+      assert_response :unprocessable_content
+      assert_select ".alert-danger", text: /isn’t a \.csv, \.tsv or \.txt file/
+
+      renamed = "#{file.path}.txt"
+      File.rename(file.path, renamed)
+      post import_madmin_people_path, params: { file: Rack::Test::UploadedFile.new(renamed, "text/plain") }
+      assert_response :unprocessable_content
+      assert_select ".alert-danger", text: /isn’t a text file/
+
+      post import_madmin_people_path, params: { text: "  " }
+      assert_response :unprocessable_content
+      assert_select ".alert-danger", text: /Paste some names/
+    ensure
+      file&.unlink
+      FileUtils.rm_f(renamed) if renamed
+    end
+
+    test "run_import refuses pasted text and a file together" do
+      file = Tempfile.new([ "people", ".csv" ])
+      file.write("Jane,Smith,jane.smith@example.com\n")
+      file.close
+
+      post import_madmin_people_path, params: { text: "John Doe <john.doe@example.com>", file: Rack::Test::UploadedFile.new(file.path, "text/csv") }
+
+      assert_response :unprocessable_content
+      assert_select ".alert-danger", text: "Paste text or choose a file, not both."
+      assert_not Person.exists?(email: "jane.smith@example.com")
+    ensure
+      file&.unlink
+    end
+
+    test "run_import treats a file param that isn't an upload as no file" do
+      post import_madmin_people_path, params: { file: "not an upload", text: "Jane Smith <jane.smith@example.com>" }
+
+      assert_response :success
+      assert Person.exists?(email: "jane.smith@example.com")
+    end
   end
 end
