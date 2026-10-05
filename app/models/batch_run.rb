@@ -28,12 +28,8 @@ class BatchRun < ApplicationRecord
     sent_count + failed_count
   end
 
-  # Shared by every place that changes a batch_run's visible state
-  # (BatchRunItemJob, BatchRunFanOutJob, Madmin::ShowsController#cancel_batch_run):
-  # broadcasting from one place, rather than duplicating this call at
-  # each site, is what keeps them from drifting -- cancel_batch_run once
-  # didn't broadcast at all, leaving any other admin with the show page
-  # open still looking at "Running" until they refreshed.
+  # Updates the run's progress on any open show page. Called by everything
+  # that changes a run's visible state.
   def broadcast_progress
     Turbo::StreamsChannel.broadcast_replace_to(
       [ show, :batch_progress ],

@@ -1,11 +1,5 @@
-<%# The running-state failed count/button below is queried live rather
-    than trusting batch_run.failed_count: that cached column is only
-    ever refreshed as part of some item's own record_progress call, so
-    a batch_run row read at just the wrong moment (e.g. right after an
-    item fails, before its own recompute reaches this field) could
-    still show a stale count here. The completed-state count doesn't
-    need this -- once a run is completed, nothing changes its counters
-    again, so it's always accurate by then. %>
+<%# A running run's failures are counted from its items, since the cached
+    failed_count can lag behind; a completed run's counts no longer change. %>
 <% failed_count = batch_run.completed? ? batch_run.failed_count : batch_run.batch_run_items.failed.count %>
 <div id="batch_run_progress_<%= batch_run.kind %>" class="batch-progress-status">
   <% if batch_run.completed? %>

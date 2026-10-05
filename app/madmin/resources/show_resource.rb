@@ -62,11 +62,8 @@ class ShowResource < Madmin::Resource
   end
 
   member_action do |record|
-    # Only the next show can have a new batch started, but batch history
-    # stays visible for every other show that has ever had one, so a past
-    # show's failed sends are still visible from its own page. Retry
-    # buttons appear only until the show has happened (see
-    # _batch_run_progress), since sends for a past show are useless.
+    # Only the next show can start a batch; any show with batches shows their
+    # progress, and their failures until it has happened.
     send_buttons = if record.next_show?
       safe_join(BatchRun::KINDS.map do |kind, details|
         # Turbo disables the button while the request is in flight.
@@ -77,14 +74,8 @@ class ShowResource < Madmin::Resource
       end)
     end
 
-    # Also rendered for the next show even with zero batch runs yet
-    # (not just record.batch_runs.exists?): only the next show can ever
-    # have a new one started (see above), so it's the only show whose
-    # batch_runs.exists? can ever flip from false to true. Without the
-    # subscription/DOM targets this partial renders already being on the
-    # page beforehand, an admin with this tab open when a batch is
-    # triggered elsewhere -- another tab, the rake task, a cron job --
-    # would never see it appear.
+    # Always rendered for the next show, even before its first batch, so an
+    # open page picks up a batch started elsewhere (another tab, the rake task).
     progress = render(partial: "madmin/shows/batch_progress", locals: { show: record }) if record.next_show? || record.batch_runs.exists?
 
     safe_join([ send_buttons, progress ].compact)
