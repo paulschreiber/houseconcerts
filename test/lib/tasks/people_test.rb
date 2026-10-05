@@ -69,7 +69,7 @@ class PeopleRakeTest < ActiveSupport::TestCase
   end
 
   test "import_subscribers exits when the file is blank" do
-    file = Tempfile.new
+    file = Tempfile.new([ "people", ".txt" ])
     begin
       assert_raises(SystemExit) do
         capture_io { Rake::Task["people:import_subscribers"].invoke(file.path) }
@@ -80,7 +80,7 @@ class PeopleRakeTest < ActiveSupport::TestCase
   end
 
   test "import_subscribers creates people from well-formed lines and skips malformed ones" do
-    file = Tempfile.new
+    file = Tempfile.new([ "people", ".txt" ])
     begin
       file.write("Jane Doe <jane-import@example.com>\nBad Line\nJohn Smith <john-import@example.com>")
       file.close
@@ -98,7 +98,7 @@ class PeopleRakeTest < ActiveSupport::TestCase
   end
 
   test "import_subscribers keeps a multi-word first name together instead of splitting it into the last name" do
-    file = Tempfile.new
+    file = Tempfile.new([ "people", ".txt" ])
     begin
       file.write("Mary Jane Watson <mj-import@example.com>")
       file.close
@@ -116,7 +116,7 @@ class PeopleRakeTest < ActiveSupport::TestCase
   test "import_subscribers reports duplicates instead of raising" do
     Person.create!(first_name: "Existing", last_name: "Person", email: "duplicate-import@example.com", status: "active")
 
-    file = Tempfile.new
+    file = Tempfile.new([ "people", ".txt" ])
     begin
       file.write("Existing Person <duplicate-import@example.com>")
       file.close
@@ -127,5 +127,26 @@ class PeopleRakeTest < ActiveSupport::TestCase
     ensure
       file.close!
     end
+  end
+
+  test "import_subscribers exits with an error status when it can't import" do
+    error = assert_raises(SystemExit) { capture_io { Rake::Task["people:import_subscribers"].invoke(Dir.tmpdir) } }
+
+    assert_equal 1, error.status
+  end
+
+  test "import_subscribers requires a .csv, .tsv or .txt file, like the admin page" do
+    file = Tempfile.new("subscribers")
+    file.write("Jane Smith <jane-noext@example.com>\n")
+    file.close
+
+    error = nil
+    out, = capture_io { error = assert_raises(SystemExit) { Rake::Task["people:import_subscribers"].invoke(file.path) } }
+
+    assert_equal 1, error.status
+    assert_includes out, "isn’t a .csv, .tsv or .txt file"
+    assert_not Person.exists?(email: "jane-noext@example.com")
+  ensure
+    file&.close!
   end
 end
