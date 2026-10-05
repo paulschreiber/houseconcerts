@@ -180,7 +180,7 @@
       </div>
       <div class="todo">
         <% if phone_numbers.positive? %>
-          <p><strong><%= phone_numbers %></strong> <%= phone_numbers == 1 ? "person has a phone number" : "people have phone numbers" %> from their RSVP to add</p>
+          <p><strong><%= phone_numbers %></strong> <%= phone_numbers == 1 ? "person has a phone number" : "people have phone numbers" %> to add</p>
           <%= button_to "Add numbers", add_phone_numbers_madmin_show_path(previous), class: "btn btn-primary" %>
         <% else %>
           <p class="done">✓ No phone numbers to add</p>
