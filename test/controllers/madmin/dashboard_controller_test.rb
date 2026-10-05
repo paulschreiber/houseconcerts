@@ -2,6 +2,8 @@ require "test_helper"
 
 module Madmin
   class DashboardControllerTest < ActionDispatch::IntegrationTest
+    include BatchTestHelpers
+
     setup do
       sign_in admins(:one)
     end
@@ -78,8 +80,7 @@ module Madmin
     end
 
     test "shows a warning linking to the show when a batch item has failed" do
-      show = shows(:upcoming)
-      batch_run = BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 1, failed_count: 1)
+      batch_run = create_run(status: "completed", failed_count: 1)
       person = Person.create!(first_name: "Failed", last_name: "Invite", email: "dashboard.failed@example.com", status: "active")
       batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
 
@@ -93,8 +94,7 @@ module Madmin
     end
 
     test "groups multiple failed items for the same show into a single count" do
-      show = shows(:upcoming)
-      batch_run = BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 2, failed_count: 2)
+      batch_run = create_run(status: "completed", total_count: 2, failed_count: 2)
       2.times do |i|
         person = Person.create!(first_name: "Failed", last_name: "Invite#{i}", email: "dashboard.failed.#{i}@example.com", status: "active")
         batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
@@ -107,8 +107,7 @@ module Madmin
     end
 
     test "surfaces the distinct error messages for a show's failed items" do
-      show = shows(:upcoming)
-      batch_run = BatchRun.create!(show: show, kind: "remind", status: "completed", total_count: 3, failed_count: 3)
+      batch_run = create_run(kind: "remind", status: "completed", total_count: 3, failed_count: 3)
       3.times do |i|
         rsvp = RSVP.create!(show: show, email: "dashboard.reason.#{i}@example.com", first_name: "Failed", last_name: "Reminder#{i}",
                             response: "yes", confirmed: "confirmed", seats_reserved: 1)
@@ -122,8 +121,7 @@ module Madmin
     end
 
     test "the warning disappears once the failed item is corrected" do
-      show = shows(:upcoming)
-      batch_run = BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 1, failed_count: 1)
+      batch_run = create_run(status: "completed", failed_count: 1)
       person = Person.create!(first_name: "Failed", last_name: "Invite", email: "dashboard.corrected@example.com", status: "active")
       item = batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
 
@@ -137,7 +135,7 @@ module Madmin
     end
 
     test "doesn't list failed sends for shows that have already happened" do
-      batch_run = BatchRun.create!(show: shows(:past), kind: "invite", status: "completed", total_count: 1, failed_count: 1)
+      batch_run = create_run(show: shows(:past), status: "completed", failed_count: 1)
       person = Person.create!(first_name: "Past", last_name: "Send", email: "dashboard.past@example.com", status: "active")
       batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
 
@@ -146,14 +144,14 @@ module Madmin
       assert_select ".dashboard-warning", count: 0
     end
 
-    test "the retry button is wired to disable on submit" do
-      batch_run = BatchRun.create!(show: shows(:upcoming), kind: "invite", status: "completed", total_count: 1, failed_count: 1)
+    test "the dashboard has a Retry button for failed sends" do
+      batch_run = create_run(show: shows(:upcoming), status: "completed", failed_count: 1)
       person = Person.create!(first_name: "Retry", last_name: "Button", email: "dashboard.retry@example.com", status: "active")
       batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
 
       get madmin_root_path
 
-      assert_select "form[data-controller='disable-on-submit'] button[data-disable-on-submit-target='submit']", text: "Retry"
+      assert_select "form[action=?] button", retry_failed_batch_run_madmin_show_path(shows(:upcoming), batch_run_id: batch_run.id), text: "Retry"
     end
 
     private

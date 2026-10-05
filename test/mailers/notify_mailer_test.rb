@@ -1,6 +1,8 @@
 require "test_helper"
 
 class NotifyMailerTest < ActionMailer::TestCase
+  include BatchTestHelpers
+
   test "rsvp uses a subject appropriate to the type and notifies the admin" do
     new_email = NotifyMailer.rsvp(rsvps(:one), "new", nil)
     assert_includes new_email.subject, "New RSVP"
@@ -78,8 +80,7 @@ class NotifyMailerTest < ActionMailer::TestCase
   end
 
   test "failed_batch_items summarizes failed invite recipients (Person)" do
-    show = shows(:upcoming)
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 2, sent_count: 1, failed_count: 1)
+    batch_run = create_run(status: "completed", total_count: 2, sent_count: 1, failed_count: 1)
     person = Person.create!(first_name: "Failed", last_name: "Invite", email: "failed.invite@example.com", status: "active")
     batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
     batch_run.batch_run_items.create!(recipient: Person.create!(first_name: "Sent", last_name: "Ok", email: "sent.ok@example.com", status: "active"), status: "sent", sent_at: Time.current)
@@ -96,8 +97,7 @@ class NotifyMailerTest < ActionMailer::TestCase
   end
 
   test "failed_batch_items summarizes failed remind recipients (RSVP)" do
-    show = shows(:upcoming)
-    batch_run = BatchRun.create!(show: show, kind: "remind", status: "completed", total_count: 1, failed_count: 1)
+    batch_run = create_run(kind: "remind", status: "completed", failed_count: 1)
     rsvp = rsvps(:one)
     batch_run.batch_run_items.create!(recipient: rsvp, status: "failed", error_message: "SMS failed")
 
@@ -110,8 +110,7 @@ class NotifyMailerTest < ActionMailer::TestCase
   end
 
   test "failed_batch_items shows a placeholder instead of raising when a recipient was deleted" do
-    show = shows(:upcoming)
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 1, failed_count: 1)
+    batch_run = create_run(status: "completed", failed_count: 1)
     person = Person.create!(first_name: "Deleted", last_name: "Recipient", email: "deleted-recipient@example.com", status: "active")
     batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
     person.destroy!
@@ -122,8 +121,7 @@ class NotifyMailerTest < ActionMailer::TestCase
   end
 
   test "failed_batch_items delivers exactly one email" do
-    show = shows(:upcoming)
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 1, failed_count: 1)
+    batch_run = create_run(status: "completed", failed_count: 1)
     person = Person.create!(first_name: "Failed", last_name: "Invite", email: "failed.invite2@example.com", status: "active")
     batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
 

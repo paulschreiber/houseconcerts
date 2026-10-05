@@ -1,6 +1,7 @@
 require "test_helper"
 
 class NextShowRakeTest < ActiveSupport::TestCase
+  include BatchTestHelpers
   include ActionMailer::TestHelper
 
   setup do
@@ -29,8 +30,7 @@ class NextShowRakeTest < ActiveSupport::TestCase
   end
 
   test "invite prints a friendly message instead of double-sending when a run is already in progress" do
-    show = shows(:upcoming)
-    BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    create_run
     Person.create!(first_name: "New", last_name: "Person", email: "invite@example.com", status: "active")
 
     out = nil
@@ -44,15 +44,9 @@ class NextShowRakeTest < ActiveSupport::TestCase
   test "invite prints a friendly message instead of a stack trace when the fan-out job fails to enqueue" do
     Person.create!(first_name: "New", last_name: "Person", email: "invite-enqueue-fail@example.com", status: "active")
 
-    original_perform_later = BatchRunFanOutJob.method(:perform_later)
-    BatchRunFanOutJob.define_singleton_method(:perform_later) do |*_args|
-      raise SolidQueue::Job::EnqueueError, "transient boom"
-    end
-
-    begin
+    out = nil
+    with_stubbed(BatchRunFanOutJob, :perform_later, ->(*_args) { raise SolidQueue::Job::EnqueueError, "transient boom" }) do
       out, = capture_io { Rake::Task["next_show:invite"].invoke }
-    ensure
-      BatchRunFanOutJob.define_singleton_method(:perform_later, original_perform_later)
     end
 
     assert_includes out, "try again"
@@ -104,16 +98,11 @@ class NextShowRakeTest < ActiveSupport::TestCase
   test "invite_one reports a failed send instead of printing nothing" do
     person = Person.create!(first_name: "Direct", last_name: "Invite", email: "direct-invite-fail@example.com", status: "active")
 
-    original_invite = InvitesMailer.method(:invite)
-    InvitesMailer.define_singleton_method(:invite) { |*_args| raise "simulated send failure" }
-
     out = nil
-    begin
+    with_stubbed(InvitesMailer, :invite, ->(*) { raise "simulated send failure" }) do
       assert_no_emails do
         out, = capture_io { Rake::Task["next_show:invite_one"].invoke(person.email) }
       end
-    ensure
-      InvitesMailer.define_singleton_method(:invite, original_invite)
     end
 
     assert_includes out, "Failed to send."
@@ -138,8 +127,7 @@ class NextShowRakeTest < ActiveSupport::TestCase
   end
 
   test "invite_unopened excludes people who already opened an invite for the show" do
-    show = shows(:upcoming)
-    BatchRun.create!(show: show, kind: "invite", status: "completed", total_count: 1, sent_count: 1)
+    create_run(status: "completed", sent_count: 1)
     opened = Person.create!(first_name: "Already", last_name: "Opened", email: "opened-invite@example.com", status: "active")
     fresh = Person.create!(first_name: "Not", last_name: "Opened", email: "fresh-invite@example.com", status: "active")
     Open.create!(tag: "#{show.slug}:invite-abc", email: opened.email, open: true)
@@ -157,24 +145,31 @@ class NextShowRakeTest < ActiveSupport::TestCase
   end
 
   test "invite_unopened refuses to run before invites have been sent" do
-    show = shows(:upcoming)
     assert_not show.invites_sent?
     Person.create!(first_name: "Fresh", last_name: "Person", email: "invite-unopened-gate@example.com", status: "active")
 
     out = nil
     assert_no_emails do
-      out, = capture_io { assert_raises(SystemExit) { Rake::Task["next_show:invite_unopened"].invoke } }
+      out, = capture_io { Rake::Task["next_show:invite_unopened"].invoke }
     end
     assert_includes out, "Send the initial invites before sending invites to unopened recipients"
     assert_equal 0, BatchRun.where(show: show, kind: "invite_unopened").count
   end
 
   test "remind emails confirmed attendees of the next show" do
+    create_run(show: Show.next, status: "completed", sent_count: 1, completed_at: 1.day.ago)
     out = nil
     assert_emails 1 do
       perform_enqueued_jobs { out, = capture_io { Rake::Task["next_show:remind"].invoke } }
     end
     assert_includes out, "Started sending reminders"
+  end
+
+  test "remind refuses before the initial invites have gone out" do
+    out, = capture_io { Rake::Task["next_show:remind"].invoke }
+
+    assert_includes out, "Send the initial invites before sending reminders."
+    assert_equal 0, Show.next.batch_runs.remind.count
   end
 
   test "attendees lists confirmed attendees of the next show" do
@@ -202,7 +197,6 @@ class NextShowRakeTest < ActiveSupport::TestCase
   end
 
   test "opens counts unique email opens for the next show" do
-    show = shows(:upcoming)
     Open.create!(tag: "#{show.slug}:invite-1", email: "a@example.com", open: true)
     Open.create!(tag: "#{show.slug}:invite-2", email: "a@example.com", open: true)
     Open.create!(tag: "#{show.slug}:confirm-1", email: "b@example.com", open: true)

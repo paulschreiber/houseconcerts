@@ -1,12 +1,12 @@
 require "test_helper"
 
 class BatchRunItemJobTest < ActiveSupport::TestCase
+  include BatchTestHelpers
   include ActionMailer::TestHelper
 
   test "invite kind sends the invite, marks the item sent, and updates batch_run counts" do
-    show = shows(:upcoming)
     person = Person.create!(first_name: "New", last_name: "Person", email: "new-invite@example.com", status: "active")
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    batch_run = create_run
     item = batch_run.batch_run_items.create!(recipient: person)
 
     assert_emails 1 do
@@ -22,9 +22,8 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   end
 
   test "invite_unopened tags its open-tracking pixel distinctly from a plain invite" do
-    show = shows(:upcoming)
     person = Person.create!(first_name: "New", last_name: "Person", email: "new-invite-unopened@example.com", status: "active")
-    batch_run = BatchRun.create!(show: show, kind: "invite_unopened", status: "running", total_count: 1)
+    batch_run = create_run(kind: "invite_unopened")
     item = batch_run.batch_run_items.create!(recipient: person)
 
     email = nil
@@ -37,9 +36,8 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   end
 
   test "an invite to a recipient who is no longer active is marked failed, not sent" do
-    show = shows(:upcoming)
     person = Person.create!(first_name: "Removed", last_name: "Person", email: "removed@example.com", status: "removed")
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    batch_run = create_run
     item = batch_run.batch_run_items.create!(recipient: person)
 
     assert_emails 1 do
@@ -55,20 +53,14 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   end
 
   test "a raised exception marks the item failed and still updates batch_run counts" do
-    show = shows(:upcoming)
     person = Person.create!(first_name: "New", last_name: "Person", email: "will-fail@example.com", status: "active")
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    batch_run = create_run
     item = batch_run.batch_run_items.create!(recipient: person)
 
-    original_invite = InvitesMailer.method(:invite)
-    InvitesMailer.define_singleton_method(:invite) { |*| raise "simulated delivery failure" }
-
-    begin
+    with_stubbed(InvitesMailer, :invite, ->(*) { raise "simulated delivery failure" }) do
       assert_emails 1 do
         BatchRunItemJob.perform_now(item.id)
       end
-    ensure
-      InvitesMailer.define_singleton_method(:invite, original_invite)
     end
 
     assert item.reload.failed?
@@ -81,9 +73,8 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   end
 
   test "a non-pending item whose progress was already counted is a no-op" do
-    show = shows(:upcoming)
     person = Person.create!(first_name: "Already", last_name: "Sent", email: "already-sent@example.com", status: "active")
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1, sent_count: 1)
+    batch_run = create_run(sent_count: 1)
     item = batch_run.batch_run_items.create!(recipient: person, status: "sent", sent_at: Time.current, counted_at: Time.current)
 
     assert_no_emails do
@@ -96,9 +87,8 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   end
 
   test "redelivering an item whose earlier execution crashed before the recount ever ran still completes the run" do
-    show = shows(:upcoming)
     person = Person.create!(first_name: "Crashed", last_name: "BeforeRecount", email: "crashed-before-recount@example.com", status: "active")
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    batch_run = create_run
     # Simulates claim() having already succeeded in a prior execution
     # that crashed before record_progress's recount ever ran: the item
     # is "sent" with counted_at set (exactly as claim() sets both
@@ -116,11 +106,10 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   end
 
   test "retrying a failed item that now succeeds is freshly counted as sent" do
-    show = shows(:upcoming)
     person = Person.create!(first_name: "Retry", last_name: "Success", email: "retry-success@example.com", status: "active")
     # Mirrors what Madmin::ShowsController#retry_failed_batch_run actually sets up:
     # status back to running and failed_count reset to 0 for the items being retried.
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1, failed_count: 0)
+    batch_run = create_run(failed_count: 0)
     item = batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
 
     assert_emails 1 do
@@ -136,15 +125,11 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   end
 
   test "retrying a failed item that fails again is freshly counted as failed and re-notifies the admin" do
-    show = shows(:upcoming)
     person = Person.create!(first_name: "Retry", last_name: "Failure", email: "retry-failure@example.com", status: "active")
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1, failed_count: 0)
+    batch_run = create_run(failed_count: 0)
     item = batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
 
-    original_invite = InvitesMailer.method(:invite)
-    InvitesMailer.define_singleton_method(:invite) { |*| raise "boom again" }
-
-    begin
+    with_stubbed(InvitesMailer, :invite, ->(*) { raise "boom again" }) do
       # No InvitesMailer email (it fails again), but the run completes
       # with a failure present, so the admin-notification email fires --
       # a still-failing item after a retry must keep alerting, not just
@@ -152,8 +137,6 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
       assert_emails 1 do
         BatchRunItemJob.perform_now(item.id)
       end
-    ensure
-      InvitesMailer.define_singleton_method(:invite, original_invite)
     end
 
     assert item.reload.failed?
@@ -165,21 +148,19 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   end
 
   test "retrying multiple failed items does not complete the run until every retry resolves" do
-    show = shows(:upcoming)
     person_a = Person.create!(first_name: "Retry", last_name: "Aardvark", email: "retry-a@example.com", status: "active")
     person_b = Person.create!(first_name: "Retry", last_name: "Baboon", email: "retry-b@example.com", status: "active")
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 2, failed_count: 0)
+    batch_run = create_run(total_count: 2, failed_count: 0)
     item_a = batch_run.batch_run_items.create!(recipient: person_a, status: "failed", error_message: "boom")
     item_b = batch_run.batch_run_items.create!(recipient: person_b, status: "failed", error_message: "boom")
 
     original_invite = InvitesMailer.method(:invite)
-    InvitesMailer.define_singleton_method(:invite) do |person, *rest|
+    fake_invite = lambda do |person, *rest|
       raise "boom again" if person == person_b
 
       original_invite.call(person, *rest)
     end
-
-    begin
+    with_stubbed(InvitesMailer, :invite, fake_invite) do
       # item_a's retry succeeds -- just the InvitesMailer send, the run
       # can't be complete yet since item_b is still outstanding.
       assert_emails 1 do
@@ -197,8 +178,6 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
       assert_emails 1 do
         BatchRunItemJob.perform_now(item_b.id)
       end
-    ensure
-      InvitesMailer.define_singleton_method(:invite, original_invite)
     end
 
     batch_run.reload
@@ -208,12 +187,11 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   end
 
   test "retrying a failed item on a cancelled run completes it despite the cancelled items" do
-    show = shows(:upcoming)
     person_a = Person.create!(first_name: "Cancel", last_name: "Aardvark", email: "cancel-a@example.com", status: "active")
     person_b = Person.create!(first_name: "Cancel", last_name: "Baboon", email: "cancel-b@example.com", status: "active")
     # As left by cancel_batch_run then reopened by retry_failed_batch_run:
     # one item cancelled while still pending, one failed awaiting retry.
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 2, failed_count: 0)
+    batch_run = create_run(total_count: 2, failed_count: 0)
     batch_run.batch_run_items.create!(recipient: person_a, status: "cancelled")
     item_b = batch_run.batch_run_items.create!(recipient: person_b, status: "failed", error_message: "boom")
 
@@ -228,9 +206,8 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   end
 
   test "a deleted item is a no-op instead of raising" do
-    show = shows(:upcoming)
     person = Person.create!(first_name: "Deleted", last_name: "Item", email: "deleted-item@example.com", status: "active")
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    batch_run = create_run
     item = batch_run.batch_run_items.create!(recipient: person)
     item_id = item.id
     item.destroy!
@@ -243,9 +220,8 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   end
 
   test "an item whose recipient was deleted before the job ran is marked failed with a clear message" do
-    show = shows(:upcoming)
     person = Person.create!(first_name: "Deleted", last_name: "Recipient", email: "deleted-before-send@example.com", status: "active")
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    batch_run = create_run
     item = batch_run.batch_run_items.create!(recipient: person)
     person.destroy!
 
@@ -260,9 +236,8 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   end
 
   test "redelivering the same job (e.g. after a worker crash) does not resend" do
-    show = shows(:upcoming)
     person = Person.create!(first_name: "New", last_name: "Person", email: "redelivered@example.com", status: "active")
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    batch_run = create_run
     item = batch_run.batch_run_items.create!(recipient: person)
 
     assert_emails 1 do
@@ -272,10 +247,9 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   end
 
   test "completing a batch run with zero failures does not notify the admin" do
-    show = shows(:upcoming)
     person_a = Person.create!(first_name: "Clean", last_name: "One", email: "clean-one@example.com", status: "active")
     person_b = Person.create!(first_name: "Clean", last_name: "Two", email: "clean-two@example.com", status: "active")
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 2)
+    batch_run = create_run(total_count: 2)
     item_a = batch_run.batch_run_items.create!(recipient: person_a)
     item_b = batch_run.batch_run_items.create!(recipient: person_b)
 
@@ -289,28 +263,24 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   end
 
   test "completing a batch run with a failure notifies the admin exactly once" do
-    show = shows(:upcoming)
     person_a = Person.create!(first_name: "Fails", last_name: "One", email: "fails-one@example.com", status: "active")
     person_b = Person.create!(first_name: "Succeeds", last_name: "Two", email: "succeeds-two@example.com", status: "active")
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 2)
+    batch_run = create_run(total_count: 2)
     item_a = batch_run.batch_run_items.create!(recipient: person_a)
     item_b = batch_run.batch_run_items.create!(recipient: person_b)
 
     original_invite = InvitesMailer.method(:invite)
-    InvitesMailer.define_singleton_method(:invite) do |person, *rest|
+    fake_invite = lambda do |person, *rest|
       raise "simulated delivery failure" if person == person_a
 
       original_invite.call(person, *rest)
     end
-
-    begin
+    with_stubbed(InvitesMailer, :invite, fake_invite) do
       # 1 InvitesMailer send for person_b + 1 NotifyMailer failure notification.
       assert_emails 2 do
         BatchRunItemJob.perform_now(item_a.id)
         BatchRunItemJob.perform_now(item_b.id)
       end
-    ensure
-      InvitesMailer.define_singleton_method(:invite, original_invite)
     end
 
     assert batch_run.reload.completed?
@@ -319,7 +289,7 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   end
 
   test "remind kind sends the reminder email" do
-    batch_run = BatchRun.create!(show: shows(:upcoming), kind: "remind", status: "running", total_count: 1)
+    batch_run = create_run(show: shows(:upcoming), kind: "remind")
     item = batch_run.batch_run_items.create!(recipient: rsvps(:one))
 
     assert_emails 1 do
@@ -330,14 +300,13 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   end
 
   test "a reminder to an RSVP that's no longer a confirmed yes attendee is marked failed, not sent" do
-    show = shows(:upcoming)
     rsvp = RSVP.create!(show: show, email: "waitlisted-by-now@example.com", first_name: "No", last_name: "Longer",
                         response: "yes", confirmed: "confirmed", seats_reserved: 1)
     # Bypasses callbacks (incl. the admin RSVP-change notification, which
     # isn't what this test is about) to simulate the RSVP having been
     # waitlisted after the batch snapshot but before this job ran.
     rsvp.update_column(:confirmed, "waitlisted") # rubocop:disable Rails/SkipsModelValidations
-    batch_run = BatchRun.create!(show: show, kind: "remind", status: "running", total_count: 1)
+    batch_run = create_run(kind: "remind")
     item = batch_run.batch_run_items.create!(recipient: rsvp)
 
     # 1 email: not the reminder itself, but the admin failure-notification
@@ -354,10 +323,9 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   end
 
   test "retrying a reminder whose email already went out does not resend the email, only the SMS" do
-    show = shows(:upcoming)
     rsvp = RSVP.create!(show: show, email: "retry-remind@example.com", first_name: "Retry", last_name: "Remind",
                         response: "yes", confirmed: "confirmed", seats_reserved: 1, phone_number: "5555550123")
-    batch_run = BatchRun.create!(show: show, kind: "remind", status: "running", total_count: 1, failed_count: 0)
+    batch_run = create_run(kind: "remind", failed_count: 0)
     # Mirrors the state after a first attempt where the reminder email
     # succeeded but the SMS step failed: email_sent_at is already set,
     # and the item is claimable again via its failed status.
@@ -376,10 +344,9 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   end
 
   test "retrying an item whose email and SMS already both went out does not resend either" do
-    show = shows(:upcoming)
     rsvp = RSVP.create!(show: show, email: "retry-both-sent@example.com", first_name: "Retry", last_name: "Both",
                         response: "yes", confirmed: "confirmed", seats_reserved: 1, phone_number: "5555550123")
-    batch_run = BatchRun.create!(show: show, kind: "remind", status: "running", total_count: 1, failed_count: 0)
+    batch_run = create_run(kind: "remind", failed_count: 0)
     original_sms_sent_at = 1.hour.ago
     # Mirrors a retry triggered after both channels already succeeded
     # (e.g. the item was marked failed for an unrelated reason after both
@@ -397,29 +364,25 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   end
 
   test "a transient error marking a failed send is retried locally instead of leaving the item mislabeled sent" do
-    show = shows(:upcoming)
-    original_invite = InvitesMailer.method(:invite)
-    InvitesMailer.define_singleton_method(:invite) { |*| raise "delivery boom" }
     person = Person.create!(first_name: "Transient", last_name: "Failure", email: "transient-fail@example.com", status: "active")
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    batch_run = create_run
     item = batch_run.batch_run_items.create!(recipient: person)
 
     call_count = 0
     original_update = BatchRunItem.instance_method(:update!)
-    BatchRunItem.define_method(:update!) do |*args, **kwargs|
+    fake_update = lambda do |*args, **kwargs|
       call_count += 1
       raise ActiveRecord::ConnectionTimeoutError, "transient boom" if call_count == 1
 
       original_update.bind(self).call(*args, **kwargs)
     end
 
-    begin
-      assert_nothing_raised do
-        BatchRunItemJob.perform_now(item.id)
+    with_stubbed(InvitesMailer, :invite, ->(*) { raise "delivery boom" }) do
+      with_stubbed_instance_method(BatchRunItem, :update!, fake_update) do
+        assert_nothing_raised do
+          BatchRunItemJob.perform_now(item.id)
+        end
       end
-    ensure
-      InvitesMailer.define_singleton_method(:invite, original_invite)
-      BatchRunItem.define_method(:update!, original_update)
     end
 
     # Correctly marked failed (not stuck showing "sent" despite the
@@ -433,26 +396,22 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   end
 
   test "a transient error recording progress is retried locally instead of permanently undercounting the run" do
-    show = shows(:upcoming)
     person = Person.create!(first_name: "New", last_name: "Person", email: "transient-progress@example.com", status: "active")
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    batch_run = create_run
     item = batch_run.batch_run_items.create!(recipient: person)
 
     call_count = 0
     original_update = BatchRun.instance_method(:update!)
-    BatchRun.define_method(:update!) do |*args, **kwargs|
+    fake_update = lambda do |*args, **kwargs|
       call_count += 1
       raise ActiveRecord::ConnectionTimeoutError, "transient boom" if call_count == 1
 
       original_update.bind(self).call(*args, **kwargs)
     end
-
-    begin
+    with_stubbed_instance_method(BatchRun, :update!, fake_update) do
       assert_emails 1 do
         BatchRunItemJob.perform_now(item.id)
       end
-    ensure
-      BatchRun.define_method(:update!, original_update)
     end
 
     item.reload
@@ -463,9 +422,8 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   end
 
   test "retrying a recount that actually applied before its acknowledgment was lost does not double-count" do
-    show = shows(:upcoming)
     person = Person.create!(first_name: "New", last_name: "Person", email: "lost-ack@example.com", status: "active")
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    batch_run = create_run
     item = batch_run.batch_run_items.create!(recipient: person)
 
     # Simulates a DB connection dropping after MySQL committed this
@@ -475,20 +433,17 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     # recount redone here just recomputes the same correct answer.
     call_count = 0
     original_update = BatchRun.instance_method(:update!)
-    BatchRun.define_method(:update!) do |*args, **kwargs|
+    fake_update = lambda do |*args, **kwargs|
       call_count += 1
       result = original_update.bind(self).call(*args, **kwargs)
       raise ActiveRecord::ConnectionTimeoutError, "ack lost after commit" if call_count == 1
 
       result
     end
-
-    begin
+    with_stubbed_instance_method(BatchRun, :update!, fake_update) do
       assert_emails 1 do
         BatchRunItemJob.perform_now(item.id)
       end
-    ensure
-      BatchRun.define_method(:update!, original_update)
     end
 
     item.reload
@@ -499,20 +454,18 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   end
 
   test "a persistent failure recording progress is recovered by a later redelivery, with nothing needing to be released" do
-    show = shows(:upcoming)
     person = Person.create!(first_name: "New", last_name: "Person", email: "persistent-progress-failure@example.com", status: "active")
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    batch_run = create_run
     item = batch_run.batch_run_items.create!(recipient: person)
 
     failing = true
     original_update = BatchRun.instance_method(:update!)
-    BatchRun.define_method(:update!) do |*args, **kwargs|
+    fake_update = lambda do |*args, **kwargs|
       raise ActiveRecord::ConnectionTimeoutError, "persistent boom" if failing
 
       original_update.bind(self).call(*args, **kwargs)
     end
-
-    begin
+    with_stubbed_instance_method(BatchRun, :update!, fake_update) do
       assert_raises(ActiveRecord::ConnectionTimeoutError) do
         BatchRunItemJob.perform_now(item.id)
       end
@@ -536,8 +489,6 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
           BatchRunItemJob.perform_now(item.id)
         end
       end
-    ensure
-      BatchRun.define_method(:update!, original_update)
     end
 
     batch_run.reload
@@ -546,36 +497,27 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   end
 
   test "logs which item/run it gave up on when local retries are exhausted, instead of failing silently" do
-    show = shows(:upcoming)
     person = Person.create!(first_name: "New", last_name: "Person", email: "exhausted-retries@example.com", status: "active")
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    batch_run = create_run
     item = batch_run.batch_run_items.create!(recipient: person)
 
-    original_update = BatchRun.instance_method(:update!)
-    BatchRun.define_method(:update!) do |*_args, **_kwargs|
-      raise ActiveRecord::ConnectionTimeoutError, "persistent boom"
-    end
-
     logged = StringIO.new
-    original_logger = Rails.logger
-    Rails.logger = Logger.new(logged)
+    logger = Logger.new(logged)
 
-    begin
-      assert_raises(ActiveRecord::ConnectionTimeoutError) do
-        BatchRunItemJob.perform_now(item.id)
+    with_stubbed_instance_method(BatchRun, :update!, ->(*, **) { raise ActiveRecord::ConnectionTimeoutError, "persistent boom" }) do
+      with_stubbed(Rails, :logger, -> { logger }) do
+        assert_raises(ActiveRecord::ConnectionTimeoutError) do
+          BatchRunItemJob.perform_now(item.id)
+        end
       end
-    ensure
-      BatchRun.define_method(:update!, original_update)
-      Rails.logger = original_logger
     end
 
     assert_match(/giving up recording progress for batch_run_item_id=#{item.id} \(batch_run_id=#{batch_run.id}\)/, logged.string)
   end
 
   test "does not send if the batch run was cancelled in the window between claim and send" do
-    show = shows(:upcoming)
     person = Person.create!(first_name: "New", last_name: "Person", email: "cancelled-mid-flight@example.com", status: "active")
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    batch_run = create_run
     item = batch_run.batch_run_items.create!(recipient: person)
 
     # Simulates an admin cancelling the run in the narrow window after
@@ -584,18 +526,15 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     # up the item, so that's hooked to also perform the race's
     # cancellation, as if it happened concurrently right after the claim.
     original_find_by = BatchRunItem.method(:find_by)
-    BatchRunItem.define_singleton_method(:find_by) do |*args, **kwargs|
+    fake_find_by = lambda do |*args, **kwargs|
       result = original_find_by.call(*args, **kwargs)
       batch_run.update!(status: :completed, completed_at: Time.current) if result&.id == item.id
       result
     end
-
-    begin
+    with_stubbed(BatchRunItem, :find_by, fake_find_by) do
       assert_no_emails do
         BatchRunItemJob.perform_now(item.id)
       end
-    ensure
-      BatchRunItem.define_singleton_method(:find_by, original_find_by)
     end
 
     item.reload
@@ -604,17 +543,12 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   end
 
   test "a delivery error longer than error_message holds is truncated, not left claimed as sent" do
-    show = shows(:upcoming)
     person = Person.create!(first_name: "Long", last_name: "Error", email: "long-error@example.com", status: "active")
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    batch_run = create_run
     item = batch_run.batch_run_items.create!(recipient: person)
 
-    original_invite = InvitesMailer.method(:invite)
-    InvitesMailer.define_singleton_method(:invite) { |*| raise "550 #{'x' * 400}" }
-    begin
+    with_stubbed(InvitesMailer, :invite, ->(*) { raise "550 #{'x' * 400}" }) do
       BatchRunItemJob.perform_now(item.id)
-    ensure
-      InvitesMailer.define_singleton_method(:invite, original_invite)
     end
 
     item.reload
@@ -626,10 +560,9 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   end
 
   test "an invite to someone who has RSVP'd since the batch started is skipped, not sent or failed" do
-    show = shows(:upcoming)
     person = Person.create!(first_name: "Already", last_name: "Coming", email: "already.coming@example.com", status: "active")
     RSVP.create!(first_name: "Already", last_name: "Coming", email: person.email, show: show, response: "yes", seats_reserved: 1)
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    batch_run = create_run
     item = batch_run.batch_run_items.create!(recipient: person)
 
     # Neither the guest nor the admin (no failed-sends notice) gets anything.
@@ -644,7 +577,7 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
   test "nothing is sent for a show that has already happened" do
     show = shows(:past)
     person = Person.create!(first_name: "Too", last_name: "Late", email: "too.late@example.com", status: "active")
-    batch_run = BatchRun.create!(show: show, kind: "invite", status: "running", total_count: 1)
+    batch_run = create_run(show: show)
     item = batch_run.batch_run_items.create!(recipient: person)
 
     # Neither the guest nor the admin (no failed-sends notice) gets anything.
