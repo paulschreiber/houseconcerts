@@ -1,9 +1,8 @@
 require "application_system_test_case"
 
-# The batch buttons on a Madmin show page rely on the disable-on-submit
-# Stimulus controller, which Madmin's own importmap only gets because
-# config/initializers/madmin.rb pins it. These run in a real browser to check
-# the controller actually loads there and behaves.
+# The batch buttons on a Madmin show page ask for confirmation through Turbo
+# (which also disables a button while its request is in flight). These run in
+# a real browser to check the confirmation is honored either way.
 class MadminBatchButtonsTest < ApplicationSystemTestCase
   setup do
     admins(:one).update!(password: "correct horse battery staple")
@@ -16,18 +15,11 @@ class MadminBatchButtonsTest < ApplicationSystemTestCase
     visit madmin_show_path(shows(:upcoming))
   end
 
-  test "a batch button is disabled once its submission starts" do
-    # Simulate Turbo starting the submission (without sending anything) and
-    # check the button the controller targets is now disabled.
-    disabled = page.evaluate_script(<<~JS)
-      (() => {
-        const button = [...document.querySelectorAll("button")].find((b) => b.textContent.trim() === "Send Invites");
-        button.form.dispatchEvent(new CustomEvent("turbo:submit-start", { bubbles: true }));
-        return button.disabled;
-      })()
-    JS
+  test "accepting the confirmation starts the batch" do
+    accept_confirm { click_button "Send Invites" }
 
-    assert disabled, "Send Invites should be disabled once its submission starts"
+    assert_text "Started sending invites for #{shows(:upcoming).name}."
+    assert_equal 1, shows(:upcoming).batch_runs.invite.count
   end
 
   test "dismissing the confirmation leaves the button enabled and sends nothing" do

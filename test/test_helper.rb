@@ -19,6 +19,37 @@ module ActiveSupport
     def load_rake_tasks
       Rails.application.load_tasks unless Rake::Task.task_defined?("next_show:invite")
     end
+
+    # Replaces a class (or other object's) method with fake for the block,
+    # then restores it. (Minitest's Object#stub doesn't work in this app.)
+    def with_stubbed(object, name, fake)
+      original = object.method(name)
+      object.define_singleton_method(name, &fake)
+      yield
+    ensure
+      object.define_singleton_method(name, original) if original
+    end
+
+    # Replaces an instance method of klass with fake for the block, then
+    # restores it.
+    def with_stubbed_instance_method(klass, name, fake)
+      original = klass.instance_method(name)
+      klass.define_method(name, &fake)
+      yield
+    ensure
+      klass.define_method(name, original) if original
+    end
+  end
+end
+
+# For the batch send tests (BatchRun, its jobs, and the admin pages for them).
+module BatchTestHelpers
+  def show = shows(:upcoming)
+
+  # A batch run for the upcoming show: a running invite run of one item,
+  # unless overridden.
+  def create_run(**attrs)
+    BatchRun.create!({ show:, kind: "invite", status: "running", total_count: 1 }.merge(attrs))
   end
 end
 
