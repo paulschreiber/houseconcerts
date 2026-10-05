@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="color-scheme" content="light only">
+		<style>
+			/* Madmin's colors, type and tables (see the madmin gem's base.css
+			   and tables.css), for emails sent to admins. */
+			:root {
+				color-scheme: light only;
+				--primary-color: rgb(37 99 235);
+				--border-color: rgb(229 231 235);
+				--background-color: rgb(249 250 251);
+				--text-color: rgb(2 6 23);
+				--light-text-color: rgb(71 85 105);
+			}
+			body {
+				margin: 0;
+				padding: 16px;
+				color: var(--text-color);
+				font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+				font-size: 14px;
+				line-height: 1.5;
+				-webkit-font-smoothing: antialiased;
+				-webkit-text-size-adjust: 100%;
+			}
+			a {
+				color: var(--primary-color);
+				font-weight: 500;
+			}
+			h1 {
+				font-size: 20px;
+				font-weight: 700;
+				line-height: 1.25;
+				margin: 0 0 16px;
+			}
+			h2 {
+				font-size: 16px;
+				font-weight: 700;
+				margin: 24px 0 8px;
+			}
+			p {
+				margin: 0 0 12px;
+			}
+			ul {
+				margin: 0 0 12px;
+				padding-left: 1.25em;
+			}
+			.details,
+			.history {
+				border: 1px solid var(--border-color);
+				border-collapse: separate;
+				border-radius: 6px;
+				border-spacing: 0;
+				margin: 0 0 16px;
+				overflow: hidden;
+				width: 100%;
+			}
+			:is(.details, .history) :is(th, td) {
+				border-bottom: 1px solid var(--border-color);
+				padding: 8px 12px;
+				text-align: left;
+				vertical-align: top;
+			}
+			:is(.details, .history) tbody tr:last-child :is(th, td) {
+				border-bottom: none;
+			}
+			.details th {
+				background-color: var(--background-color);
+				border-right: 1px solid var(--border-color);
+				font-weight: 600;
+				white-space: nowrap;
+				width: 1%;
+			}
+			.history thead th {
+				background-color: var(--background-color);
+				font-weight: 600;
+			}
+			.history tbody tr:nth-child(even) {
+				background-color: var(--background-color);
+			}
+			.history :is(td, th):is(:first-child, :last-child) {
+				white-space: nowrap;
+			}
+			.history .unused-seats {
+				font-weight: 700;
+			}
+			.details .multiline {
+				white-space: pre-wrap;
+			}
+			.empty {
+				color: var(--light-text-color);
+			}
+			/* Full width on phones only, like Madmin's 768px breakpoint */
+			@media (width > 768px) {
+				body {
+					max-width: 40rem;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<%= yield %>
+	</body>
+</html>

@@ -1,9 +1,10 @@
 <h1><%= @subject %></h1>
 
-<p>Person: <%= link_to @person.full_name, madmin_person_url(@person) %>
-<br>Email: <%= @person.email %>
-<br>Status: <%= @person.status %>
-</p>
+<table class="details">
+  <tr><th>Person</th><td><%= link_to @person.full_name, madmin_person_url(@person) %></td></tr>
+  <tr><th>Email</th><td><%= @person.email %></td></tr>
+  <tr><th>Status</th><td><%= @person.status %></td></tr>
+</table>
 
 <%- if @event_type == "bounce" -%>
 <p>Mail to <%= @person.email %> bounced permanently, so they’re no longer invited.</p>

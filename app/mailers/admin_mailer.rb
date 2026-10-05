@@ -1,5 +1,7 @@
 # Security notices sent to an admin about their own account.
 class AdminMailer < ApplicationMailer
+  layout "admin_notification"
+
   default from: -> { formatted_address(Settings.confirms_from_name, Settings.confirms_from_email) }
 
   def passkey_added(admin, passkey_name, ip_address)
