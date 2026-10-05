@@ -5,6 +5,7 @@ module Madmin
       Current.admin_action = action_name
     end
     before_action :load_attendees, only: %i[attendance update_attendance print_attendance]
+    before_action :load_batch_run, only: %i[retry_failed_batch_run cancel_batch_run]
 
     # Records how many seats each of the show's attendees used.
     def attendance; end
@@ -62,33 +63,31 @@ module Madmin
       @attended_emails = RSVP.attended(emails).where(shows: { start: ...@show.start }).reorder(nil).pluck(:email).to_set
     end
 
-    def send_invites
-      start_batch_run("invite", "invites")
-    end
+    # Starts a batch of one kind (see BatchRun::KINDS) for the next show.
+    def start_batch_run
+      kind = params[:kind].to_s
+      return back_to_show(alert: "Unknown kind of batch.") unless BatchRun::KINDS.key?(kind)
 
-    def send_invites_unopened
-      start_batch_run("invite_unopened", "invites to unopened recipients", require_invites_sent: true)
-    end
+      description = BatchRun.kind_description(kind)
+      return back_to_show(alert: "Only the next show can have #{description} sent.") unless @record.next_show?
 
-    def send_reminders
-      start_batch_run("remind", "reminders", require_invites_sent: true)
+      StartBatchRun.call(show: @record, kind: kind)
+      back_to_show(notice: "Started sending #{description} for #{@record.name}.")
+    rescue StartBatchRun::AlreadyInProgress
+      back_to_show(alert: "Already sending #{description} for #{@record.name} -- hang tight.")
+    rescue StartBatchRun::NotReady, StartBatchRun::EnqueueFailed => e
+      back_to_show(alert: e.message)
     end
 
     def retry_failed_batch_run
-      # Keyed on the specific batch_run, not "the latest run of this
-      # kind" -- once a newer run of the same kind exists, that lookup
-      # would silently point at the wrong (newer, possibly failure-free)
-      # run and strand this run's failures with no way to retry them.
-      batch_run = @record.batch_runs.find_by(id: params.require(:batch_run_id))
-      kind_label = batch_run ? BatchRun.kind_label(batch_run.kind).downcase : "batch"
       # Queried live, not read off any cached counter: if a previous
       # retry's own enqueue failed partway through, this still sees
       # whatever's genuinely still "failed" and lets retrying again --
       # instead of silently stranding some of them forever.
-      failed_items = batch_run&.batch_run_items&.failed
+      failed_items = @batch_run&.batch_run_items&.failed
 
-      if batch_run.nil? || failed_items.none?
-        redirect_back_or_to resource.show_path(@record), alert: "There are no failed #{kind_label} sends to retry."
+      if @batch_run.nil? || failed_items.none?
+        back_to_show(alert: "There are no failed #{@kind_label} sends to retry.")
         return
       end
 
@@ -96,12 +95,11 @@ module Madmin
       # so a past show's failures stay visible (on its own page) but can't be
       # retried. BatchRunItemJob#send_to rechecks this at send time too.
       if @record.occurred?
-        redirect_back_or_to resource.show_path(@record), alert: "#{@record.name} has already happened, so its failed #{kind_label} sends can't be retried."
+        back_to_show(alert: "#{@record.name} has already happened, so its failed #{@kind_label} sends can't be retried.")
         return
       end
 
       retry_count = failed_items.count
-      kind = batch_run.kind
 
       # Reopen the run so its progress bar shows again while the retries
       # are in flight. Conditioned on status still matching what was
@@ -111,20 +109,18 @@ module Madmin
       # reopening, and then actually retrying, a batch the admin had
       # just cancelled.
       begin
-        reopened = BatchRun.where(id: batch_run.id, status: batch_run.status)
+        reopened = BatchRun.where(id: @batch_run.id, status: @batch_run.status)
                            .update_all(status: BatchRun.statuses[:running], completed_at: nil) == 1 # rubocop:disable Rails/SkipsModelValidations
       rescue ActiveRecord::RecordNotUnique
         # active_kind_lock only allows one non-completed run per show+kind
         # at a time -- reopening this (older) run collides if a newer run
         # of the same kind is currently pending/running.
-        redirect_back_or_to resource.show_path(@record),
-                            alert: "Can't retry right now -- a newer #{kind_label} batch is already in progress for #{@record.name}. Try again once it finishes."
+        back_to_show(alert: "Can't retry right now -- a newer #{@kind_label} batch is already in progress for #{@record.name}. Try again once it finishes.")
         return
       end
 
       unless reopened
-        redirect_back_or_to resource.show_path(@record),
-                            alert: "Can't retry right now -- this #{kind_label} batch's status just changed (it may have been cancelled). Please check and try again."
+        back_to_show(alert: "Can't retry right now -- this #{@kind_label} batch's status just changed (it may have been cancelled). Please check and try again.")
         return
       end
 
@@ -148,7 +144,7 @@ module Madmin
       # includes these (see its own comment for why "failed" is in that
       # scan at all).
       begin
-        BatchRunFanOutJob.perform_later(batch_run.id)
+        BatchRunFanOutJob.perform_later(@batch_run.id)
       rescue ActiveRecord::AdapterError, SolidQueue::Job::EnqueueError
         # Solid Queue raises synchronously, at the point perform_later is
         # called, not later in a worker -- so a transient DB problem here
@@ -156,11 +152,11 @@ module Madmin
         # (failed_items are still "failed" and untouched otherwise), so
         # clicking Retry again picks up right where this left off -- the
         # button/gate query the real items, not a cached counter.
-        redirect_back_or_to resource.show_path(@record), alert: "Couldn't start retrying #{kind_label} sends right now -- please try again in a moment."
+        back_to_show(alert: "Couldn't start retrying #{@kind_label} sends right now -- please try again in a moment.")
         return
       end
 
-      redirect_back_or_to resource.show_path(@record), notice: "Retrying #{retry_count} failed #{BatchRun.kind_label(kind).downcase} for #{@record.name}."
+      back_to_show(notice: "Retrying #{retry_count} failed #{@kind_label} for #{@record.name}.")
     end
 
     # An escape hatch for a run that's stuck, or that an admin simply
@@ -170,11 +166,8 @@ module Madmin
     # active_kind_lock otherwise blocks starting a fresh one of this
     # kind for this show until it does reach completed.
     def cancel_batch_run
-      batch_run = @record.batch_runs.find_by(id: params.require(:batch_run_id))
-      kind_label = batch_run ? BatchRun.kind_label(batch_run.kind).downcase : "batch"
-
-      if batch_run.nil? || batch_run.completed?
-        redirect_back_or_to resource.show_path(@record), alert: "There is no in-progress #{kind_label} batch to cancel."
+      if @batch_run.nil? || @batch_run.completed?
+        back_to_show(alert: "There is no in-progress #{@kind_label} batch to cancel.")
         return
       end
 
@@ -184,14 +177,14 @@ module Madmin
       # enqueued for one -- cancelling can't un-enqueue a Solid Queue
       # job -- finds nothing claimable and never sends it. Items that
       # already resolved (sent/failed) keep their real outcome.
-      batch_run.batch_run_items.pending.update_all(status: BatchRunItem.statuses[:cancelled]) # rubocop:disable Rails/SkipsModelValidations
-      batch_run.update!(status: :completed, completed_at: Time.current)
+      @batch_run.batch_run_items.pending.update_all(status: BatchRunItem.statuses[:cancelled]) # rubocop:disable Rails/SkipsModelValidations
+      @batch_run.update!(status: :completed, completed_at: Time.current)
       # Without this, another admin with the show page open (this
       # request's own redirect is what shows the cancelling admin the
       # new state) would keep seeing "Running" until they refreshed.
-      batch_run.broadcast_progress
+      @batch_run.broadcast_progress
 
-      redirect_back_or_to resource.show_path(@record), notice: "Cancelled the #{kind_label} batch for #{@record.name}."
+      back_to_show(notice: "Cancelled the #{@kind_label} batch for #{@record.name}.")
     end
 
     private
@@ -205,19 +198,16 @@ module Madmin
         @rsvps = RSVP.attendees(@show).order(:last_name, :first_name).to_a
       end
 
-      def start_batch_run(kind, description, require_invites_sent: false)
-        if !@record.next_show?
-          redirect_back_or_to resource.show_path(@record), alert: "Only the next show can have #{description} sent."
-        elsif require_invites_sent && !@record.invites_sent?
-          redirect_back_or_to resource.show_path(@record), alert: "Send the initial invites before sending #{description}."
-        else
-          StartBatchRun.call(show: @record, kind: kind)
-          redirect_back_or_to resource.show_path(@record), notice: "Started sending #{description} for #{@record.name}."
-        end
-      rescue StartBatchRun::AlreadyInProgress
-        redirect_back_or_to resource.show_path(@record), alert: "Already sending #{description} for #{@record.name} -- hang tight."
-      rescue StartBatchRun::EnqueueFailed => e
-        redirect_back_or_to resource.show_path(@record), alert: e.message
+      # The batch run for retry and cancel. Keyed on the specific run, not "the
+      # latest run of this kind": once a newer run of the same kind exists,
+      # that would point at the wrong one and strand this run's failures.
+      def load_batch_run
+        @batch_run = @record.batch_runs.find_by(id: params.require(:batch_run_id))
+        @kind_label = @batch_run ? BatchRun.kind_label(@batch_run.kind).downcase : "batch"
+      end
+
+      def back_to_show(**flash)
+        redirect_back_or_to resource.show_path(@record), **flash
       end
   end
 end

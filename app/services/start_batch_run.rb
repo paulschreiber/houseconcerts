@@ -17,6 +17,10 @@ class StartBatchRun
   # should say so plainly instead of surfacing as a raw 500.
   class EnqueueFailed < StandardError; end
 
+  # Raised when this kind needs initial invites to have gone out first
+  # (BatchRun::KINDS) and they haven't.
+  class NotReady < StandardError; end
+
   def self.call(show:, kind:)
     new(show, kind).call
   end
@@ -30,6 +34,8 @@ class StartBatchRun
   # per-recipient) work to BatchRunFanOutJob, so this returns almost
   # immediately regardless of how many people are eligible.
   def call
+    raise NotReady, "Send the initial invites before sending #{BatchRun.kind_description(kind)}." if BatchRun.requires_invites_sent?(kind) && !show.invites_sent?
+
     batch_run = BatchRun.create!(show: show, kind: kind, status: :pending)
     enqueue_fan_out(batch_run)
     batch_run
