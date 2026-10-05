@@ -1,10 +1,14 @@
 # Throttle repeated guesses against the uniqid-keyed public URLs (RSVP
 # modify links, RSVP/mailing-list thank-you pages, unsubscribe, and the
 # email open-tracking pixel) — uniqid is a random token, not a secret meant
-# to withstand unlimited brute-force attempts.
+# to withstand unlimited brute-force attempts. Signed-in admins, who can see
+# every uniqid anyway, aren't limited: RSVPing for people from the People
+# list opens these pages one after another. (Warden runs before Rack::Attack.)
 module Rack
   class Attack
     throttle("uniqid-lookups/ip", limit: 20, period: 1.minute) do |req|
+      next if req.env["warden"]&.user(:admin)
+
       req.ip if req.path.match?(%r{\A/(rsvps/(show|thanks)|list/(thanks|rejoin)|unsubscribe|open)/})
     end
 
