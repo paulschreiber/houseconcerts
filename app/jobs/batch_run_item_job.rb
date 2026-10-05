@@ -1,56 +1,30 @@
 class BatchRunItemJob < ApplicationJob
-  # Raised when a recipient is no longer eligible to receive this send by
-  # the time the job actually runs (e.g. a Person went inactive after the
-  # batch was snapshotted). Its own class -- rather than a bare string --
-  # so it reads clearly in error_message/logs and stays distinguishable
-  # from a genuine unexpected failure.
+  # The recipient is no longer eligible (e.g. went inactive after the batch
+  # started). The item is marked "failed".
   class InvalidRecipient < StandardError; end
 
-  # Raised when a send is no longer wanted at all and never will be (the
-  # show has happened, or the person has already RSVP'd). The item is
-  # marked "cancelled" with the reason, not "failed": it isn't a delivery
-  # problem, so it shouldn't alert the admin or offer a retry that can't
-  # succeed.
+  # The send is no longer wanted (the show has happened, or they've RSVPd).
+  # The item is marked "cancelled", not "failed": it isn't a delivery
+  # problem, so it shouldn't alert the admin or offer a retry.
   class SkippedRecipient < StandardError; end
 
-  # Claimable starting states: "pending" for a first attempt, "failed" so
-  # an admin can retry a specific failed send. "sent" is deliberately
-  # excluded -- once an item is sent, nothing can ever reclaim it, which
-  # is what actually prevents a duplicate email/SMS.
+  # "pending" for a first attempt, "failed" for an admin's retry. A "sent"
+  # item can never be reclaimed, which is what prevents a duplicate send.
   CLAIMABLE_STATUSES = %w[pending failed].freeze
 
   def perform(batch_run_item_id)
-    # Claim the item (pending/failed -> sent) *before* attempting the
-    # send, not after: if this job crashes and Solid Queue redelivers it,
-    # the item is already claimed and the redelivered execution just
-    # skips straight to record_progress instead of sending a second
-    # email/SMS. The tradeoff is the opposite failure mode -- a crash
-    # between the claim and the actual send leaves an item marked "sent"
-    # that was never delivered -- which we accept as far safer than a
-    # duplicate send.
+    # Claimed (marked "sent") before sending, so a redelivered job doesn't
+    # send twice. A crash between the claim and the send leaves an item
+    # marked "sent" that wasn't delivered, which is safer than a duplicate.
     claimed = claim(batch_run_item_id) == 1
     item = BatchRunItem.find_by(id: batch_run_item_id)
     return if item.nil?
 
-    # Skipped when this execution didn't win the claim above (the item
-    # is already "sent"), so send_to can't run twice. record_progress
-    # below still runs regardless -- see its own comment for why that
-    # matters: if the execution that *did* win the claim crashed before
-    # ever reaching record_progress, this is what catches the run back
-    # up instead of leaving it stuck "running" forever with an item that
-    # can never be reclaimed to try again.
+    # Only the execution that won the claim sends. record_progress runs
+    # either way, so a redelivery catches up a run whose sender crashed.
     if claimed
-      # Checked here, immediately before the actual send, not just at
-      # cancel_batch_run's own end: claim() above already flipped this
-      # item's status away from "pending" before this line even runs, so
-      # Madmin::ShowsController#cancel_batch_run -- which only touches
-      # items still "pending" -- can't see or stop it. A batch_run can
-      # only already be completed *here* (before this item has resolved,
-      # so before it could have contributed to a normal completion) if
-      # it was cancelled in that exact window. This can't close the
-      # window entirely (there's always some gap between a check and an
-      # action), but shrinks it from this item's whole time in flight
-      # down to one query, right before the real external call.
+      # A run cancelled after this item was claimed (cancel only touches
+      # pending items) is checked once more right before sending.
       if item.batch_run.completed?
         item.update!(status: :cancelled, sent_at: nil)
       else
@@ -59,26 +33,11 @@ class BatchRunItemJob < ApplicationJob
         rescue SkippedRecipient => e
           with_transient_retries(item: item, label: "marking it skipped") { item.update!(status: :cancelled, error_message: e.message, sent_at: nil) }
         rescue StandardError => e
-          # Retried locally (not via ActiveJob's retry_on), not just for
-          # emphasis: retry_on would re-invoke this whole method, which
-          # would call claim() again -- and since "failed" is one of
-          # CLAIMABLE_STATUSES (so an admin can retry a genuinely failed
-          # send), that would silently re-trigger send_to and resend a
-          # message that may have already gone out. A transient failure
-          # writing this outcome shouldn't be able to do that; it should
-          # only ever retry the write itself.
-          # sent_at is cleared here too, not just status/error_message: claim()
-          # sets it unconditionally before send_to runs (it's really "claimed
-          # at", not "delivered at"), so a failed item would otherwise keep a
-          # real timestamp in a column named sent_at despite never having
-          # been delivered -- misleading for anything that trusts
-          # "sent_at IS NOT NULL" as "this was actually sent."
-          #
-          # The message is truncated to fit error_message (a varchar(255)):
-          # SMTP/Twilio errors are often longer, and MySQL strict mode would
-          # otherwise reject the write with ValueTooLong, leaving this item
-          # claimed as "sent" despite never being delivered and its run stuck
-          # "running" forever.
+          # Retried locally, not with retry_on: rerunning perform would
+          # reclaim the "failed" item and could resend it. sent_at is
+          # cleared, since claim set it. The message is truncated to fit
+          # error_message (varchar(255)), or MySQL would reject the write
+          # and leave the item "sent" and its run "running".
           error_message = e.message.to_s.truncate(BatchRunItem.columns_hash["error_message"].limit || 255)
           with_transient_retries(item: item, label: "marking it failed") { item.update!(status: :failed, error_message: error_message, sent_at: nil) }
         end
@@ -90,12 +49,8 @@ class BatchRunItemJob < ApplicationJob
 
   private
 
-    # A few immediate, local retries for a transient DB error, scoped
-    # narrowly to the bookkeeping that follows claim()/send_to() above.
-    # This is the fast, in-process path; record_progress's own idempotent
-    # recount (see its comment) is what actually makes recovery possible
-    # beyond these few attempts, via a crash-recovered redelivery of this
-    # same job.
+    # A few immediate retries of the bookkeeping after a transient DB error.
+    # Beyond these, record_progress's recount lets a redelivered job recover.
     def with_transient_retries(item: nil, label: "recording progress", max_attempts: 3)
       attempts = 0
       begin
@@ -103,15 +58,8 @@ class BatchRunItemJob < ApplicationJob
       rescue ActiveRecord::AdapterError => e
         attempts += 1
         if attempts >= max_attempts
-          # Logged loudly (this already shows up as a failed job in Solid
-          # Queue, but a specific, grep-able line makes the actual gap --
-          # and which item/run it's about -- obvious rather than
-          # requiring someone to reconstruct it from a bare exception).
-          # A worker crash instead of a raised exception leaves no log
-          # line at all, but is equally recoverable: Solid Queue's own
-          # process-pruning marks a crashed worker's claimed jobs failed,
-          # and retrying one (e.g. via Mission Control Jobs) re-invokes
-          # record_progress the same as any other redelivery.
+          # A specific, grep-able line for the item and run, on top of the
+          # failed job in Solid Queue.
           Rails.logger.error(
             "BatchRunItemJob: giving up #{label} for batch_run_item_id=#{item&.id} " \
             "(batch_run_id=#{item&.batch_run_id}) after #{attempts} attempts: " \
@@ -138,26 +86,18 @@ class BatchRunItemJob < ApplicationJob
       batch_run = item.batch_run
       recipient = item.recipient
       raise InvalidRecipient, "recipient no longer exists" if recipient.nil?
-      # Rechecked at send time: a retry (or a job that sat in the queue)
-      # can run after the show has already happened, when an invite or
-      # reminder is useless.
+      # Rechecked at send time: a retry or queued job may run after the show.
       raise SkippedRecipient, "#{batch_run.show.name} has already happened" if batch_run.show.occurred?
 
       case batch_run.kind
       when "invite", "invite_unopened"
         raise InvalidRecipient, "#{recipient.email} is no longer active" unless recipient.can_invite?
-        # Also rechecked at send time, like can_invite? above: the batch snapshots
-        # people who hadn't RSVP'd when it started, but they may have since.
+        # They may have RSVPd since the batch started.
         raise SkippedRecipient, "#{recipient.email} has already RSVP'd" if RSVP.exists?(show: batch_run.show, email: recipient.email)
 
-        # batch_run.kind ("invite" or "invite_unopened") is passed through
-        # as the tracking tag's email_type so opens from the two kinds are
-        # distinguishable (rake next_show:opens, etc.) instead of both
-        # recording as a plain "invite" open. BatchRunFanOutJob's
-        # invite_unopened exclusion query (NOT EXISTS ... tag LIKE
-        # "#{slug}:invite%") still matches "invite_unopened" via that
-        # prefix, so this doesn't change who gets excluded from a future
-        # invite_unopened send.
+        # The kind becomes the open-tracking tag's email type, so opens of the
+        # two kinds stay distinguishable ("invite_unopened" still matches the
+        # fan-out's "invite%" exclusion).
         InvitesMailer.invite(recipient, batch_run.show, batch_run.kind).deliver_now
       when "remind"
         remind(item, recipient)
@@ -165,20 +105,13 @@ class BatchRunItemJob < ApplicationJob
     end
 
     def remind(item, rsvp)
-      # Rechecked at send time, not just at fan-out snapshot time: an
-      # attendee can be waitlisted/unconfirmed or withdraw their RSVP
-      # between when the batch was created and when this specific job
-      # actually runs.
+      # Rechecked at send time: the RSVP may have changed since the batch
+      # started.
       raise InvalidRecipient, "RSVP #{rsvp.id} is no longer a confirmed yes attendee" unless rsvp.confirmed? && rsvp.yes?
 
-      # Email and SMS are two separate external deliveries, not one
-      # transaction: each is tracked independently, and each is only
-      # marked done *after* it succeeds (not before), so retrying a
-      # failed item only re-attempts whichever channel didn't already
-      # succeed. The narrow window this leaves -- delivery succeeds but
-      # this timestamp write itself fails -- risks a rare duplicate on
-      # retry, which we accept in exchange for never silently skipping a
-      # channel that actually failed to send.
+      # Email and SMS are tracked separately and each marked done only after
+      # it succeeds, so a retry only re-sends the channel that failed. (If the
+      # delivery succeeds but recording it fails, a retry can duplicate it.)
       unless item.email_sent_at?
         InvitesMailer.remind(rsvp).deliver_now
         item.update!(email_sent_at: Time.current)
@@ -188,17 +121,9 @@ class BatchRunItemJob < ApplicationJob
 
       return if item.sms_sent_at?
 
-      # A permanently bad number (landline, wrong digits) means this
-      # raises every time, marking the whole item "failed" despite the
-      # email above having genuinely gone out -- deliberately, not an
-      # oversight: item status is one signal for "does this recipient
-      # need anything else from us," not two independent per-channel
-      # ones, and splitting it would mean tracking a partial-success
-      # state through counters/notifications/retry UI that don't
-      # distinguish it today. The accepted cost is a retry that keeps
-      # re-alerting the admin on the same number -- resolved by fixing
-      # the number on the RSVP's own Madmin edit page, which does stop
-      # the loop, just not automatically.
+      # A bad number fails the whole item even though the email went out:
+      # status is one signal per recipient, not one per channel. Fixing the
+      # number on the RSVP stops the retries failing.
       if Rails.env.production?
         client = Twilio::REST::Client.new(Rails.application.credentials.twilio.account_sid, Rails.application.credentials.twilio.auth_token)
         client.api.account.messages.create(
@@ -212,36 +137,13 @@ class BatchRunItemJob < ApplicationJob
       item.update!(sms_sent_at: Time.current)
     end
 
-    # Recomputed live from the items themselves (filtered by counted_at
-    # -- see claim() above), not accumulated with an additive increment,
-    # so this needs no claim of its own and is safe to call any number
-    # of times: unconditionally, on every invocation, regardless of
-    # whether *this* one is what actually resolved the item.
-    #
-    # That's deliberate, not incidental: an additive delta can't safely
-    # be retried under an uncertain outcome. If the DB connection drops
-    # after MySQL commits a `sent_count = sent_count + 1` but before
-    # Rails receives the acknowledgment, there's no way to tell "didn't
-    # happen" apart from "happened, but I never heard back" -- retrying
-    # in the first case is required, and in the second case double-
-    # counts. A live recount has no such ambiguity: redone any number of
-    # times, for any reason (an ordinary crash-recovered redelivery, or
-    # this exact kind of ack-loss uncertainty), it always converges on
-    # the same correct answer, since there's no delta to apply twice.
-    #
-    # Filtered by counted_at, not just status = sent/failed: a failed
-    # item awaiting an admin's retry is still "failed" in the database
-    # the whole time, but Madmin::ShowsController#retry_failed_batch_run
-    # resets its counted_at to NULL specifically so it's excluded here
-    # until it actually resolves again -- without that, processed_count
-    # would already equal total_count the instant a retried run reopens,
-    # before any of the retries have actually run.
+    # Recounts sent and failed from the items (those with counted_at, set by
+    # claim) instead of incrementing, so it's safe to run any number of times,
+    # including after a lost database acknowledgment. A retried failed item
+    # has its counted_at cleared, so it isn't counted until it resolves again.
     def record_progress(item)
-      # Only sent/failed items count toward sent_count/failed_count, but a
-      # "cancelled" item still runs the completion check below: a skipped
-      # send (SkippedRecipient) can be the last item a running run is
-      # waiting on. For an item cancelled along with its run, the recount
-      # is a no-op and the completion check finds the run already completed.
+      # Cancelled items still run the completion check: a skipped send can be
+      # the last item a run is waiting on.
       return if item.pending?
 
       batch_run = item.batch_run
@@ -252,22 +154,13 @@ class BatchRunItemJob < ApplicationJob
           batch_run.update!(sent_count: counts.fetch("sent", 0), failed_count: counts.fetch("failed", 0))
         end
 
-        # Cancelled items still count toward total_count but will never
-        # resolve to sent/failed, so they're counted as done here --
-        # without that, a cancelled run that's later reopened by
-        # retry_failed_batch_run (it still has failed items) could never
-        # reach total_count again and would sit "running" forever.
+        # Cancelled items count as done, or a reopened run with cancelled items
+        # could never reach total_count.
         cancelled_count = batch_run.batch_run_items.cancelled.count
 
         if batch_run.processed_count + cancelled_count >= batch_run.total_count
-          # Guarded by `status: "running"` so only the item that actually
-          # finishes the run flips it to completed, even if two items
-          # finish at the same time -- and so the failure notification
-          # below only ever fires once per completion, not once per item.
-          # That guard also makes this whole block idempotent to retry:
-          # once it succeeds, a later retry finds status no longer
-          # "running" and just no-ops instead of re-transitioning or
-          # re-notifying.
+          # Only the item that finishes a running run completes it, so the
+          # failure email goes out once, and a retry of this is a no-op.
           became_completed = BatchRun.where(id: batch_run.id, status: "running")
                                      .update_all(status: BatchRun.statuses[:completed], completed_at: Time.current) == 1 # rubocop:disable Rails/SkipsModelValidations
           batch_run.reload

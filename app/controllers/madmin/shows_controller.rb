@@ -80,10 +80,8 @@ module Madmin
     end
 
     def retry_failed_batch_run
-      # Queried live, not read off any cached counter: if a previous
-      # retry's own enqueue failed partway through, this still sees
-      # whatever's genuinely still "failed" and lets retrying again --
-      # instead of silently stranding some of them forever.
+      # The items themselves, not a cached counter, so a retry whose enqueue
+      # failed partway can be retried again.
       failed_items = @batch_run&.batch_run_items&.failed
 
       if @batch_run.nil? || failed_items.none?
@@ -91,9 +89,8 @@ module Madmin
         return
       end
 
-      # Invites and reminders for a show that's already happened are useless,
-      # so a past show's failures stay visible (on its own page) but can't be
-      # retried. BatchRunItemJob#send_to rechecks this at send time too.
+      # Sends for a show that's happened are useless; its failures stay visible
+      # but can't be retried (BatchRunItemJob rechecks this too).
       if @record.occurred?
         back_to_show(alert: "#{@record.name} has already happened, so its failed #{@kind_label} sends can't be retried.")
         return
@@ -101,20 +98,13 @@ module Madmin
 
       retry_count = failed_items.count
 
-      # Reopen the run so its progress bar shows again while the retries
-      # are in flight. Conditioned on status still matching what was
-      # read above, not a blind write: without this, a concurrent
-      # cancel_batch_run completing the run between that read and this
-      # write would get silently overwritten back to "running" --
-      # reopening, and then actually retrying, a batch the admin had
-      # just cancelled.
+      # Reopened only if its status hasn't changed since it was read, so a
+      # concurrent cancel isn't overwritten back to "running".
       begin
         reopened = BatchRun.where(id: @batch_run.id, status: @batch_run.status)
                            .update_all(status: BatchRun.statuses[:running], completed_at: nil) == 1 # rubocop:disable Rails/SkipsModelValidations
       rescue ActiveRecord::RecordNotUnique
-        # active_kind_lock only allows one non-completed run per show+kind
-        # at a time -- reopening this (older) run collides if a newer run
-        # of the same kind is currently pending/running.
+        # active_kind_lock allows one unfinished run per show and kind.
         back_to_show(alert: "Can't retry right now -- a newer #{@kind_label} batch is already in progress for #{@record.name}. Try again once it finishes.")
         return
       end
@@ -124,34 +114,18 @@ module Madmin
         return
       end
 
-      # Deliberately left "failed", not reset to "pending": if
-      # BatchRunFanOutJob.perform_later below itself fails to enqueue,
-      # these items staying "failed" is what lets the retry button/gate
-      # (which query .failed) find and offer them again on a later
-      # click. counted_at is reset so BatchRunItemJob#record_progress's
-      # live recount excludes them until they actually resolve again --
-      # without it, processed_count would already equal total_count the
-      # instant the run reopens, before any retry has run.
-      # fan_out_enqueued_at is reset alongside it since it's still set
-      # from their first, now-failed attempt.
+      # Left "failed", so if the enqueue below fails they can still be offered
+      # for retry. counted_at is cleared so they aren't counted until they
+      # resolve again, and fan_out_enqueued_at so the fan-out picks them up.
       failed_items.update_all(counted_at: nil, fan_out_enqueued_at: nil) # rubocop:disable Rails/SkipsModelValidations
 
-      # Handed off to BatchRunFanOutJob -- not a separate retry-specific
-      # job -- so a crash partway through enqueuing doesn't strand the
-      # remaining failed items: its own pending? guard already skips the
-      # recipient-snapshot phase for a non-"pending" run and falls
-      # straight through to re-scanning for unresolved items, which
-      # includes these (see its own comment for why "failed" is in that
-      # scan at all).
+      # The fan-out job enqueues them, so a crash partway through enqueuing
+      # doesn't strand the rest.
       begin
         BatchRunFanOutJob.perform_later(@batch_run.id)
       rescue ActiveRecord::AdapterError, SolidQueue::Job::EnqueueError
-        # Solid Queue raises synchronously, at the point perform_later is
-        # called, not later in a worker -- so a transient DB problem here
-        # would otherwise surface as a raw 500. The run itself is fine
-        # (failed_items are still "failed" and untouched otherwise), so
-        # clicking Retry again picks up right where this left off -- the
-        # button/gate query the real items, not a cached counter.
+        # Solid Queue raises during perform_later; clicking Retry again picks
+        # up where this left off.
         back_to_show(alert: "Couldn't start retrying #{@kind_label} sends right now -- please try again in a moment.")
         return
       end
@@ -159,29 +133,21 @@ module Madmin
       back_to_show(notice: "Retrying #{retry_count} failed #{@kind_label} for #{@record.name}.")
     end
 
-    # An escape hatch for a run that's stuck, or that an admin simply
-    # wants to stop -- neither StartBatchRun's resume logic (only
-    # "pending" runs) nor retry_failed_batch_run (only runs with failed
-    # items) can unblock a run that's "running" with no failures, and
-    # active_kind_lock otherwise blocks starting a fresh one of this
-    # kind for this show until it does reach completed.
+    # Stops a run that's stuck or unwanted. Nothing else can finish a
+    # "running" run with no failures, and until it finishes, active_kind_lock
+    # blocks starting another of its kind for the show.
     def cancel_batch_run
       if @batch_run.nil? || @batch_run.completed?
         back_to_show(alert: "There is no in-progress #{@kind_label} batch to cancel.")
         return
       end
 
-      # Any item still pending is marked "cancelled", not left as-is:
-      # that status is deliberately excluded from
-      # BatchRunItemJob::CLAIMABLE_STATUSES, so a job that's already
-      # enqueued for one -- cancelling can't un-enqueue a Solid Queue
-      # job -- finds nothing claimable and never sends it. Items that
-      # already resolved (sent/failed) keep their real outcome.
+      # Pending items become "cancelled", which isn't claimable, so a job
+      # already enqueued for one sends nothing. Resolved items keep their
+      # outcome.
       @batch_run.batch_run_items.pending.update_all(status: BatchRunItem.statuses[:cancelled]) # rubocop:disable Rails/SkipsModelValidations
       @batch_run.update!(status: :completed, completed_at: Time.current)
-      # Without this, another admin with the show page open (this
-      # request's own redirect is what shows the cancelling admin the
-      # new state) would keep seeing "Running" until they refreshed.
+      # So other admins viewing the show see it too.
       @batch_run.broadcast_progress
 
       back_to_show(notice: "Cancelled the #{@kind_label} batch for #{@record.name}.")
