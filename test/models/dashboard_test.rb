@@ -74,6 +74,15 @@ class DashboardTest < ActiveSupport::TestCase
     assert_equal 0, Dashboard.new.phone_numbers_to_add
   end
 
+  test "openers_by_email finds each email's Person, or else its latest RSVP" do
+    person = Person.create!(first_name: "Jane", last_name: "Smith", email: "jane.smith@example.com")
+    rsvp(shows(:past), "John")
+    latest = rsvp(shows(:upcoming), "John")
+    opens = %w[jane.smith@example.com john.smith@example.com nobody@example.com].map { |email| Open.new(email:) }
+
+    assert_equal({ "jane.smith@example.com" => person, "john.smith@example.com" => latest }, @dashboard.openers_by_email(opens))
+  end
+
   test "graph_series has cumulative seats per day from a past show's first yes RSVP to show day" do
     show_day = shows(:past).start
     rsvp(shows(:past), "Jane", seats_reserved: 2, created_at: show_day - 10.days)
