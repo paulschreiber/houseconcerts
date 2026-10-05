@@ -10,6 +10,11 @@ class AddNonsubscribers
     new(show).call
   end
 
+  # The RSVPs whose people would be added: those with no Person record.
+  def self.addable(show)
+    RSVP.nonsubscribers(show).where.not(email: Person.select(:email))
+  end
+
   def initialize(show)
     @show = show
   end
@@ -17,12 +22,9 @@ class AddNonsubscribers
   def call
     result = Result.new(added: [], skipped: [], failed: {})
 
-    RSVP.nonsubscribers(show).order(:last_name, :first_name).each do |rsvp|
-      if rsvp.person_exists?
-        result.skipped << rsvp
-        next
-      end
+    result.skipped.concat(RSVP.nonsubscribers(show).where(email: Person.select(:email)).order(:last_name, :first_name))
 
+    self.class.addable(show).order(:last_name, :first_name).each do |rsvp|
       person = rsvp.create_person
       if person.persisted?
         result.added << rsvp
@@ -31,7 +33,7 @@ class AddNonsubscribers
       end
     rescue ActiveRecord::RecordNotUnique
       # Added by another run (a second click, or the rake task) since the
-      # check above, so they're on the list either way.
+      # addable query ran, so they're on the list either way.
       next
     end
 
