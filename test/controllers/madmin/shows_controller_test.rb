@@ -205,6 +205,16 @@ module Madmin
       assert_predicate Person.find_by(email: "john.smith@example.com"), :removed?
     end
 
+    test "add_nonsubscribers and add_phone_numbers return to the page they were clicked on" do
+      get madmin_root_path
+
+      post add_nonsubscribers_madmin_show_path(shows(:past)), headers: { "HTTP_REFERER" => madmin_root_url }
+      assert_redirected_to madmin_root_url
+
+      post add_phone_numbers_madmin_show_path(shows(:past)), headers: { "HTTP_REFERER" => madmin_root_url }
+      assert_redirected_to madmin_root_url
+    end
+
     test "add_nonsubscribers reports someone who couldn't be added as an error" do
       attendee(shows(:past), "Jane").update_column(:first_name, "J") # rubocop:disable Rails/SkipsModelValidations
 
