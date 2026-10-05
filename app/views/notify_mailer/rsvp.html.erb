@@ -1,41 +1,45 @@
 <h1><%= @subject %></h1>
 
-<p>Show: <%= @rsvp.show %></p>
-
-<p>Person: <%= @rsvp.full_name %>
+<table class="details">
+  <tr><th>Show</th><td><%= @rsvp.show %></td></tr>
+  <tr><th>Person</th><td><%= @rsvp.full_name %></td></tr>
 <%- if @rsvp.response != "yes" %>
-<br>Response: <%= @rsvp.response %>
+  <tr><th>Response</th><td><%= @rsvp.response %></td></tr>
 <%- end -%>
 <%- if @old_seats.nil? and @rsvp.seats_reserved > 0 %>
-<br>Seats: <%= @rsvp.seats_reserved %>
+  <tr><th>Seats</th><td><%= @rsvp.seats_reserved %></td></tr>
 <%- elsif !@old_seats.nil? %>
-<br>Seats: <%= @old_seats %> → <%= @rsvp.seats_reserved %>
+  <tr><th>Seats</th><td><%= @old_seats %> → <%= @rsvp.seats_reserved %></td></tr>
 <%- end -%>
-<br>On mailing list: <%= @rsvp.person_exists? ? "Yes" : "No" %>
-</p>
+  <tr><th>On mailing list</th><td><%= @rsvp.person_exists? ? "Yes" : "No" %></td></tr>
+</table>
 
 <%- if @rsvp.response == "yes" -%>
 <h2>Attendance History</h2>
 <%- if @history.any? %>
-<ul>
+<table class="history">
+  <thead>
+    <tr><th>Date</th><th>Show</th><th>Seats used</th></tr>
+  </thead>
+  <tbody>
   <%- @history.each do |kind, past_rsvp| %>
-    <li>
     <%- if kind == :cancelled -%>
-      <%= past_rsvp.start.to_date.iso8601 %>:
-      <%= past_rsvp.name %>
-      (cancelled <%= past_rsvp.cancelled_at.to_date.iso8601 %>)
+    <tr>
+      <td><%= past_rsvp.start.to_date.iso8601 %></td>
+      <td><%= past_rsvp.name %></td>
+      <td class="empty">Cancelled <%= past_rsvp.cancelled_at.to_date.iso8601 %></td>
+    </tr>
     <%- else -%>
-      <%- my_tag = past_rsvp.seats_used.to_i < past_rsvp.seats_reserved.to_i ? "strong" : "span" -%>
-      <%= tag.public_send(my_tag) do %>
-        <%= past_rsvp.start.to_date.iso8601 %>:
-        <%= past_rsvp.name %>
-        (<%= past_rsvp.seats_used.to_i %> / <%= past_rsvp.seats_reserved.to_i %>)
-      <%- end -%>
+    <%= tag.tr(class: ("unused-seats" if past_rsvp.seats_used.to_i < past_rsvp.seats_reserved.to_i)) do %>
+      <td><%= past_rsvp.start.to_date.iso8601 %></td>
+      <td><%= past_rsvp.name %></td>
+      <td><%= past_rsvp.seats_used.to_i %> / <%= past_rsvp.seats_reserved.to_i %></td>
     <%- end -%>
-    </li>
+    <%- end -%>
   <%- end -%>
-</ul>
+  </tbody>
+</table>
 <%- else -%>
-<p>No previous reservations.</p>
+<p class="empty">No previous reservations.</p>
 <%- end -%>
 <%- end -%>

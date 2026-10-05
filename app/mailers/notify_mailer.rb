@@ -1,6 +1,8 @@
 class NotifyMailer < ApplicationMailer
   include NumberHelpers
 
+  layout "admin_notification"
+
   default from: -> { formatted_address(Settings.confirms_from_name, Settings.confirms_from_email) }
 
   def rsvp(rsvp, type, old_seats)

@@ -1,5 +1,6 @@
 <h1>Text message received</h1>
 
-<p>Sender: <%= @sender %></p>
-
-<p>Body: <%= @body %></p>
+<table class="details">
+  <tr><th>Sender</th><td><%= @sender %></td></tr>
+  <tr><th>Body</th><td class="multiline"><%= @body %></td></tr>
+</table>
