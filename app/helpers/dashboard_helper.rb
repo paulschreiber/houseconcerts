@@ -1,6 +1,6 @@
 module DashboardHelper
   GRAPH_WIDTH = 1100
-  GRAPH_HEIGHT = 300
+  GRAPH_HEIGHT = 200
   GRAPH_PADDING = { top: 12, right: 40, bottom: 32, left: 40 }.freeze
   PAST_SHOW_COLORS = %w[#94a3b8 #a78bfa #f59e0b].freeze
   NEXT_SHOW_COLOR = "#2563eb".freeze
