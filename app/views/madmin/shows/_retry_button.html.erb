@@ -1,0 +1,2 @@
+<%# Retries a batch run's failed sends. Turbo disables it while the request is in flight. %>
+<%= button_to label, retry_failed_batch_run_madmin_show_path(batch_run.show, batch_run_id: batch_run.id), method: :patch, class: "btn btn-secondary" %>

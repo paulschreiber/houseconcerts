@@ -11,7 +11,7 @@ def run_batch(show, kind, noun)
   puts "Started sending #{noun.pluralize} for #{show.name}."
 rescue StartBatchRun::AlreadyInProgress
   puts "A #{kind} batch is already in progress for #{show.name}; not starting another."
-rescue StartBatchRun::EnqueueFailed => e
+rescue StartBatchRun::NotReady, StartBatchRun::EnqueueFailed => e
   puts e.message
 end
 
@@ -68,11 +68,6 @@ namespace :next_show do
       exit
     end
 
-    unless show.invites_sent?
-      puts "Send the initial invites before sending invites to unopened recipients"
-      exit
-    end
-
     run_batch(show, "invite_unopened", "invite")
   end
 
@@ -84,14 +79,7 @@ namespace :next_show do
       exit
     end
 
-    people = Person.active.includes(:venue_groups)
-                   .where(venue_groups: { id: Settings.default_venue_group })
-                   .where(
-                     "NOT EXISTS (SELECT 1 FROM rsvps WHERE rsvps.show_id = ? AND rsvps.email = people.email)",
-                     show.id
-                   )
-
-    puts "Can email #{people.size} people."
+    puts "Can email #{Person.invitable_for(show).size} people."
   end
 
   desc "Show attendees for next show"

@@ -28,7 +28,7 @@ class BatchRunItemJob < ApplicationJob
     # between the claim and the actual send leaves an item marked "sent"
     # that was never delivered -- which we accept as far safer than a
     # duplicate send.
-    previous_status = claim(batch_run_item_id)
+    claimed = claim(batch_run_item_id) == 1
     item = BatchRunItem.find_by(id: batch_run_item_id)
     return if item.nil?
 
@@ -39,7 +39,7 @@ class BatchRunItemJob < ApplicationJob
     # ever reaching record_progress, this is what catches the run back
     # up instead of leaving it stuck "running" forever with an item that
     # can never be reclaimed to try again.
-    if previous_status
+    if claimed
       # Checked here, immediately before the actual send, not just at
       # cancel_batch_run's own end: claim() above already flipped this
       # item's status away from "pending" before this line even runs, so
@@ -125,23 +125,13 @@ class BatchRunItemJob < ApplicationJob
       end
     end
 
+    # counted_at is set here too, not just by record_progress: it's what
+    # record_progress's recount filters on, and setting it in the same atomic
+    # write means an item is never "sent"/"failed" without being countable.
+    # Returns how many rows it claimed (0 or 1).
     def claim(batch_run_item_id)
-      CLAIMABLE_STATUSES.each do |status|
-        # counted_at set here too, not just by record_progress: it's what
-        # record_progress's live recount filters on to tell "should count
-        # right now" apart from "failed, awaiting a retry that hasn't
-        # resolved yet" (see record_progress). Setting it as part of this
-        # same atomic write -- rather than as record_progress's own,
-        # separate claim -- means there's no gap where this item is
-        # already "sent"/"failed" but not yet marked countable, so
-        # record_progress never needs to claim anything itself; it can
-        # just recount unconditionally, any number of times, and always
-        # get the right answer.
-        claimed = BatchRunItem.where(id: batch_run_item_id, status: status)
-                              .update_all(status: "sent", sent_at: Time.current, error_message: nil, counted_at: Time.current) # rubocop:disable Rails/SkipsModelValidations
-        return status if claimed == 1
-      end
-      nil
+      BatchRunItem.where(id: batch_run_item_id, status: CLAIMABLE_STATUSES)
+                  .update_all(status: "sent", sent_at: Time.current, error_message: nil, counted_at: Time.current) # rubocop:disable Rails/SkipsModelValidations
     end
 
     def send_to(item)
@@ -155,8 +145,8 @@ class BatchRunItemJob < ApplicationJob
 
       case batch_run.kind
       when "invite", "invite_unopened"
-        raise InvalidRecipient, "#{recipient.email} is no longer active" unless recipient.active?
-        # Also rechecked at send time, like active? above: the batch snapshots
+        raise InvalidRecipient, "#{recipient.email} is no longer active" unless recipient.can_invite?
+        # Also rechecked at send time, like can_invite? above: the batch snapshots
         # people who hadn't RSVP'd when it started, but they may have since.
         raise SkippedRecipient, "#{recipient.email} has already RSVP'd" if RSVP.exists?(show: batch_run.show, email: recipient.email)
 
@@ -258,10 +248,8 @@ class BatchRunItemJob < ApplicationJob
 
       with_transient_retries(item: item) do
         batch_run.with_lock do
-          batch_run.update!(
-            sent_count: batch_run.batch_run_items.where.not(counted_at: nil).sent.count,
-            failed_count: batch_run.batch_run_items.where.not(counted_at: nil).failed.count
-          )
+          counts = batch_run.batch_run_items.where.not(counted_at: nil).group(:status).count
+          batch_run.update!(sent_count: counts.fetch("sent", 0), failed_count: counts.fetch("failed", 0))
         end
 
         # Cancelled items still count toward total_count but will never

@@ -30,9 +30,3 @@ module HidesIdAndTimestampsByDefault
 end
 
 Madmin::Field.prepend(HidesIdAndTimestampsByDefault)
-
-# Madmin pages load their own importmap, which only includes Stimulus
-# controllers from app/javascript/madmin/controllers. Pin the app's
-# disable-on-submit controller there too, so the batch-action buttons
-# (ShowResource.disable_on_submit) actually disable on submit.
-Madmin.importmap.pin "controllers/disable_on_submit_controller", to: "controllers/disable_on_submit_controller.js"

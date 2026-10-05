@@ -6,20 +6,20 @@
     still show a stale count here. The completed-state count doesn't
     need this -- once a run is completed, nothing changes its counters
     again, so it's always accurate by then. %>
+<% failed_count = batch_run.completed? ? batch_run.failed_count : batch_run.batch_run_items.failed.count %>
 <div id="batch_run_progress_<%= batch_run.kind %>" class="batch-progress-status">
   <% if batch_run.completed? %>
-    <%= batch_run.sent_count %> sent<% if batch_run.failed_count.positive? %>, <%= batch_run.failed_count %> failed<% end %> (complete)
-    <% if batch_run.failed_count.positive? && !batch_run.show.occurred? %>
-      <%= button_to "Retry #{batch_run.failed_count} failed", retry_failed_batch_run_madmin_show_path(batch_run.show, batch_run_id: batch_run.id), method: :patch, class: "btn btn-secondary", form: ShowResource.disable_on_submit, data: ShowResource.submit_button_data %>
-    <% end %>
+    <%= batch_run.sent_count %> sent<% if failed_count.positive? %>, <%= failed_count %> failed<% end %> (complete)
   <% else %>
-    <% live_failed_count = batch_run.batch_run_items.failed.count %>
     <progress value="<%= batch_run.processed_count %>" max="<%= [ batch_run.total_count, 1 ].max %>"></progress>
-    <%= batch_run.sent_count %>/<%= batch_run.total_count %> sent<% if live_failed_count.positive? %>, <%= live_failed_count %> failed<% end %>
+    <%= batch_run.sent_count %>/<%= batch_run.total_count %> sent<% if failed_count.positive? %>, <%= failed_count %> failed<% end %>
     (<%= batch_run.status.humanize %>)
-    <% if live_failed_count.positive? && !batch_run.show.occurred? %>
-      <%= button_to "Retry #{live_failed_count} failed", retry_failed_batch_run_madmin_show_path(batch_run.show, batch_run_id: batch_run.id), method: :patch, class: "btn btn-secondary", form: ShowResource.disable_on_submit, data: ShowResource.submit_button_data %>
-    <% end %>
-    <%= button_to "Cancel", cancel_batch_run_madmin_show_path(batch_run.show, batch_run_id: batch_run.id), method: :patch, class: "btn btn-secondary", data: ShowResource.submit_button_data(turbo_confirm: "Cancel this batch? Sends already in progress may still go out, but nothing still waiting to start will be sent."), form: ShowResource.disable_on_submit %>
+  <% end %>
+  <% if failed_count.positive? && !batch_run.show.occurred? %>
+    <%= render "madmin/shows/retry_button", batch_run:, label: "Retry #{failed_count} failed" %>
+  <% end %>
+  <% unless batch_run.completed? %>
+    <%= button_to "Cancel", cancel_batch_run_madmin_show_path(batch_run.show, batch_run_id: batch_run.id), method: :patch, class: "btn btn-secondary",
+                            data: { turbo_confirm: "Cancel this batch? Sends already in progress may still go out, but nothing still waiting to start will be sent." } %>
   <% end %>
 </div>

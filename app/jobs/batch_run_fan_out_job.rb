@@ -167,12 +167,13 @@ class BatchRunFanOutJob < ApplicationJob
 
     def recipients_for(batch_run)
       show = batch_run.show
+      invitable = Person.invitable_for(show).order(:last_name, :first_name)
 
       case batch_run.kind
       when "invite"
-        invite_recipients(show)
+        invitable
       when "invite_unopened"
-        invite_recipients(show).where(
+        invitable.where(
           "NOT EXISTS (SELECT 1 FROM opens WHERE opens.tag LIKE ? AND opens.email = people.email)",
           "#{ActiveRecord::Base.sanitize_sql_like(show.slug)}:invite%"
         )
@@ -181,15 +182,5 @@ class BatchRunFanOutJob < ApplicationJob
       else
         raise ArgumentError, "unknown batch run kind: #{batch_run.kind}"
       end
-    end
-
-    def invite_recipients(show)
-      Person.active.includes(:venue_groups)
-            .where(venue_groups: { id: Settings.default_venue_group })
-            .where(
-              "NOT EXISTS (SELECT 1 FROM rsvps WHERE rsvps.show_id = ? AND rsvps.email = people.email)",
-              show.id
-            )
-            .order(:last_name, :first_name)
     end
 end
