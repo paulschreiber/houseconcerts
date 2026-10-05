@@ -1,0 +1,247 @@
+<% content_for :title, "Dashboard" %>
+
+<header class="header">
+  <h1>Dashboard</h1>
+</header>
+
+<div class="dashboard-grid">
+  <section class="cell cell--wide">
+    <% if (show = @dashboard.next_show) %>
+      <% seats = @dashboard.next_show_seats %>
+      <% responses = @dashboard.next_show_responses %>
+      <% unconfirmed = @dashboard.unconfirmed_rsvps.to_a %>
+      <header>
+        <div>
+          <h2>Next show: <%= link_to show.name, madmin_show_path(show) %></h2>
+          <p class="subtitle">
+            <%= show.start_date %> at <%= show.start_time %> · <%= days_until(show) %> ·
+            <%= show_badge(show.availability) %>
+          </p>
+        </div>
+        <div class="actions">
+          <%= link_to "RSVPs", madmin_rsvps_path(scope: "next_show"), class: "btn btn-secondary" %>
+          <%= link_to "Attendance", attendance_madmin_show_path(show), class: "btn btn-secondary" %>
+          <%= link_to "Edit show", edit_madmin_show_path(show), class: "btn btn-secondary" %>
+        </div>
+      </header>
+
+      <div class="metrics">
+        <div class="metric">
+          <h4>Seats</h4>
+          <p><%= seats.fetch("confirmed", 0) + seats.fetch("unconfirmed", 0) %></p>
+          <small><%= seats.fetch("confirmed", 0) %> confirmed · <%= seats.fetch("unconfirmed", 0) %> unconfirmed</small>
+        </div>
+        <div class="metric">
+          <h4>RSVPs</h4>
+          <p><%= responses.values.sum %></p>
+          <small><%= responses.fetch("yes", 0) %> yes · <%= responses.fetch("no", 0) %> no</small>
+        </div>
+        <div class="metric">
+          <h4>Waitlisted</h4>
+          <p><%= seats.fetch("waitlisted", 0) %></p>
+          <small>seats</small>
+        </div>
+      </div>
+
+      <div class="split">
+        <div>
+          <h3>Most recent RSVPs</h3>
+          <% if (rsvps = @dashboard.recent_rsvps.to_a).any? %>
+            <table>
+              <thead><tr><th>Name</th><th>Response</th><th class="num">Seats</th><th>When</th></tr></thead>
+              <tbody>
+                <% rsvps.each do |rsvp| %>
+                  <tr>
+                    <td><%= link_to rsvp.full_name, madmin_rsvp_path(rsvp) %></td>
+                    <td><%= rsvp.response.humanize %></td>
+                    <td class="num"><%= rsvp.yes? ? rsvp.seats_reserved : "—" %></td>
+                    <td class="when"><%= dashboard_time(rsvp.created_at) %></td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+            <%= link_to "All #{pluralize(responses.values.sum, 'RSVP')} →", madmin_rsvps_path(scope: "next_show"), class: "more" %>
+          <% else %>
+            <p class="empty">No RSVPs yet.</p>
+          <% end %>
+        </div>
+
+        <div>
+          <h3>Unconfirmed RSVPs</h3>
+          <% if unconfirmed.any? %>
+            <table>
+              <thead><tr><th>Name</th><th class="num">Seats</th><th>RSVPd</th><th></th></tr></thead>
+              <tbody>
+                <% unconfirmed.first(Dashboard::RECENT_LIMIT).each do |rsvp| %>
+                  <tr>
+                    <td>
+                      <%= link_to rsvp.full_name, madmin_rsvp_path(rsvp) %>
+                      <%= show_badge("waitlisted") if rsvp.waitlisted? %>
+                    </td>
+                    <td class="num"><%= rsvp.seats_reserved %></td>
+                    <td class="when"><%= dashboard_time(rsvp.created_at) %></td>
+                    <td class="row-actions">
+                      <% if rsvp.can_confirm? %>
+                        <%= button_to "Confirm", confirm_madmin_rsvp_path(rsvp), method: :patch, class: "btn btn-secondary btn-sm" %>
+                      <% end %>
+                      <% if rsvp.can_waitlist? %>
+                        <%= button_to "Waitlist", waitlist_madmin_rsvp_path(rsvp), method: :patch, class: "btn btn-secondary btn-sm" %>
+                      <% end %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+            <%= link_to "All #{pluralize(unconfirmed.size, 'unconfirmed RSVP')} →", madmin_rsvps_path(scope: RSVP::UNCONFIRMED_RSVPS_SCOPE), class: "more" %>
+          <% else %>
+            <p class="empty">Every yes RSVP is confirmed.</p>
+          <% end %>
+        </div>
+      </div>
+    <% else %>
+      <header><h2>Next show</h2></header>
+      <p class="empty">No upcoming confirmed show. <%= link_to "Add a show", new_madmin_show_path %></p>
+    <% end %>
+  </section>
+
+  <% if (all_series = @dashboard.graph_series).any? %>
+    <section class="cell cell--wide graph">
+      <header>
+        <h2>Seats reserved over time</h2>
+        <p class="subtitle">Confirmed and unconfirmed seats, from each show’s first yes RSVP to show day</p>
+      </header>
+      <%= rsvp_graph(all_series) %>
+      <ul class="legend">
+        <% all_series.each_with_index do |series, index| %>
+          <li><span class="swatch" style="background: <%= graph_color(series, index) %>"></span><%= graph_label(series) %></li>
+        <% end %>
+      </ul>
+    </section>
+  <% end %>
+
+  <section class="cell">
+    <header>
+      <h2>Upcoming shows</h2>
+      <%= link_to "All shows →", madmin_shows_path %>
+    </header>
+    <% if (shows = @dashboard.upcoming_shows.to_a).any? %>
+      <% seats_by_show = @dashboard.seats_by_show(shows) %>
+      <table>
+        <thead><tr><th>Date</th><th>Show</th><th>Status</th><th class="num">Seats</th></tr></thead>
+        <tbody>
+          <% shows.each do |upcoming| %>
+            <tr>
+              <td class="when"><%= upcoming.start.strftime("%a, %b %-d") %></td>
+              <td><%= link_to upcoming.name, madmin_show_path(upcoming) %></td>
+              <td><%= show_badge(upcoming.confirmed? ? upcoming.availability : upcoming.status) %></td>
+              <td class="num"><%= seats_by_show.fetch(upcoming.id, "—") %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="empty">No upcoming shows.</p>
+    <% end %>
+  </section>
+
+  <section class="cell">
+    <% if (previous = @dashboard.previous_show) %>
+      <% attendees = @dashboard.previous_show_attendees %>
+      <% recorded = @dashboard.attendance_recorded? %>
+      <% nonsubscribers = @dashboard.nonsubscribers_to_add %>
+      <% phone_numbers = @dashboard.phone_numbers_to_add %>
+      <header>
+        <div>
+          <h2>Previous show: <%= link_to previous.name, madmin_show_path(previous) %></h2>
+          <p class="subtitle">
+            <%= previous.start_date %> ·
+            <% if recorded %>
+              <%= attendees.sum(:seats_used) %> of <%= pluralize(attendees.sum(:seats_reserved), "seat") %> used
+            <% else %>
+              <%= pluralize(attendees.sum(:seats_reserved), "seat") %> reserved
+            <% end %>
+          </p>
+        </div>
+      </header>
+
+      <div class="todo">
+        <% if recorded %>
+          <p class="done">✓ Attendance recorded</p>
+          <%= link_to "Attendance →", attendance_madmin_show_path(previous) %>
+        <% else %>
+          <p>Attendance isn’t recorded yet</p>
+          <%= link_to "Record attendance", attendance_madmin_show_path(previous), class: "btn btn-primary" %>
+        <% end %>
+      </div>
+      <div class="todo">
+        <% if nonsubscribers.positive? %>
+          <p><strong><%= nonsubscribers %></strong> <%= nonsubscribers == 1 ? "person who RSVPd isn’t" : "people who RSVPd aren’t" %> on the mailing list</p>
+          <%= button_to "Add to mailing list", add_nonsubscribers_madmin_show_path(previous), class: "btn btn-primary" %>
+        <% else %>
+          <p class="done">✓ Everyone who RSVPd is on the mailing list</p>
+        <% end %>
+      </div>
+      <div class="todo">
+        <% if phone_numbers.positive? %>
+          <p><strong><%= phone_numbers %></strong> <%= phone_numbers == 1 ? "person has a phone number" : "people have phone numbers" %> from their RSVP to add</p>
+          <%= button_to "Add numbers", add_phone_numbers_madmin_show_path(previous), class: "btn btn-primary" %>
+        <% else %>
+          <p class="done">✓ No phone numbers to add</p>
+        <% end %>
+      </div>
+    <% else %>
+      <header><h2>Previous show</h2></header>
+      <p class="empty">No shows have happened yet.</p>
+    <% end %>
+  </section>
+
+  <section class="cell cell--wide">
+    <div class="split">
+      <div>
+        <header>
+          <h2>Recent email opens</h2>
+          <%= link_to "All opens →", madmin_opens_path %>
+        </header>
+        <% if (opens = @dashboard.recent_opens.to_a).any? %>
+          <% shows_by_slug = @dashboard.shows_by_slug(opens) %>
+          <table>
+            <thead><tr><th>Email</th><th>Message</th><th>When</th></tr></thead>
+            <tbody>
+              <% opens.each do |open| %>
+                <tr>
+                  <td><%= open.email %></td>
+                  <td><%= open_message(open, shows_by_slug) %></td>
+                  <td class="when"><%= dashboard_time(open.created_at) %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% else %>
+          <p class="empty">No opens yet.</p>
+        <% end %>
+      </div>
+      <div>
+        <header>
+          <h2>Recent unsubscribes</h2>
+          <%= link_to "All removed people →", madmin_people_path(scope: "removed") %>
+        </header>
+        <% if (people = @dashboard.recent_unsubscribes.to_a).any? %>
+          <table>
+            <thead><tr><th>Name</th><th>Email</th><th>When</th></tr></thead>
+            <tbody>
+              <% people.each do |person| %>
+                <tr>
+                  <td><%= link_to person.full_name, madmin_person_path(person) %></td>
+                  <td><%= person.email %></td>
+                  <td class="when"><%= dashboard_time(person.removed_at) %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% else %>
+          <p class="empty">No one has unsubscribed.</p>
+        <% end %>
+      </div>
+    </div>
+  </section>
+</div>

@@ -45,14 +45,14 @@ module Madmin
         flash[:alert] = "Couldn’t add #{failures}."
       end
       flash[:notice] = messages.join(" ") if messages.any?
-      redirect_to main_app.madmin_show_path(@record)
+      redirect_back_or_to main_app.madmin_show_path(@record)
     end
 
     # Fills in missing phone numbers on the mailing list from this show's RSVPs.
     def add_phone_numbers
       people = AddPhoneNumbers.call(@record)
       notice = people.any? ? "Added phone numbers for #{people_sentence(people)}." : "No phone numbers to add."
-      redirect_to main_app.madmin_show_path(@record), notice:
+      redirect_back_or_to main_app.madmin_show_path(@record), notice:
     end
 
     # A printable list of the show's attendees, for the door.
