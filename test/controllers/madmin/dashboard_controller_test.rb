@@ -50,6 +50,18 @@ module Madmin
       assert_select "td", text: "No"
     end
 
+    test "shows how many people the next show's invites went to, opened, and haven't been sent" do
+      person = Person.create!(first_name: "Pat", last_name: "Lee", email: "pat.lee@example.com")
+      BatchRun.create!(show: shows(:upcoming), kind: "invite", status: "completed", total_count: 1)
+              .batch_run_items.create!(recipient: person, status: "sent")
+      Open.create!(tag: "#{shows(:upcoming).slug}:invite", email: person.email, open: true)
+      not_yet_invited = Person.invitable_for(shows(:upcoming)).count - 1
+
+      get madmin_root_path
+
+      assert_select ".metric", text: /Invites sent\s+1\s+1 opened \(100%\) ·\s+#{not_yet_invited} not yet invited/
+    end
+
     test "says when there's nothing to do for the previous show" do
       rsvp(shows(:past), "John", confirmed: "confirmed", seats_used: 2)
       Person.create!(first_name: "John", last_name: "Smith", email: "john.smith@example.com")
