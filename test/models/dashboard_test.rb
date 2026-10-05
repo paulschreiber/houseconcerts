@@ -5,6 +5,38 @@ class DashboardTest < ActiveSupport::TestCase
     @dashboard = Dashboard.new
   end
 
+  test "invites_sent counts each person a next-show invite batch sent to once" do
+    jane, john, joan = %w[Jane John Joan].map { |name| person(name) }
+    sent(jane, kind: "invite")
+    sent(jane, kind: "invite_unopened")
+    sent(john, kind: "invite_unopened")
+    sent(joan, kind: "invite", status: "failed")
+    sent(joan, kind: "invite", show: shows(:sold_out))
+
+    assert_equal 2, @dashboard.invites_sent
+  end
+
+  test "invites_opened counts invited people who opened an invite to the next show" do
+    jane, john, joan = %w[Jane John Joan].map { |name| person(name) }
+    sent(jane, kind: "invite")
+    sent(john, kind: "invite")
+    Open.create!(tag: "#{shows(:upcoming).slug}:invite_unopened", email: jane.email, open: true)
+    Open.create!(tag: "#{shows(:upcoming).slug}:invite", email: jane.email, open: true)
+    Open.create!(tag: "#{shows(:upcoming).slug}:confirm", email: john.email, open: true)
+    Open.create!(tag: "#{shows(:upcoming).slug}:invite", email: joan.email, open: true)
+
+    assert_equal 1, @dashboard.invites_opened
+  end
+
+  test "not_yet_invited counts invitable people no batch has sent the next show's invite to" do
+    before = @dashboard.not_yet_invited
+    jane = person("Jane")
+    person("John")
+    sent(jane, kind: "invite")
+
+    assert_equal before + 1, Dashboard.new.not_yet_invited
+  end
+
   test "next_show_seats and next_show_responses group the next show's RSVPs" do
     rsvp(shows(:upcoming), "Jane", seats_reserved: 3)
     rsvp(shows(:upcoming), "John", seats_reserved: 1, confirmed: "waitlisted")
@@ -127,6 +159,15 @@ class DashboardTest < ActiveSupport::TestCase
   end
 
   private
+
+    def person(first_name)
+      Person.create!(first_name:, last_name: "Smith", email: "#{first_name.downcase}.smith@example.com")
+    end
+
+    def sent(person, kind:, status: "sent", show: shows(:upcoming))
+      BatchRun.create!(show:, kind:, status: "completed", total_count: 1)
+              .batch_run_items.create!(recipient: person, status:)
+    end
 
     def rsvp(show, first_name, seats_reserved: 2, **attrs)
       RSVP.create!(show:, first_name:, last_name: "Smith", email: "#{first_name.downcase}.smith@example.com",
