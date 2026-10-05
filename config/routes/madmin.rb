@@ -7,6 +7,10 @@ namespace :madmin, path: Settings.admin_prefix do
       patch :invite
       patch :rsvp_no
     end
+    collection do
+      get :import
+      post :import, action: :run_import
+    end
   end
   resources :rsvps do
     member do
