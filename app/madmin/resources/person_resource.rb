@@ -30,7 +30,13 @@ class PersonResource < Madmin::Resource
 
     buttons = []
     buttons << button_to("Invite", invite_madmin_person_path(record), method: :patch, class: "btn btn-secondary") if record.can_invite?
-    buttons << button_to("RSVP No", rsvp_no_madmin_person_path(record), method: :patch, class: "btn btn-secondary") if record.can_rsvp_no?(@next_show)
+    # For active people who haven't RSVPd for the next show: RSVP opens the RSVP
+    # page their invite email links to, to RSVP on their behalf.
+    if record.can_rsvp_no?(@next_show)
+      buttons << link_to("RSVP", modify_rsvp_path(slug: @next_show.slug, uniqid: record.uniqid),
+                         class: "btn btn-secondary", target: "_blank", rel: "noopener noreferrer")
+      buttons << button_to("RSVP No", rsvp_no_madmin_person_path(record), method: :patch, class: "btn btn-secondary")
+    end
     safe_join(buttons)
   end
 
