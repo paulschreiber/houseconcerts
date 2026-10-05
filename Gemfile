@@ -26,6 +26,7 @@ gem "capistrano-bundler"
 gem "capistrano-passenger"
 gem "capistrano-rails"
 
+gem "csv"
 gem "net-smtp"
 
 gem "carmen"
