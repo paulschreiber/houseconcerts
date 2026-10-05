@@ -201,12 +201,13 @@
         </header>
         <% if (opens = @dashboard.recent_opens.to_a).any? %>
           <% shows_by_slug = @dashboard.shows_by_slug(opens) %>
+          <% openers = @dashboard.openers_by_email(opens) %>
           <table>
-            <thead><tr><th>Email</th><th>Message</th><th>When</th></tr></thead>
+            <thead><tr><th>Name</th><th>Message</th><th>When</th></tr></thead>
             <tbody>
               <% opens.each do |open| %>
                 <tr>
-                  <td><%= open.email %></td>
+                  <td><%= (opener = openers[open.email]) ? link_to(opener.full_name, [ :madmin, opener ]) : open.email %></td>
                   <td><%= open_message(open, shows_by_slug) %></td>
                   <td class="when"><%= dashboard_time(open.created_at) %></td>
                 </tr>
