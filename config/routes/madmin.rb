@@ -26,6 +26,11 @@ namespace :madmin, path: Settings.admin_prefix do
       get "attendance/print", action: :print_attendance, as: :print_attendance
       post :add_nonsubscribers
       post :add_phone_numbers
+      patch :send_invites
+      patch :send_invites_unopened
+      patch :send_reminders
+      patch :retry_failed_batch_run
+      patch :cancel_batch_run
     end
   end
   resources :venues
