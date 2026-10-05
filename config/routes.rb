@@ -42,7 +42,8 @@ Rails.application.routes.draw do
   post "sms", to: "text_messages#receive"
   post "ses", to: "ses_events#create", as: "ses_events", format: false
 
-  get "calendar/", to: "shows#calendar", as: "calendar"
+  # The iCalendar feed, at /calendar or /calendar.ics.
+  get "calendar", to: "shows#calendar", as: "calendar", constraints: { format: "ics" }
   get "open/:tag/:uniqid", to: "opens#index", as: "open_tracking"
 end
 
