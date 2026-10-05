@@ -23,6 +23,14 @@ class RackAttackTest < ActionDispatch::IntegrationTest
     assert_response :too_many_requests
   end
 
+  test "doesn't throttle uniqid-keyed paths for a signed-in admin" do
+    sign_in admins(:one)
+
+    25.times { get open_tracking_path(tag: "test:invite", uniqid: "nonexistent") }
+
+    assert_response :success
+  end
+
   test "does not throttle a path that isn't uniqid-keyed" do
     25.times { get root_path }
 

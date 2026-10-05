@@ -121,6 +121,43 @@ module Madmin
       assert_match(/>Invite</, response.body)
     end
 
+    test "index has an RSVP button linking to the person's RSVP page for the next show" do
+      get madmin_people_path
+
+      assert_select "a[href=?][target=_blank][rel='noopener noreferrer']", modify_rsvp_path(slug: Show.next.slug, uniqid: @person.uniqid),
+                    text: "RSVP"
+    end
+
+    test "show has the RSVP button too, until the person has RSVPd for the next show" do
+      get madmin_person_path(@person)
+      assert_select "a[href=?]", modify_rsvp_path(slug: Show.next.slug, uniqid: @person.uniqid), text: "RSVP"
+
+      RSVP.create!(show: Show.next, first_name: @person.first_name, last_name: @person.last_name, email: @person.email,
+                   response: "yes", seats_reserved: 1)
+      get madmin_person_path(@person)
+      assert_select "a[href=?]", modify_rsvp_path(slug: Show.next.slug, uniqid: @person.uniqid), count: 0
+    end
+
+    test "index hides the RSVP button once the person has RSVPd for the next show" do
+      RSVP.create!(show: Show.next, first_name: @person.first_name, last_name: @person.last_name, email: @person.email,
+                   response: "yes", seats_reserved: 1)
+
+      get madmin_people_path
+
+      assert_select "a[href=?]", modify_rsvp_path(slug: Show.next.slug, uniqid: @person.uniqid), count: 0
+    end
+
+    test "index hides the RSVP button once a person is removed, or when there's no upcoming show" do
+      @person.removed!
+      get madmin_people_path
+      assert_select "a[href=?]", modify_rsvp_path(slug: Show.next.slug, uniqid: @person.uniqid), count: 0
+
+      @person.active!
+      Show.update_all(start: 1.year.ago, end: 1.year.ago + 2.hours) # rubocop:disable Rails/SkipsModelValidations
+      get madmin_people_path
+      assert_select "a", text: "RSVP", count: 0
+    end
+
     test "index hides the Invite button once a person is removed" do
       Person.update_all(status: "removed") # rubocop:disable Rails/SkipsModelValidations
 
