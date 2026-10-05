@@ -20,6 +20,15 @@ class AddPhoneNumbersTest < ActiveSupport::TestCase
     assert_equal [ person ], AddPhoneNumbers.call(shows(:upcoming))
   end
 
+  test "people are those missing a phone number that an RSVP has, without changing them" do
+    rsvp(shows(:past), "2125550001")
+    person = Person.create!(first_name: "Jane", last_name: "Smith", email: "jane.smith@example.com")
+
+    assert_equal [ person ], AddPhoneNumbers.new(shows(:past)).people.to_a
+    assert_empty AddPhoneNumbers.new(shows(:upcoming)).people
+    assert_nil person.reload.phone_number
+  end
+
   test "leaves an existing phone number alone" do
     rsvp(shows(:past), "2125550001")
     person = Person.create!(first_name: "Jane", last_name: "Smith", email: "jane.smith@example.com", phone_number: "2125559999")

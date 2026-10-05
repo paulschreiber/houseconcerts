@@ -12,6 +12,15 @@ class AddNonsubscribersTest < ActiveSupport::TestCase
     assert_predicate Person.find_by(email: rsvp.email), :active?
   end
 
+  test "addable is the show's yes RSVPs with no Person record" do
+    rsvp = yes_rsvp("Jane", "Smith")
+    Person.create!(first_name: "John", last_name: "Smith", email: "john.smith@example.com", status: "removed")
+    yes_rsvp("John", "Smith")
+    yes_rsvp("Joan", "Smith", show: shows(:upcoming))
+
+    assert_equal [ rsvp ], AddNonsubscribers.addable(shows(:past)).to_a
+  end
+
   test "doesn't re-add someone who unsubscribed" do
     Person.create!(first_name: "Jane", last_name: "Smith", email: "jane.smith@example.com", status: "removed")
     rsvp = yes_rsvp("Jane", "Smith")
