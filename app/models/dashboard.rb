@@ -1,6 +1,6 @@
-# What the admin dashboard shows: the next show's RSVPs, upcoming shows, the
-# previous show's follow-up work, recent opens and unsubscribes, and seats
-# reserved over time for recent shows.
+# What the admin dashboard shows: the next show's invites and RSVPs, upcoming
+# shows, the previous show's follow-up work, recent opens and unsubscribes,
+# and seats reserved over time for recent shows.
 class Dashboard
   RECENT_LIMIT = 5
   GRAPHED_PAST_SHOWS = 3
@@ -26,6 +26,23 @@ class Dashboard
   # included, under "waitlisted").
   def next_show_seats
     @next_show_seats ||= RSVP.where(show: next_show).yes.group(:confirmed).sum(:seats_reserved)
+  end
+
+  # People an invite batch sent the next show's invite to, counting each
+  # once. Single invites (InvitePerson) aren't recorded, so aren't counted.
+  def invites_sent
+    @invites_sent ||= invited_people.distinct.count(:recipient_id)
+  end
+
+  # Of the people invites_sent counts, those who opened an invite.
+  def invites_opened
+    invited_emails = Person.where(id: invited_people.select(:recipient_id)).select(:email)
+    Open.invites_to(next_show).where(email: invited_emails).distinct.count(:email)
+  end
+
+  # People who can be invited to the next show but haven't been sent an invite.
+  def not_yet_invited
+    Person.invitable_for(next_show).where.not(id: invited_people.select(:recipient_id)).count
   end
 
   # RSVP counts keyed by response.
@@ -102,6 +119,11 @@ class Dashboard
   end
 
   private
+
+    def invited_people
+      BatchRunItem.sent.where(recipient_type: "Person").joins(:batch_run)
+                  .where(batch_runs: { show_id: next_show, kind: %w[invite invite_unopened] })
+    end
 
     # Yes RSVPs holding seats: confirmed or unconfirmed, not waitlisted.
     def reserved(rsvps)

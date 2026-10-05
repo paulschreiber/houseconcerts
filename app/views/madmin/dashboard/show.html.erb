@@ -45,6 +45,17 @@
 
       <div class="metrics">
         <div class="metric">
+          <h4>Invites sent</h4>
+          <p><%= @dashboard.invites_sent %></p>
+          <small>
+            <% if @dashboard.invites_sent.positive? %>
+              <% opened = @dashboard.invites_opened %>
+              <%= opened %> opened (<%= number_to_percentage(100.0 * opened / @dashboard.invites_sent, precision: 0) %>) ·
+            <% end %>
+            <%= @dashboard.not_yet_invited %> not yet invited
+          </small>
+        </div>
+        <div class="metric">
           <h4>Seats</h4>
           <p><%= seats.fetch("confirmed", 0) + seats.fetch("unconfirmed", 0) %></p>
           <small><%= seats.fetch("confirmed", 0) %> confirmed · <%= seats.fetch("unconfirmed", 0) %> unconfirmed</small>
