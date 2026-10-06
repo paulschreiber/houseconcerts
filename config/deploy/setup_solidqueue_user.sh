@@ -3,13 +3,12 @@
 # unprivileged user instead of the deploy user (the "user" in
 # config/deploy/production.rb).
 #
-# Run on the server with sudo, as the deploy user, after a deploy that
-# includes this file:
-#   sudo bash /data/sites/houseconcerts/current/config/deploy/setup_solidqueue_user.sh
-# (or as root, with DEPLOY_USER=<deploy user> in front).
+# Run on the server as root (sudo), after setup_deploy_user.sh:
+#   sudo bash setup_solidqueue_user.sh
 #
 # Then install the updated unit (see the comments at the top of
-# config/deploy/templates/houseconcerts-solidqueue.service).
+# config/deploy/templates/houseconcerts-solidqueue.service). See "Server" in
+# INFRASTRUCTURE.md.
 #
 # Safe to run more than once. It changes nothing for the web app: Passenger
 # keeps running as the deploy user, which joins the shared group (from new
@@ -20,13 +19,12 @@
 #   authentication as the deploy user), give the app's MySQL user a password,
 #   or the worker can't connect. The check at the end catches this.
 # - If logrotate manages shared/log, its "create" line should be
-#   "create 0664 <deploy user> houseconcerts" so rotated logs stay
+#   "create 0664 houseconcerts-deploy houseconcerts" so rotated logs stay
 #   group-writable.
 
 set -euo pipefail
 
-# Whoever ran sudo, unless DEPLOY_USER is set.
-DEPLOY_USER=${DEPLOY_USER:-${SUDO_USER:-}}
+DEPLOY_USER=${DEPLOY_USER:-houseconcerts-deploy}
 SERVICE_USER=houseconcerts-jobs
 GROUP=houseconcerts
 APP=/data/sites/houseconcerts
@@ -36,8 +34,8 @@ if [[ $EUID -ne 0 ]]; then
   echo "Run this as root (sudo)." >&2
   exit 1
 fi
-if [[ -z $DEPLOY_USER || $DEPLOY_USER == root ]]; then
-  echo "Run this with sudo as the deploy user, or set DEPLOY_USER=<deploy user>." >&2
+if ! id "$DEPLOY_USER" >/dev/null 2>&1; then
+  echo "$DEPLOY_USER doesn't exist yet: run setup_deploy_user.sh first." >&2
   exit 1
 fi
 
