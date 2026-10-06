@@ -9,7 +9,10 @@
 server "shrub.ca",
        roles: %w[app db web],
        ssh_options: {
-         user: "paul"
+         user: "paul",
+         # Refuse to connect unless shrub.ca's host key is already in
+         # known_hosts, rather than trusting a new one on first connect
+         verify_host_key: :always
        }
 
 set :deploy_to, "/data/sites/houseconcerts"
