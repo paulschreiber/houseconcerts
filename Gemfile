@@ -21,10 +21,18 @@ gem "bootsnap", require: false
 gem "puma"
 gem "thruster", require: false
 
-gem "capistrano"
-gem "capistrano-bundler"
-gem "capistrano-passenger"
-gem "capistrano-rails"
+# Only needed to run deploys, so the server skips this group (see
+# config/deploy.rb)
+group :deploy do
+  gem "capistrano"
+  gem "capistrano-bundler"
+  gem "capistrano-passenger"
+  gem "capistrano-rails"
+  # Lets net-ssh (Capistrano) read OpenSSH-format and ed25519 key files,
+  # e.g. the deploy workflow's key, which isn't in an ssh-agent
+  gem "bcrypt_pbkdf"
+  gem "ed25519"
+end
 
 gem "csv"
 gem "net-smtp"

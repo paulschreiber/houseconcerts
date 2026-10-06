@@ -2,6 +2,8 @@
 lock "~>3"
 
 set :bundle_version, 4
+# The Gemfile's deploy group is only for running deploys
+set :bundle_without, %w[development test deploy].join(":")
 
 set :application, "houseconcerts"
 set :repo_url, "https://github.com/paulschreiber/houseconcerts.git"

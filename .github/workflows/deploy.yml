@@ -1,0 +1,44 @@
+# Deploys main to production with Capistrano, only when run by hand
+# (Actions → Deploy → Run workflow). Only a repo admin can run it.
+# The production environment, which holds the SSH key, only accepts
+# deploys from main.
+name: Deploy
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to production
+    if: github.triggering_actor == github.repository_owner && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      BUNDLE_WITHOUT: "development test production"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        with:
+          bundler-cache: true
+
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@87a8f067114a8ce263df83e9ed5c849953548bc3 # v2.8.1
+        with:
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          name: id_ed25519
+          known_hosts: ${{ vars.DEPLOY_KNOWN_HOSTS }}
+
+      - name: Deploy
+        run: bundle exec cap production deploy
