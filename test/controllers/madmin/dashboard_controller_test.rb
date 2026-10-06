@@ -24,6 +24,7 @@ module Madmin
       assert_select "td", text: "joan.smith@example.com"
       assert_select "td a[href=?]", madmin_person_path(opener), text: "Pat Lee"
       assert_select "td", text: "pat.lee@example.com", count: 0
+      assert_select "td abbr.show-initials[title=?]", shows(:upcoming).name
       assert_select "svg path", minimum: 2
     end
 
@@ -35,6 +36,16 @@ module Madmin
       assert_select "td", text: /Jane Smith\s+Waitlisted/
       assert_select ".metric", text: /Seats\s+2\s+2 confirmed · 0 unconfirmed/
       assert_select ".metric", text: /Waitlisted\s+4/
+    end
+
+    test "shows seats with a yes response in the recent RSVPs" do
+      rsvp(shows(:upcoming), "Jane", seats_reserved: 3)
+      rsvp(shows(:upcoming), "John", response: "no", seats_reserved: 0)
+
+      get madmin_root_path
+
+      assert_select "td", text: "Yes (3)"
+      assert_select "td", text: "No"
     end
 
     test "says when there's nothing to do for the previous show" do
