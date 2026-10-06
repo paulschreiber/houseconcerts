@@ -43,22 +43,21 @@
 
       <div class="split">
         <div>
-          <h3>Most recent RSVPs</h3>
+          <h3>Recent RSVPs</h3>
           <% if (rsvps = @dashboard.recent_rsvps.to_a).any? %>
             <table>
-              <thead><tr><th>Name</th><th>Response</th><th class="num">Seats</th><th>When</th></tr></thead>
+              <thead><tr><th>Name</th><th>Response</th><th>When</th></tr></thead>
               <tbody>
                 <% rsvps.each do |rsvp| %>
                   <tr>
                     <td><%= link_to rsvp.full_name, madmin_rsvp_path(rsvp) %></td>
-                    <td><%= rsvp.response.humanize %></td>
-                    <td class="num"><%= rsvp.yes? ? rsvp.seats_reserved : "—" %></td>
-                    <td class="when"><%= dashboard_time(rsvp.created_at) %></td>
+                    <td><%= rsvp.response.humanize %><%= " (#{rsvp.seats_reserved})" if rsvp.yes? %></td>
+                    <td class="when"><%= dashboard_date(rsvp.created_at) %></td>
                   </tr>
                 <% end %>
               </tbody>
             </table>
-            <%= link_to "All #{pluralize(responses.values.sum, 'RSVP')} →", madmin_rsvps_path(scope: "next_show"), class: "more" %>
+            <%= link_to "#{all_count_label(responses.values.sum, 'RSVP')} →", madmin_rsvps_path(scope: "next_show"), class: "more" %>
           <% else %>
             <p class="empty">No RSVPs yet.</p>
           <% end %>
@@ -77,7 +76,7 @@
                       <%= show_badge("waitlisted") if rsvp.waitlisted? %>
                     </td>
                     <td class="num"><%= rsvp.seats_reserved %></td>
-                    <td class="when"><%= dashboard_time(rsvp.created_at) %></td>
+                    <td class="when"><%= dashboard_date(rsvp.created_at) %></td>
                     <td class="row-actions">
                       <% if rsvp.can_confirm? %>
                         <%= button_to "Confirm", confirm_madmin_rsvp_path(rsvp), method: :patch, class: "btn btn-secondary btn-sm" %>
@@ -90,7 +89,7 @@
                 <% end %>
               </tbody>
             </table>
-            <%= link_to "All #{pluralize(unconfirmed.size, 'unconfirmed RSVP')} →", madmin_rsvps_path(scope: RSVP::UNCONFIRMED_RSVPS_SCOPE), class: "more" %>
+            <%= link_to "#{all_count_label(unconfirmed.size, 'unconfirmed RSVP')} →", madmin_rsvps_path(scope: RSVP::UNCONFIRMED_RSVPS_SCOPE), class: "more" %>
           <% else %>
             <p class="empty">Every yes RSVP is confirmed.</p>
           <% end %>
@@ -124,13 +123,13 @@
     <% if (shows = @dashboard.upcoming_shows.to_a).any? %>
       <% seats_by_show = @dashboard.seats_by_show(shows) %>
       <table>
-        <thead><tr><th>Date</th><th>Show</th><th>Status</th><th class="num">Seats</th></tr></thead>
+        <thead><tr><th>Date</th><th>Show</th><th class="hide-on-phone">Status</th><th class="num">Seats</th></tr></thead>
         <tbody>
           <% shows.each do |upcoming| %>
             <tr>
               <td class="when"><%= upcoming.start.strftime("%a, %b %-d") %></td>
               <td><%= link_to upcoming.name, madmin_show_path(upcoming) %></td>
-              <td><%= show_badge(upcoming.confirmed? ? upcoming.availability : upcoming.status) %></td>
+              <td class="hide-on-phone"><%= show_badge(upcoming.confirmed? ? upcoming.availability : upcoming.status) %></td>
               <td class="num"><%= seats_by_show.fetch(upcoming.id, "—") %></td>
             </tr>
           <% end %>
@@ -209,7 +208,7 @@
                 <tr>
                   <td><%= (opener = openers[open.email]) ? link_to(opener.full_name, [ :madmin, opener ]) : open.email %></td>
                   <td><%= open_message(open, shows_by_slug) %></td>
-                  <td class="when"><%= dashboard_time(open.created_at) %></td>
+                  <td class="when"><%= dashboard_date(open.created_at) %></td>
                 </tr>
               <% end %>
             </tbody>
@@ -225,13 +224,13 @@
         </header>
         <% if (people = @dashboard.recent_unsubscribes.to_a).any? %>
           <table>
-            <thead><tr><th>Name</th><th>Email</th><th>When</th></tr></thead>
+            <thead><tr><th>Name</th><th class="hide-on-phone">Email</th><th>When</th></tr></thead>
             <tbody>
               <% people.each do |person| %>
                 <tr>
                   <td><%= link_to person.full_name, madmin_person_path(person) %></td>
-                  <td><%= person.email %></td>
-                  <td class="when"><%= dashboard_time(person.removed_at) %></td>
+                  <td class="hide-on-phone"><%= person.email %></td>
+                  <td class="when"><%= dashboard_date(person.removed_at) %></td>
                 </tr>
               <% end %>
             </tbody>
