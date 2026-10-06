@@ -279,6 +279,109 @@ custom rule that matches `http.request.uri.path eq "/ses"` with the action
 **Skip**, skipping the remaining custom rules and, where the plan allows, Bot
 Fight Mode, and put it above any rule that could match.
 
+## Server
+
+The app lives in `/data/sites/houseconcerts`, deployed there by Capistrano
+(`config/deploy.rb`, `config/deploy/production.rb`).
+
+| User                   | What it does                                                                                     | Set up by                  |
+| ---------------------- | ------------------------------------------------------------------------------------------------ | -------------------------- |
+| `houseconcerts-deploy` | Capistrano logs in as it; owns the app directory; Passenger runs the web app as it               | `setup_deploy_user.sh`     |
+| `houseconcerts-jobs`   | runs the Solid Queue worker (`houseconcerts-solidqueue` systemd service); can only write to logs | `setup_solidqueue_user.sh` |
+
+Both are in the `houseconcerts` group, which can read the app’s secrets in
+`shared/config` and write to `shared/log`.
+
+`houseconcerts-deploy` has no password and logs in only with the SSH keys in its
+`~/.ssh/authorized_keys`, each limited with `restrict`. Its only sudo right is
+`systemctl restart houseconcerts-solidqueue` (see [sudo](#sudo)). To work on the server as it, log in as
+yourself and run `sudo -iu houseconcerts-deploy`.
+
+### sudo
+
+The deploy user’s one sudo rule, for the `solid_queue:restart` Capistrano task,
+is in its own file, `/etc/sudoers.d/houseconcerts-deploy`, not in
+`/etc/sudoers` itself. `setup_deploy_user.sh` writes it, with the path from
+`command -v systemctl`:
+
+```
+houseconcerts-deploy ALL=(root) NOPASSWD: /usr/bin/systemctl restart houseconcerts-solidqueue
+```
+
+To write it by hand, use `sudo visudo -f /etc/sudoers.d/houseconcerts-deploy`,
+which refuses to save a file with errors (a broken sudoers file can lock
+everyone out of sudo), then `sudo chmod 0440 /etc/sudoers.d/houseconcerts-deploy`.
+`/etc/sudoers` only needs its usual last line, which reads the files in
+`/etc/sudoers.d` (Ubuntu’s and Debian’s default):
+
+```
+@includedir /etc/sudoers.d
+```
+
+Older versions of sudo write this as `#includedir /etc/sudoers.d`; despite the
+`#`, it isn’t a comment. To check the rule: `sudo -l -U houseconcerts-deploy`.
+
+### Deploying
+
+From a checkout, with your key in `houseconcerts-deploy`’s `authorized_keys`:
+
+```bash
+bundle exec cap production deploy
+```
+
+Or from GitHub: **Actions → Deploy → Run workflow** (`.github/workflows/deploy.yml`).
+It deploys `main`, and only runs for the repository’s owner. It needs:
+
+| GitHub setting                                           | Value                                                                                       |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Environment `production` → Deployment branches           | `main` only                                                                                 |
+| Environment `production` → Required reviewers            | optional; if set, approve each run                                                          |
+| Environment `production` → secret `DEPLOY_SSH_KEY`       | private half of a key used only for this, in `houseconcerts-deploy`’s keys                  |
+| Environment `production` → variable `DEPLOY_KNOWN_HOSTS` | the server’s line from your `~/.ssh/known_hosts`, e.g. `<server> ecdsa-sha2-nistp256 AAAA…` |
+
+Create the environment before adding the secret, and add the secret to the
+environment, never to the repository: any workflow, from any branch, can read a
+repository secret. Deploys refuse to connect if the server’s host key isn’t in
+`DEPLOY_KNOWN_HOSTS` (`verify_host_key: :always`).
+
+### One-time setup
+
+From a checkout, copy the setup files and the public keys allowed to deploy
+(yours, and the GitHub deploy key’s) to the server:
+
+```bash
+SERVER=…  # the server in config/deploy/production.rb
+ssh $SERVER mkdir -p houseconcerts-setup
+scp config/deploy/setup_deploy_user.sh config/deploy/setup_solidqueue_user.sh \
+  config/deploy/templates/houseconcerts-solidqueue.service \
+  ~/.ssh/id_ed25519.pub houseconcerts_deploy_key.pub $SERVER:houseconcerts-setup/
+```
+
+Then, on the server:
+
+```bash
+cd ~/houseconcerts-setup
+sudo bash setup_deploy_user.sh id_ed25519.pub houseconcerts_deploy_key.pub
+sudo bash setup_solidqueue_user.sh
+sudo cp houseconcerts-solidqueue.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemd-analyze verify /etc/systemd/system/houseconcerts-solidqueue.service
+sudo systemctl enable houseconcerts-solidqueue
+sudo systemctl restart houseconcerts-solidqueue
+sudo -u houseconcerts-deploy touch /data/sites/houseconcerts/current/tmp/restart.txt
+cd && rm -r ~/houseconcerts-setup
+```
+
+The `touch` restarts the web app right away as `houseconcerts-deploy`, the new
+owner of `config.ru`: until it restarts, it still runs as the old owner, which
+can no longer write to `tmp/` or the logs.
+
+Both scripts are safe to run again, e.g. to add a key. `setup_solidqueue_user.sh`
+ends by booting the app as `houseconcerts-jobs` and connecting to the database;
+if that fails, see the notes at the top of the script (MySQL socket
+authentication, logrotate). Then deploy once with Capistrano to check the new
+user and keys.
+
 ## Apache
 
 ### Virtual hosts

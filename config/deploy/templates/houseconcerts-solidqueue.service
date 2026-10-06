@@ -2,20 +2,17 @@
 # Passenger only manages the web process, not background workers.
 #
 # It runs as its own unprivileged user (houseconcerts-jobs), not the deploy
-# user. Before installing this unit, create that user and set up the shared
-# file permissions once with:
-#   sudo bash /data/sites/houseconcerts/current/config/deploy/setup_solidqueue_user.sh
+# user (houseconcerts-deploy). Before installing this unit, create both users
+# and set up the shared file permissions once with setup_deploy_user.sh and
+# setup_solidqueue_user.sh (see "Server" in INFRASTRUCTURE.md).
+# setup_deploy_user.sh also lets the deploy user restart this service, for
+# the "solid_queue:restart" Capistrano task in deploy.rb.
 #
-# Install on the server:
-#   sudo cp /data/sites/houseconcerts/current/config/deploy/templates/houseconcerts-solidqueue.service /etc/systemd/system/
+# Install on the server, from a copy of this file:
+#   sudo cp houseconcerts-solidqueue.service /etc/systemd/system/
 #   sudo systemctl daemon-reload
-#   sudo systemctl enable --now houseconcerts-solidqueue
-#
-# Also requires passwordless sudo for the deploy user (the "user" in
-# config/deploy/production.rb) to restart this service from the
-# "solid_queue:restart" Capistrano task in deploy.rb. In sudoers, with your
-# deploy user in place of DEPLOY_USER:
-#   DEPLOY_USER ALL=(ALL) NOPASSWD: /bin/systemctl restart houseconcerts-solidqueue
+#   sudo systemctl enable houseconcerts-solidqueue
+#   sudo systemctl restart houseconcerts-solidqueue
 #
 # The sandboxing below makes everything read-only except the shared log
 # directory and the worker's cache directory (/var/cache/houseconcerts-jobs,
