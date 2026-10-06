@@ -507,4 +507,24 @@ body.dashboard.show {
       grid-template-columns: minmax(0, 1fr);
     }
   }
+
+  /* Recent email opens: show names, or their initials on phones */
+  .show-initials {
+    display: none;
+    text-decoration: none;
+  }
+
+  /* Phones (Madmin's 768px breakpoint): no room for some columns (e.g.
+     recent unsubscribes' email addresses) or recent email opens' show
+     names */
+  @media (width <= 768px) {
+    .hide-on-phone,
+    .show-name {
+      display: none;
+    }
+
+    .show-initials {
+      display: inline;
+    }
+  }
 }
