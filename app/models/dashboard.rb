@@ -34,7 +34,7 @@ class Dashboard
   end
 
   def recent_rsvps
-    RSVP.where(show: next_show).order(created_at: :desc).limit(RECENT_LIMIT)
+    RSVP.where(show: next_show).order(responded_at: :desc).limit(RECENT_LIMIT)
   end
 
   # The next show's unconfirmed and waitlisted yes RSVPs, oldest first.
