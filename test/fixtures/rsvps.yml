@@ -7,3 +7,4 @@ one:
   response: "yes"
   seats_reserved: 2
   confirmed: "confirmed"
+  responded_at: <%= Time.current.to_fs(:db) %>
