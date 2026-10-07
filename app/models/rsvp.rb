@@ -18,6 +18,7 @@ class RSVP < ApplicationRecord
   before_save :set_ip_address
   before_save :update_confirmation_date
   before_save :update_cancellation_date
+  before_save :update_response_date
   after_save :update_phone_number
   after_save -> { NotifyAdminOfRSVP.call(self) }
 
@@ -59,6 +60,14 @@ class RSVP < ApplicationRecord
     elsif response_changed?(to: "yes")
       self.cancelled_at = nil
     end
+  end
+
+  # When the RSVP was made or its response or seat count last changed,
+  # including a cancellation or a switch back to yes.
+  def update_response_date
+    return unless new_record? || response_changed? || seats_reserved_changed?
+
+    self.responded_at = Time.zone.now
   end
 
   def clear_seats_if_no

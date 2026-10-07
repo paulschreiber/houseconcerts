@@ -52,7 +52,7 @@
                   <tr>
                     <td><%= link_to rsvp.full_name, madmin_rsvp_path(rsvp) %></td>
                     <td><%= rsvp.response.humanize %><%= " (#{rsvp.seats_reserved})" if rsvp.yes? %></td>
-                    <td class="when"><%= dashboard_date(rsvp.created_at) %></td>
+                    <td class="when"><%= dashboard_date(rsvp.responded_at) %></td>
                   </tr>
                 <% end %>
               </tbody>
