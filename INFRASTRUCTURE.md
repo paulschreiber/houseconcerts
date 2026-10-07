@@ -132,7 +132,7 @@ has the original message’s ID in its `In-Reply-To` header
 in AWS CloudShell with the part before the `@`:
 
 ```bash
-R=…  # your AWS region, e.g. us-east-1
+R=us-east-1                         # Replace with your AWS region
 ID=010001a10382efb8-18c49095-5b62-4e7d-b58a-95324e4f081e-000000
 aws logs filter-log-events --region $R --log-group-name /aws/events/ses \
   --start-time $(( ($(date +%s) - 30*86400) * 1000 )) --filter-pattern "\"$ID\"" \
