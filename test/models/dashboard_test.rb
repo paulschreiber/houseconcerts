@@ -14,6 +14,21 @@ class DashboardTest < ActiveSupport::TestCase
     assert_equal({ "yes" => 3, "no" => 1 }, @dashboard.next_show_responses)
   end
 
+  test "recent_rsvps are the next show's RSVPs, latest response first" do
+    emailed = travel_to(4.days.ago) { rsvp(shows(:upcoming), "Joan") }
+    cancelled = travel_to(3.days.ago) { rsvp(shows(:upcoming), "Jane") }
+    returned = travel_to(3.days.ago) { rsvp(shows(:upcoming), "Jill", response: "no") }
+    newer = travel_to(2.days.ago) { rsvp(shows(:upcoming), "John") }
+    past = rsvp(shows(:past), "Jack")
+    travel_to(2.hours.ago) { cancelled.update!(response: "no") }
+    travel_to(1.hour.ago) { returned.update!(response: "yes", seats_reserved: 2) }
+    emailed.update!(confirmation_emailed_at: Time.current)
+
+    recent = @dashboard.recent_rsvps.to_a
+    assert_equal [ returned, cancelled, newer, emailed ], recent & [ returned, cancelled, newer, emailed ]
+    assert_not_includes recent, past
+  end
+
   test "unconfirmed_rsvps are the next show's unconfirmed and waitlisted yes RSVPs, oldest first" do
     newer = rsvp(shows(:upcoming), "Jane", created_at: 1.hour.ago)
     older = rsvp(shows(:upcoming), "John", created_at: 1.day.ago)

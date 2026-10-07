@@ -199,6 +199,29 @@ class RsvpTest < ActiveSupport::TestCase
     assert_nil rsvp.reload.cancelled_at
   end
 
+  test "responded_at is set on create and when the response or seats change, but not by other updates" do
+    rsvp = travel_to(3.days.ago) do
+      RSVP.create!(show: shows(:upcoming), first_name: "Jane", last_name: "Smith",
+                   email: "jane.smith@example.com", response: "yes", seats_reserved: 2)
+    end
+    created = rsvp.responded_at
+    assert_not_nil created
+
+    rsvp.update!(confirmed: "confirmed", confirmation_emailed_at: Time.current)
+    assert_equal created, rsvp.reload.responded_at
+
+    travel_to(2.days.ago) { rsvp.update!(seats_reserved: 3) }
+    reseated = rsvp.reload.responded_at
+    assert_operator reseated, :>, created
+
+    travel_to(1.day.ago) { rsvp.update!(response: "no") }
+    cancelled = rsvp.reload.responded_at
+    assert_operator cancelled, :>, reseated
+
+    rsvp.update!(response: "yes", seats_reserved: 2)
+    assert_operator rsvp.reload.responded_at, :>, cancelled
+  end
+
   test "confirm! sets confirmed to confirmed only for a yes rsvp" do
     yes_rsvp = rsvps(:one)
     assert yes_rsvp.confirm!
