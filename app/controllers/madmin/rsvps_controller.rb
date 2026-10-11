@@ -53,9 +53,9 @@ module Madmin
       # one per row, but only when the Attended Before column is actually
       # shown for this scope.
       def paginate_collection(collection)
-        pagy, records = super
+        page, records = super
         Current.attended_rsvp_ids_by_email = RSVP.attended_before_map(records.map(&:email)) unless resource.attributes[:attended_before].field.hidden_on_index?
-        [ pagy, records ]
+        [ page, records ]
       end
   end
 end
