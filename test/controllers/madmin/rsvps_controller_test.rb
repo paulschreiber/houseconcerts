@@ -421,6 +421,37 @@ module Madmin
       end
     end
 
+    test "index lists only the RSVPs for the show a show slug names" do
+      RSVP.create!(show: shows(:past), first_name: "Jane", last_name: "Smith", email: "jane.smith@example.com",
+                   response: "yes", seats_reserved: 1)
+
+      get madmin_rsvps_path(show: shows(:past).slug)
+
+      assert_response :success
+      names = response.parsed_body.css("tbody tr").map { |row| row.text[/(Jane Smith|#{@rsvp.full_name})/] }
+      assert_equal [ "Jane Smith" ], names
+    end
+
+    test "index shows the show filter as a chip that removes it, keeping the other parameters" do
+      get madmin_rsvps_path(show: shows(:past).slug, scope: "next_show")
+
+      chip = response.parsed_body.at_css(".show-filter .filter-chip")
+      assert_equal "Show is #{shows(:past).summary}", chip.at_css("span").text.squish
+      assert_equal madmin_rsvps_path(scope: "next_show"), chip.at_css("a")["href"]
+    end
+
+    test "index has no show filter chip without a show slug" do
+      get madmin_rsvps_path
+
+      assert_select ".show-filter", count: 0
+    end
+
+    test "index is not found for an unknown show slug" do
+      get madmin_rsvps_path(show: "no-such-show")
+
+      assert_response :not_found
+    end
+
     test "a clicked column still sorts the attendee scopes" do
       show = Show.next
       RSVP.where(show:).delete_all
