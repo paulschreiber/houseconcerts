@@ -1,14 +1,18 @@
 # What the admin dashboard shows: the next show's invites and RSVPs, upcoming
 # shows, the previous show's follow-up work, recent opens and unsubscribes,
-# and seats reserved over time for recent shows.
+# and seats reserved over time for recent and upcoming shows.
 class Dashboard
   RECENT_LIMIT = 5
   GRAPHED_PAST_SHOWS = 3
+  GRAPH_DAYS = 49
 
   # One graph line: cumulative yes seats per day, as [days before the show,
-  # seats] pairs from the show's first yes RSVP to show day (or today, for the
-  # next show, which next_show marks).
-  Series = Data.define(:show, :points, :next_show)
+  # seats] pairs from the show's first yes RSVP (or GRAPH_DAYS before the show,
+  # if later) to show day (or today, for an upcoming show). role is :past,
+  # :next or :following (the show after next).
+  Series = Data.define(:show, :points, :role) do
+    def upcoming? = role != :past
+  end
 
   def next_show
     return @next_show if defined?(@next_show)
@@ -108,13 +112,15 @@ class Dashboard
     previous_show ? AddPhoneNumbers.new(previous_show).people.count : 0
   end
 
-  # The last few shows, then the next one.
+  # The last few shows, then the next one and the one after it, leaving out
+  # shows without yes RSVPs and shows more than GRAPH_DAYS away.
   def graph_series
-    shows = Show.past.last(GRAPHED_PAST_SHOWS)
-    shows << next_show if next_show
-    shows.filter_map do |show|
+    upcoming = Show.upcoming.first(2)
+    roles = Show.past.last(GRAPHED_PAST_SHOWS).index_with(:past)
+                .merge(upcoming.zip(%i[next following]).to_h)
+    roles.filter_map do |show, role|
       points = seats_over_time(show)
-      Series.new(show:, points:, next_show: show == next_show) if points.any?
+      Series.new(show:, points:, role:) if points.any?
     end
   end
 
@@ -130,15 +136,19 @@ class Dashboard
       rsvps.yes.where.not(confirmed: "waitlisted")
     end
 
+    # Seats reserved more than GRAPH_DAYS before the show count as reserved
+    # on that day, where the line starts.
     def seats_over_time(show)
       show_day = show.start.to_date
+      last_day = [ (show_day - Time.zone.today).to_i, 0 ].max
+      return [] if last_day > GRAPH_DAYS
+
       seats_by_day = Hash.new(0)
       reserved(RSVP.where(show:)).pluck(:created_at, :seats_reserved).each do |created_at, seats|
-        seats_by_day[[ (show_day - created_at.to_date).to_i, 0 ].max] += seats.to_i
+        seats_by_day[(show_day - created_at.to_date).to_i.clamp(0, GRAPH_DAYS)] += seats.to_i
       end
       return [] if seats_by_day.empty?
 
-      last_day = [ (show_day - Time.zone.today).to_i, 0 ].max
       total = 0
       seats_by_day.keys.max.downto(last_day).map do |days_before|
         total += seats_by_day[days_before]

@@ -1,6 +1,6 @@
 module Madmin
   class DashboardController < Madmin::ApplicationController
-    helper DashboardHelper
+    helper DashboardHelper, DashboardGraphHelper
 
     def show
       @dashboard = Dashboard.new

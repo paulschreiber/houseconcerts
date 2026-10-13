@@ -454,6 +454,15 @@ body.dashboard.show {
     stroke: var(--border-color);
   }
 
+  /* Phones' graph: text sized to read at about 12px once the SVG scales
+     down to a phone's width, which max-width keeps from growing much on
+     wider screens */
+  .graph .graph-phone {
+    display: none;
+    max-width: 26rem;
+    font-size: 15px;
+  }
+
   .graph .today {
     fill: var(--primary-color);
     font-weight: 600;
@@ -515,8 +524,8 @@ body.dashboard.show {
   }
 
   /* Phones (Madmin's 768px breakpoint): no room for some columns (e.g.
-     recent unsubscribes' email addresses) or recent email opens' show
-     names */
+     recent unsubscribes' email addresses), recent email opens' show names,
+     or the full-width graph */
   @media (width <= 768px) {
     .hide-on-phone,
     .show-name {
@@ -525,6 +534,14 @@ body.dashboard.show {
 
     .show-initials {
       display: inline;
+    }
+
+    .graph .graph-desktop {
+      display: none;
+    }
+
+    .graph .graph-phone {
+      display: block;
     }
   }
 }
