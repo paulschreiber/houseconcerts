@@ -8,7 +8,7 @@ module Madmin
 
     ATTENDEE_SCOPES = %w[next_show_attendees previous_show_attendees].freeze
 
-    helper_method :attendee_totals
+    helper_method :attendee_totals, :filtered_show
 
     def confirm
       if @record.can_confirm? && ConfirmRSVP.call(@record)
@@ -40,7 +40,17 @@ module Madmin
       # of records the index page paginates, not just the current page.
       # Preloads :show since every row renders the show name/date.
       def scoped_resources
-        @scoped_resources ||= super.includes(:show)
+        @scoped_resources ||= begin
+          resources = super.includes(:show)
+          filtered_show ? resources.where(show: filtered_show) : resources
+        end
+      end
+
+      # The show ?show=<slug> limits the list to (404 for an unknown slug).
+      def filtered_show
+        return @filtered_show if defined?(@filtered_show)
+
+        @filtered_show = (Show.find_by!(slug: params.expect(:show)) if params[:show].present?)
       end
 
       def attendee_totals

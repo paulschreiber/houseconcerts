@@ -72,6 +72,12 @@ body.rsvps.index .scopes a:nth-child(6) {
   margin-left: 1rem;
 }
 
+/* RSVPs index filtered to one show (see madmin/rsvps/_active_filters): the
+   All button clears that filter, so it isn't the selected one */
+body.rsvps.index .show-filter ~ .scopes a.active:first-child:not(:hover) {
+  background-color: var(--surface-color);
+}
+
 /* Caps the page at one viewport, so <main> scrolls its own content and the
    sidebar, with its sign-out link pinned to the bottom, stays in view.
    (Madmin's body is min-height: 100dvh, which would grow with the content.) */
