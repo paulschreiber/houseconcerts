@@ -1,0 +1,10 @@
+<%# The ?show=<slug> filter, as a chip like Madmin's own filters' %>
+<% if filtered_show %>
+  <div class="active-filters show-filter">
+    <span class="filter-chip">
+      <span><strong>Show</strong> is <strong><%= filtered_show.summary %></strong></span>
+      <%= link_to "×", index_path_with(show: nil), aria: { label: t("madmin.filters.remove") } %>
+    </span>
+  </div>
+<% end %>
+<%= render "madmin/application/active_filters" %>
