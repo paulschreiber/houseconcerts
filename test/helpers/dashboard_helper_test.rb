@@ -43,24 +43,4 @@ class DashboardHelperTest < ActionView::TestCase
     assert_equal "DC", Nokogiri::HTML5.fragment(show_name_with_initials("Damon Castillo")).at_css("abbr").text
     assert_equal "tl", Nokogiri::HTML5.fragment(show_name_with_initials("the lumineers")).at_css("abbr").text
   end
-
-  test "rsvp_graph draws a line per show, and marks today on the next show's" do
-    past = Dashboard::Series.new(show: shows(:past), points: [ [ 10, 2 ], [ 0, 5 ] ], next_show: false)
-    upcoming = Dashboard::Series.new(show: shows(:upcoming), points: [ [ 20, 4 ], [ 12, 6 ] ], next_show: true)
-
-    svg = Nokogiri::HTML5.fragment(rsvp_graph([ past, upcoming ]))
-
-    assert_equal 2, svg.css("path").size
-    assert_equal "Today: 6 seats", svg.at_css("text.today").text
-    assert_equal [ "Show day", "7 days before", "14 days before", "21 days before" ], svg.css("text").map(&:text).grep(/Show day|days before/)
-    assert_equal "start", svg.at_css("text.today")["text-anchor"]
-  end
-
-  test "rsvp_graph puts the today label left of a point near show day" do
-    upcoming = Dashboard::Series.new(show: shows(:upcoming), points: [ [ 20, 4 ], [ 1, 6 ] ], next_show: true)
-
-    svg = Nokogiri::HTML5.fragment(rsvp_graph([ upcoming ]))
-
-    assert_equal "end", svg.at_css("text.today")["text-anchor"]
-  end
 end

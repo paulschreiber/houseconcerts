@@ -139,7 +139,7 @@ class DashboardTest < ActiveSupport::TestCase
 
     series = @dashboard.graph_series.find { |s| s.show == shows(:past) }
 
-    assert_not series.next_show
+    assert_equal :past, series.role
     assert_equal (0..10).to_a.reverse, series.points.map(&:first)
     assert_equal [ 10, 2 ], series.points.first
     assert_equal([ 3, 5 ], series.points.find { |days_before, _| days_before == 3 })
@@ -150,8 +150,34 @@ class DashboardTest < ActiveSupport::TestCase
     series = @dashboard.graph_series.find { |s| s.show == shows(:upcoming) }
     days_left = (shows(:upcoming).start.to_date - Time.zone.today).to_i
 
-    assert series.next_show
+    assert_equal :next, series.role
     assert_equal [ [ days_left, 2 ] ], series.points
+  end
+
+  test "graph_series includes the show after the next one" do
+    shows(:sold_out).update!(availability: "available")
+    rsvp(shows(:sold_out), "Jane")
+
+    assert_equal %i[next following], @dashboard.graph_series.map(&:role)
+    assert_equal shows(:sold_out), @dashboard.graph_series.last.show
+  end
+
+  test "graph_series starts a line 49 days before its show, counting the seats reserved earlier" do
+    show_day = shows(:past).start
+    rsvp(shows(:past), "Jane", seats_reserved: 2, created_at: show_day - 60.days)
+    rsvp(shows(:past), "John", seats_reserved: 3, created_at: show_day - 10.days)
+
+    series = @dashboard.graph_series.find { |s| s.show == shows(:past) }
+
+    assert_equal [ 49, 2 ], series.points.first
+    assert_equal [ 0, 5 ], series.points.last
+  end
+
+  test "graph_series leaves out a show more than 49 days away" do
+    shows(:sold_out).update!(availability: "available", start: 60.days.from_now, end: 60.days.from_now + 2.hours)
+    rsvp(shows(:sold_out), "Jane")
+
+    assert_equal [ shows(:upcoming) ], @dashboard.graph_series.map(&:show)
   end
 
   test "graph_series skips shows without yes RSVPs" do
