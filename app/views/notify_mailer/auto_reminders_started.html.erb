@@ -1,0 +1,19 @@
+<h1>Reminders started for <%= @show.name %></h1>
+
+<%- if @attendees.any? -%>
+<p>Reminders for <strong><%= @show %></strong> started<%= " automatically" if @batch_run.automatic? %>, to <%= pluralize(@attendees.size, "confirmed attendee") %> (<%= pluralize(@attendees.sum(:seats_reserved), "seat") %>).</p>
+<%- else -%>
+<p><strong><%= @show %></strong> has no confirmed attendees, so no reminders went out.</p>
+<%- end -%>
+
+<%- if @unconfirmed_rsvps.any? -%>
+<h2>Not confirmed</h2>
+<p>These RSVPs aren’t confirmed, so they didn’t get a reminder:</p>
+<ul>
+  <%- @unconfirmed_rsvps.each do |rsvp| -%>
+    <li><%= rsvp.full_name %> (<%= rsvp.email %>) — <%= pluralize(rsvp.seats_reserved, "seat") %><%= ", waitlisted" if rsvp.waitlisted? %></li>
+  <%- end -%>
+</ul>
+<%- end -%>
+
+<p><%= link_to "View #{@show.name}", madmin_show_url(@show) %></p>

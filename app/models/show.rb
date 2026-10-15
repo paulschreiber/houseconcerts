@@ -10,12 +10,22 @@ class Show < ApplicationRecord
   belongs_to :venue
 
   before_validation :set_end_time
+  before_update :reset_auto_remind, if: :will_save_change_to_start?
 
   enum :status, { confirmed: 0, unconfirmed: 1, cancelled: 2 }, default: :confirmed
   enum :availability, { available: 0, waitlisted: 1, sold_out: 2 }, default: :available
 
   scope :occurred, -> { confirmed.where(start: ...Time.zone.now).order(:start) }
   scope :upcoming, -> { confirmed.where("start > ?", Time.zone.now).order(:start) }
+
+  # Upcoming shows whose reminder time has passed and that
+  # ScheduledRemindersJob hasn't tried yet. Narrowed in SQL to shows starting
+  # soon enough, then filtered on reminder_time.
+  def self.reminders_due
+    upcoming.where(auto_remind_attempted_at: nil)
+            .where(start: ..(Settings.reminders.days_before + 1).days.from_now)
+            .select { |show| show.reminder_time <= Time.zone.now }
+  end
 
   validates :start, timeliness: { type: :datetime }
   validates :end, timeliness: { type: :datetime, after: ->(record) { record.start } }
@@ -29,6 +39,11 @@ class Show < ApplicationRecord
 
   def attendees
     rsvps.where(confirmed: "confirmed", response: "yes")
+  end
+
+  # Yes RSVPs still awaiting confirmation, including the waitlisted.
+  def unconfirmed_rsvps
+    rsvps.where(response: "yes", confirmed: %w[unconfirmed waitlisted])
   end
 
   def self.next
@@ -104,6 +119,31 @@ class Show < ApplicationRecord
     batch_runs.invite.delivered.exists?
   end
 
+  # When reminders go out automatically: a fixed hour, a fixed number of
+  # calendar days before the show (so it stays at that hour across a
+  # daylight saving change).
+  def reminder_time
+    start&.days_ago(Settings.reminders.days_before)&.change(hour: Settings.reminders.hour)
+  end
+
+  def reminder_time_label
+    reminder_time&.strftime("%a, %b %-d at %-l:%M %P")
+  end
+
+  # Reminders have been started (or cancelled) for the show's current date,
+  # so ScheduledRemindersJob leaves it alone. A pending run doesn't count:
+  # its fan-out never got enqueued, and starting it again resumes it.
+  def reminders_handled?
+    runs = batch_runs.remind.not_pending
+    runs = runs.where(created_at: rescheduled_at..) if rescheduled_at
+    runs.exists?
+  end
+
+  # ScheduledRemindersJob will still try this show's reminders.
+  def auto_remind_pending?
+    confirmed? && !occurred? && auto_remind_attempted_at.nil? && !reminders_handled?
+  end
+
   def to_s
     "#{name} (#{start_date_short})"
   end
@@ -115,4 +155,16 @@ class Show < ApplicationRecord
   def set_end_time
     self.end = start + Settings.show_duration.hours unless self.end
   end
+
+  private
+
+    # A new date gets its own reminders: the automatic attempt is reset, and
+    # reminders sent before now no longer count (see reminders_handled?).
+    # The attempt is always written, since ScheduledRemindersJob sets it
+    # without updating any loaded copy of the show.
+    def reset_auto_remind
+      auto_remind_attempted_at_will_change!
+      self.auto_remind_attempted_at = nil
+      self.rescheduled_at = Time.current
+    end
 end

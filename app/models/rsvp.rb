@@ -201,7 +201,7 @@ class RSVP < ApplicationRecord
   end
 
   def self.unconfirmed_rsvps
-    yes_rsvps(Show.next, confirmed: %w[unconfirmed waitlisted])
+    Show.next&.unconfirmed_rsvps || none
   end
 
   def self.previous_show

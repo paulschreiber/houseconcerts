@@ -61,6 +61,28 @@ class NotifyMailer < ApplicationMailer
     mail(subject: "#{@failed_items.size} failed #{@kind_label.downcase} #{'send'.pluralize(@failed_items.size)} for #{@show.name}")
   end
 
+  # ScheduledRemindersJob started a show's reminders, or resumed an admin's
+  # run that hadn't started (batch_run.automatic? is false). Lists the yes RSVPs
+  # still awaiting confirmation, since they don't get one.
+  def auto_reminders_started(batch_run)
+    @batch_run = batch_run
+    @show = batch_run.show
+    @attendees = @show.attendees
+    @unconfirmed_rsvps = @show.unconfirmed_rsvps.order(:last_name, :first_name)
+
+    mail(subject: "Reminders started for #{@show.name}")
+  end
+
+  # ScheduledRemindersJob couldn't start a show's reminders. will_retry says
+  # whether it will try again on its next run.
+  def auto_reminders_failed(show, reason, will_retry:)
+    @show = show
+    @reason = reason
+    @will_retry = will_retry
+
+    mail(subject: "Reminders not sent for #{@show.name}")
+  end
+
   def text_message(sender, body)
     @body = body
 
