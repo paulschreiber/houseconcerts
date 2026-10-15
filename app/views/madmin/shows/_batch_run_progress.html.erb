@@ -9,6 +9,9 @@
     <%= batch_run.sent_count %>/<%= batch_run.total_count %> sent<% if failed_count.positive? %>, <%= failed_count %> failed<% end %>
     (<%= batch_run.status.humanize %>)
   <% end %>
+  <% if batch_run.remind? %>
+    · started <%= batch_run.automatic? ? "automatically" : "manually" %>
+  <% end %>
   <% if failed_count.positive? && !batch_run.show.occurred? %>
     <%= render "madmin/shows/retry_button", batch_run:, label: "Retry #{failed_count} failed" %>
   <% end %>
