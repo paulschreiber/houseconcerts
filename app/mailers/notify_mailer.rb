@@ -3,7 +3,9 @@ class NotifyMailer < ApplicationMailer
 
   layout "admin_notification"
 
-  default from: -> { formatted_address(Settings.confirms_from_name, Settings.confirms_from_email) }
+  # Every notification goes to the admin.
+  default from: -> { formatted_address(Settings.confirms_from_name, Settings.confirms_from_email) },
+          to: -> { formatted_address(Settings.invites_from_name, Settings.invites_from_email) }
 
   def rsvp(rsvp, type, old_seats)
     # Atomic claim keyed on this exact save's updated_at, not a plain
@@ -37,8 +39,7 @@ class NotifyMailer < ApplicationMailer
       @subject = "Updated RSVP from #{rsvp.full_name} [#{rsvp.show.name}]"
     end
 
-    mail(to: formatted_address(Settings.invites_from_name, Settings.invites_from_email),
-         subject: @subject)
+    mail(subject: @subject)
   end
 
   # A permanent bounce or a complaint from SES (see SesEvent) has taken this
@@ -48,8 +49,7 @@ class NotifyMailer < ApplicationMailer
     @event_type = event_type
     @subject = "#{event_type.capitalize} from #{person.full_name}"
 
-    mail(to: formatted_address(Settings.invites_from_name, Settings.invites_from_email),
-         subject: @subject)
+    mail(subject: @subject)
   end
 
   def failed_batch_items(batch_run)
@@ -58,8 +58,7 @@ class NotifyMailer < ApplicationMailer
     @failed_items = batch_run.batch_run_items.failed.includes(:recipient)
     @kind_label = BatchRun.kind_label(batch_run.kind)
 
-    mail(to: formatted_address(Settings.invites_from_name, Settings.invites_from_email),
-         subject: "#{@failed_items.size} failed #{@kind_label.downcase} #{'send'.pluralize(@failed_items.size)} for #{@show.name}")
+    mail(subject: "#{@failed_items.size} failed #{@kind_label.downcase} #{'send'.pluralize(@failed_items.size)} for #{@show.name}")
   end
 
   def text_message(sender, body)
@@ -75,7 +74,6 @@ class NotifyMailer < ApplicationMailer
       @sender = "#{sender} (#{rsvp.full_name})"
     end
 
-    mail(to: formatted_address(Settings.invites_from_name, Settings.invites_from_email),
-         subject: "SMS from #{@sender}")
+    mail(subject: "SMS from #{@sender}")
   end
 end
