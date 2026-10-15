@@ -171,4 +171,110 @@ class ShowTest < ActiveSupport::TestCase
 
     assert_not shows(:past).accepting_rsvps?
   end
+
+  test "unconfirmed_rsvps returns unconfirmed and waitlisted yes rsvps" do
+    show = shows(:upcoming)
+    unconfirmed = RSVP.create!(show:, email: "unconfirmed@example.com", first_name: "Jane", last_name: "Smith", response: "yes", seats_reserved: 1)
+    waitlisted = RSVP.create!(show:, email: "waitlisted@example.com", first_name: "Jane", last_name: "Smith", response: "yes", seats_reserved: 1, confirmed: "waitlisted")
+    RSVP.create!(show:, email: "no@example.com", first_name: "Jane", last_name: "Smith", response: "no")
+
+    assert_equal [ unconfirmed, waitlisted ].sort, show.unconfirmed_rsvps.sort
+  end
+
+  test "reminder_time is the configured hour, the configured days before the show" do
+    show = Show.new(start: Time.zone.parse("2026-12-05 19:30"))
+
+    assert_equal Time.zone.parse("2026-12-04 13:00"), show.reminder_time
+  end
+
+  test "reminder_time stays at the configured hour across daylight saving changes" do
+    fall_back = Show.new(start: Time.zone.parse("2026-11-02 19:00"))
+    spring_forward = Show.new(start: Time.zone.parse("2027-03-15 19:00"))
+
+    assert_equal "2026-11-01 13:00:00 -0500", fall_back.reminder_time.to_s
+    assert_equal "2027-03-14 13:00:00 -0400", spring_forward.reminder_time.to_s
+  end
+
+  test "reminder_time_label formats the reminder time" do
+    assert_equal "Fri, Dec 4 at 1:00 pm", Show.new(start: Time.zone.parse("2026-12-05 19:30")).reminder_time_label
+  end
+
+  test "reminder_time is nil without a start" do
+    assert_nil Show.new.reminder_time
+  end
+
+  test "reminders_due includes upcoming shows past their reminder time that haven't been tried" do
+    show = shows(:upcoming)
+
+    travel_to show.reminder_time - 1.minute do
+      assert_not_includes Show.reminders_due, show
+    end
+
+    travel_to show.reminder_time do
+      assert_includes Show.reminders_due, show
+
+      show.update_column(:auto_remind_attempted_at, Time.current) # rubocop:disable Rails/SkipsModelValidations
+      assert_not_includes Show.reminders_due, show
+    end
+  end
+
+  test "changing start resets the automatic reminder attempt" do
+    show = shows(:upcoming)
+    show.update_column(:auto_remind_attempted_at, 1.hour.ago) # rubocop:disable Rails/SkipsModelValidations
+
+    show.update!(start: show.start + 1.day, end: nil)
+
+    assert_nil show.reload.auto_remind_attempted_at
+    assert_in_delta Time.current, show.rescheduled_at, 1.second
+  end
+
+  test "other changes keep the automatic reminder attempt" do
+    show = shows(:upcoming)
+    attempted_at = 1.hour.ago.change(usec: 0)
+    show.update!(auto_remind_attempted_at: attempted_at)
+
+    show.update!(name: "Renamed Show")
+
+    assert_equal attempted_at, show.reload.auto_remind_attempted_at
+    assert_nil show.rescheduled_at
+  end
+
+  test "reminders_handled? counts running and completed remind runs, not pending ones" do
+    show = shows(:upcoming)
+    run = show.batch_runs.create!(kind: "remind", status: "pending")
+    assert_not show.reminders_handled?
+
+    run.update!(status: "running")
+    assert show.reminders_handled?
+
+    run.update!(status: "completed")
+    assert show.reminders_handled?
+  end
+
+  test "reminders_handled? ignores remind runs from before the show was rescheduled" do
+    show = shows(:upcoming)
+    show.batch_runs.create!(kind: "remind", status: "completed", created_at: 1.day.ago)
+
+    show.update!(start: show.start + 1.week, end: nil)
+
+    assert_not show.reminders_handled?
+  end
+
+  test "auto_remind_pending? until the show is tried, handled, cancelled or over" do
+    show = shows(:upcoming)
+    assert_predicate show, :auto_remind_pending?
+
+    assert_not shows(:past).auto_remind_pending?
+
+    show.status = "cancelled"
+    assert_not show.auto_remind_pending?
+
+    show.status = "confirmed"
+    show.auto_remind_attempted_at = Time.current
+    assert_not show.auto_remind_pending?
+
+    show.auto_remind_attempted_at = nil
+    show.batch_runs.create!(kind: "remind", status: "completed")
+    assert_not show.auto_remind_pending?
+  end
 end
