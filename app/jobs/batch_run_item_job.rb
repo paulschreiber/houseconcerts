@@ -98,7 +98,7 @@ class BatchRunItemJob < ApplicationJob
         # The kind becomes the open-tracking tag's email type, so opens of the
         # two kinds stay distinguishable ("invite_unopened" still matches the
         # fan-out's "invite%" exclusion).
-        InvitesMailer.invite(recipient, batch_run.show, batch_run.kind).deliver_now
+        InvitesMailer.invite(recipient, batch_run.show, batch_run.kind, invite_message: batch_run.invite_message).deliver_now
       when "remind"
         remind(item, recipient)
       end

@@ -29,6 +29,8 @@ module Madmin
 
     def invite
       show = next_show
+      return redirect_back_or_to resource.index_path, alert: "Write the invite for #{show.name} first." if show && !show.invite_message
+
       if @record.can_invite? && show && InvitePerson.call(@record, show)
         redirect_back_or_to resource.index_path, notice: "Invited #{@record.full_name} to #{show.name}."
       else

@@ -1,17 +1,20 @@
 class BatchRun < ApplicationRecord
   belongs_to :show
+  # The invite revision an invite batch sends (see StartBatchRun).
+  belongs_to :invite_message, optional: true
   has_many :batch_run_items, dependent: :destroy
 
   enum :kind, { invite: 0, invite_unopened: 1, remind: 2 }
   enum :status, { pending: 0, running: 1, completed: 2 }, default: :pending
 
   # Each kind's label, its button on the show page, how it's described in
-  # messages, and whether initial invites must have gone out first.
+  # messages, whether initial invites must have gone out first, and whether
+  # it sends the show's invite (so needs one written).
   KINDS = {
-    "invite" => { label: "Invites", button: "Send Invites", description: "invites", requires_invites_sent: false },
+    "invite" => { label: "Invites", button: "Send Invites", description: "invites", requires_invites_sent: false, sends_invite: true },
     "invite_unopened" => { label: "Unopened invites", button: "Send to Unopened", description: "invites to unopened recipients",
-                           requires_invites_sent: true },
-    "remind" => { label: "Reminders", button: "Send Reminders", description: "reminders", requires_invites_sent: true }
+                           requires_invites_sent: true, sends_invite: true },
+    "remind" => { label: "Reminders", button: "Send Reminders", description: "reminders", requires_invites_sent: true, sends_invite: false }
   }.freeze
 
   # Runs that finished and sent at least one message. A run cancelled before
@@ -23,6 +26,8 @@ class BatchRun < ApplicationRecord
   def self.kind_description(kind) = KINDS.fetch(kind.to_s)[:description]
 
   def self.requires_invites_sent?(kind) = KINDS.fetch(kind.to_s)[:requires_invites_sent]
+
+  def self.sends_invite?(kind) = KINDS.fetch(kind.to_s)[:sends_invite]
 
   def processed_count
     sent_count + failed_count

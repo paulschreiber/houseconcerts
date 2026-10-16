@@ -18,7 +18,9 @@ class InvitesMailer < ApplicationMailer
     "#{base_url}?#{params.to_query}"
   end
 
-  def invite(person, show, email_type = "invite")
+  # Sends invite_message, a revision of the show's invite: by default its
+  # current one. email_type "test" is a test send, marked in the subject.
+  def invite(person, show, email_type = "invite", invite_message: nil)
     return unless person && show
 
     unless person.is_a?(Person)
@@ -36,17 +38,19 @@ class InvitesMailer < ApplicationMailer
       return
     end
 
-    @person = person
+    invite_message ||= show.invite_message
+    raise ArgumentError, "#{show.name} has no invite written" unless invite_message
 
-    @show = show
     tag = "#{show.slug}:#{email_type}"
-    @rsvp_url = modify_rsvp_url(slug: show.slug, uniqid: person.uniqid)
-    @rsvp_url_yes = rsvp_response_url(slug: show.slug, uniqid: person.uniqid, response: :yes)
-    @rsvp_url_no = rsvp_response_url(slug: show.slug, uniqid: person.uniqid, response: :no)
+    assign_invite(person, show, invite_message,
+                  rsvp: modify_rsvp_url(slug: show.slug, uniqid: person.uniqid),
+                  rsvp_yes: rsvp_response_url(slug: show.slug, uniqid: person.uniqid, response: :yes),
+                  rsvp_no: rsvp_response_url(slug: show.slug, uniqid: person.uniqid, response: :no))
     @unsub_url = unsubscribe_url(uniqid: person.uniqid)
     @track_url = open_tracking_url(tag: tag, uniqid: person.uniqid, kind: "person")
 
-    subject = "You’re invited: #{show.name} house concert (#{show.start_date_short})"
+    subject = invite_subject(show)
+    subject = "[Test] #{subject}" if email_type == "test"
 
     logger.debug "Emailing #{person.email} [#{tag}]"
 
@@ -56,6 +60,17 @@ class InvitesMailer < ApplicationMailer
 
     mail(to: person.email_address_with_name,
          subject: subject)
+  end
+
+  # The invite as a sample person would get it, for the editor's preview.
+  # invite_message may be unsaved. Its links go nowhere, so clicking one in
+  # the preview can't RSVP anyone.
+  def invite_preview(show, invite_message)
+    person = Person.new(first_name: "Jane", last_name: "Smith", email: "jane.smith@example.com")
+    assign_invite(person, show, invite_message, rsvp: "#rsvp", rsvp_yes: "#rsvp_yes", rsvp_no: "#rsvp_no")
+    @unsub_url = "#unsubscribe"
+
+    mail(to: person.email_address_with_name, subject: invite_subject(show), template_name: "invite")
   end
 
   def waitlisted(rsvp, email_type = "waitlist")
@@ -181,4 +196,18 @@ class InvitesMailer < ApplicationMailer
     mail(to: rsvp.email_address_with_name,
          subject: subject)
   end
+
+  private
+
+    # links maps each of InviteMessage::PLACEHOLDERS to this recipient's URL.
+    def assign_invite(person, show, invite_message, links)
+      @person = person
+      @show = show
+      @invite_message = invite_message
+      @links = links
+    end
+
+    def invite_subject(show)
+      "You’re invited: #{show.name} house concert (#{show.start_date_short})"
+    end
 end
