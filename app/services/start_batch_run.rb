@@ -8,8 +8,8 @@ class StartBatchRun
   # trying again resumes it.
   class EnqueueFailed < StandardError; end
 
-  # Raised when this kind needs initial invites to have gone out first
-  # (BatchRun::KINDS) and they haven't.
+  # Raised when this kind needs initial invites to have gone out first, or
+  # sends the invite and the show has none written (BatchRun::KINDS).
   class NotReady < StandardError; end
 
   # automatic marks a run started by ScheduledRemindersJob rather than by
@@ -25,11 +25,16 @@ class StartBatchRun
   end
 
   # Creates the run and hands the per-recipient work to BatchRunFanOutJob,
-  # so it returns at once however many people are eligible.
+  # so it returns at once however many people are eligible. An invite run
+  # keeps the show's current invite revision, so every send (and retry) uses
+  # the same text even if a new revision is started meanwhile.
   def call
     raise NotReady, "Send the initial invites before sending #{BatchRun.kind_description(kind)}." if BatchRun.requires_invites_sent?(kind) && !show.invites_sent?
 
-    batch_run = BatchRun.create!(show: show, kind: kind, status: :pending, automatic: automatic)
+    invite_message = show.invite_message if BatchRun.sends_invite?(kind)
+    raise NotReady, "Write the invite for #{show.name} before sending #{BatchRun.kind_description(kind)}." if BatchRun.sends_invite?(kind) && !invite_message
+
+    batch_run = BatchRun.create!(show: show, kind: kind, status: :pending, automatic: automatic, invite_message: invite_message)
     enqueue_fan_out(batch_run)
     batch_run
   rescue ActiveRecord::RecordNotUnique

@@ -63,6 +63,11 @@ namespace :next_show do
       exit
     end
 
+    unless show.invite_message
+      puts "Write the invite for #{show.name} first"
+      exit
+    end
+
     puts "Emailing #{person.email_address_with_name}..."
     if InvitePerson.call(person, show, deliver_now: true)
       puts "Sent."

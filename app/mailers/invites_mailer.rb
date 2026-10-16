@@ -1,8 +1,11 @@
 class InvitesMailer < ApplicationMailer
   helper JsonLdHelper
 
-  before_action :set_rsvp, except: :invite
+  before_action :set_rsvp, except: %i[invite invite_preview]
 
+  # Sends the invite_message param, a revision of the show's invite: by
+  # default its current one. The email_type "test" is a test send, marked in
+  # the subject.
   def invite
     @person = params[:person]
     @show = params[:show]
@@ -14,10 +17,16 @@ class InvitesMailer < ApplicationMailer
       return
     end
 
+    @invite_message = params[:invite_message] || @show.invite_message
+    raise ArgumentError, "#{@show.name} has no invite written" unless @invite_message
+
     tag = Open.tag_for(@show, email_type)
-    @rsvp_url = modify_rsvp_url(slug: @show.slug, uniqid: @person.uniqid)
-    @rsvp_url_yes = rsvp_response_url(slug: @show.slug, uniqid: @person.uniqid, response: :yes)
-    @rsvp_url_no = rsvp_response_url(slug: @show.slug, uniqid: @person.uniqid, response: :no)
+    # Each of InviteMessage::PLACEHOLDERS, mapped to this recipient's URL.
+    @links = {
+      rsvp: modify_rsvp_url(slug: @show.slug, uniqid: @person.uniqid),
+      rsvp_yes: rsvp_response_url(slug: @show.slug, uniqid: @person.uniqid, response: :yes),
+      rsvp_no: rsvp_response_url(slug: @show.slug, uniqid: @person.uniqid, response: :no)
+    }
     @unsub_url = unsubscribe_url(uniqid: @person.uniqid)
     @track_url = open_tracking_url(tag: tag, uniqid: @person.uniqid, kind: "person")
 
@@ -27,7 +36,22 @@ class InvitesMailer < ApplicationMailer
     # RFC 8058: lets mail clients unsubscribe with one POST to that URL.
     headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
 
-    mail(to: @person.email_address_with_name, subject: subject_for("You’re invited", @show))
+    subject = subject_for("You’re invited", @show)
+    subject = "[Test] #{subject}" if email_type == "test"
+    mail(to: @person.email_address_with_name, subject: subject)
+  end
+
+  # The invite as a sample person would get it, for the editor's preview. The
+  # invite_message param may be unsaved. Its links go nowhere, so clicking one
+  # in the preview can't RSVP anyone.
+  def invite_preview
+    @person = Person.new(first_name: "Jane", last_name: "Smith", email: "jane.smith@example.com")
+    @show = params[:show]
+    @invite_message = params[:invite_message]
+    @links = { rsvp: "#rsvp", rsvp_yes: "#rsvp_yes", rsvp_no: "#rsvp_no" }
+    @unsub_url = "#unsubscribe"
+
+    mail(to: @person.email_address_with_name, subject: subject_for("You’re invited", @show), template_name: "invite")
   end
 
   def waitlisted
