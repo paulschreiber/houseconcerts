@@ -108,6 +108,22 @@ class InviteMessageTest < ActiveSupport::TestCase
     assert_predicate invite_message, :locked?
   end
 
+  test "is locked once sent before the invite editor (sent_at), with no batch" do
+    sent = new_revision(sent_at: 1.year.ago)
+
+    assert_predicate sent, :locked?
+    assert_not sent.update(intro: "Too late")
+  end
+
+  test "locked_ids finds revisions sent by a batch or before the invite editor, given revisions or their ids" do
+    create_run(status: "completed", sent_count: 1)
+    sent = new_revision(sent_at: 1.year.ago)
+    unsent = new_revision
+
+    assert_equal Set[invite_message.id, sent.id], InviteMessage.locked_ids(show.invite_messages)
+    assert_equal Set[invite_message.id, sent.id], InviteMessage.locked_ids([ invite_message.id, sent.id, unsent.id ])
+  end
+
   test "is not locked by a batch that ended without sending anything" do
     create_run(status: "completed", sent_count: 0)
 
