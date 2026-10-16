@@ -6,8 +6,13 @@ module Madmin
     before_action :load_invite_message, only: %i[show edit update destroy send_test]
     before_action :redirect_if_locked, only: %i[edit update]
 
-    # The preview is shown in an iframe on the editor's own page.
-    content_security_policy(only: :preview) { |policy| policy.frame_ancestors :self }
+    # The preview is shown in an iframe on the editor's own page. It's
+    # sandboxed (no scripts, its own origin), so even markup that got past
+    # InviteMessage's sanitizing couldn't act as the signed-in admin.
+    content_security_policy(only: :preview) do |policy|
+      policy.frame_ancestors :self
+      policy.sandbox
+    end
 
     def index
       @invite_messages = @show.invite_messages.includes(:admin).reverse
