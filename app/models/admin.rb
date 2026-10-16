@@ -4,6 +4,9 @@ class Admin < ApplicationRecord
   devise :database_authenticatable, :passkey_authenticatable,
          :recoverable, :rememberable, :timeoutable, :trackable, :validatable
 
+  # Invite revisions keep their text when the admin who saved them is deleted.
+  has_many :invite_messages, dependent: :nullify
+
   # Every sign-in (password, passkey, or after a password reset) is
   # remembered for remember_for, so closing the browser doesn't sign an
   # admin out. Signing out on any device, or timing out, forgets them on
