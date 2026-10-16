@@ -111,6 +111,7 @@ module Madmin
       assert_response :success
       assert_includes response.body, "Draft <strong>intro</strong>"
       assert_includes response.headers["Content-Security-Policy"], "frame-ancestors 'self'"
+      assert_includes response.headers["Content-Security-Policy"], "sandbox"
     end
 
     test "preview renders the edit form's unsaved text" do

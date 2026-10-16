@@ -23,6 +23,15 @@ class InviteMessageTest < ActiveSupport::TestCase
     assert_includes message.errors[:about], "can't be blank"
   end
 
+  test "limits the intro and about to 10,000 characters" do
+    assert_predicate show.invite_messages.new(intro: "a" * 10_000, about: "a" * 10_000), :valid?
+
+    message = show.invite_messages.new(intro: "a" * 10_001, about: "a" * 10_001)
+    assert_not message.valid?
+    assert_includes message.errors[:intro], "is too long (maximum is 10000 characters)"
+    assert_includes message.errors[:about], "is too long (maximum is 10000 characters)"
+  end
+
   test "numbers each show's revisions from 1" do
     assert_equal 2, new_revision.revision
     assert_equal 3, new_revision.revision
