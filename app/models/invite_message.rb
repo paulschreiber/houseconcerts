@@ -21,7 +21,11 @@ class InviteMessage < ApplicationRecord
   # batches that lock it first.
   before_destroy :prevent_changes_once_sent, prepend: true
 
-  validates :intro, :about, presence: true
+  # Well past any invite so far, and inside MySQL's TEXT limit (64KB) even
+  # at four bytes a character.
+  MAXIMUM_LENGTH = 10_000
+
+  validates :intro, :about, presence: true, length: { maximum: MAXIMUM_LENGTH }
   validate :placeholders_are_known
 
   def self.sanitizer
