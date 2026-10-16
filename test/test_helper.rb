@@ -47,9 +47,12 @@ module BatchTestHelpers
   def show = shows(:upcoming)
 
   # A batch run for the upcoming show: a running invite run of one item,
-  # unless overridden.
+  # unless overridden. Invite runs send the show's invite, as StartBatchRun's
+  # would.
   def create_run(**attrs)
-    BatchRun.create!({ show:, kind: "invite", status: "running", total_count: 1 }.merge(attrs))
+    attrs = { show:, kind: "invite", status: "running", total_count: 1 }.merge(attrs)
+    attrs[:invite_message] = attrs[:show].invite_message if BatchRun.sends_invite?(attrs[:kind]) && !attrs.key?(:invite_message)
+    BatchRun.create!(attrs)
   end
 end
 

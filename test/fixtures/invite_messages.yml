@@ -1,0 +1,6 @@
+upcoming:
+  show: upcoming
+  revision: 1
+  intro: "Next up: a **test** show. [Count me in][rsvp_yes]."
+  about: "The artist plays *songs*. Learn more at [their site](https://example.com)."
+  admin: one
