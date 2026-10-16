@@ -99,6 +99,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_21_200000) do
     t.datetime "completed_at"
     t.datetime "created_at", null: false
     t.integer "failed_count", default: 0, null: false
+    t.bigint "invite_message_id"
     t.integer "kind", null: false
     t.integer "sent_count", default: 0, null: false
     t.bigint "show_id", null: false
@@ -107,6 +108,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_21_200000) do
     t.integer "total_count", default: 0, null: false
     t.datetime "updated_at", null: false
     t.index ["active_kind_lock"], name: "index_batch_runs_on_active_kind_lock", unique: true
+    t.index ["invite_message_id"], name: "index_batch_runs_on_invite_message_id"
     t.index ["show_id"], name: "index_batch_runs_on_show_id"
   end
 
@@ -120,6 +122,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_21_200000) do
     t.index ["slug", "sluggable_type"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type"
     t.index ["sluggable_id"], name: "index_friendly_id_slugs_on_sluggable_id"
     t.index ["sluggable_type"], name: "index_friendly_id_slugs_on_sluggable_type"
+  end
+
+  create_table "invite_messages", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.text "about", null: false
+    t.bigint "admin_id"
+    t.datetime "created_at", null: false
+    t.text "intro", null: false
+    t.integer "revision", null: false
+    t.bigint "show_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["admin_id"], name: "index_invite_messages_on_admin_id"
+    t.index ["show_id", "revision"], name: "index_invite_messages_on_show_id_and_revision", unique: true
   end
 
   create_table "opens", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -404,7 +418,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_21_200000) do
   add_foreign_key "artists_shows", "artists"
   add_foreign_key "artists_shows", "shows"
   add_foreign_key "batch_run_items", "batch_runs"
+  add_foreign_key "batch_runs", "invite_messages"
   add_foreign_key "batch_runs", "shows"
+  add_foreign_key "invite_messages", "admins"
+  add_foreign_key "invite_messages", "shows"
   add_foreign_key "people_venue_groups", "people"
   add_foreign_key "people_venue_groups", "venue_groups"
   add_foreign_key "rsvps", "shows"

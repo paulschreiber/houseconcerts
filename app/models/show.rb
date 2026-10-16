@@ -8,6 +8,7 @@ class Show < ApplicationRecord
   has_many :artists, through: :artist_shows
   has_many :rsvps, dependent: :destroy
   has_many :batch_runs, dependent: :destroy
+  has_many :invite_messages, -> { order(:revision) }, dependent: :destroy, inverse_of: :show
   belongs_to :venue
 
   before_validation :set_end_time
@@ -114,6 +115,11 @@ class Show < ApplicationRecord
 
   def can_waitlist_rsvps?
     confirmed? && waitlisted?
+  end
+
+  # The highest revision of the invite, the only one that can be sent.
+  def invite_message
+    invite_messages.last
   end
 
   def invites_sent?
