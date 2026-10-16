@@ -85,6 +85,19 @@ class NextShowRakeTest < ActiveSupport::TestCase
     assert_includes out, "Sent."
   end
 
+  test "invite_one doesn't send when the next show has no invite written" do
+    person = Person.create!(first_name: "Direct", last_name: "Invite", email: "direct-invite-unwritten@example.com", status: "active")
+    shows(:upcoming).invite_messages.delete_all
+
+    out = nil
+    assert_no_emails do
+      out, = capture_io do
+        assert_raises(SystemExit) { Rake::Task["next_show:invite_one"].invoke(person.email) }
+      end
+    end
+    assert_includes out, "Write the invite for #{shows(:upcoming).name} first"
+  end
+
   test "invite_one sends the invite immediately instead of enqueueing it" do
     person = Person.create!(first_name: "Direct", last_name: "Invite", email: "direct-invite-now@example.com", status: "active")
 

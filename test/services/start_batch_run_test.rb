@@ -63,6 +63,29 @@ class StartBatchRunTest < ActiveSupport::TestCase
     end
   end
 
+  test "an invite run keeps the show's current invite revision" do
+    show.invite_messages.create!(intro: "Second", about: "Second")
+
+    batch_run = StartBatchRun.call(show: show, kind: "invite")
+
+    assert_equal show.invite_message, batch_run.invite_message
+    assert_equal 2, batch_run.invite_message.revision
+  end
+
+  test "invites need one written" do
+    show.invite_messages.delete_all
+
+    error = assert_raises(StartBatchRun::NotReady) { StartBatchRun.call(show: show, kind: "invite") }
+    assert_equal "Write the invite for #{show.name} before sending invites.", error.message
+    assert_equal 0, show.batch_runs.count
+  end
+
+  test "a reminder run doesn't keep an invite revision" do
+    create_run(status: "completed", sent_count: 1)
+
+    assert_nil StartBatchRun.call(show: show, kind: "remind").invite_message
+  end
+
   test "invites to unopened recipients and reminders need the initial invites to have gone out" do
     %w[invite_unopened remind].each do |kind|
       assert_raises(StartBatchRun::NotReady, kind) { StartBatchRun.call(show: shows(:upcoming), kind:) }
