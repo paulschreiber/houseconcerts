@@ -31,6 +31,13 @@ namespace :madmin, path: Settings.admin_prefix do
       patch :retry_failed_batch_run
       patch :cancel_batch_run
     end
+    # The show's invite revisions. Previewing renders the editor's unsaved
+    # text (posted, or patched from the edit form) or a saved revision.
+    resources :invite_messages, path: "invite" do
+      match :preview, on: :collection, via: %i[post patch]
+      get :preview, on: :member
+      post :send_test, on: :member
+    end
   end
   resources :venues
   resources :venue_groups
