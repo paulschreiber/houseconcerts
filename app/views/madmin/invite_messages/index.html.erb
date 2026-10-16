@@ -1,0 +1,24 @@
+<%= render "header", title: "Invite History",
+                     actions: link_to((@invite_messages.any? ? "New Revision" : "Write Invite"), new_madmin_show_invite_message_path(@show), class: "btn btn-primary") %>
+
+<% if @invite_messages.any? %>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr><th>Revision</th><th>Status</th><th></th></tr>
+      </thead>
+      <tbody>
+        <% @invite_messages.each do |invite_message| %>
+          <% locked = invite_message.locked? %>
+          <tr>
+            <td><%= link_to "Revision #{invite_message.revision}", madmin_show_invite_message_path(@show, invite_message) %></td>
+            <td><%= render "status", invite_message:, locked:, current: invite_message == @current %></td>
+            <td><%= link_to "Edit", edit_madmin_show_invite_message_path(@show, invite_message) unless locked %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <p>No invite written yet.</p>
+<% end %>

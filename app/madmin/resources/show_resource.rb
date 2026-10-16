@@ -45,6 +45,22 @@ class ShowResource < Madmin::Resource
       link_to("Print Attendance", print_attendance_madmin_show_path(record), class: "btn btn-secondary", target: "_blank", rel: "noopener")
   end
 
+  # The invite: edit its current revision, or start one if there's none yet
+  # or the current one has been sent.
+  member_action do |record|
+    current = record.invite_message
+    if current.nil?
+      link_to "Write Invite", new_madmin_show_invite_message_path(record), class: "btn btn-secondary"
+    else
+      edit = if current.locked?
+        link_to "New Invite Revision", new_madmin_show_invite_message_path(record), class: "btn btn-secondary"
+      else
+        link_to "Edit Invite", edit_madmin_show_invite_message_path(record, current), class: "btn btn-secondary"
+      end
+      edit + link_to("Invite History", madmin_show_invite_messages_path(record), class: "btn btn-secondary")
+    end
+  end
+
   member_action do |record|
     button_to("Add Nonsubscribers", add_nonsubscribers_madmin_show_path(record), class: "btn btn-secondary") +
       button_to("Add Phone Numbers", add_phone_numbers_madmin_show_path(record), class: "btn btn-secondary")
