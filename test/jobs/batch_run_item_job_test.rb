@@ -23,6 +23,19 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     assert batch_run.completed?
   end
 
+  test "an invite sends the run's revision, not a newer one" do
+    person = Person.create!(first_name: "New", last_name: "Person", email: "run-revision@example.com", status: "active")
+    batch_run = create_run
+    item = batch_run.batch_run_items.create!(recipient: person)
+    show.invite_messages.create!(intro: "Second intro", about: "Second bio")
+
+    BatchRunItemJob.perform_now(item.id)
+
+    body = ActionMailer::Base.deliveries.last.body.encoded
+    assert_includes body, "Next up"
+    assert_not_includes body, "Second intro"
+  end
+
   test "invite_unopened tags its open-tracking pixel distinctly from a plain invite" do
     person = Person.create!(first_name: "New", last_name: "Person", email: "new-invite-unopened@example.com", status: "active")
     batch_run = create_run(kind: "invite_unopened")

@@ -493,6 +493,14 @@ module Madmin
       end
     end
 
+    test "show page disables Send Invites until the invite is written" do
+      show.invite_messages.delete_all
+
+      get madmin_show_path(show)
+
+      assert_select "button[disabled][title='Write the invite first']", text: "Send Invites", count: 1
+    end
+
     test "show page enables Send to Unopened and Send Reminders once invites have been sent" do
       create_run(status: "completed", sent_count: 1)
 

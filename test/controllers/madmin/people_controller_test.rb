@@ -76,6 +76,17 @@ module Madmin
       assert_match(/Invited #{Regexp.escape(@person.full_name)}/, flash[:notice])
     end
 
+    test "invite does not email when the next show has no invite written" do
+      shows(:upcoming).invite_messages.delete_all
+
+      assert_no_emails do
+        patch invite_madmin_person_path(@person)
+      end
+
+      assert_redirected_to madmin_people_path
+      assert_equal "Write the invite for #{shows(:upcoming).name} first.", flash[:alert]
+    end
+
     test "invite does not email an inactive person" do
       @person.update!(status: "removed")
 

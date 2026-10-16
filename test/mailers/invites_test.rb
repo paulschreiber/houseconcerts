@@ -42,6 +42,65 @@ class InvitesTest < ActionMailer::TestCase
     assert_includes email.body.encoded, %(src="#{expected_src}")
   end
 
+  test "invite fills its fixed layout with the show's current revision and the person's links" do
+    person = people(:one)
+    show = shows(:upcoming)
+    show.invite_messages.create!(intro: "Second **intro**. [Count me in][rsvp_yes]", about: "Second *bio*.")
+
+    body = InvitesMailer.with(person: person, show: show).invite.body.encoded
+
+    assert_includes body, "Hi #{person.first_name},"
+    assert_includes body, "Second <strong>intro</strong>."
+    yes_url = Rails.application.routes.url_helpers.rsvp_response_url(slug: show.slug, uniqid: person.uniqid, response: :yes, host: "example.com")
+    assert_includes body, %(<a href="#{yes_url}">Count me in</a>)
+    assert_includes body, %(<ul class="summary">)
+    assert_includes body, "Yes! I’m in for #{show.name}!"
+    assert_includes body, "A bit about #{show.name}"
+    assert_includes body, "Second <em>bio</em>."
+    assert_includes body, "instantly unsubscribe"
+    assert_not_includes body, "Next up"
+  end
+
+  test "invite sends the revision it's given" do
+    show = shows(:upcoming)
+    first = invite_messages(:upcoming)
+    show.invite_messages.create!(intro: "Second intro", about: "Second bio")
+
+    body = InvitesMailer.with(person: people(:one), show: show, invite_message: first).invite.body.encoded
+
+    assert_includes body, "Next up"
+    assert_not_includes body, "Second intro"
+  end
+
+  test "invite raises when the show has no invite written" do
+    error = assert_raises(ArgumentError) { InvitesMailer.with(person: people(:one), show: shows(:sold_out)).invite.deliver_now }
+    assert_equal "#{shows(:sold_out).name} has no invite written", error.message
+  end
+
+  test "a test invite is marked in its subject and tracked apart from invites" do
+    person = people(:one)
+    show = shows(:upcoming)
+
+    email = InvitesMailer.with(person: person, show: show, email_type: "test").invite
+
+    assert_equal "[Test] You’re invited: #{show.event_name} (#{show.start_date_short})", email.subject
+    assert_includes email.body.encoded, tracking_pixel_url(tag: "#{show.slug}:test", uniqid: person.uniqid, kind: "person")
+  end
+
+  test "invite_preview renders an unsaved revision for a sample person, with links that go nowhere" do
+    show = shows(:upcoming)
+    message = show.invite_messages.new(intro: "Draft [yes][rsvp_yes]", about: "Draft bio")
+
+    email = InvitesMailer.with(show: show, invite_message: message).invite_preview
+    body = email.body.encoded
+
+    assert_equal [ "jane.smith@example.com" ], email.to
+    assert_includes body, "Hi Jane,"
+    assert_includes body, %(<a href="#rsvp_yes">yes</a>)
+    assert_includes body, %(href="#unsubscribe")
+    assert_not_includes body, "<img"
+  end
+
   test "invite has a Gmail go-to action that opens the person's RSVP form" do
     person = people(:one)
     show = shows(:upcoming)
