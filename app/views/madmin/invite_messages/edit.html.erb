@@ -1,0 +1,4 @@
+<%= render "header", title: "Invite, Revision #{@invite_message.revision}",
+                     actions: link_to("History", madmin_show_invite_messages_path(@show), class: "btn btn-secondary") %>
+
+<%= render "editor" %>

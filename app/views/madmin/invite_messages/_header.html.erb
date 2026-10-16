@@ -1,0 +1,12 @@
+<%# title: the page's heading. actions: its buttons, beside Back. %>
+<% content_for :title, "#{title} — #{@show.name}" %>
+
+<header class="header">
+  <h1><%= title %></h1>
+  <p><%= link_to @show.name, madmin_show_path(@show) %> · <%= @show.start.strftime("%A, %B %-d, %Y") %></p>
+
+  <div class="actions">
+    <%= actions if local_assigns[:actions] %>
+    <%= link_to "Back", madmin_show_path(@show), class: "btn btn-secondary" %>
+  </div>
+</header>

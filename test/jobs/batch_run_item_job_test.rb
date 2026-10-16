@@ -21,6 +21,19 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     assert batch_run.completed?
   end
 
+  test "an invite sends the run's revision, not a newer one" do
+    person = Person.create!(first_name: "New", last_name: "Person", email: "run-revision@example.com", status: "active")
+    batch_run = create_run
+    item = batch_run.batch_run_items.create!(recipient: person)
+    show.invite_messages.create!(intro: "Second intro", about: "Second bio")
+
+    BatchRunItemJob.perform_now(item.id)
+
+    body = ActionMailer::Base.deliveries.last.body.encoded
+    assert_includes body, "Next up"
+    assert_not_includes body, "Second intro"
+  end
+
   test "invite_unopened tags its open-tracking pixel distinctly from a plain invite" do
     person = Person.create!(first_name: "New", last_name: "Person", email: "new-invite-unopened@example.com", status: "active")
     batch_run = create_run(kind: "invite_unopened")
@@ -155,10 +168,10 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     item_b = batch_run.batch_run_items.create!(recipient: person_b, status: "failed", error_message: "boom")
 
     original_invite = InvitesMailer.method(:invite)
-    fake_invite = lambda do |person, *rest|
+    fake_invite = lambda do |person, *rest, **options|
       raise "boom again" if person == person_b
 
-      original_invite.call(person, *rest)
+      original_invite.call(person, *rest, **options)
     end
     with_stubbed(InvitesMailer, :invite, fake_invite) do
       # item_a's retry succeeds -- just the InvitesMailer send, the run
@@ -270,10 +283,10 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     item_b = batch_run.batch_run_items.create!(recipient: person_b)
 
     original_invite = InvitesMailer.method(:invite)
-    fake_invite = lambda do |person, *rest|
+    fake_invite = lambda do |person, *rest, **options|
       raise "simulated delivery failure" if person == person_a
 
-      original_invite.call(person, *rest)
+      original_invite.call(person, *rest, **options)
     end
     with_stubbed(InvitesMailer, :invite, fake_invite) do
       # 1 InvitesMailer send for person_b + 1 NotifyMailer failure notification.

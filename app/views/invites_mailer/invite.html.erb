@@ -1,9 +1,7 @@
 <div>
 <p>Hi <%= @person.first_name %>,</p>
 
-<p>Happy October! This week, the Liberty beat the top-seeded Lynx, the PWHL announced its 2026–27 schedule and lots of folks learned about the difference between a Hawk and a Hawkeye.</p>
-
-<p>Next up: Damon Castillo! Damon last played my series in 2008, back when it was in San Francisco. I’m thrilled to have him back, and to introduce him to Brooklyn.</p>
+<%= @invite_message.intro_html(@links) %>
 
 <ul class="summary">
 <li><%= @show.name %></li>
@@ -13,20 +11,14 @@
 </ul>
 
 <p class="actions"><strong>
-<%= link_to "Yes! I’m in for #{@show.name}!", @rsvp_url_yes, class: 'button', style: 'background-color: #408000; color: white; padding: 5px 10px; text-decoration: none; display: inline-block; margin-top: 5px; border-radius: 3px;' %>
-<%= link_to "Sorry, I can’t make it", @rsvp_url_no, class: 'button', style: 'background-color: #444; color: white; padding: 5px 10px; text-decoration: none; display: inline-block; margin-top: 5px; border-radius: 3px;' %>
+<%= link_to "Yes! I’m in for #{@show.name}!", @links[:rsvp_yes], class: 'button', style: 'background-color: #408000; color: white; padding: 5px 10px; text-decoration: none; display: inline-block; margin-top: 5px; border-radius: 3px;' %>
+<%= link_to "Sorry, I can’t make it", @links[:rsvp_no], class: 'button', style: 'background-color: #444; color: white; padding: 5px 10px; text-decoration: none; display: inline-block; margin-top: 5px; border-radius: 3px;' %>
 </strong></p>
 
 <h2>A bit about <%= @show.name %></h2>
-<p>Damon Castillo is a songwriter, producer and mixer whose eclectic, jazz-informed rock, funk and soul paint a sun-bleached portrait of life and love in the Golden State.</p>
+<%= @invite_message.about_html(@links) %>
 
-<p>Born in Santa Maria, California, Damon headed east after high school to study jazz at — where else — Berklee. He then returned west and settled in San Luis Obispo, where he leads the Damon Castillo Band. He also runs a studio, producing and mixing records for other artists. His music has turned up in campaigns for Target, Starbucks, Miller Lite and MTV, so there’s a chance you’ve heard Damon without knowing it.</p>
-
-<p>Damon’s albums, including <cite>Mess of Me</cite>, <cite>Laurel Lane</cite>, <cite>Live at the Mission</cite> and <cite>Revolving Door</cite>, feature Grammy winners Ross Hogarth and F. Reid Shippen. He has a publishing deal with Warner Chappell and has shared the stage with Chicago, John Scofield, The Temptations, Train and Chris Isaak.</p>
-
-<p>Get ready for the show with his recent singles “Say It Now,” “Blue Sky” and “My Kind of Jam.”</p>
-
-<p><%= link_to "Spend #{@show.day_of_week} evening with #{@show.name}", @rsvp_url_yes %>.</p>
+<p><%= link_to "Spend #{@show.day_of_week} evening with #{@show.name}", @links[:rsvp_yes] %>.</p>
 
 <p><br/>Paul</p>
 
