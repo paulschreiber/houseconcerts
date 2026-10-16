@@ -38,7 +38,8 @@ class InviteMessage < ApplicationRecord
   # The ids of these revisions that are locked, in one query, for a page
   # that lists many.
   def self.locked_ids(invite_messages)
-    locking_batch_runs(invite_messages).distinct.pluck(:invite_message_id).to_set
+    revisions = where(id: invite_messages)
+    revisions.where.not(sent_at: nil).or(revisions.where(id: locking_batch_runs(invite_messages).select(:invite_message_id))).pluck(:id).to_set
   end
 
   # Why show's invite can't get new or edited revisions, or nil if it can.
@@ -53,11 +54,12 @@ class InviteMessage < ApplicationRecord
     locked ? "Sent" : "Not sent"
   end
 
-  # A batch that has used this revision, unless it ended without sending
-  # anything (cancelled first, or no one to send to). A sent revision can't be
-  # edited or deleted, so it stays a record of what went out.
+  # Sent before the invite editor existed (sent_at), or by a batch that has
+  # used this revision, unless it ended without sending anything (cancelled
+  # first, or no one to send to). A sent revision can't be edited or deleted,
+  # so it stays a record of what went out.
   def locked?
-    self.class.locking_batch_runs(self).exists?
+    sent_at? || self.class.locking_batch_runs(self).exists?
   end
 
   def to_param
