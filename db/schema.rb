@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_07_185904) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_15_041318) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", precision: nil, null: false
@@ -95,6 +95,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_07_185904) do
 
   create_table "batch_runs", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.virtual "active_kind_lock", type: :string, as: "(case when (`status` = 2) then NULL else concat(`show_id`,_utf8mb4'-',`kind`) end)", stored: true
+    t.boolean "automatic", default: false, null: false
     t.datetime "completed_at"
     t.datetime "created_at", null: false
     t.integer "failed_count", default: 0, null: false
@@ -190,12 +191,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_07_185904) do
   end
 
   create_table "shows", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.datetime "auto_remind_attempted_at"
     t.integer "availability", default: 0, null: false
     t.text "blurb", size: :medium
     t.datetime "created_at", precision: nil, null: false
     t.datetime "end", precision: nil
     t.string "name"
     t.integer "price"
+    t.datetime "rescheduled_at"
     t.string "slug"
     t.datetime "start", precision: nil
     t.integer "status", default: 0, null: false

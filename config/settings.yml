@@ -33,6 +33,12 @@
   :max_seats: 4
   :max_seats_used: 10
 
+:reminders:
+  # Reminders go out automatically this many days before a show, at this
+  # hour (Eastern). See Show#reminder_time.
+  :days_before: 1
+  :hour: 13
+
 :import:
   :max_lines: 1000
   :max_bytes: 1048576

@@ -12,13 +12,16 @@ class StartBatchRun
   # (BatchRun::KINDS) and they haven't.
   class NotReady < StandardError; end
 
-  def self.call(show:, kind:)
-    new(show, kind).call
+  # automatic marks a run started by ScheduledRemindersJob rather than by
+  # an admin. A resumed pending run keeps its own value.
+  def self.call(show:, kind:, automatic: false)
+    new(show, kind, automatic).call
   end
 
-  def initialize(show, kind)
+  def initialize(show, kind, automatic)
     @show = show
     @kind = kind
+    @automatic = automatic
   end
 
   # Creates the run and hands the per-recipient work to BatchRunFanOutJob,
@@ -26,7 +29,7 @@ class StartBatchRun
   def call
     raise NotReady, "Send the initial invites before sending #{BatchRun.kind_description(kind)}." if BatchRun.requires_invites_sent?(kind) && !show.invites_sent?
 
-    batch_run = BatchRun.create!(show: show, kind: kind, status: :pending)
+    batch_run = BatchRun.create!(show: show, kind: kind, status: :pending, automatic: automatic)
     enqueue_fan_out(batch_run)
     batch_run
   rescue ActiveRecord::RecordNotUnique
@@ -35,7 +38,7 @@ class StartBatchRun
 
   private
 
-    attr_reader :show, :kind
+    attr_reader :show, :kind, :automatic
 
     def enqueue_fan_out(batch_run)
       BatchRunFanOutJob.perform_later(batch_run.id)

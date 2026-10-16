@@ -1,0 +1,11 @@
+<h1>Reminders not sent for <%= @show.name %></h1>
+
+<p>Reminders for <strong><%= @show %></strong> couldn’t start automatically: <%= @reason %></p>
+
+<%- if @will_retry -%>
+<p>They’ll be tried again automatically until they start.</p>
+<%- else -%>
+<p>They won’t be tried again automatically. Send them from the show page.</p>
+<%- end -%>
+
+<p><%= link_to "View #{@show.name}", madmin_show_url(@show) %></p>

@@ -15,6 +15,18 @@ class StartBatchRunTest < ActiveSupport::TestCase
     assert_equal 0, batch_run.total_count
   end
 
+  test "marks a new run automatic when asked, but a resumed pending run keeps its own value" do
+    manual_run = StartBatchRun.call(show: show, kind: "invite")
+    assert_not manual_run.automatic?
+
+    resumed_run = StartBatchRun.call(show: show, kind: "invite", automatic: true)
+    assert_equal manual_run, resumed_run
+    assert_not resumed_run.reload.automatic?
+
+    manual_run.update!(status: :completed, completed_at: Time.current)
+    assert StartBatchRun.call(show: show, kind: "invite", automatic: true).automatic?
+  end
+
   test "starting invite again while the first run is genuinely running raises instead of double-sending" do
     first_run = StartBatchRun.call(show: show, kind: "invite")
     first_run.update!(status: :running)

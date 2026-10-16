@@ -130,6 +130,49 @@ class NotifyMailerTest < ActionMailer::TestCase
     end
   end
 
+  test "auto_reminders_started counts confirmed attendees and lists unconfirmed rsvps" do
+    batch_run = create_run(kind: "remind", status: "pending", automatic: true)
+    RSVP.create!(show:, email: "unconfirmed@example.com", first_name: "Jane", last_name: "Smith", response: "yes", seats_reserved: 2)
+    RSVP.create!(show:, email: "waitlisted@example.com", first_name: "John", last_name: "Smith", response: "yes", seats_reserved: 1, confirmed: "waitlisted")
+
+    email = NotifyMailer.auto_reminders_started(batch_run)
+
+    assert_equal "Reminders started for #{show.name}", email.subject
+    assert_equal [ "#{Settings.invites_from_email}@#{Settings.domain}" ], email.to
+    body = email.body.encoded
+    assert_includes body, "1 confirmed attendee (2 seats)"
+    assert_includes body, "Jane Smith (unconfirmed@example.com) — 2 seats"
+    assert_includes body, "John Smith (waitlisted@example.com) — 1 seat, waitlisted"
+  end
+
+  test "auto_reminders_started only says automatically for an automatic run" do
+    automatic = NotifyMailer.auto_reminders_started(create_run(kind: "remind", status: "pending", automatic: true))
+    assert_includes automatic.body.encoded, "started automatically"
+
+    resumed = NotifyMailer.auto_reminders_started(BatchRun.new(show:, kind: "remind", automatic: false))
+    assert_not_includes resumed.body.encoded, "automatically"
+  end
+
+  test "auto_reminders_started says when no one is confirmed" do
+    rsvps(:one).update!(confirmed: "unconfirmed")
+    batch_run = create_run(kind: "remind", status: "pending", automatic: true)
+
+    body = NotifyMailer.auto_reminders_started(batch_run).body.encoded
+
+    assert_includes body, "has no confirmed attendees, so no reminders went out"
+    assert_includes body, rsvps(:one).email
+  end
+
+  test "auto_reminders_failed gives the reason and whether it will be retried" do
+    final = NotifyMailer.auto_reminders_failed(show, "Send the initial invites first.", will_retry: false)
+    retrying = NotifyMailer.auto_reminders_failed(show, "Try again later.", will_retry: true)
+
+    assert_equal "Reminders not sent for #{show.name}", final.subject
+    assert_includes final.body.encoded, "Send the initial invites first."
+    assert_includes final.body.encoded, "They won’t be tried again automatically. Send them from the show page."
+    assert_includes retrying.body.encoded, "They’ll be tried again automatically until they start."
+  end
+
   test "text_message includes the matching rsvp's name when the phone number matches" do
     rsvp = rsvps(:one)
     rsvp.update!(phone_number: "2125551234")

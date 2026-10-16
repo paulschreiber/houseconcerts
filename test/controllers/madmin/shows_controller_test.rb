@@ -507,6 +507,44 @@ module Madmin
       assert_select "#batch_run_progress_invite", text: /1 sent \(complete\)/
     end
 
+    test "show page says when unsent reminders go out automatically" do
+      get madmin_show_path(show)
+
+      assert_select "#batch_run_progress_remind",
+                    text: "Not sent yet; goes out automatically #{show.reminder_time_label}"
+      assert_select "#batch_run_progress_invite", text: "Not sent yet"
+    end
+
+    test "show page says when automatic reminders couldn’t start" do
+      show.update_column(:auto_remind_attempted_at, Time.current) # rubocop:disable Rails/SkipsModelValidations
+
+      get madmin_show_path(show)
+
+      assert_select "#batch_run_progress_remind", text: "Not sent yet; couldn’t start automatically"
+    end
+
+    test "show page says reminders go out again after a reschedule" do
+      create_run(kind: "remind", status: "completed", sent_count: 1, created_at: 1.day.ago)
+      show.update!(start: show.start + 1.week, end: nil)
+
+      get madmin_show_path(show)
+
+      assert_select "#batch_run_progress_remind", text: /1 sent/
+      assert_select ".batch-progress-none", text: "Goes out automatically #{show.reminder_time_label}"
+    end
+
+    test "show page says whether a remind run was started automatically or manually" do
+      run = create_run(kind: "remind", status: "completed", sent_count: 1, automatic: true)
+
+      get madmin_show_path(show)
+      assert_select "#batch_run_progress_remind", text: /started automatically/
+
+      run.update!(automatic: false)
+      get madmin_show_path(show)
+      assert_select "#batch_run_progress_remind", text: /started manually/
+      assert_select "#batch_run_progress_invite", text: /started/, count: 0
+    end
+
     test "show page still shows the progress bar for a batch run in progress" do
       create_run(kind: "remind", total_count: 3, sent_count: 1)
 
