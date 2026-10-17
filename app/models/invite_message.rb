@@ -44,8 +44,7 @@ class InviteMessage < ApplicationRecord
 
   # Why show's invite can't get new or edited revisions, or nil if it can.
   # Once the show has happened there's no one left to invite. (Unsent
-  # revisions can still be deleted, and the history import still adds
-  # revisions for past shows: this isn't a validation.)
+  # revisions can still be deleted.)
   def self.closed_reason(show)
     "#{show.name} has already happened, so its invite can’t be changed." if show.occurred?
   end
