@@ -1,3 +1,5 @@
+<% content_for :title, page_title(@rsvp.show) %>
+
 <% if @rsvp.yes? %>
 <h1>Thanks for reserving <%= seat_count_phrase(@rsvp.seats_reserved, "seats", "a seat") %> for <%= @rsvp.show.name %></h1>
 <% elsif @rsvp.no? %>

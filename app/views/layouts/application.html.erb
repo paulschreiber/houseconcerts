@@ -23,7 +23,7 @@
 	<link rel="canonical" href="<%= canonical_url %>">
 	<link rel="apple-touch-icon" href="<%= apple_touch_icon %>">
 	<link rel="icon" sizes="any" mask href="<%= svg_icon %>">
-	<title><%= yield :title %></title>
+	<title><%= yield(:title).presence || page_title %></title>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
 
 	<%= render "google_analytics" if Rails.env.production? %>
