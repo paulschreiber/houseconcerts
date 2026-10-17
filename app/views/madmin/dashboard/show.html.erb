@@ -39,6 +39,7 @@
         <div class="actions">
           <%= link_to "RSVPs", madmin_rsvps_path(scope: "next_show"), class: "btn btn-secondary" %>
           <%= link_to "Attendance", attendance_madmin_show_path(show), class: "btn btn-secondary" %>
+          <%= link_to "Print", print_attendance_madmin_show_path(show), class: "btn btn-secondary", target: "_blank", rel: "noopener" %>
           <%= link_to "Edit show", edit_madmin_show_path(show), class: "btn btn-secondary" %>
         </div>
       </header>
