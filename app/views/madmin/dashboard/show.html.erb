@@ -98,7 +98,7 @@
           <h3>Unconfirmed RSVPs</h3>
           <% if unconfirmed.any? %>
             <table>
-              <thead><tr><th>Name</th><th class="num">Seats</th><th>RSVPd</th><th></th></tr></thead>
+              <thead><tr><th>Name</th><th class="num">Seats</th><th>RSVPd</th><th class="hide-on-phone"></th></tr></thead>
               <tbody>
                 <% unconfirmed.first(Dashboard::RECENT_LIMIT).each do |rsvp| %>
                   <tr>
@@ -108,7 +108,7 @@
                     </td>
                     <td class="num"><%= rsvp.seats_reserved %></td>
                     <td class="when"><%= dashboard_date(rsvp.created_at) %></td>
-                    <td class="row-actions">
+                    <td class="row-actions hide-on-phone">
                       <% if rsvp.can_confirm? %>
                         <%= button_to "Confirm", confirm_madmin_rsvp_path(rsvp), method: :patch, class: "btn btn-secondary btn-sm" %>
                       <% end %>
