@@ -336,6 +336,28 @@ label.radio {
   margin: 3px;
 }
 
+// Devise's forms put each label and input in a <p> of its own.
+.field > p {
+  margin-block: 0.25em;
+}
+
+// Space between the sign in and password page headings and their forms.
+.devise-page > h2 {
+  margin-block-end: 0.75em;
+}
+
+// "Forgot your password?" sits under the password input, lined up with its
+// right edge. On phones the input is already the full width.
+.password-field {
+  @media only screen and (width >= 601px) {
+    width: fit-content;
+  }
+}
+
+.forgot-password {
+  text-align: right;
+}
+
 select,
 button,
 input[type="text"],
@@ -413,6 +435,7 @@ input[type="submit"] {
 }
 
 form > div + div,
+form + form,
 .passkey-form div + div,
 .passkey-form {
   margin-block-start: 1em;
