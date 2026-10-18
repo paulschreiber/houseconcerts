@@ -1,7 +1,7 @@
 require "test_helper"
 
-# Admin sessions time out after a week without activity, and remember me
-# doesn't outlast that.
+# Admin sessions time out after a week without activity, and the
+# remember-me cookie every sign-in sets doesn't outlast that.
 class AdminSessionTimeoutTest < ActionDispatch::IntegrationTest
   PASSWORD = "correct horse battery staple".freeze
 
@@ -21,14 +21,6 @@ class AdminSessionTimeoutTest < ActionDispatch::IntegrationTest
 
   test "a session is signed out after a week without activity" do
     sign_in_with_password
-
-    travel 8.days do
-      assert_signed_out
-    end
-  end
-
-  test "remember me doesn't keep an admin signed in past a week" do
-    sign_in_with_password(remember_me: "1")
     assert cookies["remember_admin_token"].present?
 
     travel 8.days do
@@ -46,8 +38,8 @@ class AdminSessionTimeoutTest < ActionDispatch::IntegrationTest
       assert_redirected_to new_admin_session_path
     end
 
-    def sign_in_with_password(remember_me: "0")
-      post admin_session_path, params: { admin: { email: admins(:one).email, password: PASSWORD, remember_me: remember_me } }
+    def sign_in_with_password
+      post admin_session_path, params: { admin: { email: admins(:one).email, password: PASSWORD } }
       assert_response :see_other
     end
 end
