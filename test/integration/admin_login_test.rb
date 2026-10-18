@@ -45,9 +45,9 @@ class AdminLoginTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_admin_session_path
   end
 
-  test "remembers the admin via a persistent cookie when remember me is checked" do
+  test "remembers the admin via a persistent cookie" do
     post admin_session_path, params: {
-      admin: { email: admins(:one).email, password: "correct horse battery staple", remember_me: "1" }
+      admin: { email: admins(:one).email, password: "correct horse battery staple" }
     }
     assert cookies["remember_admin_token"].present?
 
@@ -58,14 +58,6 @@ class AdminLoginTest < ActionDispatch::IntegrationTest
 
     get madmin_root_path
     assert_response :success
-  end
-
-  test "does not set a remember cookie when remember me is left unchecked" do
-    post admin_session_path, params: {
-      admin: { email: admins(:one).email, password: "correct horse battery staple" }
-    }
-
-    assert_nil cookies["remember_admin_token"]
   end
 
   test "resets a forgotten password and can sign in with the new one" do
@@ -87,6 +79,7 @@ class AdminLoginTest < ActionDispatch::IntegrationTest
       }
     }
     assert_redirected_to root_path
+    assert cookies["remember_admin_token"].present?
 
     delete destroy_admin_session_path
 

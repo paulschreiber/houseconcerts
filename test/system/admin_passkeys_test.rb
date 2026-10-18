@@ -20,6 +20,7 @@ class AdminPasskeysTest < ApplicationSystemTestCase
 
     assert_current_path root_path
     assert_text "Signed in successfully."
+    assert_includes page.driver.browser.manage.all_cookies.pluck(:name), "remember_admin_token"
   end
 
   test "adds a passkey after entering the current password" do
