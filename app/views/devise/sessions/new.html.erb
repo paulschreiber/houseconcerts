@@ -15,12 +15,6 @@
       <p class="forgot-password"><%= link_to "Forgot your password?", new_password_path(resource_name) %></p>
     </div>
 
-    <% if devise_mapping.rememberable? %>
-      <div class="field radio">
-        <%= f.check_box :remember_me %> <%= f.label :remember_me, class: "radio" %>
-      </div>
-    <% end %>
-
     <div class="actions">
       <%= f.submit "Log in", data: { disable_on_submit_target: "submit" } %>
     </div>
