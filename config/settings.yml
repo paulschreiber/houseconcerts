@@ -16,12 +16,6 @@
 :admin_prefix: "backstage"
 :uniqid_length: 16
 
-:exception_list:
-  :first_names:
-    - "danah"
-  :last_names:
-    - "boyd"
-
 :venue:
   :min_capacity: 10
   :max_capacity: 100
