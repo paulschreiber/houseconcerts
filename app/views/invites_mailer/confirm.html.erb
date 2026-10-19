@@ -4,10 +4,11 @@
 
 <ul class="summary">
 <li><%= @rsvp.show.name %></li>
-<li>Seats: <%= @rsvp.seats_reserved %></li>
-<li>Date: <%= @rsvp.show.start_date %>
-<li>Time: <%= @rsvp.show.start_time %> &middot; Please arrive between <%= @rsvp.show.arrival_range %>.</li>
-<li>Location: <%= @rsvp.show.venue.full_address %></li>
+<li><strong>Seats:</strong> <%= @rsvp.seats_reserved %></li>
+<li><strong>Date:</strong> <%= @rsvp.show.start_date %>
+<li><strong>Time:</strong> <%= @rsvp.show.start_time %>
+<li><strong>Doors:</strong> <%= @rsvp.show.door_time %> &middot; Please arrive between <%= @rsvp.show.arrival_range %>.</li>
+<li><strong>Location:</strong> <%= @rsvp.show.venue.full_address %></li>
 </ul>
 
 <h3>Changing your reservation</h3>
