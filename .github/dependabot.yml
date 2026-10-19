@@ -42,3 +42,6 @@ updates:
         patterns: ["eslint", "@eslint/*", "eslint-*", "globals"]
       stylelint:
         patterns: ["stylelint", "stylelint-*"]
+      minor-and-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
