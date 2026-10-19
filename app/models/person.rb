@@ -28,8 +28,6 @@ class Person < ApplicationRecord
 
   default_value_for :status, "active"
 
-  validates :first_name, presence: true, mixed_case: true, length: { minimum: 2, maximum: 100 }
-  validates :last_name, presence: true, mixed_case: true, length: { minimum: 2, maximum: 100 }
   validates :email, email: true, length: { maximum: 200 }
   validates :phone_number, phone: { country: Settings.default_country, set: true }, length: { maximum: 30 }, allow_blank: true
   validates :postcode, postal_code: { country: Settings.default_country }, length: { maximum: 10 }, allow_blank: true
