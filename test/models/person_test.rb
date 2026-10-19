@@ -47,6 +47,29 @@ class PersonTest < ActiveSupport::TestCase
     assert record.valid?, record.errors.full_messages.to_sentence
   end
 
+  test "rejects a name with fewer than two letters" do
+    [ "X.", "J-", "A " ].each do |name|
+      record = people(:one)
+      record.first_name = name
+      record.last_name = name
+
+      assert_not record.valid?, "#{name.inspect} should be invalid"
+      assert_includes record.errors[:first_name], "Enter your first name"
+      assert_includes record.errors[:last_name], "Enter your last name"
+    end
+  end
+
+  test "accepts names with initials and accents" do
+    record = people(:one)
+
+    [ %w[J.R. Smith], %w[Zoë O’Brien] ].each do |first_name, last_name|
+      record.first_name = first_name
+      record.last_name = last_name
+
+      assert record.valid?, "#{first_name} #{last_name}: #{record.errors.full_messages.to_sentence}"
+    end
+  end
+
   test "email_address_with_name formats the name and email as one address" do
     person = Person.new(first_name: "Jane", last_name: "Smith", email: "jane@example.com")
 
