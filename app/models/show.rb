@@ -82,16 +82,19 @@ class Show < ApplicationRecord
     start.strftime("%B %e").gsub("  ", " ").strip unless start.nil?
   end
 
-  def door_time
+  def doors
     (start - Settings.arrival_minutes.minutes) unless start.nil?
+  end
+
+  def door_time
+    doors&.strftime("%l:%M %P")&.strip
   end
 
   def arrival_range
     return if start.nil?
 
-    earliest = door_time.strftime("%l:%M %P").strip
     latest = (start - 1.minute).strftime("%l:%M %P").strip
-    "#{earliest} and #{latest}"
+    "#{door_time} and #{latest}"
   end
 
   def occurred?
