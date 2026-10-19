@@ -49,6 +49,29 @@ class RsvpTest < ActiveSupport::TestCase
     assert record.valid?, record.errors.full_messages.to_sentence
   end
 
+  test "rejects a name with fewer than two letters" do
+    [ "X.", "J-", "A " ].each do |name|
+      record = rsvps(:one)
+      record.first_name = name
+      record.last_name = name
+
+      assert_not record.valid?, "#{name.inspect} should be invalid"
+      assert_includes record.errors[:first_name], "Enter your first name"
+      assert_includes record.errors[:last_name], "Enter your last name"
+    end
+  end
+
+  test "accepts names with initials and accents" do
+    record = rsvps(:one)
+
+    [ %w[J.R. Smith], %w[Zoë O’Brien] ].each do |first_name, last_name|
+      record.first_name = first_name
+      record.last_name = last_name
+
+      assert record.valid?, "#{first_name} #{last_name}: #{record.errors.full_messages.to_sentence}"
+    end
+  end
+
   test "defaults uniqid to a 16-character random token" do
     rsvp = RSVP.create!(show: shows(:upcoming), first_name: "New", last_name: "Rsvp",
                         email: "new-uniqid@example.com", response: "yes", seats_reserved: 1)
