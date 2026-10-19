@@ -203,6 +203,11 @@ class ShowTest < ActiveSupport::TestCase
     assert_nil Show.new.reminder_time
   end
 
+  test "doors and door_time are nil without a start" do
+    assert_nil Show.new.doors
+    assert_nil Show.new.door_time
+  end
+
   test "reminders_due includes upcoming shows past their reminder time that haven't been tried" do
     show = shows(:upcoming)
 
