@@ -244,7 +244,7 @@ class RSVP < ApplicationRecord
         name: "#{show.name} House Concert",
         startDate: show.start.iso8601,
         endDate: show.end.iso8601,
-        doorTime: show.door_time.iso8601,
+        doorTime: show.doors.iso8601,
         performer: {
           "@type": "Person",
           name: show.artists.collect(&:name).to_sentence,
