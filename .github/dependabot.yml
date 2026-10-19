@@ -24,6 +24,8 @@ updates:
     cooldown:
       default-days: 7
     open-pull-requests-limit: 10
+    allow:
+      - dependency-type: "all"
 
   - package-ecosystem: "npm"
     directory: "/"
@@ -33,6 +35,8 @@ updates:
     cooldown:
       default-days: 7
     open-pull-requests-limit: 10
+    allow:
+      - dependency-type: "all"
     groups:
       eslint:
         patterns: ["eslint", "@eslint/*", "eslint-*", "globals"]
