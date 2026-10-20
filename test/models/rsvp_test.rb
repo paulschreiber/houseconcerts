@@ -431,7 +431,10 @@ class RsvpTest < ActiveSupport::TestCase
     rsvp.update!(confirmed: "unconfirmed")
     assert_not_includes RSVP.previous_show_attendees, rsvp
 
-    rsvp.update!(confirmed: "confirmed", show: Show.next)
+    rsvp.update!(confirmed: "confirmed", response: "no")
+    assert_not_includes RSVP.previous_show_attendees, rsvp
+
+    rsvp.update!(response: "yes", seats_reserved: 2, show: Show.next)
     assert_not_includes RSVP.previous_show_attendees, rsvp
   end
 

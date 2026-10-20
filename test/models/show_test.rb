@@ -168,13 +168,13 @@ class ShowTest < ActiveSupport::TestCase
     assert_not shows(:past).accepting_rsvps?
   end
 
-  test "unconfirmed_rsvps returns unconfirmed and waitlisted yes rsvps" do
+  test "rsvps.awaiting_confirmation returns unconfirmed and waitlisted yes rsvps" do
     show = shows(:upcoming)
     unconfirmed = RSVP.create!(show:, email: "unconfirmed@example.com", first_name: "Jane", last_name: "Smith", response: "yes", seats_reserved: 1)
     waitlisted = RSVP.create!(show:, email: "waitlisted@example.com", first_name: "Jane", last_name: "Smith", response: "yes", seats_reserved: 1, confirmed: "waitlisted")
     RSVP.create!(show:, email: "no@example.com", first_name: "Jane", last_name: "Smith", response: "no")
 
-    assert_equal [ unconfirmed, waitlisted ].sort, show.unconfirmed_rsvps.sort
+    assert_equal [ unconfirmed, waitlisted ].sort, show.rsvps.awaiting_confirmation.sort
   end
 
   test "reminder_time is the configured hour, the configured days before the show" do
