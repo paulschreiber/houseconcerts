@@ -112,28 +112,37 @@ class InvitesTest < ActionMailer::TestCase
     assert_includes email.body.encoded, %(src="#{expected_src}")
   end
 
-  test "confirm embeds the reservation as parseable JSON-LD" do
+  test "confirm embeds the reservation as parseable JSON-LD, with the full address" do
     rsvp = rsvps(:one)
 
-    email = InvitesMailer.confirm(rsvp)
+    data = confirm_ld_json(rsvp)
 
-    html = email.html_part ? email.html_part.decoded : email.body.decoded
-    script = Nokogiri::HTML(html).at_css('script[type="application/ld+json"]')
-    data = JSON.parse(script.text)
     assert_equal "EventReservation", data["@type"]
     assert_equal rsvp.uniqid, data["reservationNumber"]
+    assert_equal "https://schema.org/ReservationConfirmed", data["reservationStatus"]
+    assert_equal "MusicEvent", data.dig("reservationFor", "@type")
+    assert_equal "123 Main St", data.dig("reservationFor", "location", "address", "streetAddress")
+    assert_equal "11201", data.dig("reservationFor", "location", "address", "postalCode")
+  end
+
+  test "confirm's JSON-LD links to modifying and cancelling the reservation" do
+    rsvp = rsvps(:one)
+
+    data = confirm_ld_json(rsvp)
+
+    routes = Rails.application.routes.url_helpers
+    assert_equal routes.modify_rsvp_url(slug: rsvp.show.slug, uniqid: rsvp.uniqid), data["modifyReservationUrl"]
+    assert_equal routes.rsvp_response_url(slug: rsvp.show.slug, uniqid: rsvp.uniqid, response: :no), data["cancelReservationUrl"]
   end
 
   test "confirm escapes markup in JSON-LD values so they can't close the script tag" do
     rsvp = rsvps(:one)
     rsvp.update_column(:first_name, "</script><b>x") # rubocop:disable Rails/SkipsModelValidations
 
-    email = InvitesMailer.confirm(rsvp)
+    html = html_body(InvitesMailer.confirm(rsvp))
 
-    html = email.html_part ? email.html_part.decoded : email.body.decoded
     assert_not_includes html, "</script><b>x"
-    script = Nokogiri::HTML(html).at_css('script[type="application/ld+json"]')
-    assert_includes JSON.parse(script.text).dig("underName", "name"), "</script><b>x"
+    assert_includes ld_json_in(html).dig("underName", "name"), "</script><b>x"
   end
 
   test "confirm sends only to the rsvp's email even if the name contains addresses" do
@@ -223,6 +232,20 @@ class InvitesTest < ActionMailer::TestCase
   end
 
   private
+
+    def html_body(email)
+      email.html_part ? email.html_part.decoded : email.body.decoded
+    end
+
+    def ld_json_in(html)
+      JSON.parse(Nokogiri::HTML(html).at_css('script[type="application/ld+json"]').text)
+    end
+
+    # The confirmation email is sent at most once per RSVP, so each test
+    # renders it once.
+    def confirm_ld_json(rsvp)
+      ld_json_in(html_body(InvitesMailer.confirm(rsvp)))
+    end
 
     def tracking_pixel_url(tag:, uniqid:, kind:)
       Rails.application.routes.url_helpers.open_tracking_url(tag: tag, uniqid: uniqid, kind: kind, host: "example.com")
