@@ -69,9 +69,9 @@ module Madmin
 
       get madmin_root_path
 
-      assert_select "p", text: "✓ Attendance recorded"
-      assert_select "p", text: "✓ Everyone who RSVPd is on the mailing list"
-      assert_select "p", text: "✓ No phone numbers to add"
+      assert_select "p", text: "✔ Attendance recorded"
+      assert_select "p", text: "✔ Everyone who RSVPd is on the mailing list"
+      assert_select "p", text: "✔ No phone numbers to add"
     end
 
     test "renders without any shows" do
