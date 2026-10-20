@@ -151,7 +151,7 @@ class RSVP < ApplicationRecord
   end
 
   def self.attended(emails)
-    joins(:show).merge(Show.occurred).attending.where(email: emails, seats_reserved: 1..)
+    joins(:show).merge(Show.occurred).attending.where(email: emails)
   end
 
   # Maps each email to the ids of its attended RSVPs, so a caller with many
