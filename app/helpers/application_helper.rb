@@ -32,8 +32,8 @@ module ApplicationHelper
   # The show's first artist's photo, or the site image when there's no show
   # or it has no artists.
   def social_media_image(show)
-    photo = show.artists.first&.photo if show
-    "#{root_url}#{photo || 'concerts.png'}"
+    photo_url = show.artists.first&.photo_url if show
+    photo_url || "#{Rails.application.routes.url_helpers.root_url}concerts.png"
   end
 
   def canonical_url

@@ -12,4 +12,8 @@ class Artist < ApplicationRecord
   def photo
     "photos/headshots/#{slug}.jpg"
   end
+
+  def photo_url
+    "#{Rails.application.routes.url_helpers.root_url}#{photo}"
+  end
 end

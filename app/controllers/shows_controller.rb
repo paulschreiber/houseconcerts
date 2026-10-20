@@ -1,12 +1,12 @@
 class ShowsController < ApplicationController
   def index
-    @shows = Show.upcoming.includes(:artists).to_a
+    @shows = Show.upcoming.includes(:artists, :venue).to_a
     # The homepage's social media image is the next show's.
     @social_media_show = @shows.first
   end
 
   def shows
-    @shows = Show.past.occurred.includes(:artists)
+    @shows = Show.past.occurred.includes(:artists, :venue)
   end
 
   def calendar
