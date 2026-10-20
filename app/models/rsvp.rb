@@ -47,7 +47,6 @@ class RSVP < ApplicationRecord
     greater_than_or_equal_to: 0,
     less_than_or_equal_to: Settings.show.max_seats_used
   }, allow_blank: true, if: :yes?
-  validates :show_id, inclusion: { in: ->(_) { Show.all.collect(&:id) } }
   validate :tickets_available?, unless: :no?, if: :requesting_more_seats?
 
   RSVP_NOTIFY_ATTRIBUTES = %w[first_name last_name seats_reserved response].freeze

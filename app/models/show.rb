@@ -35,7 +35,6 @@ class Show < ApplicationRecord
     greater_than_or_equal_to: Settings.show.min_price,
     less_than_or_equal_to: Settings.show.max_price
   }
-  validates :venue_id, inclusion: { in: ->(_) { Venue.all.collect(&:id) } }
 
   def attendees
     rsvps.attending
