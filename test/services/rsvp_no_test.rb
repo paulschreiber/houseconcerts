@@ -36,23 +36,19 @@ class RSVPNoTest < ActiveSupport::TestCase
     # request would; the second call (our recovery update) behaves normally.
     original_save = RSVP.instance_method(:save)
     raced = false
-    RSVP.send(:define_method, :save) do |*args, **kwargs|
-      if raced
-        original_save.bind_call(self, *args, **kwargs)
-      else
-        raced = true
-        RSVP.create!(show_id: show.id, email: person.email, first_name: "Winner", last_name: "Row",
-                     response: "yes", seats_reserved: 2)
-        raise ActiveRecord::RecordNotUnique, "Duplicate entry for key 'index_rsvps_on_show_id_and_email'"
-      end
+    racing_save = lambda do |*args, **kwargs|
+      next original_save.bind_call(self, *args, **kwargs) if raced
+
+      raced = true
+      RSVP.create!(show_id: show.id, email: person.email, first_name: "Winner", last_name: "Row",
+                   response: "yes", seats_reserved: 2)
+      raise ActiveRecord::RecordNotUnique, "Duplicate entry for key 'index_rsvps_on_show_id_and_email'"
     end
 
-    begin
+    with_stubbed_instance_method(RSVP, :save, racing_save) do
       assert_difference "RSVP.count", 1 do
         assert RSVPNo.call(person, show)
       end
-    ensure
-      RSVP.send(:define_method, :save, original_save)
     end
 
     assert_equal 1, RSVP.where(show_id: show.id, email: person.email).count
@@ -63,17 +59,11 @@ class RSVPNoTest < ActiveSupport::TestCase
     person = people(:one)
     show = shows(:upcoming)
 
-    original_save = RSVP.instance_method(:save)
-    RSVP.send(:define_method, :save) do |*_args, **_kwargs|
-      raise ActiveRecord::RecordNotUnique, "Duplicate entry for key 'index_rsvps_on_uniqid'"
-    end
-
-    begin
+    colliding_save = ->(*, **) { raise ActiveRecord::RecordNotUnique, "Duplicate entry for key 'index_rsvps_on_uniqid'" }
+    with_stubbed_instance_method(RSVP, :save, colliding_save) do
       assert_no_difference "RSVP.count" do
         assert_equal false, RSVPNo.call(person, show)
       end
-    ensure
-      RSVP.send(:define_method, :save, original_save)
     end
   end
 end

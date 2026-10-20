@@ -66,15 +66,12 @@ class NotifyMailerTest < ActionMailer::TestCase
   test "rsvp releases its claim if delivery fails, so a retry can resend" do
     rsvp = rsvps(:one)
 
-    original_deliver = Mail::TestMailer.instance_method(:deliver!)
-    Mail::TestMailer.define_method(:deliver!) { |_mail| raise "simulated SMTP failure" }
-
     job = ActionMailer::MailDeliveryJob.new("NotifyMailer", "rsvp", "deliver_now", args: [ rsvp, "new", nil ])
-    assert_raises(RuntimeError) { job.perform_now }
+    with_stubbed_instance_method(Mail::TestMailer, :deliver!, ->(_mail) { raise "simulated SMTP failure" }) do
+      assert_raises(RuntimeError) { job.perform_now }
+    end
 
     assert_nil rsvp.reload.admin_notified_at
-  ensure
-    Mail::TestMailer.define_method(:deliver!, original_deliver)
   end
 
   test "a mailer job that fails before its action runs leaves an earlier job's claim alone" do

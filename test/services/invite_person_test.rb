@@ -37,14 +37,9 @@ class InvitePersonTest < ActiveSupport::TestCase
   test "returns false instead of raising when enqueueing the invite fails" do
     person = people(:one)
 
-    original_invite = InvitesMailer.method(:invite)
-    InvitesMailer.define_singleton_method(:invite) { |*_args| raise "simulated enqueue failure" }
-
     result = nil
-    begin
+    with_stubbed(InvitesMailer, :invite, ->(*_args) { raise "simulated enqueue failure" }) do
       assert_no_emails { result = InvitePerson.call(person, shows(:upcoming)) }
-    ensure
-      InvitesMailer.define_singleton_method(:invite, original_invite)
     end
 
     assert_not result

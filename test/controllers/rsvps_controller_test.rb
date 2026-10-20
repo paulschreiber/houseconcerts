@@ -108,17 +108,15 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
     # would; the second call (our recovery update) behaves normally.
     original_save = RSVP.instance_method(:save)
     raced = false
-    RSVP.send(:define_method, :save) do |*args, **kwargs|
-      if raced
-        original_save.bind_call(self, *args, **kwargs)
-      else
-        raced = true
-        RSVP.create!(show_id: show.id, email: email, first_name: "Winner", last_name: "Row", response: "yes", seats_reserved: 2)
-        raise ActiveRecord::RecordNotUnique, "Duplicate entry for key 'index_rsvps_on_show_id_and_email'"
-      end
+    racing_save = lambda do |*args, **kwargs|
+      next original_save.bind_call(self, *args, **kwargs) if raced
+
+      raced = true
+      RSVP.create!(show_id: show.id, email: email, first_name: "Winner", last_name: "Row", response: "yes", seats_reserved: 2)
+      raise ActiveRecord::RecordNotUnique, "Duplicate entry for key 'index_rsvps_on_show_id_and_email'"
     end
 
-    begin
+    with_stubbed_instance_method(RSVP, :save, racing_save) do
       assert_difference("RSVP.count", 1) do
         post rsvps_path, params: {
           rsvp: {
@@ -131,8 +129,6 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
           }
         }
       end
-    ensure
-      RSVP.send(:define_method, :save, original_save)
     end
 
     winner = RSVP.find_by(show_id: show.id, email: email)
@@ -151,12 +147,8 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
     # Simulate a RecordNotUnique from some other constraint (not show_id +
     # email), so the recovery's find_by(show_id:, email:) finds no row: the
     # form is re-rendered instead of crashing.
-    original_save = RSVP.instance_method(:save)
-    RSVP.send(:define_method, :save) do |*_args, **_kwargs|
-      raise ActiveRecord::RecordNotUnique, "Duplicate entry for key 'index_rsvps_on_uniqid'"
-    end
-
-    begin
+    colliding_save = ->(*, **) { raise ActiveRecord::RecordNotUnique, "Duplicate entry for key 'index_rsvps_on_uniqid'" }
+    with_stubbed_instance_method(RSVP, :save, colliding_save) do
       assert_no_difference("RSVP.count") do
         post rsvps_path, params: {
           rsvp: {
@@ -169,8 +161,6 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
           }
         }
       end
-    ensure
-      RSVP.send(:define_method, :save, original_save)
     end
 
     assert_response :unprocessable_content
@@ -383,13 +373,8 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
   test "thanks redirects home instead of crashing when the rsvp's show is unexpectedly nil" do
     rsvp = rsvps(:one)
 
-    original_show = RSVP.instance_method(:show)
-    RSVP.send(:define_method, :show) { nil }
-
-    begin
+    with_stubbed_instance_method(RSVP, :show, -> { }) do
       get rsvp_thanks_path(uniqid: rsvp.uniqid)
-    ensure
-      RSVP.send(:define_method, :show, original_show)
     end
 
     assert_redirected_to root_url
