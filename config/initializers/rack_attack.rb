@@ -35,7 +35,7 @@ module Rack
     def self.form_email(req, model)
       fields = ActionDispatch::Request.new(req.env).params[model]
       email = fields["email"] if fields.is_a?(Hash)
-      email.to_s.strip.downcase.presence if email.is_a?(String)
+      ContactDetails::NORMALIZE_EMAIL.call(email).presence if email.is_a?(String)
     rescue ActionDispatch::Http::Parameters::ParseError
       nil
     end

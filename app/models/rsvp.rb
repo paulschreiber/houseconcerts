@@ -2,7 +2,7 @@ class RSVP < ApplicationRecord
   # Madmin scope name.
   UNCONFIRMED_RSVPS_SCOPE = "unconfirmed_rsvps".freeze
 
-  include NameRules
+  include ContactDetails
   include NameHelpers
   include NumberHelpers
   include IPAddress
@@ -27,7 +27,6 @@ class RSVP < ApplicationRecord
   scope :holding_seats, -> { yes.where.not(confirmed: "waitlisted") }
 
   before_validation :clear_seats_if_no
-  before_save :downcase_email
   before_save :set_ip_address
   before_save :update_confirmation_date
   before_save :update_cancellation_date
@@ -37,9 +36,6 @@ class RSVP < ApplicationRecord
 
   attribute :uniqid, default: -> { SecureRandom.alphanumeric(Settings.uniqid_length) }
 
-  validates :email, email: true, length: { maximum: 200 }
-  validates :phone_number, phone: { country: Settings.default_country, set: true }, length: { maximum: 30 }, allow_blank: true
-  validates :postcode, postal_code: { country: Settings.default_country }, length: { maximum: 10 }, allow_blank: true
   validates :seats_reserved, numericality: {
     only_integer: true,
     greater_than_or_equal_to: Settings.show.min_seats,
@@ -134,7 +130,7 @@ class RSVP < ApplicationRecord
   def create_person
     return if person_exists?
 
-    Person.create(first_name: first_name, last_name: last_name, email: email, phone_number: phone_number, postcode: postcode, notes: "RSVPd for show #{show.slug}")
+    Person.create(contact_attributes.merge(notes: "RSVPd for show #{show.slug}"))
   end
 
   def update_phone_number
