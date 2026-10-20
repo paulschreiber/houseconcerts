@@ -1,6 +1,15 @@
 require "test_helper"
 
 class AdminMailerTest < ActionMailer::TestCase
+  test "welcome links to setting a password with the token" do
+    email = AdminMailer.welcome(admins(:one), "abc123")
+
+    assert_equal [ admins(:one).email ], email.to
+    assert_equal "Set your #{Settings.site_name} admin password", email.subject
+    assert_includes email.body.encoded, "/#{Settings.admin_prefix}/password/edit?reset_password_token=abc123"
+    assert_includes email.body.encoded, "6 hours"
+  end
+
   test "passkey_added tells the admin which passkey was added, from where, and what to do" do
     email = AdminMailer.passkey_added(admins(:one), "Laptop", "203.0.113.7")
 
