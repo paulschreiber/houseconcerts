@@ -294,14 +294,14 @@ module Madmin
       end
     end
 
-    test "index shows the show's summary and seat count for each rsvp" do
+    test "index shows the show's dated name and seat count for each rsvp" do
       @rsvp.update!(confirmed: "confirmed")
 
       get madmin_rsvps_path(scope: "next_show_attendees")
 
       assert_response :success
       cells = attendee_row_cells(@rsvp.full_name)
-      assert_equal @rsvp.show.summary, cells[1].text.strip
+      assert_equal @rsvp.show.dated_name, cells[1].text.strip
       assert_equal @rsvp.seats_reserved.to_s, cells[2].text.strip
       assert_equal "✖", cells[3].text.strip
     end
@@ -463,7 +463,7 @@ module Madmin
       get madmin_rsvps_path(show: shows(:past).slug, scope: "next_show")
 
       chip = response.parsed_body.at_css(".show-filter .filter-chip")
-      assert_equal "Show is #{shows(:past).summary}", chip.at_css("span").text.squish
+      assert_equal "Show is #{shows(:past).dated_name}", chip.at_css("span").text.squish
       assert_equal madmin_rsvps_path(scope: "next_show"), chip.at_css("a")["href"]
     end
 

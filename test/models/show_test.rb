@@ -134,17 +134,17 @@ class ShowTest < ActiveSupport::TestCase
     end
   end
 
-  test "summary combines the name with an ISO-formatted date" do
+  test "dated_name combines the name with an ISO-formatted date" do
     show = shows(:upcoming)
 
-    assert_equal "#{show.name} (#{show.start.to_date.iso8601})", show.summary
+    assert_equal "#{show.name} (#{show.start.to_date.iso8601})", show.dated_name
   end
 
-  test "summary does not crash when start is nil" do
+  test "dated_name does not crash when start is nil" do
     show = shows(:upcoming)
     show.start = nil
 
-    assert_equal "#{show.name} ()", show.summary
+    assert_equal "#{show.name} ()", show.dated_name
   end
 
   test "destroying a show removes its artist_shows in a single bulk delete, not one per row" do
