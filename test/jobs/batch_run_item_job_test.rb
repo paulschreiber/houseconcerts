@@ -59,7 +59,7 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     batch_run = create_run
     item = batch_run.batch_run_items.create!(recipient: person)
 
-    with_stubbed(InvitesMailer, :invite, ->(*) { raise "simulated delivery failure" }) do
+    with_stubbed(InvitesMailer, :with, ->(*) { raise "simulated delivery failure" }) do
       assert_emails 1 do
         BatchRunItemJob.perform_now(item.id)
       end
@@ -131,7 +131,7 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     batch_run = create_run(failed_count: 0)
     item = batch_run.batch_run_items.create!(recipient: person, status: "failed", error_message: "boom")
 
-    with_stubbed(InvitesMailer, :invite, ->(*) { raise "boom again" }) do
+    with_stubbed(InvitesMailer, :with, ->(*) { raise "boom again" }) do
       # No InvitesMailer email (it fails again), but the run completes
       # with a failure present, so the admin-notification email fires --
       # a still-failing item after a retry must keep alerting, not just
@@ -156,13 +156,7 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     item_a = batch_run.batch_run_items.create!(recipient: person_a, status: "failed", error_message: "boom")
     item_b = batch_run.batch_run_items.create!(recipient: person_b, status: "failed", error_message: "boom")
 
-    original_invite = InvitesMailer.method(:invite)
-    fake_invite = lambda do |person, *rest|
-      raise "boom again" if person == person_b
-
-      original_invite.call(person, *rest)
-    end
-    with_stubbed(InvitesMailer, :invite, fake_invite) do
+    with_invite_failing_for(person_b, "boom again") do
       # item_a's retry succeeds -- just the InvitesMailer send, the run
       # can't be complete yet since item_b is still outstanding.
       assert_emails 1 do
@@ -271,13 +265,7 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     item_a = batch_run.batch_run_items.create!(recipient: person_a)
     item_b = batch_run.batch_run_items.create!(recipient: person_b)
 
-    original_invite = InvitesMailer.method(:invite)
-    fake_invite = lambda do |person, *rest|
-      raise "simulated delivery failure" if person == person_a
-
-      original_invite.call(person, *rest)
-    end
-    with_stubbed(InvitesMailer, :invite, fake_invite) do
+    with_invite_failing_for(person_a, "simulated delivery failure") do
       # 1 InvitesMailer send for person_b + 1 NotifyMailer failure notification.
       assert_emails 2 do
         BatchRunItemJob.perform_now(item_a.id)
@@ -379,7 +367,7 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
       original_update.bind(self).call(*args, **kwargs)
     end
 
-    with_stubbed(InvitesMailer, :invite, ->(*) { raise "delivery boom" }) do
+    with_stubbed(InvitesMailer, :with, ->(*) { raise "delivery boom" }) do
       with_stubbed_instance_method(BatchRunItem, :update!, fake_update) do
         assert_nothing_raised do
           BatchRunItemJob.perform_now(item.id)
@@ -549,7 +537,7 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     batch_run = create_run
     item = batch_run.batch_run_items.create!(recipient: person)
 
-    with_stubbed(InvitesMailer, :invite, ->(*) { raise "550 #{'x' * 400}" }) do
+    with_stubbed(InvitesMailer, :with, ->(*) { raise "550 #{'x' * 400}" }) do
       BatchRunItemJob.perform_now(item.id)
     end
 
@@ -626,4 +614,17 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     assert_includes broadcasts.first.to_html, "0 sent (complete)"
     assert_not_includes broadcasts.first.to_html, "Retry"
   end
+
+  private
+
+    # Sends invites as usual, except to person, whose invite raises message.
+    def with_invite_failing_for(person, message, &)
+      original_with = InvitesMailer.method(:with)
+      fake_with = lambda do |params|
+        raise message if params[:person] == person
+
+        original_with.call(params)
+      end
+      with_stubbed(InvitesMailer, :with, fake_with, &)
+    end
 end
