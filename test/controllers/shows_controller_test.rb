@@ -8,6 +8,30 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
     assert_select "h2", text: shows(:upcoming).name
   end
 
+  test "index offers a Reserve Seats button for an available show" do
+    get root_path
+
+    assert_select "form[action=?]", rsvp_for_show_path(slug: shows(:upcoming).slug)
+  end
+
+  test "index notes the waiting list and still offers the button for a waitlisted show" do
+    shows(:upcoming).update!(availability: "waitlisted")
+
+    get root_path
+
+    assert_includes response.body, "Please RSVP now to be added to the waiting list."
+    assert_select "form[action=?]", rsvp_for_show_path(slug: shows(:upcoming).slug)
+  end
+
+  test "index says a sold-out show is sold out, without the button" do
+    shows(:upcoming).update!(availability: "sold_out")
+
+    get root_path
+
+    assert_includes response.body, "This show is sold out."
+    assert_select "form[action=?]", rsvp_for_show_path(slug: shows(:upcoming).slug), false
+  end
+
   test "index shows a message when there are no upcoming shows" do
     Show.update_all(status: "cancelled") # rubocop:disable Rails/SkipsModelValidations
 
