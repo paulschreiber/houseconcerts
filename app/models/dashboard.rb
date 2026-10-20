@@ -17,15 +17,11 @@ class Dashboard
   end
 
   def next_show
-    return @next_show if defined?(@next_show)
-
-    @next_show = Show.next
+    next_two_shows.first
   end
 
   def previous_show
-    return @previous_show if defined?(@previous_show)
-
-    @previous_show = Show.previous
+    graphed_past_shows.last
   end
 
   # Seats of yes RSVPs, keyed by confirmation status (waitlisted seats
@@ -117,9 +113,8 @@ class Dashboard
   # The last few shows, then the next one and the one after it, leaving out
   # shows without yes RSVPs and shows more than GRAPH_DAYS away.
   def graph_series
-    upcoming = Show.upcoming.first(2)
-    roles = Show.past.last(GRAPHED_PAST_SHOWS).index_with(:past)
-                .merge(upcoming.zip(%i[next following]).to_h)
+    roles = graphed_past_shows.index_with(:past)
+                              .merge(next_two_shows.zip(%i[next following]).to_h)
     roles.filter_map do |show, role|
       points = seats_over_time(show)
       Series.new(show:, points:, role:) if points.any?
@@ -127,6 +122,14 @@ class Dashboard
   end
 
   private
+
+    def next_two_shows
+      @next_two_shows ||= Show.upcoming.first(2)
+    end
+
+    def graphed_past_shows
+      @graphed_past_shows ||= Show.past.last(GRAPHED_PAST_SHOWS)
+    end
 
     def next_show_rsvps
       RSVP.where(show: next_show)
