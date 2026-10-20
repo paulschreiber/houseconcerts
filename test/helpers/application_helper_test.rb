@@ -55,15 +55,7 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_equal root_url + show.artists.first.photo, social_media_image(show)
   end
 
-  test "social_media_image falls back to the next upcoming show's photo on the home page" do
-    @request = ActionDispatch::TestRequest.create(Rack::MockRequest.env_for("/"))
-
-    assert_equal root_url + shows(:upcoming).artists.first.photo, social_media_image(nil)
-  end
-
-  test "social_media_image falls back to the site image off the home page with no show" do
-    @request = ActionDispatch::TestRequest.create(Rack::MockRequest.env_for("/about"))
-
+  test "social_media_image falls back to the site image with no show" do
     assert_equal "#{root_url}concerts.png", social_media_image(nil)
   end
 

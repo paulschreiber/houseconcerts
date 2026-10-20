@@ -32,6 +32,29 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
     assert_select "form[action=?]", rsvp_for_show_path(slug: shows(:upcoming).slug), false
   end
 
+  test "index preloads artists instead of querying per show" do
+    Show.create!(name: "Another Upcoming Show", venue: venues(:one), price: 20, artists: [ artists(:one) ],
+                 start: 2.months.from_now, end: 2.months.from_now + 2.hours)
+
+    assert_queries_match(/FROM `artists`/, count: 1) do
+      get root_path
+    end
+
+    assert_response :success
+  end
+
+  test "index uses the next show's artist photo as its social media image" do
+    get root_path
+
+    assert_select "meta[property='og:image'][content=?]", "http://www.example.com/#{shows(:upcoming).artists.first.photo}"
+  end
+
+  test "past shows use the site image as their social media image" do
+    get past_shows_path
+
+    assert_select "meta[property='og:image'][content=?]", "http://www.example.com/concerts.png"
+  end
+
   test "index shows a message when there are no upcoming shows" do
     Show.update_all(status: "cancelled") # rubocop:disable Rails/SkipsModelValidations
 
