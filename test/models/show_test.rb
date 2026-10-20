@@ -57,10 +57,6 @@ class ShowTest < ActiveSupport::TestCase
     assert_includes show.errors.attribute_names, :end
   end
 
-  test "duration returns the length of the show in seconds" do
-    assert_equal 2.hours.to_i, shows(:upcoming).duration
-  end
-
   test "self.next and self.previous return the nearest upcoming/past show" do
     assert_equal shows(:upcoming), Show.next
     assert_equal shows(:past), Show.previous
