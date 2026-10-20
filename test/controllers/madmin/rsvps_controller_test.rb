@@ -10,6 +10,12 @@ module Madmin
       @rsvp.update!(confirmed: "unconfirmed")
     end
 
+    test "index labels the unconfirmed RSVPs scope button with the RSVP acronym" do
+      get madmin_rsvps_path
+
+      assert_select ".scopes a[href*='scope=unconfirmed_rsvps']", text: "Unconfirmed RSVPs"
+    end
+
     test "edit renders successfully" do
       get edit_madmin_rsvp_path(@rsvp)
 
