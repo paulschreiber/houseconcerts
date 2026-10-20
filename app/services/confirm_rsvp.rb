@@ -1,5 +1,8 @@
 class ConfirmRSVP
   def self.call(rsvp)
-    RSVPStatusTransition.call(rsvp, transition: :confirm!, mailer_method: :confirm)
+    return false unless rsvp.confirm!
+
+    InvitesMailer.confirm(rsvp).deliver_later
+    true
   end
 end
