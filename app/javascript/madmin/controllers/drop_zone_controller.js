@@ -22,6 +22,6 @@ export default class extends Controller {
   showFilename() {
     const file = this.inputTarget.files[0];
     this.element.classList.toggle("drop-zone--has-file", Boolean(file));
-    this.labelTarget.textContent = file ? `✓ ${file.name}, ready to import` : this.prompt;
+    this.labelTarget.textContent = file ? `✔ ${file.name}, ready to import` : this.prompt;
   }
 }

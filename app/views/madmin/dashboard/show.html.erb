@@ -194,7 +194,7 @@
 
       <div class="todo">
         <% if recorded %>
-          <p class="done">✓ Attendance recorded</p>
+          <p class="done">✔ Attendance recorded</p>
           <%= link_to "Attendance →", attendance_madmin_show_path(previous) %>
         <% else %>
           <p>Attendance isn’t recorded yet</p>
@@ -206,7 +206,7 @@
           <p><strong><%= nonsubscribers %></strong> <%= nonsubscribers == 1 ? "person who RSVPd isn’t" : "people who RSVPd aren’t" %> on the mailing list</p>
           <%= button_to "Add to mailing list", add_nonsubscribers_madmin_show_path(previous), class: "btn btn-primary" %>
         <% else %>
-          <p class="done">✓ Everyone who RSVPd is on the mailing list</p>
+          <p class="done">✔ Everyone who RSVPd is on the mailing list</p>
         <% end %>
       </div>
       <div class="todo">
@@ -214,7 +214,7 @@
           <p><strong><%= phone_numbers %></strong> <%= phone_numbers == 1 ? "person has a phone number" : "people have phone numbers" %> to add</p>
           <%= button_to "Add numbers", add_phone_numbers_madmin_show_path(previous), class: "btn btn-primary" %>
         <% else %>
-          <p class="done">✓ No phone numbers to add</p>
+          <p class="done">✔ No phone numbers to add</p>
         <% end %>
       </div>
     <% else %>
