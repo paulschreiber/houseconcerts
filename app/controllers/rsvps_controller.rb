@@ -161,7 +161,7 @@ class RsvpsController < ApplicationController
         @verified_link = true
         return redirect_to rsvp_thanks_path(uniqid: @rsvp.uniqid) if @rsvp.update(rsvp_params)
       elsif reduces_yes_rsvp?
-        InvitesMailer.rsvp_change_requested(@rsvp, @rsvp.seats_reserved).deliver_later if change_request_email_allowed?
+        InvitesMailer.with(rsvp: @rsvp, seats: @rsvp.seats_reserved).rsvp_change_requested.deliver_later if change_request_email_allowed?
         redirect_to rsvp_updated_path, flash: { rsvp_updated_show_id: show.id, rsvp_updated_email: @rsvp.email, rsvp_update_result: "link_sent" }
         return
       else
@@ -171,8 +171,8 @@ class RsvpsController < ApplicationController
         if @rsvp.update(rsvp_params.slice(:response, :seats_reserved))
           changed = @rsvp.saved_changes.keys.intersect?(%w[response seats_reserved])
           if changed
-            InvitesMailer.rsvp_updated(@rsvp, { response: previous_response, seats: previous_seats },
-                                       { response: @rsvp.response, seats: @rsvp.seats_reserved }).deliver_later
+            InvitesMailer.with(rsvp: @rsvp, previous: { response: previous_response, seats: previous_seats },
+                               current: { response: @rsvp.response, seats: @rsvp.seats_reserved }).rsvp_updated.deliver_later
           end
           redirect_to rsvp_updated_path, flash: { rsvp_updated_show_id: show.id, rsvp_updated_email: @rsvp.email,
                                                   rsvp_update_result: changed ? "changed" : "unchanged" }

@@ -2,7 +2,7 @@ class ConfirmRSVP
   def self.call(rsvp)
     return false unless rsvp.confirm!
 
-    InvitesMailer.confirm(rsvp).deliver_later
+    InvitesMailer.with(rsvp: rsvp).confirm.deliver_later
     true
   end
 end

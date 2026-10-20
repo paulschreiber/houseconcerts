@@ -10,7 +10,7 @@ class InvitePerson
   end
 
   def call
-    message = InvitesMailer.invite(person, show)
+    message = InvitesMailer.with(person: person, show: show).invite
     deliver_now ? message.deliver_now : message.deliver_later
     true
   rescue StandardError => e
