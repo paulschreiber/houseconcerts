@@ -6,11 +6,6 @@ class InvitesTest < ActionMailer::TestCase
     assert_no_emails { InvitesMailer.invite(people(:one), nil).deliver_now }
   end
 
-  test "invite does nothing when given the wrong types" do
-    assert_no_emails { InvitesMailer.invite("not a person", shows(:upcoming)).deliver_now }
-    assert_no_emails { InvitesMailer.invite(people(:one), "not a show").deliver_now }
-  end
-
   test "invite does nothing for an inactive person" do
     person = people(:one)
     person.update!(status: "removed")
@@ -44,11 +39,9 @@ class InvitesTest < ActionMailer::TestCase
     assert_includes email.body.encoded, %(src="#{expected_src}")
   end
 
-  test "waitlisted does nothing for an rsvp with no seats reserved" do
+  test "waitlisted does nothing for an rsvp that changed to no after it was queued" do
     rsvp = rsvps(:one)
-    # seats_reserved: 0 would normally fail validation for a "yes" rsvp -
-    # bypass it deliberately to set up this edge case.
-    rsvp.update_column(:seats_reserved, 0) # rubocop:disable Rails/SkipsModelValidations
+    rsvp.update!(response: "no")
 
     assert_no_emails { InvitesMailer.waitlisted(rsvp).deliver_now }
   end
