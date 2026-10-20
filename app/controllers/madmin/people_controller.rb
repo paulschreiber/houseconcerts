@@ -3,7 +3,6 @@ module Madmin
     include MemoizesNextShow
     include SortsByFullName
 
-    before_action { Current.admin_scope = params[:scope] }
     before_action :next_show, if: -> { action_name.in?(%w[index show]) }
     skip_before_action :set_record, only: %i[import run_import]
 

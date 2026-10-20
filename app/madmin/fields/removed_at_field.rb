@@ -1,12 +1,9 @@
-# removed_at renders normally on show, as plain text (not a picker) on the
-# new/edit form, and only as an index column on the People "removed" scope
-# (set via Current.admin_scope in Madmin::PeopleController).
+# removed_at renders normally on show, and as plain text (not a picker) on
+# the new/edit form.
 class RemovedAtField < ShortDateTimeField
-  include HideableOnScope
+  def to_partial_path(name)
+    return "/madmin/fields/readonly_date_time_field/form" if name.to_s == "form"
 
-  delegate_partial "form", to: "readonly_date_time_field"
-
-  def hidden_on_index?
-    Current.admin_scope != "removed"
+    super
   end
 end

@@ -3,7 +3,6 @@ module Madmin
     include MemoizesNextShow
     include SortsByFullName
 
-    before_action { Current.admin_scope = params[:scope] }
     before_action :next_show, if: -> { Current.admin_scope == "next_show_attendees" }
 
     ATTENDEE_SCOPES = %w[next_show_attendees previous_show_attendees].freeze
@@ -69,6 +68,6 @@ module Madmin
         [ page, records ]
       end
 
-      def index_column_shown?(attribute) = !resource.attributes[attribute].field.hidden_on_index?
+      def index_column_shown?(attribute) = resource.attributes[attribute].field.visible?(:index)
   end
 end

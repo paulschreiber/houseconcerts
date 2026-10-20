@@ -1,9 +1,5 @@
 module Madmin
   class ShowsController < Madmin::ResourceController
-    before_action do
-      Current.admin_scope = params[:scope]
-      Current.admin_action = action_name
-    end
     before_action :load_attendees, only: %i[attendance update_attendance print_attendance]
     before_action :load_batch_run, only: %i[retry_failed_batch_run cancel_batch_run]
 
