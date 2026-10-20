@@ -25,7 +25,7 @@ class Venue < ApplicationRecord
 
   has_many :venue_group_venues, dependent: :delete_all
   has_many :venue_groups, through: :venue_group_venues
-  has_many :shows, dependent: :nullify
+  has_many :shows, dependent: :restrict_with_error
 
   before_validation :upcase_province_and_country
 

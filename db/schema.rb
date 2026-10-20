@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_20_034328) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_20_120000) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", precision: nil, null: false
@@ -180,7 +180,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_034328) do
     t.integer "response", default: 0, null: false
     t.integer "seats_reserved"
     t.integer "seats_used"
-    t.bigint "show_id"
+    t.bigint "show_id", null: false
     t.string "uniqid"
     t.datetime "updated_at", precision: nil, null: false
     t.datetime "waitlist_emailed_at"
@@ -206,7 +206,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_034328) do
     t.datetime "start", precision: nil
     t.integer "status", default: 0, null: false
     t.datetime "updated_at", precision: nil, null: false
-    t.bigint "venue_id"
+    t.bigint "venue_id", null: false
     t.index ["availability"], name: "index_shows_on_availability"
     t.index ["slug"], name: "index_shows_on_slug", unique: true
     t.index ["start"], name: "index_shows_on_start"
