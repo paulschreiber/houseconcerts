@@ -5,4 +5,7 @@ class ComputedField < Madmin::Fields::String
   def value(record)
     options.compute.call(record)
   end
+
+  # Renders like a string field.
+  def to_partial_path(name) = "/madmin/fields/string/#{name}"
 end

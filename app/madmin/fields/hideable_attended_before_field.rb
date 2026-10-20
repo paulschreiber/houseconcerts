@@ -4,8 +4,6 @@
 class HideableAttendedBeforeField < ComputedField
   include HideableOnScope
 
-  delegate_partial "index", to: "computed_field"
-
   def hidden_on_index?
     [ nil, "previous_show", "previous_show_attendees" ].include?(Current.admin_scope)
   end
