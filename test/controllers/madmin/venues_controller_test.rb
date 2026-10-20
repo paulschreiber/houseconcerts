@@ -68,13 +68,26 @@ module Madmin
     end
 
     test "destroy destroys the venue and redirects to the index page" do
-      venue = venues(:one)
+      venue = venues(:one).dup.tap { |copy| copy.name = "Empty Hall" }
+      venue.save!
 
       assert_difference "Venue.count", -1 do
         delete madmin_venue_path(venue)
       end
 
       assert_redirected_to madmin_venues_path
+    end
+
+    test "destroy keeps a venue that has shows" do
+      venue = venues(:one)
+
+      assert_no_difference "Venue.count" do
+        delete madmin_venue_path(venue)
+      end
+
+      assert_redirected_to madmin_venues_path
+      assert_equal "Cannot delete record because dependent shows exist", flash[:alert]
+      assert_equal venue, shows(:upcoming).reload.venue
     end
 
     test "index lists venues by name, with the sort arrow on Name" do
