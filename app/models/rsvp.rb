@@ -23,6 +23,8 @@ class RSVP < ApplicationRecord
   scope :attending, -> { yes.confirmed_confirmed }
   # Yes RSVPs still awaiting confirmation, including the waitlisted.
   scope :awaiting_confirmation, -> { yes.where(confirmed: %w[unconfirmed waitlisted]) }
+  # Yes RSVPs holding seats: confirmed or unconfirmed, not waitlisted.
+  scope :holding_seats, -> { yes.where.not(confirmed: "waitlisted") }
 
   before_validation :clear_seats_if_no
   before_save :downcase_email
