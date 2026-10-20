@@ -201,15 +201,11 @@ module Madmin
     test "cancel looks up the next show only once" do
       @rsvp.update!(confirmed: "confirmed")
 
-      next_show_queries = 0
-      callback = ->(*, payload) { next_show_queries += 1 if payload[:sql]&.include?("ORDER BY `shows`.`start` ASC LIMIT 1") }
-
-      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+      assert_queries_match(/ORDER BY `shows`.`start` ASC LIMIT 1/, count: 1) do
         patch cancel_madmin_rsvp_path(@rsvp)
       end
 
       assert_redirected_to madmin_rsvps_path
-      assert_equal 1, next_show_queries
     end
 
     test "cancel does not change an already-no rsvp" do
@@ -314,25 +310,13 @@ module Madmin
                      response: "yes", confirmed: "confirmed", seats_reserved: 1)
       end
 
-      # Matches only a query shaped like the `attended` scope (joins shows,
-      # filters on response/confirmed/seats_reserved), regardless of whether
-      # it's scoped to one email (=) or a batch of emails (IN (...)); the
-      # INNER JOIN check excludes the unrelated next_show_attendees/totals
-      # queries, which also filter on response/confirmed but don't join
-      # shows. A per-row lookup would run it once per attended row.
-      attended_queries = 0
-      callback = lambda do |*, payload|
-        sql = payload[:sql]
-        attended_queries += 1 if sql&.include?("INNER JOIN") && sql.include?("`response`") &&
-                                 sql.include?("`confirmed`") && sql.include?("`seats_reserved`")
-      end
-
-      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+      # The `attended` scope's query: the only one that joins shows and
+      # filters on seats_reserved. A per-row lookup would run it once per row.
+      assert_queries_match(/INNER JOIN `shows`.*`seats_reserved`/, count: 1) do
         get madmin_rsvps_path(scope: "next_show_attendees")
       end
 
       assert_response :success
-      assert_equal 1, attended_queries
       assert_equal "✔", attendee_row_cells(@rsvp.full_name)[3].text.strip
       assert_equal "✔", attendee_row_cells(other.full_name)[3].text.strip
     end

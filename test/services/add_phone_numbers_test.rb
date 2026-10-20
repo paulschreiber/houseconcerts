@@ -55,12 +55,9 @@ class AddPhoneNumbersTest < ActiveSupport::TestCase
     end
     Person.where(last_name: "Smith").update_all(phone_number: nil) # rubocop:disable Rails/SkipsModelValidations
 
-    rsvp_queries = 0
-    counter = ->(*, payload) { rsvp_queries += 1 if payload[:sql].match?(/FROM [`"]rsvps[`"]/) }
-    people = ActiveSupport::Notifications.subscribed(counter, "sql.active_record") { AddPhoneNumbers.call }
+    people = assert_queries_match(/FROM [`"]rsvps[`"]/, count: 1) { AddPhoneNumbers.call }
 
     assert_equal 3, people.size
-    assert_equal 1, rsvp_queries
   end
 
   private
