@@ -293,4 +293,8 @@ class ShowTest < ActiveSupport::TestCase
     show.batch_runs.create!(kind: "remind", status: "completed")
     assert_not show.auto_remind_pending?
   end
+
+  test "event_name is the show's name followed by house concert" do
+    assert_equal "Test Upcoming Show house concert", shows(:upcoming).event_name
+  end
 end
