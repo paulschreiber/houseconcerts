@@ -26,6 +26,8 @@ Metrics/AbcSize:
   Enabled: false
 Style/Documentation:
   Enabled: false
+Style/EndlessMethod:
+  EnforcedStyle: disallow
 Style/NumericLiterals:
   Enabled: false
 Metrics/CyclomaticComplexity:
