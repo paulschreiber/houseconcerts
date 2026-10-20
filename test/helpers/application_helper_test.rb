@@ -38,7 +38,7 @@ class ApplicationHelperTest < ActionView::TestCase
     show = shows(:upcoming)
 
     assert_equal(
-      "Reserve seats for the #{show.name} house concert in #{show.location} on #{show.start_date}",
+      "Reserve seats for the #{show.event_name} in #{show.location} on #{show.start_date}",
       social_media_description(show)
     )
   end

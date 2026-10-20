@@ -122,7 +122,7 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
   test "index embeds each upcoming show as JSON-LD" do
     get root_path
 
-    assert_includes ld_json_event_names, "#{shows(:upcoming).name} House Concert"
+    assert_includes ld_json_event_names, shows(:upcoming).event_name
   end
 
   test "shows embeds each past show as JSON-LD" do
@@ -130,7 +130,7 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
 
     get past_shows_path
 
-    assert_equal [ "#{shows(:past).name} House Concert" ], ld_json_event_names
+    assert_equal [ shows(:past).event_name ], ld_json_event_names
   end
 
   test "shows shows a message when there are no past shows" do
@@ -160,7 +160,7 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal "text/calendar", @response.media_type
     assert_includes @response.body, "BEGIN:VCALENDAR"
-    assert_includes @response.body, "SUMMARY:#{show.name} House Concert"
+    assert_includes @response.body, "SUMMARY:#{show.event_name}"
     assert_includes @response.body, "DTSTART:#{show.start.utc.strftime('%Y%m%dT%H%M%SZ')}"
     assert_includes @response.body, "DTEND:#{show.end.utc.strftime('%Y%m%dT%H%M%SZ')}"
     assert_includes @response.body, "UID:event-#{show.slug}@#{Settings.domain}"
@@ -176,7 +176,7 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
     get calendar_path
 
     assert_response :success
-    assert_not_includes @response.body, "SUMMARY:#{shows(:past).name} House Concert"
+    assert_not_includes @response.body, "SUMMARY:#{shows(:past).event_name}"
   end
 
   test "about renders the about page" do

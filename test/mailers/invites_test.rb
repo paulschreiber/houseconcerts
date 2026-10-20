@@ -189,7 +189,7 @@ class InvitesTest < ActionMailer::TestCase
     url = Nokogiri::HTML(html).at_css("a:contains('Add to Google Calendar')")["href"]
     assert url.start_with?("https://calendar.google.com/calendar/r/eventedit?")
     query = Rack::Utils.parse_query(URI(url).query)
-    assert_equal "#{rsvp.show.name} house concert", query["text"]
+    assert_equal rsvp.show.event_name, query["text"]
     assert_equal "Update reservation: #{Rails.application.routes.url_helpers.modify_rsvp_url(slug: rsvp.show.slug, uniqid: rsvp.uniqid)}",
                  query["details"]
   end

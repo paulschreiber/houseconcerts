@@ -20,7 +20,7 @@ class JsonLdHelperTest < ActionView::TestCase
     event = ld_json_event(show)
 
     assert_equal "MusicEvent", event[:@type]
-    assert_equal "#{show.name} House Concert", event[:name]
+    assert_equal show.event_name, event[:name]
     assert_equal show.start.iso8601, event[:startDate]
     assert_equal show.doors.iso8601, event[:doorTime]
     assert_equal show.blurb, event[:description]
