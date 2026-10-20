@@ -32,12 +32,12 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
     assert_select "form[action=?]", rsvp_for_show_path(slug: shows(:upcoming).slug), false
   end
 
-  test "index preloads artists instead of querying per show" do
-    Show.create!(name: "Another Upcoming Show", venue: venues(:one), price: 20, artists: [ artists(:one) ],
-                 start: 2.months.from_now, end: 2.months.from_now + 2.hours)
+  test "index preloads artists and venues instead of querying per show" do
+    Show.create!(name: "Another Upcoming Show", venue: venues(:one).dup.tap(&:save!), price: 20,
+                 artists: [ artists(:one) ], start: 2.months.from_now)
 
     assert_queries_match(/FROM `artists`/, count: 1) do
-      get root_path
+      assert_queries_match(/FROM `venues`/, count: 1) { get root_path }
     end
 
     assert_response :success
@@ -46,13 +46,13 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
   test "index uses the next show's artist photo as its social media image" do
     get root_path
 
-    assert_select "meta[property='og:image'][content=?]", "http://www.example.com/#{shows(:upcoming).artists.first.photo}"
+    assert_select "meta[property='og:image'][content=?]", shows(:upcoming).artists.first.photo_url
   end
 
   test "past shows use the site image as their social media image" do
     get past_shows_path
 
-    assert_select "meta[property='og:image'][content=?]", "http://www.example.com/concerts.png"
+    assert_select "meta[property='og:image'][content=?]", "http://example.com/concerts.png"
   end
 
   test "index shows a message when there are no upcoming shows" do
@@ -70,13 +70,13 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test "shows preloads artists instead of querying per show" do
+  test "shows preloads artists and venues instead of querying per show" do
     shows(:past).artists << artists(:one)
-    Show.create!(name: "Another Past Show", venue: venues(:one), price: 20, artists: [ artists(:one) ],
-                 start: 2.months.ago, end: 2.months.ago + 2.hours)
+    Show.create!(name: "Another Past Show", venue: venues(:one).dup.tap(&:save!), price: 20,
+                 artists: [ artists(:one) ], start: 2.months.ago)
 
     assert_queries_match(/FROM `artists`/, count: 1) do
-      get past_shows_path
+      assert_queries_match(/FROM `venues`/, count: 1) { get past_shows_path }
     end
 
     assert_response :success
@@ -115,8 +115,22 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
     get past_shows_path
 
     assert_response :success
-    assert_select "span.fn", text: artist.name
-    assert_select "a.url.fn", false
+    assert_select "div.artists", text: artist.name
+    assert_select "div.artists a", false
+  end
+
+  test "index embeds each upcoming show as JSON-LD" do
+    get root_path
+
+    assert_includes ld_json_event_names, "#{shows(:upcoming).name} House Concert"
+  end
+
+  test "shows embeds each past show as JSON-LD" do
+    shows(:past).artists << artists(:one)
+
+    get past_shows_path
+
+    assert_equal [ "#{shows(:past).name} House Concert" ], ld_json_event_names
   end
 
   test "shows shows a message when there are no past shows" do
@@ -176,4 +190,10 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
   end
+
+  private
+
+    def ld_json_event_names
+      css_select('script[type="application/ld+json"]').map { |script| JSON.parse(script.text)["name"] }
+    end
 end

@@ -52,11 +52,11 @@ class ApplicationHelperTest < ActionView::TestCase
   test "social_media_image uses the show's first artist photo when the show has artists" do
     show = shows(:upcoming)
 
-    assert_equal root_url + show.artists.first.photo, social_media_image(show)
+    assert_equal "http://example.com/#{show.artists.first.photo}", social_media_image(show)
   end
 
   test "social_media_image falls back to the site image with no show" do
-    assert_equal "#{root_url}concerts.png", social_media_image(nil)
+    assert_equal "http://example.com/concerts.png", social_media_image(nil)
   end
 
   test "analytics_url replaces link tokens in every tokened path" do
