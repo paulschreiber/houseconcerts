@@ -4,13 +4,13 @@
 
 @media only screen and (width <= 600px) {
   .shows {
-    img.artist.photo {
+    img.artist {
       width: 50px;
       height: 50px;
     }
 
     ol.columnheads > li,
-    li.vevent {
+    ol.past-shows > li {
       width: 100%;
     }
   }

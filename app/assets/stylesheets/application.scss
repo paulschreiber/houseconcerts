@@ -53,11 +53,6 @@ address {
   display: inline;
 }
 
-abbr {
-  border: none;
-  text-decoration: none;
-}
-
 dt {
   font-weight: bold;
 }
@@ -207,21 +202,21 @@ dd > p {
   }
 }
 
-/* vcalendar -- past shows */
+/* past shows */
 
-li.vevent:nth-child(3n + 1) {
+ol.past-shows > li:nth-child(3n + 1) {
   background: #fff;
 }
 
-li.vevent:nth-child(3n + 2) {
+ol.past-shows > li:nth-child(3n + 2) {
   background: #ffc;
 }
 
-li.vevent:nth-child(3n) {
+ol.past-shows > li:nth-child(3n) {
   background: #dda;
 }
 
-ol.vcalendar,
+ol.past-shows,
 ol.columnheads {
   margin: 0;
   margin-right: 1px;
@@ -234,23 +229,19 @@ ol.columnheads {
   height: 2em;
 }
 
-ol.columnheads li,
-li.vevent {
+ol.columnheads li {
   float: left;
-  margin: 0;
+  margin: 0 0 -1.9em;
   padding: 0;
   width: 23em;
-}
-
-ol.columnheads li {
   height: 2em;
-  margin-bottom: -1.9em;
 }
 
-li.vevent {
-  vertical-align: top;
-  padding-top: 0.5em;
-  padding-bottom: 0.5em;
+ol.past-shows > li {
+  float: left;
+  margin: 0;
+  padding: 0.5em 0;
+  width: 23em;
   height: 4em;
 }
 
@@ -272,7 +263,7 @@ h3 + h3 {
   background: #000;
 }
 
-ol.vcalendar div.vcard {
+ol.past-shows div.artists {
   float: left;
   width: 12em;
   padding-left: 4px;
@@ -376,7 +367,7 @@ input[type="submit"] {
     margin-bottom: 2em;
   }
 
-  img.artist.photo {
+  img.artist {
     width: 100%;
     height: auto;
   }

@@ -1,4 +1,6 @@
 class InvitesMailer < ApplicationMailer
+  helper JsonLdHelper
+
   FORMAT = "%Y%m%dT%H%M%SZ".freeze
 
   def make_calendar_url(rsvp)

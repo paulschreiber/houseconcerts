@@ -36,6 +36,4 @@
 
 <p>thanks!
 <br />Paul</p>
-<script type="application/ld+json">
-<%= json_escape(@rsvp.to_ld_json).html_safe %>
-</script>
+<%= ld_json_tag(ld_json_reservation(@rsvp)) %>
