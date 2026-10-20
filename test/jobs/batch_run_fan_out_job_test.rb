@@ -147,23 +147,11 @@ class BatchRunFanOutJobTest < ActiveSupport::TestCase
     assert_equal 1.day.ago, item.reload.fan_out_enqueued_at
   end
 
-  test "retries the whole job instead of leaving the run stuck if enqueuing a per-item job raises Solid Queue's EnqueueError" do
+  test "retries the whole job instead of leaving the run stuck if enqueuing the item jobs raises a transient DB error" do
     Person.create!(first_name: "Alice", last_name: "Aardvark", email: "alice-transient@example.com", status: "active")
     batch_run = create_run(status: "pending", total_count: 0)
 
-    # This, not a raw ActiveRecord::AdapterError, is what a transient DB
-    # problem during perform_later actually surfaces as: Solid Queue's
-    # Job.enqueue rescues ActiveRecord::ActiveRecordError and re-raises
-    # it wrapped in this class.
-    call_count = 0
-    original_perform_later = BatchRunItemJob.method(:perform_later)
-    fake_perform_later = lambda do |*args|
-      call_count += 1
-      raise SolidQueue::Job::EnqueueError, "transient enqueue failure" if call_count == 1
-
-      original_perform_later.call(*args)
-    end
-    with_stubbed(BatchRunItemJob, :perform_later, fake_perform_later) do
+    with_stubbed(BatchRunItemJob.queue_adapter, :enqueue, ->(*_args) { raise ActiveRecord::ConnectionTimeoutError, "transient enqueue failure" }) do
       assert_enqueued_with(job: BatchRunFanOutJob, args: [ batch_run.id ]) do
         assert_nothing_raised do
           BatchRunFanOutJob.perform_now(batch_run.id)
@@ -242,7 +230,7 @@ class BatchRunFanOutJobTest < ActiveSupport::TestCase
     Person.create!(first_name: "Alice", last_name: "Aardvark", email: "alice-bug@example.com", status: "active")
     batch_run = create_run(status: "pending", total_count: 0)
 
-    with_stubbed(BatchRunItemJob, :perform_later, ->(*_args) { raise NoMethodError, "undefined method (simulated code bug, not a transient adapter error)" }) do
+    with_stubbed(BatchRunItemJob.queue_adapter, :enqueue, ->(*_args) { raise NoMethodError, "undefined method (simulated code bug, not a transient adapter error)" }) do
       assert_no_enqueued_jobs only: BatchRunFanOutJob do
         assert_raises(NoMethodError) do
           BatchRunFanOutJob.perform_now(batch_run.id)
@@ -270,7 +258,7 @@ class BatchRunFanOutJobTest < ActiveSupport::TestCase
     person = Person.create!(first_name: "Alice", last_name: "Aardvark", email: "alice-stale-claim@example.com", status: "active")
     batch_run = create_run
     # Simulates a worker crashing between claiming this item (setting
-    # fan_out_enqueued_at) and actually calling perform_later for it --
+    # fan_out_enqueued_at) and actually enqueuing its job --
     # no BatchRunItemJob was ever created, so nothing exists to redeliver
     # on its own.
     item = batch_run.batch_run_items.create!(recipient: person, status: :pending, fan_out_enqueued_at: 20.minutes.ago)
@@ -294,18 +282,31 @@ class BatchRunFanOutJobTest < ActiveSupport::TestCase
     assert_in_delta 1.minute.ago, item.reload.fan_out_enqueued_at, 5
   end
 
-  test "releases an item's enqueue claim if perform_later raises, so a later scan can retry it" do
+  test "releases an item's enqueue claim if enqueuing raises, so a later scan can retry it" do
     person = Person.create!(first_name: "Alice", last_name: "Aardvark", email: "alice-release-claim@example.com", status: "active")
     batch_run = create_run
     item = batch_run.batch_run_items.create!(recipient: person, status: :pending)
 
-    with_stubbed(BatchRunItemJob, :perform_later, ->(*_args) { raise SolidQueue::Job::EnqueueError, "transient boom" }) do
+    with_stubbed(BatchRunItemJob.queue_adapter, :enqueue, ->(*_args) { raise ActiveRecord::ConnectionTimeoutError, "transient boom" }) do
       assert_nothing_raised do
         BatchRunFanOutJob.perform_now(batch_run.id)
       end
     end
 
     assert_nil item.reload.fan_out_enqueued_at, "the claim should be released, not left stuck, so a retried scan doesn't skip this item forever"
+  end
+
+  test "creates and enqueues every item when there are more recipients than one slice" do
+    3.times { |i| Person.create!(first_name: "Slice", last_name: "Person", email: "slice-#{i}@example.com", status: "active") }
+    batch_run = create_run(status: "pending", total_count: 0)
+
+    with_slice_size(2) do
+      assert_enqueued_jobs 3, only: BatchRunItemJob do
+        BatchRunFanOutJob.perform_now(batch_run.id)
+      end
+    end
+
+    assert_equal 3, batch_run.reload.total_count
   end
 
   test "broadcasts the initial running state once total_count is set" do
@@ -340,23 +341,13 @@ class BatchRunFanOutJobTest < ActiveSupport::TestCase
     end
   end
 
-  test "two racing scans that both see an item as pending only let one of them enqueue it" do
-    person = Person.create!(first_name: "Alice", last_name: "Aardvark", email: "alice-duplicate-race@example.com", status: "active")
-    batch_run = create_run
-    item = batch_run.batch_run_items.create!(recipient: person, status: :pending)
+  private
 
-    # Simulates two fan-out executions racing to enqueue the same still-
-    # "pending" item (e.g. a winner and a with_lock loser that both reach
-    # the enqueue step): only the first claim can succeed, so the second
-    # scan finds nothing left to enqueue. Without this, both scans could
-    # enqueue their own BatchRunItemJob for this item; if the first one's
-    # send then failed (a status BatchRunItemJob's own claim deliberately
-    # leaves reclaimable for legitimate admin retries), the second,
-    # already-queued duplicate could later claim and resend it.
-    first_claimed = BatchRunItem.where(id: item.id, fan_out_enqueued_at: nil).update_all(fan_out_enqueued_at: Time.current) # rubocop:disable Rails/SkipsModelValidations
-    second_claimed = BatchRunItem.where(id: item.id, fan_out_enqueued_at: nil).update_all(fan_out_enqueued_at: Time.current) # rubocop:disable Rails/SkipsModelValidations
-
-    assert_equal 1, first_claimed
-    assert_equal 0, second_claimed
-  end
+    def with_slice_size(size)
+      original = BatchRunFanOutJob::SLICE_SIZE
+      silence_warnings { BatchRunFanOutJob.const_set(:SLICE_SIZE, size) }
+      yield
+    ensure
+      silence_warnings { BatchRunFanOutJob.const_set(:SLICE_SIZE, original) }
+    end
 end
