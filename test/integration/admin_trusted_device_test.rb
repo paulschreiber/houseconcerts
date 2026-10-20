@@ -6,6 +6,9 @@ class AdminTrustedDeviceTest < ActionDispatch::IntegrationTest
   PASSWORD = "correct horse battery staple".freeze
 
   setup do
+    # Throttles count requests in fixed windows, so a window ending partway
+    # through a test would reset its counts.
+    freeze_time
     # The test environment's null_store cache can't hold rack-attack's
     # throttle counters across requests, so swap in a real cache.
     @original_store = Rack::Attack.cache.store
