@@ -256,7 +256,7 @@ module Madmin
       assert_equal "2", cells[2].text
       assert_equal "✖", cells[3].text
       assert_equal "✖", cells[4].text
-      assert_match(%r{Seats</h4>\s*<p>#{RSVP.attendees(shows(:upcoming)).sum(:seats_reserved)}<}, response.body)
+      assert_match(%r{Seats</h4>\s*<p>#{shows(:upcoming).attendees.sum(:seats_reserved)}<}, response.body)
     end
 
     test "print_attendance flags someone on the mailing list who attended an earlier show" do
