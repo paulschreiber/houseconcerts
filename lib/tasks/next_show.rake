@@ -23,6 +23,15 @@ module NextShowTasks
   rescue StartBatchRun::NotReady, StartBatchRun::EnqueueFailed => e
     puts e.message
   end
+
+  # The RSVPs the confirm task emails for the show's availability, and the
+  # service that emails each one. A sold-out show has none.
+  def confirm_targets(show)
+    return [ show.rsvps.awaiting_confirmation.to_a, ConfirmRSVP ] if show.can_confirm_rsvps?
+    return [ show.rsvps.yes.confirmed_unconfirmed.to_a, WaitlistRSVP ] if show.can_waitlist_rsvps?
+
+    [ [], nil ]
+  end
 end
 
 namespace :next_show do
@@ -140,13 +149,7 @@ namespace :next_show do
       exit
     end
 
-    rsvps, service = if show.available?
-      [ show.rsvps.awaiting_confirmation.to_a, ConfirmRSVP ]
-    elsif show.waitlisted?
-      [ show.rsvps.yes.confirmed_unconfirmed.to_a, WaitlistRSVP ]
-    else
-      [ [], nil ]
-    end
+    rsvps, service = NextShowTasks.confirm_targets(show)
 
     sent = rsvps.count do |rsvp|
       puts "Emailing #{rsvp.email_address_with_name}..."
