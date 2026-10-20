@@ -90,7 +90,7 @@ class ImportPeople
         return
       end
 
-      email = email.strip.downcase
+      email = Person.normalize_value_for(:email, email)
       if seen.include?(email)
         result.skipped << Line.new(number:, text: line, reason: "listed twice in this file")
         return

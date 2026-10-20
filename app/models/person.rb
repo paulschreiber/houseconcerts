@@ -1,5 +1,5 @@
 class Person < ApplicationRecord
-  include NameRules
+  include ContactDetails
   include NameHelpers
   include NumberHelpers
   include IPAddress
@@ -17,16 +17,11 @@ class Person < ApplicationRecord
   }
 
   before_validation :clean_variables
-  before_save :downcase_email
   before_save :set_ip_address
   before_save :update_removal_status
   before_save :ensure_venue_group
 
   attribute :uniqid, default: -> { SecureRandom.alphanumeric(Settings.uniqid_length) }
-
-  validates :email, email: true, length: { maximum: 200 }
-  validates :phone_number, phone: { country: Settings.default_country, set: true }, length: { maximum: 30 }, allow_blank: true
-  validates :postcode, postal_code: { country: Settings.default_country }, length: { maximum: 10 }, allow_blank: true
 
   def ensure_venue_group
     return unless venue_groups.empty?
@@ -50,10 +45,6 @@ class Person < ApplicationRecord
     return Current.next_show_rsvpd_emails.exclude?(email) if Current.next_show_rsvpd_emails
 
     !RSVP.exists?(email: email, show: next_show || Show.next)
-  end
-
-  def rsvp_prefill_attributes
-    { first_name: first_name, last_name: last_name, email: email, phone_number: phone_number, postcode: postcode }
   end
 
   def attendance_history

@@ -90,7 +90,7 @@ class RsvpsController < ApplicationController
   end
 
   def rsvp_params
-    params.expect(rsvp: %i[first_name last_name email phone_number show_id postcode response seats_reserved referrer])
+    params.expect(rsvp: [ *ContactDetails::ATTRIBUTES, :show_id, :response, :seats_reserved, :referrer ])
   end
 
   # Two concurrent submissions for the same show/email can both miss the
@@ -144,7 +144,7 @@ class RsvpsController < ApplicationController
         @rsvp = existing
         @verified_link = true
       else
-        @rsvp.assign_attributes(source.slice(:first_name, :last_name, :email, :phone_number, :postcode))
+        @rsvp.assign_attributes(source.contact_attributes)
       end
       source
     end

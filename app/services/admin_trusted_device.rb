@@ -14,7 +14,7 @@ module AdminTrustedDevice
 
   def self.remember(request, admin)
     request.cookie_jar.encrypted[COOKIE] = {
-      value: { "email" => admin.email.to_s.strip.downcase, "id" => SecureRandom.uuid },
+      value: { "email" => admin.email, "id" => SecureRandom.uuid },
       expires: 1.year,
       httponly: true,
       same_site: :lax

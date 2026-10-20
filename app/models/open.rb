@@ -1,5 +1,5 @@
 class Open < ApplicationRecord
-  before_save :downcase_email
+  normalizes :email, with: ContactDetails::NORMALIZE_EMAIL
 
   # Tags are "<show slug>:<email type>", e.g. "2026-11-19:confirm".
   def self.tag_for(show, email_type)

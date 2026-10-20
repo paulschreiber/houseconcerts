@@ -13,7 +13,7 @@ class RSVPNo
   # second, which then updates the row the first created. If there's no such
   # row (a different unique index, e.g. a uniqid collision), it returns false.
   def call
-    attrs = person.rsvp_prefill_attributes.merge(response: "no")
+    attrs = person.contact_attributes.merge(response: "no")
     rsvp = RSVP.find_or_initialize_by(email: person.email, show: show)
     rsvp.assign_attributes(attrs)
     rsvp.save

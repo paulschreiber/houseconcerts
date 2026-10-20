@@ -35,7 +35,7 @@ class SesEvent
       entries = @detail.dig(section, list)
       return [] unless entries.is_a?(Array)
 
-      entries.filter_map { |entry| entry["emailAddress"].to_s.strip.downcase.presence if entry.is_a?(Hash) }
+      entries.filter_map { |entry| entry["emailAddress"].presence if entry.is_a?(Hash) }
     end
 
     # Someone already removed stays removed: a bounce shouldn't undo an

@@ -102,7 +102,7 @@ class MailingListController < ApplicationController
   end
 
   def person_params
-    params.expect(person: %i[first_name last_name email phone_number postcode])
+    params.expect(person: ContactDetails::ATTRIBUTES)
   end
 
   private
