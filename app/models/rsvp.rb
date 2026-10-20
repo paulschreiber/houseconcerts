@@ -166,6 +166,10 @@ class RSVP < ApplicationRecord
     Current.attended_rsvp_ids_by_email.fetch(email, []).any? { |attended_id| attended_id != id }
   end
 
+  def confirm_opened?
+    (Current.confirm_opens || Open.confirmations_opened([ self ])).include?([ Open.tag_for(show, "confirm"), email ])
+  end
+
   # All emails that already have an RSVP for the given show, so a caller
   # with many people to check (e.g. rendering a page of the admin index)
   # can look them up against a single preloaded query instead of one query

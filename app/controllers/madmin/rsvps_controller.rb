@@ -59,13 +59,16 @@ module Madmin
         { count: @scoped_resources.count, seats_reserved: @scoped_resources.sum(:seats_reserved) }
       end
 
-      # Preload attended_before? for the whole page in one query instead of
-      # one per row, but only when the Attended Before column is actually
-      # shown for this scope.
+      # Preload attended_before? and confirm_opened? for the whole page in one
+      # query each instead of one per row, but only when their columns are
+      # actually shown for this scope.
       def paginate_collection(collection)
         page, records = super
-        Current.attended_rsvp_ids_by_email = RSVP.attended_before_map(records.map(&:email)) unless resource.attributes[:attended_before].field.hidden_on_index?
+        Current.attended_rsvp_ids_by_email = RSVP.attended_before_map(records.map(&:email)) if index_column_shown?(:attended_before)
+        Current.confirm_opens = Open.confirmations_opened(records) if index_column_shown?(:confirm_opened)
         [ page, records ]
       end
+
+      def index_column_shown?(attribute) = !resource.attributes[attribute].field.hidden_on_index?
   end
 end
