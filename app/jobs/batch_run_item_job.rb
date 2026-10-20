@@ -98,7 +98,7 @@ class BatchRunItemJob < ApplicationJob
         # The kind becomes the open-tracking tag's email type, so opens of the
         # two kinds stay distinguishable ("invite_unopened" still matches the
         # fan-out's "invite%" exclusion).
-        InvitesMailer.invite(recipient, batch_run.show, batch_run.kind).deliver_now
+        InvitesMailer.with(person: recipient, show: batch_run.show, email_type: batch_run.kind).invite.deliver_now
       when "remind"
         remind(item, recipient)
       end
@@ -113,7 +113,7 @@ class BatchRunItemJob < ApplicationJob
       # it succeeds, so a retry only re-sends the channel that failed. (If the
       # delivery succeeds but recording it fails, a retry can duplicate it.)
       unless item.email_sent_at?
-        InvitesMailer.remind(rsvp).deliver_now
+        InvitesMailer.with(rsvp: rsvp).remind.deliver_now
         item.update!(email_sent_at: Time.current)
       end
 
