@@ -11,7 +11,9 @@ class Dashboard
   # if later) to show day (or today, for an upcoming show). role is :past,
   # :next or :following (the show after next).
   Series = Data.define(:show, :points, :role) do
-    def upcoming? = role != :past
+    def upcoming?
+      role != :past
+    end
   end
 
   def next_show

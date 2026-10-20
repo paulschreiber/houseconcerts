@@ -15,7 +15,9 @@ class ShortDateTimeField < Madmin::Fields::DateTime
     "/madmin/fields/date_time/#{name}"
   end
 
-  def index_format = options[:format] || DEFAULT_FORMAT
+  def index_format
+    options[:format] || DEFAULT_FORMAT
+  end
 
   def label
     return options[:index_label] if Current.admin_action == "index" && options[:index_label].present?

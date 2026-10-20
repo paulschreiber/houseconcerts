@@ -18,11 +18,17 @@ class BatchRun < ApplicationRecord
   # sending, or one where every send failed, is also "completed".
   scope :delivered, -> { completed.where(sent_count: 1..) }
 
-  def self.kind_label(kind) = KINDS.fetch(kind.to_s)[:label]
+  def self.kind_label(kind)
+    KINDS.fetch(kind.to_s)[:label]
+  end
 
-  def self.kind_description(kind) = KINDS.fetch(kind.to_s)[:description]
+  def self.kind_description(kind)
+    KINDS.fetch(kind.to_s)[:description]
+  end
 
-  def self.requires_invites_sent?(kind) = KINDS.fetch(kind.to_s)[:requires_invites_sent]
+  def self.requires_invites_sent?(kind)
+    KINDS.fetch(kind.to_s)[:requires_invites_sent]
+  end
 
   def processed_count
     sent_count + failed_count
@@ -32,7 +38,9 @@ class BatchRun < ApplicationRecord
   # have been counted (counted_at), every failed item (including ones
   # awaiting a retry), and cancelled items. Remembered on this object, so
   # the progress partial reuses BatchRunItemJob's count.
-  def item_counts = @item_counts ||= recount_items
+  def item_counts
+    @item_counts ||= recount_items
+  end
 
   # Counts the items again (see item_counts).
   def recount_items
@@ -46,7 +54,9 @@ class BatchRun < ApplicationRecord
   # The failures the progress bar shows. A running run's are counted from its
   # items, since the cached failed_count leaves out ones awaiting a retry; a
   # completed run's counts no longer change.
-  def displayed_failed_count = completed? ? failed_count : item_counts[:failed_items]
+  def displayed_failed_count
+    completed? ? failed_count : item_counts[:failed_items]
+  end
 
   # Updates the run's progress on any open show page. Called by everything
   # that changes a run's visible state.

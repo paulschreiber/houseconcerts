@@ -68,6 +68,8 @@ module Madmin
         [ page, records ]
       end
 
-      def index_column_shown?(attribute) = resource.attributes[attribute].field.visible?(:index)
+      def index_column_shown?(attribute)
+        resource.attributes[attribute].field.visible?(:index)
+      end
   end
 end

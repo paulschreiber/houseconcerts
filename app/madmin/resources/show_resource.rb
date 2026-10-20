@@ -90,13 +90,19 @@ class ShowResource < Madmin::Resource
   end
 
   # Customize the display name of records in the admin area.
-  def self.display_name(record) = "#{record.name} — #{record.start.strftime('%Y-%m-%d')}"
+  def self.display_name(record)
+    "#{record.name} — #{record.start.strftime('%Y-%m-%d')}"
+  end
 
   # Customize the default sort column and direction.
-  def self.default_sort_column = "start"
+  def self.default_sort_column
+    "start"
+  end
 
   # Upcoming shows are soonest first, everything else most recent first.
-  def self.default_sort_direction = Current.admin_scope == "upcoming" ? "asc" : "desc"
+  def self.default_sort_direction
+    Current.admin_scope == "upcoming" ? "asc" : "desc"
+  end
 
   menu position: 20
 end

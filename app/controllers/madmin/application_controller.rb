@@ -14,7 +14,9 @@ module Madmin
 
       # ActionView's t is an alias of its own translate, so it needs
       # redefining to reach the method above.
-      def t(...) = translate(...)
+      def t(...)
+        translate(...)
+      end
 
       # e.g. "person Jane Smith"; a resource can define its own
       # delete_confirmation_description (see RSVPResource).

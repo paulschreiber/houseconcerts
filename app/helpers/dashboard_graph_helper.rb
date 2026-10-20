@@ -26,12 +26,19 @@ module DashboardGraphHelper
   # Maps days before a show and seat counts to SVG coordinates: days run from
   # the most before (left) to show day (right).
   GraphScale = Data.define(:days, :seats, :layout) do
-    def x(days_before) = scale(days - days_before, days, layout.padding[:left], layout.width - layout.padding[:right])
-    def y(count) = scale(seats - count, seats, layout.padding[:top], layout.height - layout.padding[:bottom])
+    def x(days_before)
+      scale(days - days_before, days, layout.padding[:left], layout.width - layout.padding[:right])
+    end
+
+    def y(count)
+      scale(seats - count, seats, layout.padding[:top], layout.height - layout.padding[:bottom])
+    end
 
     private
 
-      def scale(value, range, low, high) = (low + ((high - low) * value / range.to_f)).round(1)
+      def scale(value, range, low, high)
+        (low + ((high - low) * value / range.to_f)).round(1)
+      end
   end
 
   # Cumulative seats per day for each series, over the last
@@ -104,5 +111,7 @@ module DashboardGraphHelper
       "middle"
     end
 
-    def round_up(value, step) = (value.to_f / step).ceil * step
+    def round_up(value, step)
+      (value.to_f / step).ceil * step
+    end
 end

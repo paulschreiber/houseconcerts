@@ -14,12 +14,18 @@ class AdminResource < Madmin::Resource
   attribute :updated_at, form: false
 
   # Customize the display name of records in the admin area.
-  def self.display_name(record) = record.email
+  def self.display_name(record)
+    record.email
+  end
 
   # Customize the default sort column and direction.
-  def self.default_sort_column = "email"
+  def self.default_sort_column
+    "email"
+  end
 
-  def self.default_sort_direction = "asc"
+  def self.default_sort_direction
+    "asc"
+  end
 
   # Listed after Jobs in madmin/application/_navigation.
   menu false
