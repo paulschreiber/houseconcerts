@@ -39,7 +39,7 @@ class InvitesMailer < ApplicationMailer
     @person = person
 
     @show = show
-    tag = "#{show.slug}:#{email_type}"
+    tag = Open.tag_for(show, email_type)
     @rsvp_url = modify_rsvp_url(slug: show.slug, uniqid: person.uniqid)
     @rsvp_url_yes = rsvp_response_url(slug: show.slug, uniqid: person.uniqid, response: :yes)
     @rsvp_url_no = rsvp_response_url(slug: show.slug, uniqid: person.uniqid, response: :no)
@@ -78,7 +78,7 @@ class InvitesMailer < ApplicationMailer
     return unless claim_delivery?(RSVP.where(id: rsvp.id), :waitlist_emailed_at)
 
     @rsvp = rsvp
-    tag = "#{rsvp.show.slug}:#{email_type}"
+    tag = Open.tag_for(rsvp.show, email_type)
     @track_url = open_tracking_url(tag: tag, uniqid: rsvp.uniqid, kind: "rsvp")
     @rsvp_url = modify_rsvp_url(slug: rsvp.show.slug, uniqid: rsvp.uniqid)
 
@@ -108,7 +108,7 @@ class InvitesMailer < ApplicationMailer
     return unless claim_delivery?(RSVP.where(id: rsvp.id), :confirmation_emailed_at)
 
     @rsvp = rsvp
-    tag = "#{rsvp.show.slug}:#{email_type}"
+    tag = Open.tag_for(rsvp.show, email_type)
     @track_url = open_tracking_url(tag: tag, uniqid: rsvp.uniqid, kind: "rsvp")
     @rsvp_url = modify_rsvp_url(slug: rsvp.show.slug, uniqid: rsvp.uniqid)
     @calendar_url = make_calendar_url(rsvp)
@@ -133,7 +133,7 @@ class InvitesMailer < ApplicationMailer
     end
 
     @rsvp = rsvp
-    tag = "#{rsvp.show.slug}:#{email_type}"
+    tag = Open.tag_for(rsvp.show, email_type)
     @rsvp_url = modify_rsvp_url(slug: rsvp.show.slug, uniqid: rsvp.uniqid)
     @rsvp_url_yes = rsvp_response_url(slug: rsvp.show.slug, uniqid: rsvp.uniqid, response: :yes)
     @rsvp_url_no = rsvp_response_url(slug: rsvp.show.slug, uniqid: rsvp.uniqid, response: :no)
