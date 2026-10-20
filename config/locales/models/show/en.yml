@@ -11,7 +11,7 @@ en:
             price:
               not_a_number: "enter a price for the show"
             venue:
-              inclusion: "select a venue"
+              required: "select a venue"
             end:
               invalid_datetime: "enter a valid end date/time"
             start:

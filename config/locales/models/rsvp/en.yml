@@ -33,5 +33,5 @@ en:
               less_than_or_equal_to: "Select the number of seats you want"
             response:
               inclusion: "Select whether or not you’re coming"
-            show_id:
-              inclusion: "Select a show"
+            show:
+              required: "Select a show"
