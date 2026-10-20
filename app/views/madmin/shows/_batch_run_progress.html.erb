@@ -1,6 +1,4 @@
-<%# A running run's failures are counted from its items, since the cached
-    failed_count can lag behind; a completed run's counts no longer change. %>
-<% failed_count = batch_run.completed? ? batch_run.failed_count : batch_run.batch_run_items.failed.count %>
+<% failed_count = batch_run.displayed_failed_count %>
 <div id="batch_run_progress_<%= batch_run.kind %>" class="batch-progress-status">
   <% if batch_run.completed? %>
     <%= batch_run.sent_count %> sent<% if failed_count.positive? %>, <%= failed_count %> failed<% end %> (complete)

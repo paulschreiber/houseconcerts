@@ -28,6 +28,26 @@ class BatchRun < ApplicationRecord
     sent_count + failed_count
   end
 
+  # The run's items by outcome, from one query: sent and failed items that
+  # have been counted (counted_at), every failed item (including ones
+  # awaiting a retry), and cancelled items. Remembered on this object, so
+  # the progress partial reuses BatchRunItemJob's count.
+  def item_counts = @item_counts ||= recount_items
+
+  # Counts the items again (see item_counts).
+  def recount_items
+    # Keyed by [status, 1 if counted_at is set, else 0].
+    counts = Hash.new(0).merge(batch_run_items.group(:status).group(Arel.sql("counted_at IS NOT NULL")).count)
+    @item_counts = { sent: counts[[ "sent", 1 ]], failed: counts[[ "failed", 1 ]],
+                     failed_items: counts[[ "failed", 1 ]] + counts[[ "failed", 0 ]],
+                     cancelled: counts[[ "cancelled", 1 ]] + counts[[ "cancelled", 0 ]] }
+  end
+
+  # The failures the progress bar shows. A running run's are counted from its
+  # items, since the cached failed_count leaves out ones awaiting a retry; a
+  # completed run's counts no longer change.
+  def displayed_failed_count = completed? ? failed_count : item_counts[:failed_items]
+
   # Updates the run's progress on any open show page. Called by everything
   # that changes a run's visible state.
   def broadcast_progress
