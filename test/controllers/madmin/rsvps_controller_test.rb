@@ -103,6 +103,13 @@ module Madmin
       assert_equal "Test", @rsvp.reload.first_name
     end
 
+    test "a failed update that clears the show titles the edit page with the saved show" do
+      patch madmin_rsvp_path(@rsvp), params: { rsvp: { show_id: "" } }
+
+      assert_response :unprocessable_content
+      assert_select "header h1 strong a", text: RSVPResource.display_name(@rsvp.reload)
+    end
+
     test "destroy destroys the rsvp and redirects to the index page" do
       assert_difference "RSVP.count", -1 do
         delete madmin_rsvp_path(@rsvp)
