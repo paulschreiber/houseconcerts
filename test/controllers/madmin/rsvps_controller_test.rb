@@ -269,6 +269,17 @@ module Madmin
       end
     end
 
+    test "an unknown scope gets the unscoped list's columns" do
+      get madmin_rsvps_path
+
+      unscoped = column_headers
+
+      get madmin_rsvps_path(scope: "bogus")
+
+      assert_equal unscoped, column_headers
+      assert_includes unscoped, "Response"
+    end
+
     test "index shows the Attended Before column on other scopes" do
       %w[next_show next_show_attendees unconfirmed_rsvps nonsubscribers].each do |scope|
         get madmin_rsvps_path(scope: scope)
