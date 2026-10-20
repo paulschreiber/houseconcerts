@@ -20,6 +20,8 @@ class RSVPResource < Madmin::Resource
   attribute :confirmed, field: RadioEnumField
   attribute :attended_before, field: HideableAttendedBeforeField, label: "Attended Before", form: false, show: false, index: true,
                               compute: ->(record) { record.attended_before? ? "✔" : "✖" }
+  attribute :confirm_opened, field: HideableConfirmOpenedField, label: "Opened", form: false, show: false, index: true,
+                             compute: ->(record) { record.confirm_opened? ? "✔" : "✖" }
   attribute :updated_at, field: HideableDateModifiedField, label: "Date Modified", index: true
 
   # Associations
