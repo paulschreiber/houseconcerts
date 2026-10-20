@@ -15,7 +15,7 @@ class BatchRunFanOutJob < ApplicationJob
 
   # Creates a run's items (one per recipient) and enqueues a BatchRunItemJob
   # for each, in the background so starting a batch returns at once. Retrying
-  # failed items (Madmin::ShowsController#retry_failed_batch_run) runs this
+  # failed items (BatchRun#retry_failed!) runs this
   # too: the run is no longer pending, so it goes straight to enqueuing.
   #
   # Safe to rerun: an item that already exists for a recipient is skipped
