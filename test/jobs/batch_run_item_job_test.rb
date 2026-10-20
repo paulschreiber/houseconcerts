@@ -1,8 +1,10 @@
 require "test_helper"
+require "turbo/broadcastable/test_helper"
 
 class BatchRunItemJobTest < ActiveSupport::TestCase
   include BatchTestHelpers
   include ActionMailer::TestHelper
+  include Turbo::Broadcastable::TestHelper
 
   test "invite kind sends the invite, marks the item sent, and updates batch_run counts" do
     person = Person.create!(first_name: "New", last_name: "Person", email: "new-invite@example.com", status: "active")
@@ -587,5 +589,41 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     assert_includes item.error_message, "already happened"
     assert_predicate batch_run.reload, :completed?
     assert_equal 0, batch_run.failed_count
+  end
+
+  test "counts the run's items once per send, including failed items awaiting a retry" do
+    people = %w[sent retrying pending].map do |name|
+      Person.create!(first_name: name.capitalize, last_name: "Smith", email: "progress-#{name}@example.com", status: "active")
+    end
+    batch_run = create_run(total_count: 3, sent_count: 1)
+    batch_run.batch_run_items.create!(recipient: people[0], status: "sent", sent_at: 1.hour.ago, counted_at: 1.hour.ago)
+    # A failed item whose retry hasn't run yet: no longer counted, still failed.
+    batch_run.batch_run_items.create!(recipient: people[1], status: "failed", error_message: "boom")
+    item = batch_run.batch_run_items.create!(recipient: people[2])
+
+    broadcasts = nil
+    assert_queries_match(/COUNT\(\*\).*FROM `batch_run_items`/, count: 1) do
+      broadcasts = capture_turbo_stream_broadcasts([ show, :batch_progress ]) { BatchRunItemJob.perform_now(item.id) }
+    end
+
+    assert_equal 1, broadcasts.size
+    assert_includes broadcasts.first.to_html, "2/3 sent, 1 failed"
+    assert_includes broadcasts.first.to_html, "Retry 1 failed"
+  end
+
+  test "a completed run's progress shows its counted failures, not ones left from a cancelled retry" do
+    retried, never_enqueued = %w[retried never-enqueued].map do |name|
+      Person.create!(first_name: name.capitalize, last_name: "Smith", email: "cancelled-retry-#{name}@example.com", status: "active")
+    end
+    # A retry was cancelled before one of its failed items was enqueued.
+    batch_run = create_run(status: "completed", total_count: 2)
+    item = batch_run.batch_run_items.create!(recipient: retried, status: "failed", error_message: "boom")
+    batch_run.batch_run_items.create!(recipient: never_enqueued, status: "failed", error_message: "boom")
+
+    broadcasts = capture_turbo_stream_broadcasts([ show, :batch_progress ]) { BatchRunItemJob.perform_now(item.id) }
+
+    assert_predicate item.reload, :cancelled?
+    assert_includes broadcasts.first.to_html, "0 sent (complete)"
+    assert_not_includes broadcasts.first.to_html, "Retry"
   end
 end
