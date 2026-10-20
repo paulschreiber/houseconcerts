@@ -1,5 +1,6 @@
 # Below are the routes for madmin
 namespace :madmin, path: Settings.admin_prefix do
+  resources :admins
   resources :artists
   resources :opens
   resources :people do
