@@ -129,6 +129,8 @@ class BatchRunFanOutJobTest < ActiveSupport::TestCase
   end
 
   test "does not enqueue a failed item whose claim was never reset, even if it's old" do
+    # Frozen so both 1.day.ago calls below give the same time.
+    freeze_time
     person = Person.create!(first_name: "Genuine", last_name: "Failure", email: "genuine-failure-no-retry@example.com", status: "active")
     batch_run = create_run
     # A genuinely failed item's claim is never reset except by an
@@ -142,7 +144,7 @@ class BatchRunFanOutJobTest < ActiveSupport::TestCase
       BatchRunFanOutJob.perform_now(batch_run.id)
     end
 
-    assert_equal 1.day.ago.to_i, item.reload.fan_out_enqueued_at.to_i
+    assert_equal 1.day.ago, item.reload.fan_out_enqueued_at
   end
 
   test "retries the whole job instead of leaving the run stuck if enqueuing a per-item job raises Solid Queue's EnqueueError" do
