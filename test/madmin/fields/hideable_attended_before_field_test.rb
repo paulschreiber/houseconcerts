@@ -23,7 +23,7 @@ class HideableAttendedBeforeFieldTest < ActiveSupport::TestCase
     assert field.visible?(:index)
   end
 
-  test "index partial path resolves to computed_field's index partial" do
-    assert_equal "/madmin/fields/computed_field/index", build_field.to_partial_path("index")
+  test "index partial path resolves to the string index partial" do
+    assert_equal "/madmin/fields/string/index", build_field.to_partial_path("index")
   end
 end
