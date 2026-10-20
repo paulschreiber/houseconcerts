@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_20_010722) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_20_030322) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", precision: nil, null: false
@@ -89,7 +89,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_010722) do
     t.integer "status", default: 0, null: false
     t.datetime "updated_at", null: false
     t.index ["batch_run_id", "recipient_type", "recipient_id"], name: "index_batch_run_items_on_batch_run_and_recipient", unique: true
-    t.index ["batch_run_id"], name: "index_batch_run_items_on_batch_run_id"
+    t.index ["batch_run_id", "status"], name: "index_batch_run_items_on_batch_run_id_and_status"
     t.index ["recipient_type", "recipient_id"], name: "index_batch_run_items_on_recipient"
   end
 
@@ -130,6 +130,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_010722) do
     t.boolean "open"
     t.string "tag"
     t.datetime "updated_at", precision: nil, null: false
+    t.index ["created_at"], name: "index_opens_on_created_at"
     t.index ["tag", "email"], name: "index_opens_on_tag_and_email"
   end
 
@@ -150,7 +151,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_010722) do
     t.index ["email"], name: "index_people_on_email", unique: true
     t.index ["first_name"], name: "index_people_on_first_name"
     t.index ["last_name"], name: "index_people_on_last_name"
-    t.index ["status"], name: "index_people_on_status"
+    t.index ["status", "removed_at"], name: "index_people_on_status_and_removed_at"
     t.index ["uniqid"], name: "index_people_on_uniqid", unique: true
   end
 
@@ -184,10 +185,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_010722) do
     t.datetime "updated_at", precision: nil, null: false
     t.datetime "waitlist_emailed_at"
     t.index ["confirmed"], name: "index_rsvps_on_confirmed"
+    t.index ["created_at"], name: "index_rsvps_on_created_at"
     t.index ["email"], name: "index_rsvps_on_email"
+    t.index ["phone_number"], name: "index_rsvps_on_phone_number"
     t.index ["response"], name: "index_rsvps_on_response"
     t.index ["show_id", "email"], name: "index_rsvps_on_show_id_and_email", unique: true
-    t.index ["show_id"], name: "index_rsvps_on_show_id"
     t.index ["uniqid"], name: "index_rsvps_on_uniqid", unique: true
   end
 
