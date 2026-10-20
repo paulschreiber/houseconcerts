@@ -35,9 +35,7 @@ class RSVP < ApplicationRecord
   after_save :update_phone_number
   after_save -> { NotifyAdminOfRSVP.call(self) }
 
-  default_value_for :uniqid do
-    SecureRandom.alphanumeric(Settings.uniqid_length)
-  end
+  attribute :uniqid, default: -> { SecureRandom.alphanumeric(Settings.uniqid_length) }
 
   validates :email, email: true, length: { maximum: 200 }
   validates :phone_number, phone: { country: Settings.default_country, set: true }, length: { maximum: 30 }, allow_blank: true

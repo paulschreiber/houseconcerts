@@ -31,7 +31,6 @@ gem "net-smtp"
 
 gem "carmen"
 gem "config"
-gem "default_value_for"
 gem "devise"
 gem "devise-webauthn"
 gem "friendly_id"

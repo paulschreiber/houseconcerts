@@ -22,11 +22,7 @@ class Person < ApplicationRecord
   before_save :update_removal_status
   before_save :ensure_venue_group
 
-  default_value_for :uniqid do
-    SecureRandom.alphanumeric(Settings.uniqid_length)
-  end
-
-  default_value_for :status, "active"
+  attribute :uniqid, default: -> { SecureRandom.alphanumeric(Settings.uniqid_length) }
 
   validates :email, email: true, length: { maximum: 200 }
   validates :phone_number, phone: { country: Settings.default_country, set: true }, length: { maximum: 30 }, allow_blank: true
