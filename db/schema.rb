@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_20_030322) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_20_031511) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", precision: nil, null: false
@@ -89,7 +89,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_20_030322) do
     t.integer "status", default: 0, null: false
     t.datetime "updated_at", null: false
     t.index ["batch_run_id", "recipient_type", "recipient_id"], name: "index_batch_run_items_on_batch_run_and_recipient", unique: true
-    t.index ["batch_run_id", "status"], name: "index_batch_run_items_on_batch_run_id_and_status"
+    t.index ["batch_run_id", "status", "counted_at"], name: "index_batch_run_items_on_run_status_counted"
     t.index ["recipient_type", "recipient_id"], name: "index_batch_run_items_on_recipient"
   end
 
