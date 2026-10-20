@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_15_041318) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_20_010722) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", precision: nil, null: false
@@ -130,6 +130,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_15_041318) do
     t.boolean "open"
     t.string "tag"
     t.datetime "updated_at", precision: nil, null: false
+    t.index ["tag", "email"], name: "index_opens_on_tag_and_email"
   end
 
   create_table "people", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
