@@ -17,6 +17,19 @@ class Admin < ApplicationRecord
     devise_mailer.send(notification, self, *).deliver_later
   end
 
+  # Changing the email cancels any password link (Devise clears the token), so
+  # an admin who hasn't signed in yet, e.g. after a typo in their email is
+  # fixed, gets a new one at the new address. Setting the token saves again,
+  # but without an email change.
+  after_update_commit :send_welcome_instructions, if: -> { saved_change_to_email? && sign_in_count.zero? }
+
+  # Emails a new admin a link to set their password. It's a password reset
+  # link, so it expires after reset_password_within, and "Forgot your
+  # password?" sends a new one.
+  def send_welcome_instructions
+    AdminMailer.welcome(self, set_reset_password_token).deliver_later
+  end
+
   # A password reset removes every passkey, so resetting the password also
   # locks out anyone who added their own passkey with a stolen session.
   def reset_password(new_password, new_password_confirmation)
