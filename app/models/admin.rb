@@ -8,7 +8,9 @@ class Admin < ApplicationRecord
   # remembered for remember_for, so closing the browser doesn't sign an
   # admin out. Signing out on any device, or timing out, forgets them on
   # every device (expire_all_remember_me_on_sign_out).
-  def remember_me = true # rubocop:disable Naming/PredicateMethod -- Devise's name
+  def remember_me # rubocop:disable Naming/PredicateMethod -- Devise's name
+    true
+  end
 
   # Devise mail (password reset instructions) goes out in the background.
   # Delivering it inline made a reset request for a real admin's email

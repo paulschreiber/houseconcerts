@@ -40,9 +40,13 @@ module Rack
       nil
     end
 
-    def self.admin_email(req) = form_email(req, "admin")
+    def self.admin_email(req)
+      form_email(req, "admin")
+    end
 
-    def self.admin_sign_in?(req) = req.post? && req.path.match?(ADMIN_SIGN_IN_PATH)
+    def self.admin_sign_in?(req)
+      req.post? && req.path.match?(ADMIN_SIGN_IN_PATH)
+    end
 
     # The browser's AdminTrustedDevice id for the submitted email, or nil.
     def self.trusted_device_id(req)
@@ -99,7 +103,9 @@ module Rack
     RSVP_PATH = exact_path("rsvps")
     SIGNUP_PATH = exact_path("people")
 
-    def self.rsvp_submission?(req) = (req.post? || req.patch?) && req.path.match?(RSVP_PATH)
+    def self.rsvp_submission?(req)
+      (req.post? || req.patch?) && req.path.match?(RSVP_PATH)
+    end
 
     throttle("rsvp/ip", limit: 20, period: 10.minutes) do |req|
       req.ip if rsvp_submission?(req)

@@ -14,7 +14,9 @@ class OpenResource < Madmin::Resource
   scope :confirm
   scope :remind
 
-  def self.readonly? = true
+  def self.readonly?
+    true
+  end
 
   # Madmin calls .pluralize on friendly_name in several of its own templates
   # (index title, sidebar label, breadcrumbs); a plain override would get
@@ -22,14 +24,20 @@ class OpenResource < Madmin::Resource
   # no-op keeps the fix local to this resource, without a global inflection.
   def self.friendly_name
     name = +"Emails Opened"
-    def name.pluralize = self
+    def name.pluralize
+      self
+    end
     name
   end
 
   # Customize the default sort column and direction.
-  def self.default_sort_column = "created_at"
+  def self.default_sort_column
+    "created_at"
+  end
 
-  def self.default_sort_direction = "desc"
+  def self.default_sort_direction
+    "desc"
+  end
 
   menu position: 44
 end

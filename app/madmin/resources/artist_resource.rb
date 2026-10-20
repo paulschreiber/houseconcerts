@@ -11,12 +11,18 @@ class ArtistResource < Madmin::Resource
   attribute :shows, field: ReadonlyHasManyField, form: false, new: true, edit: true
 
   # Customize the display name of records in the admin area.
-  def self.display_name(record) = record.name
+  def self.display_name(record)
+    record.name
+  end
 
   # Customize the default sort column and direction.
-  def self.default_sort_column = "name"
+  def self.default_sort_column
+    "name"
+  end
 
-  def self.default_sort_direction = "asc"
+  def self.default_sort_direction
+    "asc"
+  end
 
   menu position: 10
 end

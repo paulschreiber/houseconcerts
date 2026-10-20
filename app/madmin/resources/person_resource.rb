@@ -46,16 +46,24 @@ class PersonResource < Madmin::Resource
   end
 
   # Customize the display name of records in the admin area.
-  def self.display_name(record) = record.full_name
+  def self.display_name(record)
+    record.full_name
+  end
 
   # Customize the default sort column and direction. full_name sorts by last
   # name, then first name (see SortsByFullName). The "removed" scope (recent
   # unsubscriptions) is newest first.
-  def self.sortable_columns = super + [ "full_name" ]
+  def self.sortable_columns
+    super + [ "full_name" ]
+  end
 
-  def self.default_sort_column = Current.admin_scope == "removed" ? "removed_at" : "full_name"
+  def self.default_sort_column
+    Current.admin_scope == "removed" ? "removed_at" : "full_name"
+  end
 
-  def self.default_sort_direction = Current.admin_scope == "removed" ? "desc" : "asc"
+  def self.default_sort_direction
+    Current.admin_scope == "removed" ? "desc" : "asc"
+  end
 
   menu position: 30
 end

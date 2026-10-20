@@ -61,7 +61,9 @@ class ImportPeople
       raise Error, "#{source_name} isn’t a text file." unless text?
     end
 
-    def source_name = filename || "That"
+    def source_name
+      filename || "That"
+    end
 
     def wrong_extension?
       filename.present? && EXTENSIONS.exclude?(File.extname(filename).downcase)

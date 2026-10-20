@@ -27,7 +27,9 @@ class SesEvent
 
   private
 
-    def event_type = @detail["eventType"].downcase
+    def event_type
+      @detail["eventType"].downcase
+    end
 
     def recipients(section, list)
       entries = @detail.dig(section, list)

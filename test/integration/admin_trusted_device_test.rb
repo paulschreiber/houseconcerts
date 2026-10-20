@@ -76,7 +76,9 @@ class AdminTrustedDeviceTest < ActionDispatch::IntegrationTest
 
   private
 
-    def browser = open_session
+    def browser
+      open_session
+    end
 
     # Each attempt from a new IP, so the per-IP throttle doesn't interfere.
     def sign_in(session, password:, email: admins(:one).email)

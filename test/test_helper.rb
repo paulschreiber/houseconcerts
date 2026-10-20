@@ -44,7 +44,9 @@ end
 
 # For the batch send tests (BatchRun, its jobs, and the admin pages for them).
 module BatchTestHelpers
-  def show = shows(:upcoming)
+  def show
+    shows(:upcoming)
+  end
 
   # A batch run for the upcoming show: a running invite run of one item,
   # unless overridden.
