@@ -599,8 +599,6 @@ class RsvpTest < ActiveSupport::TestCase
     Current.attended_rsvp_ids_by_email = { rsvp.email => [ past.id ] }
 
     assert_no_queries { assert rsvp.attended_before? }
-  ensure
-    Current.attended_rsvp_ids_by_email = nil
   end
 
   test "attended_before? still excludes its own id when using the preloaded map" do
@@ -608,8 +606,6 @@ class RsvpTest < ActiveSupport::TestCase
     Current.attended_rsvp_ids_by_email = { rsvp.email => [ rsvp.id ] }
 
     assert_not rsvp.attended_before?
-  ensure
-    Current.attended_rsvp_ids_by_email = nil
   end
 
   # The messages are full sentences shown under each field, so full_messages

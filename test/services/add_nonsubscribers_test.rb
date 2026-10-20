@@ -58,16 +58,13 @@ class AddNonsubscribersTest < ActiveSupport::TestCase
 
   test "someone added by another run in the meantime is left out, not an error" do
     yes_rsvp("Jane", "Smith")
-    original = RSVP.instance_method(:create_person)
-    RSVP.define_method(:create_person) { raise ActiveRecord::RecordNotUnique, "Duplicate entry" }
-
-    result = AddNonsubscribers.call(shows(:past))
+    result = with_stubbed_instance_method(RSVP, :create_person, -> { raise ActiveRecord::RecordNotUnique, "Duplicate entry" }) do
+      AddNonsubscribers.call(shows(:past))
+    end
 
     assert_empty result.added
     assert_empty result.skipped
     assert_empty result.failed
-  ensure
-    RSVP.define_method(:create_person, original)
   end
 
   private

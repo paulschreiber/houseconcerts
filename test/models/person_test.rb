@@ -180,8 +180,6 @@ class PersonTest < ActiveSupport::TestCase
     Current.next_show_rsvpd_emails = Set.new
 
     assert_no_queries { assert person.can_rsvp_no? }
-  ensure
-    Current.next_show_rsvpd_emails = nil
   end
 
   test "can_rsvp_no? is false when the preloaded set includes the person's email" do
@@ -189,8 +187,6 @@ class PersonTest < ActiveSupport::TestCase
     Current.next_show_rsvpd_emails = Set[person.email]
 
     assert_not person.can_rsvp_no?
-  ensure
-    Current.next_show_rsvpd_emails = nil
   end
 
   # The messages are full sentences shown under each field, so full_messages

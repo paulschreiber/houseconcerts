@@ -99,15 +99,10 @@ module Madmin
     end
 
     test "invite shows an alert instead of a false success notice when InvitePerson fails" do
-      original_invite = InvitesMailer.method(:invite)
-      InvitesMailer.define_singleton_method(:invite) { |*_args| raise "simulated enqueue failure" }
-
-      begin
+      with_stubbed(InvitesMailer, :invite, ->(*_args) { raise "simulated enqueue failure" }) do
         assert_no_emails do
           patch invite_madmin_person_path(@person)
         end
-      ensure
-        InvitesMailer.define_singleton_method(:invite, original_invite)
       end
 
       assert_redirected_to madmin_people_path

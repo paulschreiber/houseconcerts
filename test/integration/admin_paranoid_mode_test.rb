@@ -56,20 +56,13 @@ class AdminParanoidModeTest < ActionDispatch::IntegrationTest
   private
 
     # Counts Devise's bcrypt operations: hashing a password and comparing one.
-    # (Object#stub isn't available on this repo's Minitest, so swap the methods
-    # by hand.)
-    def bcrypt_operations_during
+    def bcrypt_operations_during(&)
       calls = 0
-      originals = %i[digest compare].index_with { |name| Devise::Encryptor.method(name) }
-      originals.each do |name, original|
-        Devise::Encryptor.define_singleton_method(name) do |*args|
-          calls += 1
-          original.call(*args)
-        end
+      digest = Devise::Encryptor.method(:digest)
+      compare = Devise::Encryptor.method(:compare)
+      with_stubbed(Devise::Encryptor, :digest, ->(*args) { calls += 1; digest.call(*args) }) do
+        with_stubbed(Devise::Encryptor, :compare, ->(*args) { calls += 1; compare.call(*args) }, &)
       end
-      yield
       calls
-    ensure
-      originals.each { |name, original| Devise::Encryptor.define_singleton_method(name, original) }
     end
 end

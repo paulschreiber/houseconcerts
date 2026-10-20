@@ -3,8 +3,6 @@ require "test_helper"
 # The controller tests check the scopes of the Attended Before, Opened and
 # Date Modified columns.
 class IndexScopesTest < ActiveSupport::TestCase
-  teardown { Current.admin_scope = nil }
-
   def assert_index_scopes(field, shown:, hidden:)
     shown.each do |scope|
       Current.admin_scope = scope
