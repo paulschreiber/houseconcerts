@@ -328,6 +328,17 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/You.ll receive my address/, response.body)
   end
 
+  test "thanks says sorry and thanks for a no" do
+    rsvp = rsvps(:one)
+    rsvp.update!(response: "no")
+
+    get rsvp_thanks_path(uniqid: rsvp.uniqid)
+
+    assert_includes response.body, "Sorry you couldn’t make it, #{rsvp.first_name}"
+    assert_includes response.body, "Thanks for letting me know!"
+    assert_no_match(/You.ll receive my address/, response.body)
+  end
+
   test "thanks pluralizes seats in both the headline and body for more than one seat" do
     rsvp = rsvps(:one)
     rsvp.update!(seats_reserved: 2)

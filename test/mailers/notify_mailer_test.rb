@@ -19,6 +19,18 @@ class NotifyMailerTest < ActionMailer::TestCase
     assert_includes email.subject, "Updated RSVP"
   end
 
+  test "rsvp shows the seats for a new rsvp" do
+    rsvp = rsvps(:one)
+
+    assert_includes NotifyMailer.rsvp(rsvp, "new", nil).body.decoded, "<th>Seats</th><td>#{rsvp.seats_reserved}</td>"
+  end
+
+  test "rsvp shows the seat change for an updated rsvp" do
+    rsvp = rsvps(:one)
+
+    assert_includes NotifyMailer.rsvp(rsvp, "update", 1).body.decoded, "<td>1 → #{rsvp.seats_reserved}</td>"
+  end
+
   test "rsvp delivers exactly one email" do
     assert_emails 1 do
       NotifyMailer.rsvp(rsvps(:one), "new", nil).deliver_now
