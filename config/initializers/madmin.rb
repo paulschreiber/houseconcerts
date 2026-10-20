@@ -40,9 +40,11 @@ Madmin::Field.prepend(FieldVisibility)
 
 # Fields and resources that change with the index scope or the action (see
 # FieldVisibility and ShortDateTimeField's index_label) read them from Current.
+# An unknown scope is left out, since Madmin shows the unscoped list for it.
 ActiveSupport.on_load(:madmin_resource_controller) do
   before_action do
-    Current.admin_scope = params[:scope]
+    scope = valid_scope
+    Current.admin_scope = scope unless scope == :all
     Current.admin_action = action_name
   end
 end

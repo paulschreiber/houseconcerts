@@ -53,7 +53,7 @@ module Madmin
       end
 
       def attendee_totals
-        return unless ATTENDEE_SCOPES.include?(params[:scope])
+        return unless ATTENDEE_SCOPES.include?(Current.admin_scope)
 
         { count: @scoped_resources.count, seats_reserved: @scoped_resources.sum(:seats_reserved) }
       end
