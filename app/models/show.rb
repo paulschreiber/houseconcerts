@@ -38,12 +38,7 @@ class Show < ApplicationRecord
   validates :venue_id, inclusion: { in: ->(_) { Venue.all.collect(&:id) } }
 
   def attendees
-    rsvps.where(confirmed: "confirmed", response: "yes")
-  end
-
-  # Yes RSVPs still awaiting confirmation, including the waitlisted.
-  def unconfirmed_rsvps
-    rsvps.where(response: "yes", confirmed: %w[unconfirmed waitlisted])
+    rsvps.attending
   end
 
   def self.next

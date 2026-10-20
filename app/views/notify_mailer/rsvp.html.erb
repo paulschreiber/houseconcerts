@@ -12,7 +12,7 @@
   <tr><th>On mailing list</th><td><%= @rsvp.person_exists? ? "Yes" : "No" %></td></tr>
 </table>
 
-<%- if @rsvp.response == "yes" -%>
+<%- if @rsvp.yes? -%>
 <h2>Attendance History</h2>
 <%- if @history.any? %>
 <table class="history">

@@ -157,7 +157,7 @@ module Madmin
 
       def load_attendees
         @show = @record
-        @rsvps = RSVP.attendees(@show).order(:last_name, :first_name).to_a
+        @rsvps = @show.attendees.order(:last_name, :first_name).to_a
       end
 
       # The batch run for retry and cancel. Keyed on the specific run, not "the

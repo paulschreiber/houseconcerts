@@ -29,7 +29,7 @@ class NotifyAdminOfRSVP
       return false unless rsvp.saved_changes.keys.intersect?(RSVP::RSVP_NOTIFY_ATTRIBUTES) && rsvp.persisted?
 
       # don't notify of new "no" RSVPs when notify is "yes" only
-      return false if Settings.notify_rsvp == "yes" && rsvp.response != "yes" && rsvp.previously_new_record?
+      return false if Settings.notify_rsvp == "yes" && !rsvp.yes? && rsvp.previously_new_record?
 
       # notify if there's a cancellation (no -> yes)
       # notify if there's a new yes
