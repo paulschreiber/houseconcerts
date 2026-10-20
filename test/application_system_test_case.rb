@@ -1,8 +1,6 @@
 require "test_helper"
 
 Capybara.server_host = "localhost"
-Capybara.server_port = 3000
-Capybara.app_host = "http://localhost:3000"
 
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   # Keep the browser console log so tests can check for CSP violations.

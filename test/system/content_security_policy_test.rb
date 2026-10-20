@@ -52,9 +52,13 @@ class ContentSecurityPolicyTest < ApplicationSystemTestCase
     end
 
     # Waits for the page's JavaScript to load, then checks the console log.
+    # Stimulus starts once the module scripts and their imports have run (the
+    # site, Madmin and Mission Control all set window.Stimulus).
     def assert_no_csp_violations(path)
       assert page.evaluate_script("document.readyState") == "complete", "#{path} didn't finish loading"
-      sleep 0.5 # let module scripts and their imports run
+      Timeout.timeout(Capybara.default_max_wait_time, Minitest::Assertion, "#{path}'s scripts didn't start") do
+        sleep 0.05 until page.evaluate_script("window.Stimulus !== undefined")
+      end
       violations = page.driver.browser.logs.get(:browser).map(&:message).grep(/Content Security Policy/)
       assert_empty violations, "CSP violations on #{path}:\n#{violations.join("\n")}"
     end

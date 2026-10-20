@@ -6,10 +6,14 @@ class AdminPasskeysTest < ApplicationSystemTestCase
   setup do
     @admin = admins(:one)
     @authenticator = add_virtual_authenticator
+    # The test server runs on a random port; WebAuthn checks the origin.
+    @allowed_origins = WebAuthn.configuration.allowed_origins
+    WebAuthn.configuration.allowed_origins = [ Capybara.current_session.server.base_url ]
   end
 
   teardown do
     @authenticator.remove!
+    WebAuthn.configuration.allowed_origins = @allowed_origins
   end
 
   test "signs in with a registered passkey" do

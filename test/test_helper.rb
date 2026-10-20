@@ -11,6 +11,9 @@ Rack::Attack.cache.store = Rails.cache
 
 module ActiveSupport
   class TestCase
+    # Each worker process gets its own test database (houseconcerts_test-N).
+    parallelize(workers: :number_of_processors)
+
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
 
