@@ -292,6 +292,20 @@ class NotifyMailerTest < ActionMailer::TestCase
     assert_row_bold(true, body, show)
   end
 
+  test "rsvp shows a dash, not a no-show, for a past show whose seats used weren't recorded" do
+    person = Person.create!(first_name: "Unrecorded", last_name: "Seats", email: "unrecorded.seats@example.com")
+    show = create_past_show("Unrecorded Seats", 1)
+    create_past_rsvp(person, show, seats_reserved: 2, seats_used: nil)
+
+    rsvp = RSVP.create!(show: shows(:upcoming), first_name: person.first_name, last_name: person.last_name,
+                        email: person.email, response: "yes", confirmed: "confirmed", seats_reserved: 2)
+
+    body = NotifyMailer.rsvp(rsvp, "new", nil).body.encoded
+
+    assert_row_bold(false, body, show)
+    assert_equal "— / 2", history_row(body, show).css("td").last.text.strip
+  end
+
   test "rsvp does not bold a past show where seats used equals seats reserved" do
     person = Person.create!(first_name: "Exact", last_name: "Seats", email: "exact.seats@example.com")
     show = create_past_show("Exact Seats", 1)
@@ -344,10 +358,14 @@ class NotifyMailerTest < ActionMailer::TestCase
       Nokogiri::HTML(body).css(".history tbody tr")
     end
 
-    def assert_row_bold(bold, body, show)
+    def history_row(body, show)
       row = history_rows(body).find { |tr| tr.css("td").map { |td| td.text.strip }.first(2) == [ show.start.to_date.iso8601, show.name ] }
       assert row, "no history row for #{show.name}"
-      assert_equal bold, row.classes.include?("unused-seats")
+      row
+    end
+
+    def assert_row_bold(bold, body, show)
+      assert_equal bold, history_row(body, show).classes.include?("unused-seats")
     end
 
     def create_past_show(name, months_ago)

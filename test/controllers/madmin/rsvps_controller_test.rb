@@ -322,8 +322,8 @@ module Madmin
       end
 
       # The `attended` scope's query: the only one that joins shows and
-      # filters on seats_reserved. A per-row lookup would run it once per row.
-      assert_queries_match(/INNER JOIN `shows`.*`seats_reserved`/, count: 1) do
+      # filters on email. A per-row lookup would run it once per row.
+      assert_queries_match(/INNER JOIN `shows`.*`rsvps`.`email`/, count: 1) do
         get madmin_rsvps_path(scope: "next_show_attendees")
       end
 

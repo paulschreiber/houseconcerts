@@ -547,7 +547,7 @@ class RsvpTest < ActiveSupport::TestCase
     assert rsvp.person_exists?
   end
 
-  test "attended_before? is false until a confirmed yes rsvp with seats exists for a past show" do
+  test "attended_before? is false until a confirmed yes rsvp exists for a past show" do
     rsvp = rsvps(:one)
     assert_not rsvp.attended_before?
 
@@ -568,7 +568,7 @@ class RsvpTest < ActiveSupport::TestCase
     assert rsvp.confirm_opened?
   end
 
-  test "attended_before? ignores a past rsvp that wasn't a confirmed yes with seats" do
+  test "attended_before? ignores a past rsvp that wasn't a confirmed yes" do
     rsvp = rsvps(:one)
 
     RSVP.create!(first_name: "Past", last_name: "Attendee", email: rsvp.email, show: shows(:past),
