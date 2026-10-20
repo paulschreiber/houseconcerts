@@ -1,6 +1,8 @@
 class ShowsController < ApplicationController
   def index
-    @shows = Show.upcoming
+    @shows = Show.upcoming.includes(:artists).to_a
+    # The homepage's social media image is the next show's.
+    @social_media_show = @shows.first
   end
 
   def shows

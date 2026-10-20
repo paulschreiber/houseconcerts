@@ -29,15 +29,11 @@ module ApplicationHelper
     end
   end
 
+  # The show's first artist's photo, or the site image when there's no show
+  # or it has no artists.
   def social_media_image(show)
-    return root_url + show.artists.first.photo if show && !show.artists.empty?
-
-    if current_page?(root_url)
-      next_show = Show.upcoming.first
-      return root_url + next_show.artists.first.photo if next_show.present? && !next_show.artists.empty?
-    end
-
-    "#{root_url}concerts.png"
+    photo = show.artists.first&.photo if show
+    "#{root_url}#{photo || 'concerts.png'}"
   end
 
   def canonical_url

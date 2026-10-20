@@ -6,11 +6,12 @@
 	<meta name="description" content="<%= Settings.meta_description %>">
 	<meta name="keywords" content="<%= Settings.meta_keywords %>">
 
+	<% image = social_media_image(@show || @social_media_show) %>
 	<meta name="twitter:card" content="summary" />
 	<meta name="twitter:widgets:csp" content="on" />
 	<meta name="twitter:title" content="<%= social_media_title(@show) %>" />
 	<meta name="twitter:description" content="<%= social_media_description(@show) %>" />
-	<meta name="twitter:image" content="<%= social_media_image(@show) %>" />
+	<meta name="twitter:image" content="<%= image %>" />
 
 	<meta property="og:locale" content="en_US" />
 	<meta property="og:type" content="website" />
@@ -18,7 +19,7 @@
 	<meta property="og:title" content="<%= social_media_title(@show) %>" />
 	<meta property="og:description" content="<%= social_media_description(@show) %>" />
 	<meta property="og:url" content="<%= canonical_url %>" />
-	<meta property="og:image" content="<%= social_media_image(@show) %>" />
+	<meta property="og:image" content="<%= image %>" />
 
 	<link rel="canonical" href="<%= canonical_url %>">
 	<link rel="apple-touch-icon" href="<%= apple_touch_icon %>">
