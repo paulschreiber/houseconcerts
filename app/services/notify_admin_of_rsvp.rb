@@ -39,13 +39,10 @@ class NotifyAdminOfRSVP
     end
 
     def type
-      if rsvp.saved_changes.include?("response") && rsvp.saved_changes["response"][1] == "no"
-        "cancel"
-      elsif rsvp.previously_new_record?
-        "new"
-      else
-        "update"
-      end
+      return "cancel" if rsvp.saved_change_to_response?(to: "no")
+      return "new" if rsvp.previously_new_record?
+
+      "update"
     end
 
     def old_seats
