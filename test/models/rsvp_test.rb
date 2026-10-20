@@ -608,6 +608,14 @@ class RsvpTest < ActiveSupport::TestCase
     assert_not rsvp.attended_before?
   end
 
+  test "requires a show that exists" do
+    rsvp = rsvps(:one)
+    rsvp.show_id = 0
+
+    assert_not rsvp.valid?
+    assert_includes rsvp.errors[:show], "Select a show"
+  end
+
   # The messages are full sentences shown under each field, so full_messages
   # (e.g. in Madmin) uses them as written, without the attribute name in front.
   test "full_messages use the messages as written" do

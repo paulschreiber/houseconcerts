@@ -324,6 +324,16 @@ module Madmin
       assert_equal 0, john.reload.seats_used
     end
 
+    test "update_attendance doesn't load every show to validate each RSVP" do
+      jane = attendee(shows(:past), "Jane", seats_reserved: 3)
+
+      assert_no_queries_match(/FROM `shows`\z/) do
+        patch attendance_madmin_show_path(shows(:past)), params: { seats_used: { jane.id => "3" } }
+      end
+
+      assert_redirected_to attendance_madmin_show_path(shows(:past))
+    end
+
     test "update_attendance ignores RSVPs for other shows" do
       other_show = attendee(shows(:upcoming), "Joan")
 
