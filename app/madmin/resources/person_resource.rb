@@ -11,7 +11,7 @@ class PersonResource < Madmin::Resource
   attribute :notes, field: MultilineTextField, searchable: false
   attribute :ip_address, field: ReadonlyStringField, form: false, new: true, edit: true, searchable: false
   attribute :removal_ip_address, field: ReadonlyStringField, form: false, new: true, edit: true, searchable: false
-  attribute :removed_at, field: RemovedAtField, form: false, new: true, edit: true, index: true
+  attribute :removed_at, field: RemovedAtField, form: false, new: true, edit: true, index: true, index_scopes: %w[removed]
   attribute :created_at, field: ShortDateTimeField, index: true, show: true
   attribute :updated_at
   attribute :status, field: RadioEnumField, index: true

@@ -16,13 +16,19 @@ class RSVPResource < Madmin::Resource
   attribute :confirmed_at, field: ReadonlyDateTimeField, form: false, new: true, edit: true
   attribute :created_at
   attribute :referrer, field: ReadonlyStringField, form: false, new: true, edit: true, searchable: false
-  attribute :response, field: HideableResponseField, index: true
+  # The attendee and unconfirmed lists only ever have "yes" responses.
+  attribute :response, field: RadioEnumField, index: true, index_scopes: [ nil, "next_show", "nonsubscribers", "previous_show" ]
   attribute :confirmed, field: RadioEnumField
-  attribute :attended_before, field: HideableAttendedBeforeField, label: "Attended Before", form: false, show: false, index: true,
+  # Past attendance isn't useful context on the unscoped and previous-show lists.
+  attribute :attended_before, field: ComputedField, label: "Attended Before", form: false, show: false, index: true,
+                              index_scopes: [ "next_show", "next_show_attendees", RSVP::UNCONFIRMED_RSVPS_SCOPE, "nonsubscribers" ],
                               compute: ->(record) { record.attended_before? ? "✔" : "✖" }
-  attribute :confirm_opened, field: HideableConfirmOpenedField, label: "Opened", form: false, show: false, index: true,
+  # Only confirmed RSVPs get a confirmation email.
+  attribute :confirm_opened, field: ComputedField, label: "Opened", form: false, show: false, index: true,
+                             index_scopes: Madmin::RsvpsController::ATTENDEE_SCOPES,
                              compute: ->(record) { record.confirm_opened? ? "✔" : "✖" }
-  attribute :updated_at, field: HideableDateModifiedField, label: "Date Modified", index: true
+  # To spot recent changes before the show.
+  attribute :updated_at, field: ShortDateTimeField, label: "Date Modified", index: true, index_scopes: %w[next_show_attendees]
 
   # Associations
   attribute :show

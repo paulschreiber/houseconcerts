@@ -17,16 +17,32 @@ Madmin.menu.before_render do
   add label: "divider-2", position: 45
 end
 
-# Hide id/timestamp columns everywhere unless a resource explicitly opts back in
-# (e.g. `attribute :created_at, show: true`).
-module HidesIdAndTimestampsByDefault
+# Which columns and fields Madmin shows:
+# - id and timestamps are hidden everywhere unless a resource explicitly opts
+#   back in (e.g. `attribute :created_at, show: true`).
+# - An attribute's `index_scopes:` option limits the index pages that show its
+#   column to the given scopes (Current.admin_scope; nil is the unscoped list),
+#   e.g. `index_scopes: %w[next_show_attendees]`. Without the option, the
+#   column shows on every scope.
+module FieldVisibility
   HIDDEN_BY_DEFAULT = %i[id created_at updated_at].freeze
 
   def visible?(action)
-    return options.fetch(action.to_sym, false) if HIDDEN_BY_DEFAULT.include?(attribute_name)
+    action = action.to_sym
+    return false if action == :index && options[:index_scopes]&.exclude?(Current.admin_scope)
+    return options.fetch(action, false) if HIDDEN_BY_DEFAULT.include?(attribute_name)
 
     super
   end
 end
 
-Madmin::Field.prepend(HidesIdAndTimestampsByDefault)
+Madmin::Field.prepend(FieldVisibility)
+
+# Fields and resources that change with the index scope or the action (see
+# FieldVisibility and ShortDateTimeField's index_label) read them from Current.
+ActiveSupport.on_load(:madmin_resource_controller) do
+  before_action do
+    Current.admin_scope = params[:scope]
+    Current.admin_action = action_name
+  end
+end
