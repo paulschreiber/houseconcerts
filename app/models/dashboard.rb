@@ -72,7 +72,7 @@ class Dashboard
 
   # Seats reserved, keyed by show id.
   def seats_by_show(shows)
-    reserved(RSVP.where(show: shows)).group(:show_id).sum(:seats_reserved)
+    RSVP.where(show: shows).holding_seats.group(:show_id).sum(:seats_reserved)
   end
 
   def recent_opens
@@ -133,11 +133,6 @@ class Dashboard
                   .where(batch_runs: { show_id: next_show, kind: %w[invite invite_unopened] })
     end
 
-    # Yes RSVPs holding seats: confirmed or unconfirmed, not waitlisted.
-    def reserved(rsvps)
-      rsvps.yes.where.not(confirmed: "waitlisted")
-    end
-
     # Seats reserved more than GRAPH_DAYS before the show count as reserved
     # on that day, where the line starts.
     def seats_over_time(show)
@@ -146,7 +141,7 @@ class Dashboard
       return [] if last_day > GRAPH_DAYS
 
       seats_by_day = Hash.new(0)
-      reserved(RSVP.where(show:)).pluck(:created_at, :seats_reserved).each do |created_at, seats|
+      RSVP.where(show:).holding_seats.pluck(:created_at, :seats_reserved).each do |created_at, seats|
         seats_by_day[(show_day - created_at.to_date).to_i.clamp(0, GRAPH_DAYS)] += seats.to_i
       end
       return [] if seats_by_day.empty?
