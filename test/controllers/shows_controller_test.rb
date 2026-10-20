@@ -126,6 +126,7 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h2", text: "No shows found"
+    assert_not_includes response.body, "</ol>"
   end
 
   test "the calendar feed is at /calendar and /calendar.ics, and no other format" do
