@@ -156,7 +156,7 @@ namespace :next_show do
     waitlisted = 0
     waitlisted_seats = 0
 
-    show.unconfirmed_rsvps.order(:id).each do |rsvp|
+    show.rsvps.awaiting_confirmation.order(:id).each do |rsvp|
       if rsvp.waitlisted?
         status = "w"
       else
@@ -215,13 +215,13 @@ namespace :next_show do
     sent = 0
 
     if show.available?
-      rsvps = show.unconfirmed_rsvps
+      rsvps = show.rsvps.awaiting_confirmation
       sent = rsvps.count do |rsvp|
         puts "Emailing #{rsvp.email_address_with_name}..."
         ConfirmRSVP.call(rsvp)
       end
     elsif show.waitlisted?
-      rsvps = RSVP.where(show: show, response: "yes", confirmed: [ "unconfirmed" ])
+      rsvps = show.rsvps.yes.confirmed_unconfirmed
       sent = rsvps.count do |rsvp|
         puts "Emailing #{rsvp.email_address_with_name}..."
         WaitlistRSVP.call(rsvp)

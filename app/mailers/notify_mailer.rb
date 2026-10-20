@@ -68,7 +68,7 @@ class NotifyMailer < ApplicationMailer
     @batch_run = batch_run
     @show = batch_run.show
     @attendees = @show.attendees
-    @unconfirmed_rsvps = @show.unconfirmed_rsvps.order(:last_name, :first_name)
+    @unconfirmed_rsvps = @show.rsvps.awaiting_confirmation.order(:last_name, :first_name)
 
     mail(subject: "Reminders started for #{@show.name}")
   end

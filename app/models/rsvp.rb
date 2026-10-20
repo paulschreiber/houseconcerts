@@ -12,6 +12,18 @@ class RSVP < ApplicationRecord
   enum :response, { no: 0, yes: 1 }, default: :no
   enum :confirmed, { unconfirmed: 0, waitlisted: 1, confirmed: 2 }, prefix: true, default: :unconfirmed
 
+  alias confirmed? confirmed_confirmed?
+  alias waitlisted? confirmed_waitlisted?
+  alias unconfirmed? confirmed_unconfirmed?
+
+  def attending?
+    yes? && confirmed?
+  end
+
+  scope :attending, -> { yes.confirmed_confirmed }
+  # Yes RSVPs still awaiting confirmation, including the waitlisted.
+  scope :awaiting_confirmation, -> { yes.where(confirmed: %w[unconfirmed waitlisted]) }
+
   before_validation :clear_seats_if_no
   before_save :downcase_email
   before_save :set_ip_address
@@ -115,18 +127,6 @@ class RSVP < ApplicationRecord
     save
   end
 
-  def confirmed?
-    confirmed == "confirmed"
-  end
-
-  def unconfirmed?
-    confirmed.blank? || confirmed_unconfirmed?
-  end
-
-  def waitlisted?
-    confirmed == "waitlisted"
-  end
-
   def person_exists?
     Person.exists?(email: email)
   end
@@ -149,7 +149,7 @@ class RSVP < ApplicationRecord
   end
 
   def self.attended(emails)
-    joins(:show).merge(Show.occurred).where(email: emails, response: "yes", confirmed: "confirmed", seats_reserved: 1..)
+    joins(:show).merge(Show.occurred).attending.where(email: emails, seats_reserved: 1..)
   end
 
   # Maps each email to the ids of its attended RSVPs, so a caller with many
@@ -193,16 +193,12 @@ class RSVP < ApplicationRecord
     yes? && show.present? && show.id == next_show&.id && !show.occurred?
   end
 
-  def self.attendees(show)
-    yes_rsvps(show, confirmed: "confirmed")
-  end
-
   def self.next_show_attendees(show = Show.next)
-    attendees(show)
+    where(show:).attending
   end
 
   def self.unconfirmed_rsvps
-    Show.next&.unconfirmed_rsvps || none
+    where(show: Show.next).awaiting_confirmation
   end
 
   def self.previous_show
@@ -210,20 +206,15 @@ class RSVP < ApplicationRecord
   end
 
   def self.previous_show_attendees
-    yes_rsvps(Show.previous, confirmed: "confirmed")
+    where(show: Show.previous).attending
   end
-
-  def self.yes_rsvps(show, confirmed:)
-    RSVP.where(show: show, response: "yes", confirmed: confirmed)
-  end
-  private_class_method :yes_rsvps
 
   # A person who unsubscribed (or is bouncing/moved) still has a row in
   # people, so only an active person counts as a subscriber here -- someone
   # who previously unsubscribed and RSVPs again should show up as a
   # nonsubscriber, not be silently excluded.
   def self.nonsubscribers(show = Show.next)
-    where(show: show, response: "yes").where.not(email: Person.active.select(:email))
+    where(show:).yes.where.not(email: Person.active.select(:email))
   end
 
   def sms_reminder

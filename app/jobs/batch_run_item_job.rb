@@ -107,7 +107,7 @@ class BatchRunItemJob < ApplicationJob
     def remind(item, rsvp)
       # Rechecked at send time: the RSVP may have changed since the batch
       # started.
-      raise InvalidRecipient, "RSVP #{rsvp.id} is no longer a confirmed yes attendee" unless rsvp.confirmed? && rsvp.yes?
+      raise InvalidRecipient, "RSVP #{rsvp.id} is no longer a confirmed yes attendee" unless rsvp.attending?
 
       # Email and SMS are tracked separately and each marked done only after
       # it succeeds, so a retry only re-sends the channel that failed. (If the
