@@ -139,9 +139,11 @@ class PersonTest < ActiveSupport::TestCase
     assert_not_nil person.removed_at
   end
 
-  test "email is downcased before save" do
-    person = Person.create!(first_name: "Mixed", last_name: "Case", email: "Mixed.Case@Example.COM")
+  test "email is stripped and downcased, including in lookups" do
+    person = Person.create!(first_name: "Mixed", last_name: "Case", email: " Mixed.Case@Example.COM ")
+
     assert_equal "mixed.case@example.com", person.email
+    assert_equal person, Person.find_by(email: "MIXED.case@example.com ")
   end
 
   test "can_invite? is true only for an active person" do
