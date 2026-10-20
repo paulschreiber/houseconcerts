@@ -1,13 +1,6 @@
 <% content_for :title, "Attendance — #{@show.name}" %>
 
-<header class="header">
-  <h1><%= @show.name %></h1>
-  <p><%= @show.start.strftime("%A, %B %-d, %Y") %></p>
-
-  <div class="actions">
-    <%= link_to "Back", madmin_show_path(@show), class: "btn btn-secondary" %>
-  </div>
-</header>
+<%= render "attendance_header" %>
 
 <%= form_with url: attendance_madmin_show_path(@show), method: :patch do %>
   <div class="table-scroll">

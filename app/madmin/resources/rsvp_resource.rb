@@ -2,8 +2,8 @@ class RSVPResource < Madmin::Resource
   # Attributes
   attribute :id
   attribute :full_name, field: LinkedStringField, label: "Name", form: false, index: true
-  attribute :show_summary, field: ComputedField, label: "Show", form: false, show: false, index: true,
-                           compute: ->(record) { record.show&.summary }
+  attribute :show_dated_name, field: ComputedField, label: "Show", form: false, show: false, index: true,
+                              compute: ->(record) { record.show.dated_name }
   attribute :uniqid, form: false, show: false, searchable: false
   attribute :first_name, searchable: true
   attribute :last_name, searchable: true
@@ -77,7 +77,7 @@ class RSVPResource < Madmin::Resource
 
   # Customize the display name of records in the admin area.
   def self.display_name(record)
-    "#{record.full_name} — #{record.show&.name} #{record.show&.start&.strftime('%Y-%m-%d')}"
+    "#{record.full_name} — #{record.show&.dated_name}"
   end
 
   # For the delete confirmation: "the RSVP for Jane Smith".
