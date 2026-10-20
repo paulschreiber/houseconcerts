@@ -28,15 +28,11 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
     Show.create!(name: "Another Past Show", venue: venues(:one), price: 20, artists: [ artists(:one) ],
                  start: 2.months.ago, end: 2.months.ago + 2.hours)
 
-    artist_queries = 0
-    callback = ->(*, payload) { artist_queries += 1 if payload[:name] == "Artist Load" }
-
-    ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+    assert_queries_match(/FROM `artists`/, count: 1) do
       get past_shows_path
     end
 
     assert_response :success
-    assert_equal 1, artist_queries
   end
 
   test "shows escapes an artist name containing HTML instead of rendering it raw" do

@@ -196,15 +196,11 @@ module Madmin
     end
 
     test "rsvp_no looks up the next show only once, not once per can_rsvp_no?/RSVPNo call" do
-      next_show_queries = 0
-      callback = ->(*, payload) { next_show_queries += 1 if payload[:sql]&.include?("ORDER BY `shows`.`start` ASC LIMIT 1") }
-
-      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+      assert_queries_match(/ORDER BY `shows`.`start` ASC LIMIT 1/, count: 1) do
         patch rsvp_no_madmin_person_path(@person)
       end
 
       assert_redirected_to madmin_people_path
-      assert_equal 1, next_show_queries
     end
 
     test "rsvp_no does not record a no RSVP for a removed person" do
@@ -280,15 +276,11 @@ module Madmin
       RSVP.create!(first_name: @person.first_name, last_name: @person.last_name, email: @person.email,
                    show: Show.next, response: "yes", seats_reserved: 2)
 
-      rsvp_exists_queries = 0
-      callback = ->(*, payload) { rsvp_exists_queries += 1 if payload[:sql]&.include?("SELECT 1 AS one FROM `rsvps`") }
-
-      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") do
+      assert_no_queries_match(/SELECT 1 AS one FROM `rsvps`/) do
         get madmin_people_path
       end
 
       assert_response :success
-      assert_equal 0, rsvp_exists_queries
       assert_no_match(%r{action="/backstage/people/#{@person.id}/rsvp_no"}, response.body)
       assert_match(%r{action="/backstage/people/#{other.id}/rsvp_no"}, response.body)
     end
