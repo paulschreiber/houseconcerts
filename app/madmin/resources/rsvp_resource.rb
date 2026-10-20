@@ -77,7 +77,7 @@ class RSVPResource < Madmin::Resource
 
   # Customize the display name of records in the admin area.
   def self.display_name(record)
-    "#{record.full_name} — #{record.show&.dated_name}"
+    "#{record.full_name} — #{record.show.dated_name}"
   end
 
   # For the delete confirmation: "the RSVP for Jane Smith".
