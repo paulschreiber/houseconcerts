@@ -554,6 +554,17 @@ class RsvpTest < ActiveSupport::TestCase
     assert rsvp.attended_before?
   end
 
+  test "confirm_opened? is true once this show's confirmation email is opened" do
+    rsvp = rsvps(:one)
+    Open.create!(tag: "#{shows(:past).slug}:confirm", email: rsvp.email, open: true)
+    Open.create!(tag: "#{rsvp.show.slug}:remind", email: rsvp.email, open: true)
+    assert_not rsvp.confirm_opened?
+
+    Open.create!(tag: "#{rsvp.show.slug}:confirm", email: rsvp.email.upcase, open: true)
+
+    assert rsvp.confirm_opened?
+  end
+
   test "attended_before? ignores a past rsvp that wasn't a confirmed yes with seats" do
     rsvp = rsvps(:one)
 
