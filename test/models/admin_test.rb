@@ -24,6 +24,31 @@ class AdminTest < ActiveSupport::TestCase
     assert_includes admin.errors[:password], "is too short (minimum is 8 characters)"
   end
 
+  test "changing the email of an admin who hasn't signed in sends a new link to the new address" do
+    admin = admins(:two)
+
+    assert_enqueued_email_with AdminMailer, :welcome, args: ->(args) { args.first.email == "jane.smith@example.com" } do
+      admin.update!(email: "jane.smith@example.com")
+    end
+
+    assert_predicate admin.reload.reset_password_token, :present?
+  end
+
+  test "changing the email of an admin who has signed in sends no new password link" do
+    admin = admins(:two)
+    admin.update!(sign_in_count: 3)
+
+    admin.update!(email: "jane.smith@example.com")
+
+    assert_not(enqueued_jobs.any? { |job| job["arguments"].first(2) == %w[AdminMailer welcome] })
+  end
+
+  test "an update that doesn't change the email sends nothing" do
+    assert_no_enqueued_emails do
+      admins(:two).update!(sign_in_count: 1)
+    end
+  end
+
   test "sends password reset instructions from the site's confirms address" do
     assert_emails 1 do
       admins(:one).send_reset_password_instructions
