@@ -6,6 +6,14 @@ class ShowTest < ActiveSupport::TestCase
     assert shows(:past).valid?
   end
 
+  test "requires a venue that exists" do
+    show = shows(:upcoming)
+    show.venue_id = 0
+
+    assert_not show.valid?
+    assert_includes show.errors[:venue], "select a venue"
+  end
+
   test "upcoming scope includes only shows that haven't happened yet" do
     assert_includes Show.upcoming, shows(:upcoming)
     assert_not_includes Show.upcoming, shows(:past)
