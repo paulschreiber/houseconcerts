@@ -2,6 +2,9 @@ require "test_helper"
 
 class RackAttackTest < ActionDispatch::IntegrationTest
   setup do
+    # Throttles count requests in fixed windows (e.g. 10:00-10:10), so a
+    # window ending partway through a test would reset its counts.
+    freeze_time
     # The test environment's null_store cache can't hold rack-attack's
     # throttle counters across requests, so swap in a real cache for the
     # duration of this test.
