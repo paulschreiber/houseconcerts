@@ -19,4 +19,13 @@ class OpenTest < ActiveSupport::TestCase
 
     assert_equal [ invite, unopened ], Open.invites_to(Show.new(slug: "some-show")).order(:id).to_a
   end
+
+  test "for_show matches every email type for the show, and only that show" do
+    invite = Open.create!(tag: "some-show:invite", email: "a@example.com")
+    confirm = Open.create!(tag: "some-show:confirm", email: "b@example.com")
+    Open.create!(tag: "some-show-2:invite", email: "c@example.com")
+    Open.create!(tag: "some_show:invite", email: "d@example.com")
+
+    assert_equal [ invite, confirm ], Open.for_show(Show.new(slug: "some-show")).order(:id).to_a
+  end
 end

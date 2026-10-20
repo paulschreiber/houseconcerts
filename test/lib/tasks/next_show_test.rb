@@ -187,6 +187,36 @@ class NextShowRakeTest < ActiveSupport::TestCase
     assert_includes out, "Total: 2 seats (2 confirmed 0 waitlisted) / 1 reservations (1 confirmed 0 waitlisted) / 0 declines"
   end
 
+  test "rsvps counts waitlisted rsvps and declines" do
+    RSVP.create!(show: shows(:upcoming), email: "waitlisted@example.com", first_name: "Wait", last_name: "Listed", response: "yes", seats_reserved: 3, confirmed: "waitlisted")
+    RSVP.create!(show: shows(:upcoming), email: "declined@example.com", first_name: "De", last_name: "Clined", response: "no")
+
+    out, = capture_io { Rake::Task["next_show:rsvps"].invoke }
+
+    assert_includes out, "yes✔ 2 #{rsvps(:one).email}"
+    assert_includes out, "yesw 3 waitlisted@example.com"
+    assert_includes out, " no  0 declined@example.com"
+    assert_includes out, "Total: 5 seats (2 confirmed 3 waitlisted) / 2 reservations (1 confirmed 1 waitlisted) / 1 declines"
+  end
+
+  test "unconfirmed counts waitlisted rsvps separately" do
+    RSVP.create!(show: shows(:upcoming), email: "unconfirmed@example.com", first_name: "Un", last_name: "Confirmed", response: "yes", seats_reserved: 1)
+    RSVP.create!(show: shows(:upcoming), email: "waitlisted@example.com", first_name: "Wait", last_name: "Listed", response: "yes", seats_reserved: 3, confirmed: "waitlisted")
+
+    out, = capture_io { Rake::Task["next_show:unconfirmed"].invoke }
+
+    assert_includes out, "Total: 4 seats (1 unconfirmed 3 waitlisted) / 2 reservations (1 unconfirmed 1 waitlisted)"
+  end
+
+  test "a task exits with a message when there is no upcoming show" do
+    travel 10.years
+
+    out, = capture_io do
+      assert_raises(SystemExit) { Rake::Task["next_show:rsvps"].invoke }
+    end
+    assert_includes out, "No upcoming shows found"
+  end
+
   test "unconfirmed lists rsvps awaiting confirmation for the next show" do
     rsvp = RSVP.create!(show: shows(:upcoming), email: "unconfirmed@example.com", first_name: "Un", last_name: "Confirmed", response: "yes", seats_reserved: 1)
 
