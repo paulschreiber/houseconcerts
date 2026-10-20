@@ -13,3 +13,6 @@ en:
       import:
         nothing_to_import: "Paste some names and email addresses, or choose a file."
         text_and_file: "Paste text or choose a file, not both."
+    scopes:
+      rsvp:
+        unconfirmed_rsvps: "Unconfirmed RSVPs"
