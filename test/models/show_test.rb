@@ -177,6 +177,17 @@ class ShowTest < ActiveSupport::TestCase
     assert_equal [ unconfirmed, waitlisted ].sort, show.rsvps.awaiting_confirmation.sort
   end
 
+  test "rsvps.holding_seats returns confirmed and unconfirmed yes rsvps, not waitlisted ones" do
+    show = shows(:upcoming)
+    confirmed = RSVP.create!(show:, email: "confirmed@example.com", first_name: "Jane", last_name: "Smith", response: "yes", seats_reserved: 1, confirmed: "confirmed")
+    unconfirmed = RSVP.create!(show:, email: "unconfirmed@example.com", first_name: "Jane", last_name: "Smith", response: "yes", seats_reserved: 1)
+    waitlisted = RSVP.create!(show:, email: "waitlisted@example.com", first_name: "Jane", last_name: "Smith", response: "yes", seats_reserved: 1, confirmed: "waitlisted")
+    declined = RSVP.create!(show:, email: "no@example.com", first_name: "Jane", last_name: "Smith", response: "no")
+
+    holding = show.rsvps.holding_seats.where(id: [ confirmed, unconfirmed, waitlisted, declined ])
+    assert_equal [ confirmed, unconfirmed ].sort, holding.sort
+  end
+
   test "reminder_time is the configured hour, the configured days before the show" do
     show = Show.new(start: Time.zone.parse("2026-12-05 19:30"))
 
