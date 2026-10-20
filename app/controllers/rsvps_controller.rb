@@ -6,27 +6,10 @@ class RsvpsController < ApplicationController
   end
 
   def new
-    # redirect to home page for /rsvp or /rsvp/new
-    if params[:slug].nil?
-      redirect_to root_url
-      return
-    end
+    @show = show_accepting_rsvps
+    return redirect_to root_url unless @show
 
     @rsvp = params[:rsvp].present? ? RSVP.new(rsvp_params) : RSVP.new
-
-    begin
-      @show = Show.friendly.find(params.expect(:slug))
-
-      # only allow RSVPs for confirmed, upcoming shows
-      unless @show.accepting_rsvps?
-        redirect_to root_url
-        return
-      end
-    rescue ActiveRecord::RecordNotFound
-      # redirect to home page for nonexistent show slug
-      redirect_to root_url
-      return
-    end
 
     # pre-fill form (from link)
     link_source = prefill_from_link(params[:uniqid]) if params[:uniqid].present?
@@ -35,7 +18,7 @@ class RsvpsController < ApplicationController
 
     if RSVP.responses.key?(params[:response])
       @rsvp.response = params[:response]
-      @rsvp.show_id = @show.id if @show.id
+      @rsvp.show_id = @show.id
     end
 
     # A "no" from an emailed link saves right away, in one click. It needs the
@@ -116,6 +99,17 @@ class RsvpsController < ApplicationController
   end
 
   private
+
+    # The confirmed, upcoming show the slug names, or nil for /rsvp, /rsvp/new,
+    # an unknown slug or a show that isn't taking RSVPs.
+    def show_accepting_rsvps
+      return if params[:slug].nil?
+
+      show = Show.friendly.find(params.expect(:slug))
+      show if show.accepting_rsvps?
+    rescue ActiveRecord::RecordNotFound
+      nil
+    end
 
     # A "no" from a link. Real links carry a token, which loads the guest's
     # existing RSVP. A hand-built one (?response=no&rsvp[email]=...) for an
