@@ -28,10 +28,11 @@
       <td class="empty">Cancelled <%= past_rsvp.cancelled_at.to_date.iso8601 %></td>
     </tr>
     <%- else -%>
-    <%= tag.tr(class: ("unused-seats" if past_rsvp.seats_used.to_i < past_rsvp.seats_reserved.to_i)) do %>
+    <%# Shows before attendance was recorded have no seats_used: a dash, not a no-show. %>
+    <%= tag.tr(class: ("unused-seats" if past_rsvp.seats_used && past_rsvp.seats_used < past_rsvp.seats_reserved)) do %>
       <td><%= past_rsvp.start.to_date.iso8601 %></td>
       <td><%= past_rsvp.name %></td>
-      <td><%= past_rsvp.seats_used.to_i %> / <%= past_rsvp.seats_reserved.to_i %></td>
+      <td><%= past_rsvp.seats_used || "—" %> / <%= past_rsvp.seats_reserved %></td>
     <%- end -%>
     <%- end -%>
   <%- end -%>
