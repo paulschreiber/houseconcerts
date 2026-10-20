@@ -5,12 +5,13 @@ class BatchRunFanOutJob < ApplicationJob
   # job is still genuinely sending.
   STRANDED_CLAIM_AGE = 10.minutes
 
+  # How many items are inserted, or claimed and enqueued, at a time.
+  SLICE_SIZE = 500
+
   # Retried for transient DB problems only, so a run isn't left "running"
   # with items never enqueued; it's safe to rerun from the start (see
-  # perform). A transient DB error during perform_later surfaces as
-  # SolidQueue::Job::EnqueueError, not an AdapterError. Real bugs aren't
-  # retried.
-  retry_on ActiveRecord::AdapterError, SolidQueue::Job::EnqueueError, wait: :polynomially_longer, attempts: 5
+  # perform). Real bugs aren't retried.
+  retry_on ActiveRecord::AdapterError, wait: :polynomially_longer, attempts: 5
 
   # Creates a run's items (one per recipient) and enqueues a BatchRunItemJob
   # for each, in the background so starting a batch returns at once. Retrying
@@ -18,10 +19,11 @@ class BatchRunFanOutJob < ApplicationJob
   # too: the run is no longer pending, so it goes straight to enqueuing.
   #
   # Safe to rerun: an item that already exists for a recipient is skipped
-  # (unique index), and the run only becomes "running", with its
-  # total_count, once every recipient has an item. That phase holds a row
-  # lock, so two fan-outs for the same pending run can't interleave; if one
-  # dies first, its transaction rolls back and a later attempt redoes it.
+  # (the bulk insert ignores rows the unique index rejects), and the run only
+  # becomes "running", with its total_count, once every recipient has an
+  # item. That phase holds a row lock, so two fan-outs for the same pending
+  # run can't interleave; if one dies first, its transaction rolls back and a
+  # later attempt redoes it.
   def perform(batch_run_id)
     batch_run = BatchRun.find(batch_run_id)
     return if batch_run.completed?
@@ -31,11 +33,7 @@ class BatchRunFanOutJob < ApplicationJob
     batch_run.with_lock do
       next unless batch_run.pending?
 
-      recipients_for(batch_run).each do |recipient|
-        batch_run.batch_run_items.create!(recipient: recipient, status: :pending)
-      rescue ActiveRecord::RecordNotUnique
-        next
-      end
+      create_items(batch_run)
 
       total_count = batch_run.batch_run_items.count
 
@@ -59,34 +57,50 @@ class BatchRunFanOutJob < ApplicationJob
 
   private
 
-    def claimable(scope)
-      scope.where("fan_out_enqueued_at IS NULL OR fan_out_enqueued_at < ?", STRANDED_CLAIM_AGE.ago)
+    def create_items(batch_run)
+      recipients = recipients_for(batch_run)
+      recipient_type = recipients.klass.polymorphic_name
+
+      recipients.pluck(:id).each_slice(SLICE_SIZE) do |recipient_ids|
+        rows = recipient_ids.map { |id| { recipient_type: recipient_type, recipient_id: id } }
+        batch_run.batch_run_items.insert_all(rows) # rubocop:disable Rails/SkipsModelValidations
+      end
     end
 
     # Each item is claimed before it's enqueued, so two fan-outs (or a fan-out
     # and a retry) can't both enqueue it; otherwise, if the first send failed,
     # the second could resend it unasked.
     def enqueue_unresolved_items(batch_run)
-      claimable(batch_run.batch_run_items.pending).find_each { |item| enqueue_item(item) }
+      items = batch_run.batch_run_items
+      enqueue_claimed(items.pending.where("fan_out_enqueued_at IS NULL OR fan_out_enqueued_at < ?", STRANDED_CLAIM_AGE.ago))
 
       # Failed items only when an admin's retry reset their claim, so a crash
       # recovery never re-attempts a failure nobody asked to retry.
-      batch_run.batch_run_items.failed.where(fan_out_enqueued_at: nil).find_each { |item| enqueue_item(item) }
+      enqueue_claimed(items.failed.where(fan_out_enqueued_at: nil))
     end
 
-    # If perform_later raises, the claim is released so a later attempt
-    # doesn't skip the item forever.
-    def enqueue_item(item)
-      claimed = claimable(BatchRunItem.where(id: item.id))
-                .update_all(fan_out_enqueued_at: Time.current) == 1 # rubocop:disable Rails/SkipsModelValidations
-      return unless claimed
-
-      begin
-        BatchRunItemJob.perform_later(item.id)
-      rescue StandardError
-        BatchRunItem.where(id: item.id).update_all(fan_out_enqueued_at: nil) # rubocop:disable Rails/SkipsModelValidations
-        raise
+    # Claims and enqueues the items in scope a slice at a time. SKIP LOCKED
+    # leaves a slice another fan-out is claiming to that fan-out; once a claim
+    # commits, the item no longer matches scope.
+    def enqueue_claimed(scope)
+      loop do
+        item_ids = BatchRunItem.transaction do
+          ids = scope.order(:id).limit(SLICE_SIZE).lock("FOR UPDATE SKIP LOCKED").pluck(:id)
+          BatchRunItem.where(id: ids).update_all(fan_out_enqueued_at: Time.current) # rubocop:disable Rails/SkipsModelValidations
+          ids
+        end
+        enqueue_items(item_ids) if item_ids.any?
+        break if item_ids.size < SLICE_SIZE
       end
+    end
+
+    # If enqueuing raises, the slice's claims are released so a later attempt
+    # doesn't skip those items forever.
+    def enqueue_items(item_ids)
+      ActiveJob.perform_all_later(item_ids.map { |id| BatchRunItemJob.new(id) })
+    rescue StandardError
+      BatchRunItem.where(id: item_ids).update_all(fan_out_enqueued_at: nil) # rubocop:disable Rails/SkipsModelValidations
+      raise
     end
 
     def recipients_for(batch_run)
