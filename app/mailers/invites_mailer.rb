@@ -93,7 +93,7 @@ class InvitesMailer < ApplicationMailer
     def make_calendar_url
       show = @rsvp.show
       calendar_params = {
-        text: "#{show.name} house concert",
+        text: show.event_name,
         dates: "#{show.start.utc.strftime(FORMAT)}/#{show.end.utc.strftime(FORMAT)}",
         location: show.venue.full_address_calendar,
         details: "Update reservation: #{@rsvp_url}",
@@ -104,7 +104,7 @@ class InvitesMailer < ApplicationMailer
     end
 
     def subject_for(prefix, show)
-      "#{prefix}: #{show.name} house concert (#{show.start_date_short})"
+      "#{prefix}: #{show.event_name} (#{show.start_date_short})"
     end
 
     # A confirmation, waitlist or reminder email is sent later than it's

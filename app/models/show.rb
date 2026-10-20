@@ -149,6 +149,11 @@ class Show < ApplicationRecord
     "#{name} (#{start_date_short})"
   end
 
+  # The event's public name: the show's name followed by "house concert".
+  def event_name
+    "#{name} house concert"
+  end
+
   def summary
     "#{name} (#{start&.to_date&.iso8601})"
   end
