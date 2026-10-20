@@ -149,16 +149,13 @@ class BatchRunItemJob < ApplicationJob
       batch_run = item.batch_run
 
       with_transient_retries(item: item) do
-        batch_run.with_lock do
-          counts = batch_run.batch_run_items.where.not(counted_at: nil).group(:status).count
-          batch_run.update!(sent_count: counts.fetch("sent", 0), failed_count: counts.fetch("failed", 0))
+        counts = batch_run.with_lock do
+          batch_run.recount_items.tap { |c| batch_run.update!(sent_count: c[:sent], failed_count: c[:failed]) }
         end
 
         # Cancelled items count as done, or a reopened run with cancelled items
         # could never reach total_count.
-        cancelled_count = batch_run.batch_run_items.cancelled.count
-
-        if batch_run.processed_count + cancelled_count >= batch_run.total_count
+        if batch_run.processed_count + counts[:cancelled] >= batch_run.total_count
           # Only the item that finishes a running run completes it, so the
           # failure email goes out once, and a retry of this is a no-op.
           became_completed = BatchRun.where(id: batch_run.id, status: "running")
