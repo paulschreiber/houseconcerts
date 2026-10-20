@@ -2,22 +2,22 @@ require "test_helper"
 
 class InvitesTest < ActionMailer::TestCase
   test "invite does nothing for a nil person or show" do
-    assert_no_emails { InvitesMailer.invite(nil, shows(:upcoming)).deliver_now }
-    assert_no_emails { InvitesMailer.invite(people(:one), nil).deliver_now }
+    assert_no_emails { InvitesMailer.with(person: nil, show: shows(:upcoming)).invite.deliver_now }
+    assert_no_emails { InvitesMailer.with(person: people(:one), show: nil).invite.deliver_now }
   end
 
   test "invite does nothing for an inactive person" do
     person = people(:one)
     person.update!(status: "removed")
 
-    assert_no_emails { InvitesMailer.invite(person, shows(:upcoming)).deliver_now }
+    assert_no_emails { InvitesMailer.with(person: person, show: shows(:upcoming)).invite.deliver_now }
   end
 
   test "invite delivers to an active person for an upcoming show" do
     person = people(:one)
     show = shows(:upcoming)
 
-    email = InvitesMailer.invite(person, show)
+    email = InvitesMailer.with(person: person, show: show).invite
 
     assert_emails 1 do
       email.deliver_now
@@ -33,7 +33,7 @@ class InvitesTest < ActionMailer::TestCase
     person = people(:one)
     show = shows(:upcoming)
 
-    email = InvitesMailer.invite(person, show)
+    email = InvitesMailer.with(person: person, show: show).invite
 
     expected_src = tracking_pixel_url(tag: "#{show.slug}:invite", uniqid: person.uniqid, kind: "person")
     assert_includes email.body.encoded, %(src="#{expected_src}")
@@ -43,21 +43,21 @@ class InvitesTest < ActionMailer::TestCase
     rsvp = rsvps(:one)
     rsvp.update!(response: "no")
 
-    assert_no_emails { InvitesMailer.waitlisted(rsvp).deliver_now }
+    assert_no_emails { InvitesMailer.with(rsvp: rsvp).waitlisted.deliver_now }
   end
 
   test "waitlisted delivers with a waitlist subject" do
     rsvp = rsvps(:one)
 
     assert_emails 1 do
-      InvitesMailer.waitlisted(rsvp).deliver_now
+      InvitesMailer.with(rsvp: rsvp).waitlisted.deliver_now
     end
   end
 
   test "waitlisted includes an open-tracking pixel keyed to the rsvp's uniqid" do
     rsvp = rsvps(:one)
 
-    email = InvitesMailer.waitlisted(rsvp)
+    email = InvitesMailer.with(rsvp: rsvp).waitlisted
 
     expected_src = tracking_pixel_url(tag: "#{rsvp.show.slug}:waitlist", uniqid: rsvp.uniqid, kind: "rsvp")
     assert_includes email.body.encoded, %(src="#{expected_src}")
@@ -67,14 +67,14 @@ class InvitesTest < ActionMailer::TestCase
     rsvp = rsvps(:one)
     rsvp.update_column(:waitlist_emailed_at, Time.current) # rubocop:disable Rails/SkipsModelValidations
 
-    assert_no_emails { InvitesMailer.waitlisted(rsvp).deliver_now }
+    assert_no_emails { InvitesMailer.with(rsvp: rsvp).waitlisted.deliver_now }
   end
 
   test "confirm only sends once even if the same job is performed twice" do
     rsvp = rsvps(:one)
 
     assert_emails 1 do
-      2.times { InvitesMailer.confirm(rsvp).deliver_now }
+      2.times { InvitesMailer.with(rsvp: rsvp).confirm.deliver_now }
     end
   end
 
@@ -82,7 +82,7 @@ class InvitesTest < ActionMailer::TestCase
     test "#{action} releases its claim if delivery fails, so a retry can resend" do
       rsvp = rsvps(:one)
 
-      job = ActionMailer::MailDeliveryJob.new("InvitesMailer", action, "deliver_now", args: [ rsvp ])
+      job = ActionMailer::MailDeliveryJob.new("InvitesMailer", action, "deliver_now", params: { rsvp: rsvp }, args: [])
       with_stubbed_instance_method(Mail::TestMailer, :deliver!, ->(_mail) { raise "simulated SMTP failure" }) do
         assert_raises(RuntimeError) { job.perform_now }
       end
@@ -94,7 +94,7 @@ class InvitesTest < ActionMailer::TestCase
   test "confirm delivers with a confirmation subject and a calendar link" do
     rsvp = rsvps(:one)
 
-    email = InvitesMailer.confirm(rsvp)
+    email = InvitesMailer.with(rsvp: rsvp).confirm
 
     assert_emails 1 do
       email.deliver_now
@@ -106,7 +106,7 @@ class InvitesTest < ActionMailer::TestCase
   test "confirm includes an open-tracking pixel keyed to the rsvp's uniqid" do
     rsvp = rsvps(:one)
 
-    email = InvitesMailer.confirm(rsvp)
+    email = InvitesMailer.with(rsvp: rsvp).confirm
 
     expected_src = tracking_pixel_url(tag: "#{rsvp.show.slug}:confirm", uniqid: rsvp.uniqid, kind: "rsvp")
     assert_includes email.body.encoded, %(src="#{expected_src}")
@@ -139,7 +139,7 @@ class InvitesTest < ActionMailer::TestCase
     rsvp = rsvps(:one)
     rsvp.update_column(:first_name, "</script><b>x") # rubocop:disable Rails/SkipsModelValidations
 
-    html = html_body(InvitesMailer.confirm(rsvp))
+    html = html_body(InvitesMailer.with(rsvp: rsvp).confirm)
 
     assert_not_includes html, "</script><b>x"
     assert_includes ld_json_in(html).dig("underName", "name"), "</script><b>x"
@@ -149,7 +149,7 @@ class InvitesTest < ActionMailer::TestCase
     rsvp = rsvps(:one)
     rsvp.update_column(:first_name, 'Bob", attacker@evil.com, "X') # rubocop:disable Rails/SkipsModelValidations
 
-    email = InvitesMailer.confirm(rsvp)
+    email = InvitesMailer.with(rsvp: rsvp).confirm
 
     assert_equal [ rsvp.email ], email.to
   end
@@ -158,13 +158,13 @@ class InvitesTest < ActionMailer::TestCase
     rsvp = rsvps(:one)
     rsvp.update_column(:confirmation_emailed_at, Time.current) # rubocop:disable Rails/SkipsModelValidations
 
-    assert_no_emails { InvitesMailer.confirm(rsvp).deliver_now }
+    assert_no_emails { InvitesMailer.with(rsvp: rsvp).confirm.deliver_now }
   end
 
   test "remind delivers with a reminder subject" do
     rsvp = rsvps(:one)
 
-    email = InvitesMailer.remind(rsvp)
+    email = InvitesMailer.with(rsvp: rsvp).remind
 
     assert_emails 1 do
       email.deliver_now
@@ -175,24 +175,29 @@ class InvitesTest < ActionMailer::TestCase
   test "remind includes an open-tracking pixel keyed to the rsvp's uniqid" do
     rsvp = rsvps(:one)
 
-    email = InvitesMailer.remind(rsvp)
+    email = InvitesMailer.with(rsvp: rsvp).remind
 
     expected_src = tracking_pixel_url(tag: "#{rsvp.show.slug}:remind", uniqid: rsvp.uniqid, kind: "rsvp")
     assert_includes email.body.encoded, %(src="#{expected_src}")
   end
 
-  test "make_calendar_url builds a google calendar link with the show details" do
+  test "confirm links to adding the show to Google Calendar, with the guest's RSVP link" do
     rsvp = rsvps(:one)
-    url = InvitesMailer.new.make_calendar_url(rsvp)
 
-    assert_includes url, "https://calendar.google.com/calendar/r/eventedit"
-    assert_includes url, CGI.escape(rsvp.show.name)
+    html = html_body(InvitesMailer.with(rsvp: rsvp).confirm)
+
+    url = Nokogiri::HTML(html).at_css("a:contains('Add to Google Calendar')")["href"]
+    assert url.start_with?("https://calendar.google.com/calendar/r/eventedit?")
+    query = Rack::Utils.parse_query(URI(url).query)
+    assert_equal "#{rsvp.show.name} house concert", query["text"]
+    assert_equal "Update reservation: #{Rails.application.routes.url_helpers.modify_rsvp_url(slug: rsvp.show.slug, uniqid: rsvp.uniqid)}",
+                 query["details"]
   end
 
   test "rsvp_updated tells the guest what changed and links to their RSVP" do
     rsvp = rsvps(:one)
 
-    email = InvitesMailer.rsvp_updated(rsvp, { response: "yes", seats: 2 }, { response: "no", seats: 0 })
+    email = InvitesMailer.with(rsvp: rsvp, previous: { response: "yes", seats: 2 }, current: { response: "no", seats: 0 }).rsvp_updated
     body = email.body.decoded
 
     assert_equal [ rsvp.email ], email.to
@@ -206,7 +211,7 @@ class InvitesTest < ActionMailer::TestCase
   test "rsvp_updated reports the change it was sent for, even if the RSVP changed again since" do
     rsvp = rsvps(:one) # now yes, 2 seats
 
-    body = InvitesMailer.rsvp_updated(rsvp, { response: "yes", seats: 3 }, { response: "no", seats: 0 }).body.decoded
+    body = InvitesMailer.with(rsvp: rsvp, previous: { response: "yes", seats: 3 }, current: { response: "no", seats: 0 }).rsvp_updated.body.decoded
 
     assert_includes body, "Before: Attending, 3 seats"
     assert_includes body, "Now: Not attending"
@@ -215,7 +220,7 @@ class InvitesTest < ActionMailer::TestCase
   test "rsvp_change_requested sends the guest their link and says nothing changed" do
     rsvp = rsvps(:one)
 
-    email = InvitesMailer.rsvp_change_requested(rsvp, 2)
+    email = InvitesMailer.with(rsvp: rsvp, seats: 2).rsvp_change_requested
     body = email.body.decoded
 
     assert_equal [ rsvp.email ], email.to
@@ -226,7 +231,7 @@ class InvitesTest < ActionMailer::TestCase
   end
 
   test "rsvp_change_requested states the seats as of the request" do
-    body = InvitesMailer.rsvp_change_requested(rsvps(:one), 4).body.decoded
+    body = InvitesMailer.with(rsvp: rsvps(:one), seats: 4).rsvp_change_requested.body.decoded
 
     assert_includes body, "you still have 4 seats"
   end
@@ -244,7 +249,7 @@ class InvitesTest < ActionMailer::TestCase
     # The confirmation email is sent at most once per RSVP, so each test
     # renders it once.
     def confirm_ld_json(rsvp)
-      ld_json_in(html_body(InvitesMailer.confirm(rsvp)))
+      ld_json_in(html_body(InvitesMailer.with(rsvp: rsvp).confirm))
     end
 
     def tracking_pixel_url(tag:, uniqid:, kind:)

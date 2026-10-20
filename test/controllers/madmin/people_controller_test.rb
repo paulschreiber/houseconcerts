@@ -99,7 +99,7 @@ module Madmin
     end
 
     test "invite shows an alert instead of a false success notice when InvitePerson fails" do
-      with_stubbed(InvitesMailer, :invite, ->(*_args) { raise "simulated enqueue failure" }) do
+      with_stubbed(InvitesMailer, :with, ->(*_args) { raise "simulated enqueue failure" }) do
         assert_no_emails do
           patch invite_madmin_person_path(@person)
         end

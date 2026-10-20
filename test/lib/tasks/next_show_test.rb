@@ -99,7 +99,7 @@ class NextShowRakeTest < ActiveSupport::TestCase
     person = Person.create!(first_name: "Direct", last_name: "Invite", email: "direct-invite-fail@example.com", status: "active")
 
     out = nil
-    with_stubbed(InvitesMailer, :invite, ->(*) { raise "simulated send failure" }) do
+    with_stubbed(InvitesMailer, :with, ->(*) { raise "simulated send failure" }) do
       assert_no_emails do
         out, = capture_io { Rake::Task["next_show:invite_one"].invoke(person.email) }
       end

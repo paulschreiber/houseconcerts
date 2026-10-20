@@ -38,7 +38,7 @@ class InvitePersonTest < ActiveSupport::TestCase
     person = people(:one)
 
     result = nil
-    with_stubbed(InvitesMailer, :invite, ->(*_args) { raise "simulated enqueue failure" }) do
+    with_stubbed(InvitesMailer, :with, ->(*_args) { raise "simulated enqueue failure" }) do
       assert_no_emails { result = InvitePerson.call(person, shows(:upcoming)) }
     end
 

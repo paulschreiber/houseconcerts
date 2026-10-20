@@ -409,7 +409,8 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
     rsvp = rsvps(:one)
     rsvp.update!(phone_number: "212-555-0100", postcode: "10001", response: "no")
 
-    assert_enqueued_email_with InvitesMailer, :rsvp_updated, args: [ rsvp, { response: "no", seats: 0 }, { response: "yes", seats: 3 } ] do
+    assert_enqueued_email_with InvitesMailer, :rsvp_updated,
+                               params: { rsvp: rsvp, previous: { response: "no", seats: 0 }, current: { response: "yes", seats: 3 } } do
       post rsvps_path, params: { rsvp: { first_name: "Someone", last_name: "Else", email: rsvp.email, show_id: rsvp.show_id,
                                          phone_number: "917-555-0199", postcode: "90210", response: "yes", seats_reserved: 3 } }
     end
@@ -543,7 +544,7 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
     rsvp = rsvps(:one) # confirmed, yes, 2 seats
 
     [ { response: "no", seats_reserved: 0 }, { response: "yes", seats_reserved: 1 } ].each do |change|
-      assert_enqueued_email_with InvitesMailer, :rsvp_change_requested, args: [ rsvp, 2 ] do
+      assert_enqueued_email_with InvitesMailer, :rsvp_change_requested, params: { rsvp: rsvp, seats: 2 } do
         post rsvps_path, params: { rsvp: { first_name: "Test", last_name: "Rsvp", email: rsvp.email, show_id: rsvp.show_id, **change } }
       end
 
