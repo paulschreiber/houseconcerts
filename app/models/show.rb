@@ -65,11 +65,11 @@ class Show < ApplicationRecord
   end
 
   def start_date
-    start.strftime("%A, %B %e, %Y").gsub("  ", " ").strip unless start.nil?
+    start&.strftime("%A, %B %-d, %Y")
   end
 
   def start_date_short
-    start.strftime("%B %e").gsub("  ", " ").strip unless start.nil?
+    start&.strftime("%B %-d")
   end
 
   def doors
@@ -145,6 +145,8 @@ class Show < ApplicationRecord
     "couldn’t start automatically" if auto_remind_attempted_at?
   end
 
+  # The name with the month and day, e.g. "Jane Smith (November 20)". The
+  # admin notification emails use it implicitly, as <%= @show %>.
   def to_s
     "#{name} (#{start_date_short})"
   end
@@ -154,7 +156,9 @@ class Show < ApplicationRecord
     "#{name} house concert"
   end
 
-  def summary
+  # The name with the full date, e.g. "Jane Smith (2026-11-20)", which sorts
+  # and tells years apart in admin lists.
+  def dated_name
     "#{name} (#{start&.to_date&.iso8601})"
   end
 

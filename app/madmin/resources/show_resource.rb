@@ -91,7 +91,7 @@ class ShowResource < Madmin::Resource
 
   # Customize the display name of records in the admin area.
   def self.display_name(record)
-    "#{record.name} — #{record.start.strftime('%Y-%m-%d')}"
+    record.dated_name
   end
 
   # Customize the default sort column and direction.

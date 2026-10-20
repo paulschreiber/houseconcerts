@@ -1,0 +1,8 @@
+<header class="header">
+  <h1><%= @show.name %></h1>
+  <p><%= @show.start_date %></p>
+
+  <div class="actions">
+    <%= link_to "Back", madmin_show_path(@show), class: "btn btn-secondary" %>
+  </div>
+</header>
