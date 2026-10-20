@@ -1,5 +1,8 @@
 class WaitlistRSVP
   def self.call(rsvp)
-    RSVPStatusTransition.call(rsvp, transition: :waitlist!, mailer_method: :waitlisted)
+    return false unless rsvp.waitlist!
+
+    InvitesMailer.waitlisted(rsvp).deliver_later
+    true
   end
 end
