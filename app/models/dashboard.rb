@@ -31,7 +31,7 @@ class Dashboard
   # Seats of yes RSVPs, keyed by confirmation status (waitlisted seats
   # included, under "waitlisted").
   def next_show_seats
-    @next_show_seats ||= RSVP.where(show: next_show).yes.group(:confirmed).sum(:seats_reserved)
+    @next_show_seats ||= next_show_rsvps.yes.group(:confirmed).sum(:seats_reserved)
   end
 
   # People an invite batch sent the next show's invite to, counting each
@@ -53,16 +53,16 @@ class Dashboard
 
   # RSVP counts keyed by response.
   def next_show_responses
-    @next_show_responses ||= RSVP.where(show: next_show).group(:response).count
+    @next_show_responses ||= next_show_rsvps.group(:response).count
   end
 
   def recent_rsvps
-    RSVP.where(show: next_show).order(responded_at: :desc).limit(RECENT_LIMIT)
+    next_show_rsvps.order(responded_at: :desc).limit(RECENT_LIMIT)
   end
 
   # The next show's unconfirmed and waitlisted yes RSVPs, oldest first.
   def unconfirmed_rsvps
-    RSVP.unconfirmed_rsvps.includes(:show).order(:created_at)
+    next_show_rsvps.awaiting_confirmation.includes(:show).order(:created_at)
   end
 
   # Shows that haven't happened yet, including unconfirmed ones.
@@ -127,6 +127,10 @@ class Dashboard
   end
 
   private
+
+    def next_show_rsvps
+      RSVP.where(show: next_show)
+    end
 
     def invited_people
       BatchRunItem.sent.where(recipient_type: "Person").joins(:batch_run)
