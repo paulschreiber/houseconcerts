@@ -1,13 +1,13 @@
 <table class="details">
   <tr><th>Show</th><td><%= @rsvp.show %></td></tr>
   <tr><th>Person</th><td><%= @rsvp.full_name %></td></tr>
-<%- if @rsvp.response != "yes" %>
+<%- unless @rsvp.yes? %>
   <tr><th>Response</th><td><%= @rsvp.response %></td></tr>
 <%- end -%>
-<%- if @old_seats.nil? and @rsvp.seats_reserved > 0 %>
-  <tr><th>Seats</th><td><%= @rsvp.seats_reserved %></td></tr>
-<%- elsif !@old_seats.nil? %>
+<%- if @old_seats %>
   <tr><th>Seats</th><td><%= @old_seats %> → <%= @rsvp.seats_reserved %></td></tr>
+<%- elsif @rsvp.seats_reserved > 0 %>
+  <tr><th>Seats</th><td><%= @rsvp.seats_reserved %></td></tr>
 <%- end -%>
   <tr><th>On mailing list</th><td><%= @rsvp.person_exists? ? "Yes" : "No" %></td></tr>
 </table>

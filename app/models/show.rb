@@ -142,6 +142,14 @@ class Show < ApplicationRecord
     confirmed? && !occurred? && auto_remind_attempted_at.nil? && !reminders_handled?
   end
 
+  # Whether ScheduledRemindersJob will send the show's reminders, shown on its
+  # admin page, including beside a run from before the show was rescheduled.
+  def auto_remind_note
+    return "goes out automatically #{reminder_time_label}" if auto_remind_pending?
+
+    "couldn’t start automatically" if auto_remind_attempted_at?
+  end
+
   def to_s
     "#{name} (#{start_date_short})"
   end

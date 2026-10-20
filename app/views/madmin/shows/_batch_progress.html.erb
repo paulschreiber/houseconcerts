@@ -5,14 +5,7 @@
   all_batch_runs = show.batch_runs.order(created_at: :desc).to_a
   active_batch_runs_by_kind = all_batch_runs.reject(&:completed?).index_by(&:kind)
   latest_completed_batch_runs_by_kind = all_batch_runs.select(&:completed?).group_by(&:kind).transform_values(&:first)
-
-  # Reminders say whether ScheduledRemindersJob will send them, including
-  # beside a run from before the show was rescheduled.
-  auto_remind_note = if show.auto_remind_pending?
-    "goes out automatically #{show.reminder_time_label}"
-  elsif show.auto_remind_attempted_at?
-    "couldn’t start automatically"
-  end
+  remind_note = show.auto_remind_note
 %>
 <%# One subscription per show, not per run, so it keeps working as the active
     run for a kind changes without a reload. Each kind broadcasts to its own
@@ -26,10 +19,10 @@
       <% if batch_run %>
         <%= render partial: "madmin/shows/batch_run_progress", locals: { batch_run: batch_run } %>
         <% if kind == "remind" && show.auto_remind_pending? %>
-          <span class="batch-progress-none"><%= auto_remind_note.upcase_first %></span>
+          <span class="batch-progress-none"><%= remind_note.upcase_first %></span>
         <% end %>
       <% else %>
-        <span id="batch_run_progress_<%= kind %>" class="batch-progress-none">Not sent yet<%= "; #{auto_remind_note}" if kind == "remind" && auto_remind_note %></span>
+        <span id="batch_run_progress_<%= kind %>" class="batch-progress-none">Not sent yet<%= "; #{remind_note}" if kind == "remind" && remind_note %></span>
       <% end %>
     </div>
   <% end %>

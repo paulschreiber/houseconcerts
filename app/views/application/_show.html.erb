@@ -16,13 +16,14 @@
 			<p>$<%= show.price %></p>
 			<% end %>
 
-		<% if show.confirmed? && show.waitlisted? %>
-			<p><em>This show is sold out. Please RSVP now to be added to the waiting list.</em></p>
-		<% end %>
-
-		<% if show.confirmed? && (show.available? || show.waitlisted?) %>
-			<p><%= button_to("Reserve Seats", rsvp_for_show_path(slug: show.slug), method: :get) unless controller_name == "rsvps" %></p>
-		<% elsif show.confirmed? && show.sold_out? %>
+		<% if show.confirmed? %>
+			<% if show.sold_out? %>
 			<p>This show is sold out.</p>
+			<% else %>
+			<% if show.waitlisted? %>
+			<p><em>This show is sold out. Please RSVP now to be added to the waiting list.</em></p>
+			<% end %>
+			<p><%= button_to("Reserve Seats", rsvp_for_show_path(slug: show.slug), method: :get) unless controller_name == "rsvps" %></p>
+			<% end %>
 		<% end %>
 		</div>

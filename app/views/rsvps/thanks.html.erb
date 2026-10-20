@@ -2,7 +2,7 @@
 
 <% if @rsvp.yes? %>
 <h1>Thanks for reserving <%= seat_count_phrase(@rsvp.seats_reserved, "seats", "a seat") %> for <%= @rsvp.show.name %></h1>
-<% elsif @rsvp.no? %>
+<% else %>
 <h1>Sorry you couldn’t make it, <%= @rsvp.first_name %></h1>
 <% end %>
 
@@ -18,7 +18,7 @@
 	<p>You’ll receive my address and directions a few weeks before the show.</p>
 	<% end %>
 
-<% elsif @rsvp.no? %>
+<% else %>
 
 	<p>Thanks for letting me know!</p>
 
