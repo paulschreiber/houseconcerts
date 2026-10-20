@@ -1,30 +1,36 @@
-require "logger"
+# Helpers for the tasks below.
+module NextShowTasks
+  # The rsvps task's mark for each yes RSVP's confirmation status.
+  STATUS_MARKS = { "confirmed" => "✔", "waitlisted" => "w", "unconfirmed" => "✖" }.freeze
 
-def print_confirmation(sent, failed = 0)
-  puts "Sent #{sent} #{'email'.pluralize(sent)}, #{failed} failed."
-end
+  module_function
 
-def run_batch(show, kind, noun)
-  # Recipients are computed and enqueued in the background (BatchRunFanOutJob),
-  # so the count isn't known yet here -- check the show's madmin page for progress.
-  StartBatchRun.call(show: show, kind: kind)
-  puts "Started sending #{noun.pluralize} for #{show.name}."
-rescue StartBatchRun::AlreadyInProgress
-  puts "A #{kind} batch is already in progress for #{show.name}; not starting another."
-rescue StartBatchRun::NotReady, StartBatchRun::EnqueueFailed => e
-  puts e.message
+  def next_show_or_exit
+    show = Show.next
+    return show if show
+
+    puts "No upcoming shows found"
+    exit
+  end
+
+  def run_batch(show, kind, noun)
+    # Recipients are computed and enqueued in the background (BatchRunFanOutJob),
+    # so the count isn't known yet here -- check the show's madmin page for progress.
+    StartBatchRun.call(show: show, kind: kind)
+    puts "Started sending #{noun.pluralize} for #{show.name}."
+  rescue StartBatchRun::AlreadyInProgress
+    puts "A #{kind} batch is already in progress for #{show.name}; not starting another."
+  rescue StartBatchRun::NotReady, StartBatchRun::EnqueueFailed => e
+    puts e.message
+  end
 end
 
 namespace :next_show do
   desc "Send invites for next show"
   task invite: :environment do
-    show = Show.next
-    if show.nil?
-      puts "No upcoming shows found"
-      exit
-    end
+    show = NextShowTasks.next_show_or_exit
 
-    run_batch(show, "invite", "invite")
+    NextShowTasks.run_batch(show, "invite", "invite")
   end
 
   desc "Send invites for next show to one person"
@@ -41,11 +47,7 @@ namespace :next_show do
       exit
     end
 
-    show = Show.next
-    if show.nil?
-      puts "No upcoming shows found"
-      exit
-    end
+    show = NextShowTasks.next_show_or_exit
 
     unless person.can_invite?
       puts "Email #{email} can’t be invited"
@@ -62,182 +64,101 @@ namespace :next_show do
 
   desc "Send invites for next show to people who have not opened the invitation"
   task invite_unopened: :environment do
-    show = Show.next
-    if show.nil?
-      puts "No upcoming shows found"
-      exit
-    end
+    show = NextShowTasks.next_show_or_exit
 
-    run_batch(show, "invite_unopened", "invite")
+    NextShowTasks.run_batch(show, "invite_unopened", "invite")
   end
 
   desc "Count invites for next show"
   task invite_count: :environment do
-    show = Show.next
-    if show.nil?
-      puts "No upcoming shows found"
-      exit
-    end
+    show = NextShowTasks.next_show_or_exit
 
     puts "Can email #{Person.invitable_for(show).size} people."
   end
 
   desc "Show attendees for next show"
   task attendees: :environment do
-    show = Show.next
-    if show.nil?
-      puts "No upcoming shows found"
-      exit
-    end
+    show = NextShowTasks.next_show_or_exit
 
-    seats_reserved = 0
-    reservations = 0
-    show.attendees.order(:id).each do |rsvp|
-      puts "#{rsvp.created_at.to_date} #{rsvp.seats_reserved} #{rsvp.person_exists? ? ' ' : '✖'} #{rsvp.phone_number.to_s.ljust(14)} #{rsvp.full_name}"
-      seats_reserved += rsvp.seats_reserved
-      reservations += 1
+    rsvps = show.attendees.order(:id).to_a
+    people_emails = Person.where(email: rsvps.map(&:email)).pluck(:email).to_set
+    rsvps.each do |rsvp|
+      puts "#{rsvp.created_at.to_date} #{rsvp.seats_reserved} #{people_emails.include?(rsvp.email) ? ' ' : '✖'} #{rsvp.phone_number.to_s.ljust(14)} #{rsvp.full_name}"
     end
-    puts "Total: #{seats_reserved} seats / #{reservations} reservations"
+    puts "Total: #{rsvps.sum(&:seats_reserved)} seats / #{rsvps.size} reservations"
   end
 
   desc "Show RSVPs for next show"
   task rsvps: :environment do
-    show = Show.next
-    if show.nil?
-      puts "No upcoming shows found"
-      exit
-    end
+    show = NextShowTasks.next_show_or_exit
 
-    seats_reserved = 0
-    reservations = 0
-    confirmed = 0
-    confirmed_seats = 0
-    waitlisted = 0
-    waitlisted_seats = 0
-    declines = 0
-    RSVP.where(show: show).order(:id).each do |rsvp|
-      if rsvp.confirmed?
-        status = "✔"
-      elsif rsvp.waitlisted?
-        status = "w"
-      elsif rsvp.yes?
-        status = "✖"
-      else
-        status = " "
-      end
+    rsvps = show.rsvps.order(:id).to_a
+    rsvps.each do |rsvp|
+      status = rsvp.yes? ? NextShowTasks::STATUS_MARKS.fetch(rsvp.confirmed) : " "
       puts "#{rsvp.created_at.to_date} #{rsvp.response.rjust(3)}#{status} #{rsvp.seats_reserved} #{rsvp.email}"
-
-      seats_reserved += rsvp.seats_reserved if rsvp.yes?
-      reservations += 1 if rsvp.yes?
-      declines += 1 if rsvp.no?
-      if rsvp.confirmed?
-        confirmed += 1
-        confirmed_seats += rsvp.seats_reserved
-      end
-      if rsvp.waitlisted?
-        waitlisted += 1
-        waitlisted_seats += rsvp.seats_reserved
-      end
     end
-    puts "Total: #{seats_reserved} seats (#{confirmed_seats} confirmed #{waitlisted_seats} waitlisted) / #{reservations} reservations (#{confirmed} confirmed #{waitlisted} waitlisted) / #{declines} declines"
+
+    yes = rsvps.select(&:yes?)
+    confirmed = yes.select(&:confirmed?)
+    waitlisted = yes.select(&:waitlisted?)
+    puts "Total: #{yes.sum(&:seats_reserved)} seats (#{confirmed.sum(&:seats_reserved)} confirmed #{waitlisted.sum(&:seats_reserved)} waitlisted) / " \
+         "#{yes.size} reservations (#{confirmed.size} confirmed #{waitlisted.size} waitlisted) / #{rsvps.size - yes.size} declines"
   end
 
   desc "Show Unconfirmed RSVPs for next show"
   task unconfirmed: :environment do
-    show = Show.next
-    if show.nil?
-      puts "No upcoming shows found"
-      exit
+    show = NextShowTasks.next_show_or_exit
+
+    rsvps = show.rsvps.awaiting_confirmation.order(:id).to_a
+    rsvps.each do |rsvp|
+      puts "#{rsvp.created_at.to_date} #{rsvp.response.rjust(3)}#{rsvp.waitlisted? ? 'w' : ' '} #{rsvp.seats_reserved} #{rsvp.email}"
     end
 
-    reservations = 0
-    unconfirmed = 0
-    unconfirmed_seats = 0
-    waitlisted = 0
-    waitlisted_seats = 0
-
-    show.rsvps.awaiting_confirmation.order(:id).each do |rsvp|
-      if rsvp.waitlisted?
-        status = "w"
-      else
-        status = " "
-      end
-      puts "#{rsvp.created_at.to_date} #{rsvp.response.rjust(3)}#{status} #{rsvp.seats_reserved} #{rsvp.email}"
-
-      reservations += 1 if rsvp.yes?
-      if rsvp.waitlisted?
-        waitlisted += 1
-        waitlisted_seats += rsvp.seats_reserved
-      else
-        unconfirmed += 1
-        unconfirmed_seats += rsvp.seats_reserved
-      end
-    end
-    seats = waitlisted_seats + unconfirmed_seats
-
-    puts "Total: #{seats} seats (#{unconfirmed_seats} unconfirmed #{waitlisted_seats} waitlisted) / #{reservations} reservations (#{unconfirmed} unconfirmed #{waitlisted} waitlisted)"
+    waitlisted, unconfirmed = rsvps.partition(&:waitlisted?)
+    puts "Total: #{rsvps.sum(&:seats_reserved)} seats (#{unconfirmed.sum(&:seats_reserved)} unconfirmed #{waitlisted.sum(&:seats_reserved)} waitlisted) / " \
+         "#{rsvps.size} reservations (#{unconfirmed.size} unconfirmed #{waitlisted.size} waitlisted)"
   end
 
   desc "Show Email opens for next show"
   task opens: :environment do
-    show = Show.next
-    if show.nil?
-      puts "No upcoming shows found"
-      exit
+    show = NextShowTasks.next_show_or_exit
+
+    opens = Open.for_show(show).order(:created_at).to_a
+    first_opens = opens.uniq(&:email)
+    first_opens.each do |open|
+      puts "#{open.created_at.to_date} #{open.tag.delete_prefix("#{show.slug}:")} #{open.email}"
     end
-
-    emails_seen = []
-
-    opens = Open.where("tag LIKE ?", "#{show.slug}%").order(:created_at)
-    opens.each do |open|
-      next if emails_seen.include?(open.email)
-
-      puts "#{open.created_at.to_date} #{open.tag[(show.slug.length + 1)..]} #{open.email}"
-      emails_seen << open.email
-    end
-    puts "Opens: #{emails_seen.size} emails #{opens.size} opens"
+    puts "Opens: #{first_opens.size} emails #{opens.size} opens"
   end
 
   desc "Confirm RSVPs for next show"
   task confirm: :environment do
-    show = Show.next
-    if show.nil?
-      puts "No upcoming shows found"
-      exit
-    end
+    show = NextShowTasks.next_show_or_exit
 
     unless show.confirmed?
       puts "Next show is not confirmed"
       exit
     end
 
-    rsvps = []
-    sent = 0
-
-    if show.available?
-      rsvps = show.rsvps.awaiting_confirmation
-      sent = rsvps.count do |rsvp|
-        puts "Emailing #{rsvp.email_address_with_name}..."
-        ConfirmRSVP.call(rsvp)
-      end
+    rsvps, service = if show.available?
+      [ show.rsvps.awaiting_confirmation.to_a, ConfirmRSVP ]
     elsif show.waitlisted?
-      rsvps = show.rsvps.yes.confirmed_unconfirmed
-      sent = rsvps.count do |rsvp|
-        puts "Emailing #{rsvp.email_address_with_name}..."
-        WaitlistRSVP.call(rsvp)
-      end
+      [ show.rsvps.yes.confirmed_unconfirmed.to_a, WaitlistRSVP ]
+    else
+      [ [], nil ]
     end
-    print_confirmation(sent, rsvps.size - sent)
+
+    sent = rsvps.count do |rsvp|
+      puts "Emailing #{rsvp.email_address_with_name}..."
+      service.call(rsvp)
+    end
+    puts "Sent #{sent} #{'email'.pluralize(sent)}, #{rsvps.size - sent} failed."
   end
 
   desc "Remind RSVPs for next show"
   task remind: :environment do
-    show = Show.next
-    if show.nil?
-      puts "No upcoming shows found"
-      exit
-    end
+    show = NextShowTasks.next_show_or_exit
 
-    run_batch(show, "remind", "reminder")
+    NextShowTasks.run_batch(show, "remind", "reminder")
   end
 end
