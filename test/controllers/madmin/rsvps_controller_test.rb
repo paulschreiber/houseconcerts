@@ -257,8 +257,7 @@ module Madmin
     test "index combines the show name and date into a Show column, and labels seats reserved Seats" do
       get madmin_rsvps_path
 
-      assert_response :success
-      headers = response.parsed_body.css("thead th").map { |th| th.text.strip }
+      headers = column_headers
       assert_includes headers, "Show"
       assert_includes headers, "Seats"
       assert_not_includes headers, "Show Name"
@@ -270,9 +269,7 @@ module Madmin
       [ nil, "previous_show", "previous_show_attendees" ].each do |scope|
         get madmin_rsvps_path(scope: scope)
 
-        assert_response :success
-        headers = response.parsed_body.css("thead th").map { |th| th.text.strip }
-        assert_not_includes headers, "Attended Before", "Attended Before shown for scope=#{scope.inspect}"
+        assert_not_includes column_headers, "Attended Before", "Attended Before shown for scope=#{scope.inspect}"
       end
     end
 
@@ -280,9 +277,7 @@ module Madmin
       %w[next_show next_show_attendees unconfirmed_rsvps nonsubscribers].each do |scope|
         get madmin_rsvps_path(scope: scope)
 
-        assert_response :success
-        headers = response.parsed_body.css("thead th").map { |th| th.text.strip }
-        assert_includes headers, "Attended Before", "Attended Before missing for scope=#{scope}"
+        assert_includes column_headers, "Attended Before", "Attended Before missing for scope=#{scope}"
       end
     end
 
@@ -340,6 +335,37 @@ module Madmin
       assert_equal 1, attended_queries
       assert_equal "✔", attendee_row_cells(@rsvp.full_name)[3].text.strip
       assert_equal "✔", attendee_row_cells(other.full_name)[3].text.strip
+    end
+
+    test "index shows the Opened column only on the attendee scopes" do
+      [ nil, "next_show", "unconfirmed_rsvps", "nonsubscribers", "previous_show" ].each do |scope|
+        get madmin_rsvps_path(scope: scope)
+
+        assert_not_includes column_headers, "Opened", "Opened shown for scope=#{scope.inspect}"
+      end
+
+      %w[next_show_attendees previous_show_attendees].each do |scope|
+        get madmin_rsvps_path(scope: scope)
+
+        assert_includes column_headers, "Opened", "Opened missing for scope=#{scope}"
+      end
+    end
+
+    test "index marks whether each attendee opened their confirmation email" do
+      @rsvp.update!(confirmed: "confirmed")
+      other = RSVP.create!(first_name: "Other", last_name: "Attendee", email: "other-attendee@example.com",
+                           show: @rsvp.show, response: "yes", confirmed: "confirmed", seats_reserved: 1)
+      Open.create!(tag: "#{@rsvp.show.slug}:confirm", email: @rsvp.email, open: true)
+      # Opening a different email for the show doesn't count.
+      Open.create!(tag: "#{other.show.slug}:invite", email: other.email, open: true)
+
+      assert_queries_match(/FROM `opens`/, count: 1) do
+        get madmin_rsvps_path(scope: "next_show_attendees")
+      end
+
+      column = column_headers.index("Opened")
+      assert_equal "✔", attendee_row_cells(@rsvp.full_name)[column].text.strip
+      assert_equal "✖", attendee_row_cells(other.full_name)[column].text.strip
     end
 
     test "index shows a Confirm button for an rsvp that can be confirmed" do
@@ -467,6 +493,11 @@ module Madmin
     end
 
     private
+
+      def column_headers
+        assert_response :success
+        response.parsed_body.css("thead th").map { |th| th.text.strip }
+      end
 
       # Finds an RSVP's table row by name and returns its <td> cells, so
       # assertions check that specific RSVP's columns instead of matching any
