@@ -14,7 +14,7 @@ module JsonLdHelper
   def ld_json_event(show)
     event = {
       "@type": "MusicEvent",
-      name: "#{show.name} House Concert",
+      name: show.event_name,
       startDate: show.start.iso8601,
       endDate: show.end.iso8601,
       doorTime: show.doors.iso8601,
