@@ -56,9 +56,9 @@ class NotifyMailer < ApplicationMailer
     @batch_run = batch_run
     @show = batch_run.show
     @failed_items = batch_run.batch_run_items.failed.includes(:recipient)
-    @kind_label = BatchRun.kind_label(batch_run.kind)
+    @kind_label = batch_run.lowercase_label
 
-    mail(subject: "#{@failed_items.size} failed #{@kind_label.downcase} #{'send'.pluralize(@failed_items.size)} for #{@show.name}")
+    mail(subject: "#{@failed_items.size} failed #{@kind_label} #{'send'.pluralize(@failed_items.size)} for #{@show.name}")
   end
 
   # ScheduledRemindersJob started a show's reminders, or resumed an admin's
