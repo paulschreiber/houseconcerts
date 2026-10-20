@@ -58,11 +58,6 @@ abbr {
   text-decoration: none;
 }
 
-abbr.duration,
-abbr.fn {
-  display: none;
-}
-
 dt {
   font-weight: bold;
 }
@@ -91,10 +86,6 @@ a {
   color: #668;
   text-decoration: none;
   border-bottom: 1px dashed #668;
-}
-
-a.img {
-  border-bottom: none;
 }
 
 a:hover {
@@ -129,14 +120,9 @@ a.imagelink:hover {
   border-color: #badbcc;
 }
 
-.artist,
-.cd,
-.thumbnail {
+.artist {
   border: 1px solid #668;
   margin-right: 10px;
-}
-
-.artist {
   float: left;
 }
 
@@ -223,32 +209,26 @@ dd > p {
 
 /* vcalendar -- past shows */
 
-.row1 {
+li.vevent:nth-child(3n + 1) {
   background: #fff;
 }
 
-.row2 {
+li.vevent:nth-child(3n + 2) {
   background: #ffc;
 }
 
-.row3 {
+li.vevent:nth-child(3n) {
   background: #dda;
 }
 
 ol.vcalendar,
 ol.columnheads {
   margin: 0;
-  padding: 0;
-}
-
-ol.vcalendar,
-ol.columnheads {
   margin-right: 1px;
+  padding: 0;
   list-style: none;
 }
 
-tr.columnheads th,
-th.columnheads,
 ol.columnheads {
   color: #fff;
   height: 2em;
@@ -265,7 +245,6 @@ li.vevent {
 ol.columnheads li {
   height: 2em;
   margin-bottom: -1.9em;
-  background: #f0f;
 }
 
 li.vevent {
@@ -288,8 +267,6 @@ ol.columnheads h3 + h3 {
   text-indent: 1.2em;
 }
 
-tr.columnheads th,
-th.columnheads,
 ol.columnheads li,
 h3 + h3 {
   background: #000;
@@ -301,24 +278,10 @@ ol.vcalendar div.vcard {
   padding-left: 4px;
 }
 
-td.centered,
-th.centered {
-  text-align: center;
-}
-
 p.note {
   margin-top: 0;
   color: #888;
   font-size: 11px;
-}
-
-span.rsvpnote {
-  color: #aaa;
-}
-
-span.resdate {
-  color: #aaa;
-  font-size: 10px;
 }
 
 label {
@@ -411,10 +374,6 @@ input[type="submit"] {
 
   form {
     margin-bottom: 2em;
-  }
-
-  #tabs {
-    // display: none;
   }
 
   img.artist.photo {

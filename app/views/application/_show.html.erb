@@ -11,7 +11,6 @@
 			<p class="description"><%= show.blurb %></p>
 
 			<abbr class="dtstart" title="<%= show.start.to_time.iso8601 %>"><%= show.start_date %><br /><%= show.start_time %></abbr>
-			<abbr class="duration" title="PT<%= show.duration %>H">(<%= show.duration %> hours)</abbr>
 			<% if mode == :detail %>
 			<p>$<%= show.price %></p>
 			<% end %>

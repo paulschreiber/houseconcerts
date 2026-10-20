@@ -57,10 +57,6 @@ class Show < ApplicationRecord
     past.last
   end
 
-  def duration
-    (self.end - start).to_i
-  end
-
   def day_of_week
     start.strftime("%A")
   end
