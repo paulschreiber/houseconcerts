@@ -34,6 +34,19 @@ class AdminTest < ActiveSupport::TestCase
     assert_predicate admin.reload.reset_password_token, :present?
   end
 
+  test "changing the email tells the old address" do
+    admin = admins(:two)
+    old_email = admin.email
+
+    perform_enqueued_jobs do
+      admin.update!(email: "jane.smith@example.com")
+    end
+
+    email = ActionMailer::Base.deliveries.find { |mail| mail.to == [ old_email ] }
+    assert_equal "Your admin email address was changed", email.subject
+    assert_includes email.body.encoded, "jane.smith@example.com"
+  end
+
   test "changing the email of an admin who has signed in sends no new password link" do
     admin = admins(:two)
     admin.update!(sign_in_count: 3)
