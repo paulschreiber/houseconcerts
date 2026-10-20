@@ -1,6 +1,5 @@
 <% content_for :title, page_title("Past Shows") %>
 
-<% row_count = 2 %>
 <h1>Past shows</h1>
 
 <div class="pagetext shows">
@@ -18,12 +17,9 @@
 
 <ol class="vcalendar">
 
-	<% @shows.each do |show, index| %>
+	<% @shows.each do |show| %>
 
 		<%
-			row_count = row_count + 1
-			klass = "row#{((row_count % 3) + 1)}"
-
 			artist_for_photo = show.artists.sample
 			next unless artist_for_photo
 			artist_links = show.artists.map do |artist|
@@ -35,7 +31,7 @@
 			end
 		%>
 
-		<li class='vevent <%= klass %>'>
+		<li class='vevent'>
 		<div class='vcard attendee summary'>
 
 			<% photo = tag.img(class: "artist photo", src: "/photos/headshots/thumb/#{artist_for_photo.slug}.jpg", width: 50, height: 50, alt: artist_for_photo.name) %>
@@ -46,15 +42,14 @@
 		</div>
 
 		<abbr class='dtstart' title='<%= show.start.to_time.iso8601 %>'><%= show.start.strftime("%B %e, %Y").strip %></abbr>
-		<abbr class='duration' title='PT<%= show.duration %>H'>((<%= show.duration %> hours)</abbr>
 
 		</li>
 
 		<% end # shows.each %>
 
-<% end # >= 1 show %>
-
 </ol>
+
+<% end %>
 
 
 </div>
