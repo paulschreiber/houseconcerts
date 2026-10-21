@@ -100,8 +100,15 @@ class Show < ApplicationRecord
     venue&.location
   end
 
+  # Confirming sends the confirmation email, which needs a complete show.
   def can_confirm_rsvps?
-    confirmed? && available?
+    available? && complete?
+  end
+
+  # Ready for guest-facing emails and pages: confirmed, with at least one
+  # artist. (Every saved show has a venue.)
+  def complete?
+    confirmed? && artists.any?
   end
 
   def can_waitlist_rsvps?

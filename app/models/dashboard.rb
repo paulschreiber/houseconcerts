@@ -58,7 +58,7 @@ class Dashboard
 
   # The next show's unconfirmed and waitlisted yes RSVPs, oldest first.
   def unconfirmed_rsvps
-    next_show_rsvps.awaiting_confirmation.includes(:show).order(:created_at)
+    next_show_rsvps.awaiting_confirmation.includes(show: :artists).order(:created_at)
   end
 
   # Shows that haven't happened yet, including unconfirmed ones.

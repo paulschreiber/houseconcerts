@@ -40,7 +40,7 @@ module Madmin
       # Preloads :show since every row renders the show name/date.
       def scoped_resources
         @scoped_resources ||= begin
-          resources = super.includes(:show)
+          resources = super.includes(show: :artists)
           filtered_show ? resources.where(show: filtered_show) : resources
         end
       end
