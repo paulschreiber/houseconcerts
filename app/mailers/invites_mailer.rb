@@ -3,8 +3,6 @@ class InvitesMailer < ApplicationMailer
 
   before_action :set_rsvp, except: :invite
 
-  FORMAT = "%Y%m%dT%H%M%SZ".freeze
-
   def invite
     @person = params[:person]
     @show = params[:show]
@@ -47,7 +45,16 @@ class InvitesMailer < ApplicationMailer
     # Sent at most once, even if the job is redelivered (see claim_delivery?).
     return unless claim_delivery?(RSVP.where(id: @rsvp.id), :confirmation_emailed_at)
 
-    @calendar_url = make_calendar_url
+    show = @rsvp.show
+    raise ArgumentError, "#{show.name} isn’t complete: it needs to be confirmed, with an artist" unless show.complete?
+
+    # The show for the guest's calendar, with the full address and their link
+    # to change their RSVP. Gmail offers it as an "Add to Calendar" card.
+    event = show.ical_event(url: @rsvp_url, location: show.venue.full_address_calendar)
+    event.description = "Update reservation: #{@rsvp_url}"
+    # Plain text/calendar: method=PUBLISH on the Content-Type can make Outlook
+    # show the whole email as a calendar item.
+    attachments[show.ics_filename] = { mime_type: "text/calendar", content: Show.ical([ event ]) }
     rsvp_mail("RSVP Confirmation", email_type: "confirm")
   end
 
@@ -86,21 +93,6 @@ class InvitesMailer < ApplicationMailer
     def set_rsvp
       @rsvp = params[:rsvp]
       @rsvp_url = modify_rsvp_url(slug: @rsvp.show.slug, uniqid: @rsvp.uniqid)
-    end
-
-    # A Google Calendar link for adding the show, with the guest's link to
-    # change their RSVP in the details.
-    def make_calendar_url
-      show = @rsvp.show
-      calendar_params = {
-        text: show.event_name,
-        dates: "#{show.start.utc.strftime(FORMAT)}/#{show.end.utc.strftime(FORMAT)}",
-        location: show.venue.full_address_calendar,
-        details: "Update reservation: #{@rsvp_url}",
-        sf: "true"
-      }
-
-      "https://calendar.google.com/calendar/r/eventedit?#{calendar_params.to_query}"
     end
 
     def subject_for(prefix, show)

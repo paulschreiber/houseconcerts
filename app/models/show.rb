@@ -183,6 +183,12 @@ class Show < ApplicationRecord
     calendar.to_ical
   end
 
+  # The show's name and date, e.g. "jesse-terry-2026-11-20.ics". The name,
+  # not the slug, which can end in a number that makes it unique.
+  def ics_filename
+    "#{name.parameterize}-#{start.to_date.iso8601}.ics"
+  end
+
   # The event's public name: the show's name followed by "house concert".
   def event_name
     "#{name} house concert"
