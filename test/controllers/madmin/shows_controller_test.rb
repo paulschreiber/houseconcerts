@@ -191,6 +191,17 @@ module Madmin
 
       assert_select "form[action=?] button", add_nonsubscribers_madmin_show_path(shows(:past)), text: "Add Nonsubscribers"
       assert_select "form[action=?] button", add_phone_numbers_madmin_show_path(shows(:past)), text: "Add Phone Numbers"
+      assert_select "button[disabled]", text: /Add (Nonsubscribers|Phone Numbers)/, count: 0
+    end
+
+    test "show disables Attendance, Add Nonsubscribers and Add Phone Numbers before the show" do
+      get madmin_show_path(shows(:upcoming))
+
+      assert_select "a[href=?]", attendance_madmin_show_path(shows(:upcoming)), count: 0
+      assert_select "button[disabled]", text: "Attendance"
+
+      assert_select "form[action=?] button[disabled]", add_nonsubscribers_madmin_show_path(shows(:upcoming)), text: "Add Nonsubscribers"
+      assert_select "form[action=?] button[disabled]", add_phone_numbers_madmin_show_path(shows(:upcoming)), text: "Add Phone Numbers"
     end
 
     test "show puts the invite buttons and the send buttons on their own rows" do
@@ -306,6 +317,28 @@ module Madmin
       assert_select "input[name=?][value=?]", "seats_used[#{unrecorded.id}]", "3"
       assert_select "input[name=?][value=?]", "seats_used[#{recorded.id}]", "1"
       assert_select "input[name=?]", "seats_used[#{other_show.id}]", count: 0
+    end
+
+    test "attendance can't be viewed or recorded before the show starts" do
+      rsvp = attendee(shows(:upcoming), "Jane", seats_reserved: 2)
+
+      get attendance_madmin_show_path(shows(:upcoming))
+
+      assert_redirected_to madmin_show_path(shows(:upcoming))
+      assert_equal "#{shows(:upcoming).name} hasn’t started yet, so attendance can’t be recorded.", flash[:alert]
+
+      patch attendance_madmin_show_path(shows(:upcoming)), params: { seats_used: { rsvp.id => "2" } }
+
+      assert_redirected_to madmin_show_path(shows(:upcoming))
+      assert_nil rsvp.reload.seats_used
+    end
+
+    test "attendance opens once the show starts" do
+      travel_to(shows(:upcoming).start + 1.minute) do
+        get attendance_madmin_show_path(shows(:upcoming))
+      end
+
+      assert_response :success
     end
 
     test "attendance works for any show, not just the most recent one" do

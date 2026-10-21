@@ -20,6 +20,7 @@ module Madmin
       assert_response :success
       assert_select "h2", text: "Next show: #{shows(:upcoming).name}"
       assert_select "a[href=?]", print_attendance_madmin_show_path(shows(:upcoming)), text: "Print"
+      assert_select "a[href=?]", attendance_madmin_show_path(shows(:upcoming)), count: 0
       assert_select "form[action=?] button", confirm_madmin_rsvp_path(unconfirmed), text: "Confirm"
       assert_select "h2", text: "Previous show: #{shows(:past).name}"
       assert_select "p", text: "Attendance isn’t recorded yet"
