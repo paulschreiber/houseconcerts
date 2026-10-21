@@ -3,7 +3,8 @@ class Show < ApplicationRecord
 
   friendly_id :name_slug_candidates, use: :slugged
 
-  has_many :artist_shows, dependent: :delete_all
+  # In the order the artists were added, usually the headliner first.
+  has_many :artist_shows, -> { order(:id) }, dependent: :delete_all, inverse_of: :show
   has_many :artists, through: :artist_shows
   has_many :rsvps, dependent: :destroy
   has_many :batch_runs, dependent: :destroy
