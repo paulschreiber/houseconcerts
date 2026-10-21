@@ -1,6 +1,6 @@
 <% content_for :title, "Attendance — #{@show.name}" %>
 
-<%= render "attendance_header" %>
+<%= render "header" %>
 
 <%= form_with url: attendance_madmin_show_path(@show), method: :patch do %>
   <div class="table-scroll">

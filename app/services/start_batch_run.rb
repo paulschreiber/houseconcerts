@@ -29,11 +29,10 @@ class StartBatchRun
   # keeps the show's current invite revision, so every send (and retry) uses
   # the same text even if a new revision is started meanwhile.
   def call
-    raise NotReady, "Send the initial invites before sending #{BatchRun.kind_description(kind)}." if BatchRun.requires_invites_sent?(kind) && !show.invites_sent?
+    reason = BatchRun.not_ready_reason(show, kind)
+    raise NotReady, reason if reason
 
     invite_message = show.invite_message if BatchRun.sends_invite?(kind)
-    raise NotReady, "Write the invite for #{show.name} before sending #{BatchRun.kind_description(kind)}." if BatchRun.sends_invite?(kind) && !invite_message
-
     batch_run = BatchRun.create!(show: show, kind: kind, status: :pending, automatic: automatic, invite_message: invite_message)
     enqueue_fan_out(batch_run)
     batch_run

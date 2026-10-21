@@ -63,17 +63,14 @@ namespace :next_show do
       exit
     end
 
-    unless show.invite_message
-      puts "Write the invite for #{show.name} first"
-      exit
-    end
-
     puts "Emailing #{person.email_address_with_name}..."
     if InvitePerson.call(person, show, deliver_now: true)
       puts "Sent."
     else
       puts "Failed to send."
     end
+  rescue InvitePerson::NotReady => e
+    puts e.message
   end
 
   desc "Send invites for next show to people who have not opened the invitation"

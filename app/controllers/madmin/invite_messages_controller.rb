@@ -15,8 +15,9 @@ module Madmin
     end
 
     def index
-      @invite_messages = @show.invite_messages.includes(:admin).reverse
+      @invite_messages = @show.invite_messages.includes(:admin).reorder(revision: :desc)
       @current = @invite_messages.first
+      @locked_ids = InviteMessage.locking_batch_runs(@invite_messages).distinct.pluck(:invite_message_id).to_set
     end
 
     def show; end
@@ -32,7 +33,7 @@ module Madmin
     def create
       @invite_message = @show.invite_messages.new(invite_message_params.merge(admin: current_admin))
       if @invite_message.save
-        redirect_to main_app.edit_madmin_show_invite_message_path(@show, @invite_message), notice: "Saved revision #{@invite_message.revision}."
+        redirect_to_saved
       else
         render :new, status: :unprocessable_content
       end
@@ -40,7 +41,7 @@ module Madmin
 
     def update
       if @invite_message.update(invite_message_params)
-        redirect_to main_app.edit_madmin_show_invite_message_path(@show, @invite_message), notice: "Saved revision #{@invite_message.revision}."
+        redirect_to_saved
       else
         render :edit, status: :unprocessable_content
       end
@@ -50,7 +51,7 @@ module Madmin
       if @invite_message.destroy
         redirect_to main_app.madmin_show_invite_messages_path(@show), notice: "Deleted revision #{@invite_message.revision}."
       else
-        redirect_to main_app.madmin_show_invite_message_path(@show, @invite_message), alert: @invite_message.errors.full_messages.to_sentence
+        redirect_to revision_path, alert: @invite_message.errors.full_messages.to_sentence
       end
     end
 
@@ -67,16 +68,24 @@ module Madmin
     def send_test
       person = Person.find_by(email: current_admin.email)
       unless person&.can_invite?
-        return redirect_back_or_to main_app.madmin_show_invite_message_path(@show, @invite_message),
+        return redirect_back_or_to revision_path,
                                    alert: "Add yourself (#{current_admin.email}) to the mailing list to get test sends."
       end
 
       InvitesMailer.with(person: person, show: @show, email_type: "test", invite_message: @invite_message).invite.deliver_later
-      redirect_back_or_to main_app.madmin_show_invite_message_path(@show, @invite_message),
+      redirect_back_or_to revision_path,
                           notice: "Sent a test of revision #{@invite_message.revision} to #{person.email}."
     end
 
     private
+
+      def revision_path
+        main_app.madmin_show_invite_message_path(@show, @invite_message)
+      end
+
+      def redirect_to_saved
+        redirect_to main_app.edit_madmin_show_invite_message_path(@show, @invite_message), notice: "Saved revision #{@invite_message.revision}."
+      end
 
       def load_show
         @show = Show.friendly.find(params.expect(:show_id))
@@ -90,7 +99,7 @@ module Madmin
       def redirect_if_locked
         return unless @invite_message.locked?
 
-        redirect_to main_app.madmin_show_invite_message_path(@show, @invite_message), alert: @invite_message.locked_notice
+        redirect_to revision_path, alert: @invite_message.locked_notice
       end
 
       def invite_message_params

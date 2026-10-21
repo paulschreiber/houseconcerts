@@ -1,6 +1,5 @@
-<%# The Markdown editor, with a live preview of the email beside it. Typing
-    re-renders the preview: the form's hidden Preview button submits the
-    unsaved text into the preview iframe (see invite_preview_controller.js). %>
+<%# The Markdown editor, with a live preview of the email beside it (see
+    invite_preview_controller.js). %>
 <% sample = InvitesMailer.with(show: @show, invite_message: @invite_message).invite_preview.message %>
 <div class="invite-editor" data-controller="invite-preview">
   <div class="invite-editor-pane">
@@ -11,6 +10,8 @@
                   data: { invite_preview_target: "form", action: "input->invite-preview#changed" } do |form| %>
       <% if @invite_message.errors.any? %>
         <div class="alert alert-danger">
+          <div><%= t("madmin.form.errors", count: @invite_message.errors.full_messages.count) %>:</div>
+
           <ul>
             <% @invite_message.errors.full_messages.each do |message| %>
               <li><%= message %></li>
@@ -37,9 +38,9 @@
             <tr><td><code>**bold**</code></td><td><strong>bold</strong></td></tr>
             <tr><td><code>*italics*</code></td><td><em>italics</em></td></tr>
             <tr><td><code>[text](https://example.com)</code></td><td>a link</td></tr>
-            <tr><td><code>[text][rsvp_yes]</code></td><td>RSVP yes</td></tr>
-            <tr><td><code>[text][rsvp_no]</code></td><td>RSVP no</td></tr>
-            <tr><td><code>[text][rsvp]</code></td><td>the RSVP page</td></tr>
+            <% InviteMessage::PLACEHOLDERS.each do |name, description| %>
+              <tr><td><code>[text][<%= name %>]</code></td><td><%= description %></td></tr>
+            <% end %>
           </tbody>
         </table>
         <p>A blank line starts a new paragraph.</p>

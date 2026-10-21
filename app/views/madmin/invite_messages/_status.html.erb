@@ -1,1 +1,1 @@
-<%= locked ? "Sent" : "Not sent" %><%= " · current" if current %> · saved <%= invite_message.updated_at.strftime("%b %-d, %Y %-l:%M %P") %><%= " by #{invite_message.admin.email}" if invite_message.admin %>
+<%= locked ? "Sent" : "Not sent" %><%= " · current" if current %> · saved <%= invite_message.updated_at.strftime(ShortDateTimeField::DEFAULT_FORMAT) %><%= " by #{invite_message.admin.email}" if invite_message.admin %>

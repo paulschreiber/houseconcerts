@@ -40,6 +40,13 @@ class BatchRun < ApplicationRecord
     KINDS.fetch(kind.to_s)[:sends_invite]
   end
 
+  # Why a batch of this kind can't start for the show yet, or nil if it can.
+  def self.not_ready_reason(show, kind)
+    return "Send the initial invites before sending #{kind_description(kind)}." if requires_invites_sent?(kind) && !show.invites_sent?
+
+    "Write the invite for #{show.name} before sending #{kind_description(kind)}." if sends_invite?(kind) && !show.invite_message
+  end
+
   def processed_count
     sent_count + failed_count
   end
