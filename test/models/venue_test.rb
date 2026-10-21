@@ -31,6 +31,12 @@ class VenueTest < ActiveSupport::TestCase
     assert_equal "US", venue.country
   end
 
+  test "full_address_calendar separates the street, city and province with commas" do
+    venue = venues(:one)
+
+    assert_equal "123 Main St, Brooklyn, #{venue.province_name} 11201", venue.full_address_calendar
+  end
+
   test "full_address includes street, city, province name, and postcode" do
     address = venues(:one).full_address
     assert_includes address, venues(:one).address
