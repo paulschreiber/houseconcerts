@@ -41,15 +41,15 @@ class ShowResource < Madmin::Resource
   # Add actions to the resource's show page
   # Pass collection: true to also render it in each row on the index page
   member_action do |record|
-    link_to("Attendance", attendance_madmin_show_path(record), class: "btn btn-secondary") +
-      link_to("Print Attendance", print_attendance_madmin_show_path(record), class: "btn btn-secondary", target: "_blank", rel: "noopener")
+    link_to("Print Attendance", print_attendance_madmin_show_path(record), class: "btn btn-secondary", target: "_blank", rel: "noopener") +
+      link_to("Attendance", attendance_madmin_show_path(record), class: "btn btn-secondary")
   end
 
-  # The invite: edit its current revision, or start one if there's none yet
-  # or the current one has been sent.
+  # The invite, on its own row: edit its current revision, or start one if
+  # there's none yet or the current one has been sent.
   member_action do |record|
     current = record.invite_message
-    if current.nil?
+    buttons = if current.nil?
       link_to "Write Invite", new_madmin_show_invite_message_path(record), class: "btn btn-secondary"
     else
       edit = if current.locked?
@@ -59,11 +59,15 @@ class ShowResource < Madmin::Resource
       end
       edit + link_to("Invite History", madmin_show_invite_messages_path(record), class: "btn btn-secondary")
     end
+    tag.div(buttons, class: "actions-row")
   end
 
+  # The spacer pushes Edit and Delete, which Madmin adds next, to the right
+  # of this line, as on other record pages.
   member_action do |record|
     button_to("Add Nonsubscribers", add_nonsubscribers_madmin_show_path(record), class: "btn btn-secondary") +
-      button_to("Add Phone Numbers", add_phone_numbers_madmin_show_path(record), class: "btn btn-secondary")
+      button_to("Add Phone Numbers", add_phone_numbers_madmin_show_path(record), class: "btn btn-secondary") +
+      tag.span(class: "actions-spacer")
   end
 
   # On the index, beside View and Edit: print the list for upcoming shows,
@@ -80,19 +84,22 @@ class ShowResource < Madmin::Resource
   member_action do |record|
     # Only the next show can start a batch; any show with batches shows their
     # progress, and their failures until it has happened.
-    send_buttons = if record.next_show?
-      safe_join(BatchRun::KINDS.map do |kind, details|
-        # Turbo disables the button while the request is in flight.
-        button_to(details[:button], start_batch_run_madmin_show_path(record, kind:),
-                  method: :patch, class: "btn btn-secondary",
-                  data: { turbo_confirm: ShowResource.start_confirmation(record, kind) },
-                  **ShowResource.invite_gate_options(record, kind))
-      end)
+    next_show = record.next_show?
+    send_buttons = if next_show
+      tag.div(class: "actions-row") do
+        safe_join(BatchRun::KINDS.map do |kind, details|
+          # Turbo disables the button while the request is in flight.
+          button_to(details[:button], start_batch_run_madmin_show_path(record, kind:),
+                    method: :patch, class: "btn btn-secondary",
+                    data: { turbo_confirm: ShowResource.start_confirmation(record, kind) },
+                    **ShowResource.invite_gate_options(record, kind))
+        end)
+      end
     end
 
     # Always rendered for the next show, even before its first batch, so an
     # open page picks up a batch started elsewhere (another tab, the rake task).
-    progress = render(partial: "madmin/shows/batch_progress", locals: { show: record }) if record.next_show? || record.batch_runs.exists?
+    progress = render(partial: "madmin/shows/batch_progress", locals: { show: record }) if next_show || record.batch_runs.exists?
 
     safe_join([ send_buttons, progress ].compact)
   end
