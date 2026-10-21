@@ -39,6 +39,9 @@ namespace :madmin, path: Settings.admin_prefix do
       post :send_test, on: :member
     end
   end
+  # Every show's invite revisions (InviteResource). Each revision's own page
+  # is the show's, above.
+  resources :invite_messages, only: :index, path: "invites", controller: "invites"
   resources :venues
   resources :venue_groups
   root to: "dashboard#show"

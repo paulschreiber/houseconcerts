@@ -10,7 +10,7 @@ Madmin.importmap.pin "devise/webauthn", to: "devise/webauthn.js"
 # application.scss), so madmin_custom.scss needs its own entry.
 Rails.application.config.dartsass.builds["madmin_custom.scss"] = "madmin_custom.css"
 
-# Sidebar order: Artists, Shows, divider, People, RSVPs, divider, Venues, Venue Groups.
+# Sidebar order: Artists, Shows, Invites, divider, People, RSVPs, divider, Venues, Venue Groups.
 # (positions set per-resource via `menu position: N`; these are the two dividers.)
 Madmin.menu.before_render do
   add label: "divider-1", position: 25
