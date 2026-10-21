@@ -44,4 +44,14 @@ class InvitePersonTest < ActiveSupport::TestCase
 
     assert_not result
   end
+
+  test "raises NotReady, without emailing, when the show has no invite written" do
+    show = shows(:upcoming)
+    show.invite_messages.delete_all
+
+    assert_no_enqueued_emails do
+      error = assert_raises(InvitePerson::NotReady) { InvitePerson.call(people(:one), show) }
+      assert_equal "Write the invite for #{show.name} first.", error.message
+    end
+  end
 end

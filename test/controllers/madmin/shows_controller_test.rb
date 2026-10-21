@@ -498,7 +498,7 @@ module Madmin
 
       get madmin_show_path(show)
 
-      assert_select "button[disabled][title='Write the invite first']", text: "Send Invites", count: 1
+      assert_select "button[disabled][title=?]", "Write the invite for #{show.name} before sending invites.", text: "Send Invites", count: 1
     end
 
     test "show page enables Send to Unopened and Send Reminders once invites have been sent" do
