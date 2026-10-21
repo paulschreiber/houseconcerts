@@ -19,7 +19,7 @@ export default class extends Controller {
   changed() {
     this.testButtonTargets.forEach((button) => {
       button.disabled = true;
-      button.title = "Save your changes first";
+      button.title = "Save the invite first";
     });
     clearTimeout(this.timeout);
     this.timeout = setTimeout(() => this.refresh(), 400);

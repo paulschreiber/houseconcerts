@@ -1,0 +1,3 @@
+<%# Deletes invite_message, an unsent revision, after asking. %>
+<%= button_to "Delete", madmin_show_invite_message_path(invite_message.show, invite_message), method: :delete, class: "btn btn-danger",
+                                                                                               data: { turbo_confirm: "Delete invite revision #{invite_message.revision} for #{invite_message.show.dated_name}?" } %>

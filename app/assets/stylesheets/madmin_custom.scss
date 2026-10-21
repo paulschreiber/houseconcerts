@@ -635,10 +635,6 @@ body.invite_messages {
     }
   }
 
-  .invite-editor-pane > form + form {
-    margin-top: 0.75rem;
-  }
-
   .invite-preview-headers {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);

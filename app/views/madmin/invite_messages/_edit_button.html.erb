@@ -1,0 +1,2 @@
+<%# Edits invite_message, unless it's been sent (locked). %>
+<%= link_to "Edit", edit_madmin_show_invite_message_path(invite_message.show, invite_message), class: "btn btn-secondary" unless locked %>

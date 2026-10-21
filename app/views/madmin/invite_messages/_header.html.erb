@@ -1,3 +1,11 @@
-<%# title: the page's heading. actions: its buttons, beside Back. %>
+<%# Headed "title / show" like Madmin's record pages. The show links back to
+    its page, so there's no Back button. title: the page's heading. actions:
+    its buttons. %>
 <% content_for :title, "#{title} — #{@show.name}" %>
-<%= render "madmin/shows/header", title:, actions: local_assigns[:actions] %>
+<header class="header">
+  <h1><%= title %> / <%= link_to @show.dated_name, madmin_show_path(@show) %></h1>
+
+  <div class="actions">
+    <%= local_assigns[:actions] %>
+  </div>
+</header>

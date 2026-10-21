@@ -17,7 +17,7 @@ module Madmin
     def index
       @invite_messages = @show.invite_messages.includes(:admin).reorder(revision: :desc)
       @current = @invite_messages.first
-      @locked_ids = InviteMessage.locking_batch_runs(@invite_messages).distinct.pluck(:invite_message_id).to_set
+      @locked_ids = InviteMessage.locked_ids(@invite_messages)
     end
 
     def show; end
