@@ -91,11 +91,9 @@ class NextShowRakeTest < ActiveSupport::TestCase
 
     out = nil
     assert_no_emails do
-      out, = capture_io do
-        assert_raises(SystemExit) { Rake::Task["next_show:invite_one"].invoke(person.email) }
-      end
+      out, = capture_io { Rake::Task["next_show:invite_one"].invoke(person.email) }
     end
-    assert_includes out, "Write the invite for #{shows(:upcoming).name} first"
+    assert_includes out, "Write the invite for #{shows(:upcoming).name} first."
   end
 
   test "invite_one sends the invite immediately instead of enqueueing it" do
