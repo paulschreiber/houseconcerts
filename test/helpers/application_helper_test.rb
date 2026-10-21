@@ -59,6 +59,18 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_equal "http://example.com/concerts.png", social_media_image(nil)
   end
 
+  test "google_analytics? only in production, with an ID set" do
+    assert_not google_analytics?
+
+    in_production do
+      assert google_analytics?
+
+      with_stubbed(Settings, :google_analytics_id, -> { "" }) do
+        assert_not google_analytics?
+      end
+    end
+  end
+
   test "analytics_url replaces link tokens in every tokened path" do
     {
       "https://houseconcerts.nyc/rsvps/show/jen-lowe-4/abc123" => "https://houseconcerts.nyc/rsvps/show/jen-lowe-4/:uniqid",

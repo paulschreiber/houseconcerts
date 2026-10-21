@@ -312,6 +312,20 @@ class BatchRunItemJobTest < ActiveSupport::TestCase
     assert_equal 1, batch_run.failed_count
   end
 
+  test "a reminder goes by email only when text messages aren't set up" do
+    rsvp = RSVP.create!(show: show, email: "email-only@example.com", first_name: "Email", last_name: "Only",
+                        response: "yes", confirmed: "confirmed", seats_reserved: 1, phone_number: "5555550123")
+    item = create_run(kind: "remind").batch_run_items.create!(recipient: rsvp)
+
+    with_stubbed(SendTextMessage, :enabled?, -> { false }) do
+      assert_emails(1) { BatchRunItemJob.perform_now(item.id) }
+    end
+
+    item.reload
+    assert item.sent?
+    assert_nil item.sms_sent_at
+  end
+
   test "retrying a reminder whose email already went out does not resend the email, only the SMS" do
     rsvp = RSVP.create!(show: show, email: "retry-remind@example.com", first_name: "Retry", last_name: "Remind",
                         response: "yes", confirmed: "confirmed", seats_reserved: 1, phone_number: "5555550123")

@@ -5,16 +5,22 @@ class AssertRequiredCredentialsTest < ActiveSupport::TestCase
   Twilio = Struct.new(:auth_token, :account_sid, :sms_sender)
   Amazon = Struct.new(:username, :password, :server)
 
-  test "passes when all required credentials are present" do
-    credentials = Credentials.new(
-      Twilio.new("token", "sid", "+15551234567"),
-      Amazon.new("user", "pass", "smtp.example.com")
-    )
+  def amazon
+    Amazon.new("user", "pass", "smtp.example.com")
+  end
+
+  test "passes when all credentials are present" do
+    credentials = Credentials.new(Twilio.new("token", "sid", "+15551234567"), amazon)
 
     assert_nothing_raised { AssertRequiredCredentials.call(credentials) }
   end
 
-  test "raises listing every missing credential" do
+  test "passes without Twilio, which is optional" do
+    assert_nothing_raised { AssertRequiredCredentials.call(Credentials.new(nil, amazon)) }
+    assert_nothing_raised { AssertRequiredCredentials.call(Credentials.new(Twilio.new(nil, nil, nil), amazon)) }
+  end
+
+  test "raises listing every missing credential, including the rest of a partial Twilio setup" do
     credentials = Credentials.new(
       Twilio.new(nil, "sid", nil),
       Amazon.new("user", nil, "smtp.example.com")
@@ -29,14 +35,12 @@ class AssertRequiredCredentialsTest < ActiveSupport::TestCase
     assert_no_match(/amazon\.username/, error.message)
   end
 
-  test "raises when a credential group is entirely missing" do
-    credentials = Credentials.new(nil, nil)
+  test "raises when Amazon is missing" do
+    error = assert_raises(RuntimeError) { AssertRequiredCredentials.call(Credentials.new(nil, nil)) }
 
-    error = assert_raises(RuntimeError) { AssertRequiredCredentials.call(credentials) }
-
-    assert_match(/twilio\.auth_token/, error.message)
-    assert_match(/twilio\.account_sid/, error.message)
-    assert_match(/twilio\.sms_sender/, error.message)
     assert_match(/amazon\.username/, error.message)
+    assert_match(/amazon\.password/, error.message)
+    assert_match(/amazon\.server/, error.message)
+    assert_no_match(/twilio/, error.message)
   end
 end

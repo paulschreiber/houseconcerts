@@ -33,6 +33,11 @@ module ActiveSupport
       object.define_singleton_method(name, original) if original
     end
 
+    # Runs the block as if in production.
+    def in_production(&)
+      with_stubbed(Rails, :env, -> { ActiveSupport::EnvironmentInquirer.new("production") }, &)
+    end
+
     # Replaces an instance method of klass with fake for the block, then
     # restores it.
     def with_stubbed_instance_method(klass, name, fake)

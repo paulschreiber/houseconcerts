@@ -177,6 +177,16 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes @response.body, "SUMMARY:#{shows(:past).event_name}"
   end
 
+  test "about mentions Twilio only when text messages are set up" do
+    get about_path
+    assert_includes response.body, "Twilio"
+
+    with_stubbed(SendTextMessage, :enabled?, -> { false }) do
+      get about_path
+    end
+    assert_not_includes response.body, "Twilio"
+  end
+
   test "about renders the about page" do
     get about_path
 
