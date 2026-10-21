@@ -151,6 +151,30 @@ class Show < ApplicationRecord
     "#{name} (#{start_date_short})"
   end
 
+  # The show as an iCalendar event, for the calendar feed and the
+  # confirmation email. Both use the same UID, so a calendar app that has the
+  # show from one treats the other as the same event. The location defaults
+  # to the public one, the city.
+  def ical_event(url:, location: self.location)
+    event = Icalendar::Event.new
+    event.dtstart = Icalendar::Values::DateTime.new(start.utc, tzid: "UTC")
+    event.dtend = Icalendar::Values::DateTime.new(self.end.utc, tzid: "UTC")
+    event.summary = event_name
+    event.location = location
+    event.url = url
+    event.uid = "event-#{slug}@#{Settings.domain}"
+    event
+  end
+
+  # Events as a .ics file. METHOD:PUBLISH makes them plain events, not
+  # meeting invitations whose replies would come back by email.
+  def self.ical(events)
+    calendar = Icalendar::Calendar.new
+    events.each { |event| calendar.add_event(event) }
+    calendar.publish
+    calendar.to_ical
+  end
+
   # The event's public name: the show's name followed by "house concert".
   def event_name
     "#{name} house concert"
