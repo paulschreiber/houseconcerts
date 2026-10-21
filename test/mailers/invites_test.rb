@@ -23,6 +23,9 @@ class InvitesTest < ActionMailer::TestCase
       email.deliver_now
     end
     assert_equal [ person.email ], email.to
+    assert_equal [ "#{Settings.invites_from_email}@#{Settings.domain}" ], email.from
+    assert_equal "#{Settings.invites_from_first_name} #{Settings.invites_from_last_name}", email[:from].display_names.first
+    assert_match %r{>\s*#{Settings.invites_from_first_name}</p>}, email.body.decoded
     assert_includes email.subject, show.name
     unsub_url = Rails.application.routes.url_helpers.unsubscribe_url(uniqid: person.uniqid, host: "example.com")
     assert_equal "<#{unsub_url}>", email["List-Unsubscribe"].to_s
@@ -256,6 +259,17 @@ class InvitesTest < ActionMailer::TestCase
     assert_includes body, "this email address (#{rsvp.email})"
     assert_includes body, "nothing has changed yet: you still have 2 seats"
     assert_includes body, "/rsvps/show/#{rsvp.show.slug}/#{rsvp.uniqid}"
+  end
+
+  test "the RSVP emails are signed with the sender's first name" do
+    mailer = InvitesMailer.with(rsvp: rsvps(:one), previous: { response: "yes", seats: 2 }, current: { response: "no", seats: 0 }, seats: 2)
+
+    %i[confirm waitlisted remind rsvp_updated rsvp_change_requested].each do |action|
+      email = mailer.public_send(action)
+      # confirm is multipart, with its calendar attachment.
+      html = (email.html_part || email).body.decoded
+      assert_match %r{>\s*#{Settings.invites_from_first_name}</p>}, html, action
+    end
   end
 
   test "rsvp_change_requested states the seats as of the request" do

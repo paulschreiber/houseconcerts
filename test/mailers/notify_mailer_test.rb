@@ -7,6 +7,7 @@ class NotifyMailerTest < ActionMailer::TestCase
     new_email = NotifyMailer.rsvp(rsvps(:one), "new", nil)
     assert_includes new_email.subject, "New RSVP"
     assert_equal [ "#{Settings.invites_from_email}@#{Settings.domain}" ], new_email.to
+    assert_equal "#{Settings.invites_from_first_name} #{Settings.invites_from_last_name}", new_email[:to].display_names.first
   end
 
   test "rsvp uses a cancellation subject for type cancel" do
