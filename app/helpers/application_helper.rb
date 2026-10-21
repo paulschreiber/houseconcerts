@@ -19,7 +19,7 @@ module ApplicationHelper
   end
 
   def social_media_description(show)
-    if show && !show.artists.empty?
+    if show&.complete?
       description = "Reserve seats for the #{show.event_name}"
       description += " in #{show.location}" if show.location
       description += " on #{show.start_date}"
@@ -32,7 +32,7 @@ module ApplicationHelper
   # The show's first artist's photo, or the site image when there's no show
   # or it has no artists.
   def social_media_image(show)
-    photo_url = show.artists.first&.photo_url if show
+    photo_url = show.artists.first.photo_url if show&.complete?
     photo_url || "#{Rails.application.routes.url_helpers.root_url}concerts.png"
   end
 
