@@ -5,16 +5,15 @@ module ModelCleaners
     before_save :clean_variables
   end
 
+  # Trims the string attributes being saved and stores their line breaks as
+  # \n (browsers send a textarea's as \r\n). Text is otherwise stored as
+  # typed, markup included: views escape it.
   def clean_variables
-    attributes.each_key do |a|
+    changed_attribute_names_to_save.each do |a|
       next if self[a].frozen?
       next unless self[a].is_a?(String)
 
-      # remove whitespace
-      self[a] = self[a].strip
-
-      # remove HTML
-      self[a] = ActionView::Base.full_sanitizer.sanitize(self[a])
+      self[a] = self[a].strip.gsub("\r\n", "\n")
     end
   end
 

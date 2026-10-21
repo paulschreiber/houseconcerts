@@ -1,1 +1,2 @@
-<%= simple_format(field.value(record).to_s, class: "multiline-value") %>
+<%# Escaped first: the value is plain text, so markup in it shows as typed. %>
+<%= simple_format(h(field.value(record).to_s), class: "multiline-value") %>
