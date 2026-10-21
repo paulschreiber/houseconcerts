@@ -11,17 +11,7 @@
 %>
 <%= form_with model: [:madmin, record], url: (record.persisted? ? resource.show_path(record) : resource.index_path), local: true, html: { id: form_dom_id } do |form| %>
   <% form_builder = form %>
-  <% if form.object.errors.any? %>
-    <div class="alert alert-danger">
-      <div class=""><%= t("madmin.form.errors", count: form.object.errors.full_messages.count) %>:</div>
-
-      <ul>
-        <% form.object.errors.full_messages.each do |message| %>
-          <li><%= message %></li>
-        <% end %>
-      </ul>
-    </div>
-  <% end %>
+  <%= render "madmin/application/form_errors", record: form.object %>
 
   <% resource.attributes.values.select{ _1.field.present? && _1.field.visible?(action_name) }.each do |attribute| %>
     <div class="form-group">
@@ -32,12 +22,8 @@
   <% end %>
 <% end %>
 
-<div class="form-secondary-actions">
-  <%= tag.button form_builder.send(:submit_default_value), type: "submit", form: form_dom_id, class: "btn btn-primary" %>
-
-  <% if record.persisted? && !resource.readonly? %>
-    <%= button_to t("madmin.actions.delete"), resource.show_path(record), method: :delete, data: { turbo_confirm: t("madmin.confirmations.delete") }, class: "btn btn-danger" %>
-  <% end %>
-
-  <%= link_to t("madmin.actions.cancel"), (record.persisted? ? resource.show_path(record) : resource.index_path), class: "btn" %>
-</div>
+<% if record.persisted? && !resource.readonly? %>
+  <% delete = button_to t("madmin.actions.delete"), resource.show_path(record), method: :delete, data: { turbo_confirm: t("madmin.confirmations.delete") }, class: "btn btn-danger" %>
+<% end %>
+<%= render "madmin/application/form_actions", form_id: form_dom_id, submit_label: form_builder.send(:submit_default_value), delete:,
+                                              cancel_path: (record.persisted? ? resource.show_path(record) : resource.index_path) %>

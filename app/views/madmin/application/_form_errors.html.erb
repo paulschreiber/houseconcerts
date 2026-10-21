@@ -1,0 +1,12 @@
+<%# A form's validation errors, above its fields. %>
+<% if record.errors.any? %>
+  <div class="alert alert-danger">
+    <div class=""><%= t("madmin.form.errors", count: record.errors.full_messages.count) %>:</div>
+
+    <ul>
+      <% record.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

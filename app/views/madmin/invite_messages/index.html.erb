@@ -1,5 +1,5 @@
 <%= render "header", title: "Invite History",
-                     actions: link_to((@invite_messages.any? ? "New Revision" : "Write Invite"), new_madmin_show_invite_message_path(@show), class: "btn btn-primary") %>
+                     actions: link_to((@invite_messages.any? ? "New Revision" : "Write Invite"), new_madmin_show_invite_message_path(@show), class: "btn btn-secondary") %>
 
 <% if @invite_messages.any? %>
   <div class="table-scroll">
@@ -13,7 +13,9 @@
           <tr>
             <td><%= link_to "Revision #{invite_message.revision}", madmin_show_invite_message_path(@show, invite_message) %></td>
             <td><%= render "status", invite_message:, locked:, current: invite_message == @current %></td>
-            <td><%= link_to "Edit", edit_madmin_show_invite_message_path(@show, invite_message) unless locked %></td>
+            <td class="actions">
+              <%= render "edit_button", invite_message:, locked: %>
+            </td>
           </tr>
         <% end %>
       </tbody>

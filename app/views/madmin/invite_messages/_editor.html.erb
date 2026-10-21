@@ -1,74 +1,68 @@
 <%# The Markdown editor, with a live preview of the email beside it (see
-    invite_preview_controller.js). %>
+    invite_preview_controller.js), under the page's header. title and
+    actions: the header's (see _header). The header is inside the
+    controller's element, so a Send Test button among its actions is too. %>
 <% sample = InvitesMailer.with(show: @show, invite_message: @invite_message).invite_preview.message %>
-<div class="invite-editor" data-controller="invite-preview">
-  <div class="invite-editor-pane">
-    <%# The session-wide CSRF token, not one scoped to this form's action:
-        the Preview button submits the form to a different URL. %>
-    <%= form_with model: [:madmin, @show, @invite_message], class: "invite-editor-form",
-                  authenticity_token: form_authenticity_token,
-                  data: { invite_preview_target: "form", action: "input->invite-preview#changed" } do |form| %>
-      <% if @invite_message.errors.any? %>
-        <div class="alert alert-danger">
-          <div><%= t("madmin.form.errors", count: @invite_message.errors.full_messages.count) %>:</div>
+<div data-controller="invite-preview">
+  <%= render "header", title:, actions: local_assigns[:actions] %>
 
-          <ul>
-            <% @invite_message.errors.full_messages.each do |message| %>
-              <li><%= message %></li>
-            <% end %>
-          </ul>
+  <div class="invite-editor">
+    <div class="invite-editor-pane">
+      <%# The session-wide CSRF token, not one scoped to this form's action:
+          the Preview button submits the form to a different URL. %>
+      <%= form_with model: [:madmin, @show, @invite_message], id: "invite-editor-form", class: "invite-editor-form",
+                    authenticity_token: form_authenticity_token,
+                    data: { invite_preview_target: "form", action: "input->invite-preview#changed" } do |form| %>
+        <%= render "madmin/application/form_errors", record: @invite_message %>
+
+        <div class="form-group">
+          <%= form.label :intro, "Introduction" %>
+          <%= form.text_area :intro, rows: 8, class: "form-input" %>
+          <div class="form-description">Above the show details and RSVP buttons.</div>
         </div>
-      <% end %>
 
-      <div class="form-group">
-        <%= form.label :intro, "Introduction" %>
-        <%= form.text_area :intro, rows: 8, class: "form-input" %>
-        <div class="form-description">Above the show details and RSVP buttons.</div>
-      </div>
+        <div class="form-group">
+          <%= form.label :about, "A bit about #{@show.name}" %>
+          <%= form.text_area :about, rows: 14, class: "form-input" %>
+        </div>
 
-      <div class="form-group">
-        <%= form.label :about, "A bit about #{@show.name}" %>
-        <%= form.text_area :about, rows: 14, class: "form-input" %>
-      </div>
+        <details class="invite-editor-help">
+          <summary>Formatting</summary>
+          <table>
+            <tbody>
+              <tr><td><code>**bold**</code></td><td><strong>bold</strong></td></tr>
+              <tr><td><code>*italics*</code></td><td><em>italics</em></td></tr>
+              <tr><td><code>[text](https://example.com)</code></td><td>a link</td></tr>
+              <% InviteMessage::PLACEHOLDERS.each do |name, description| %>
+                <tr><td><code>[text][<%= name %>]</code></td><td><%= description %></td></tr>
+              <% end %>
+            </tbody>
+          </table>
+          <p>A blank line starts a new paragraph.</p>
+        </details>
 
-      <details class="invite-editor-help">
-        <summary>Formatting</summary>
-        <table>
-          <tbody>
-            <tr><td><code>**bold**</code></td><td><strong>bold</strong></td></tr>
-            <tr><td><code>*italics*</code></td><td><em>italics</em></td></tr>
-            <tr><td><code>[text](https://example.com)</code></td><td>a link</td></tr>
-            <% InviteMessage::PLACEHOLDERS.each do |name, description| %>
-              <tr><td><code>[text][<%= name %>]</code></td><td><%= description %></td></tr>
-            <% end %>
-          </tbody>
-        </table>
-        <p>A blank line starts a new paragraph.</p>
-      </details>
-
-      <div class="form-secondary-actions">
-        <%= form.submit "Save", class: "btn btn-primary" %>
         <%= form.button "Preview", type: "submit", hidden: true,
                         formaction: preview_madmin_show_invite_messages_path(@show), formtarget: "invite-preview",
                         data: { invite_preview_target: "previewButton", turbo: false } %>
-      </div>
-    <% end %>
+      <% end %>
 
-    <% if @invite_message.persisted? %>
-      <%# Sends the saved text, so not while the form shows unsaved changes
-          (e.g. after a save that failed). %>
-      <%= button_to "Send Test", send_test_madmin_show_invite_message_path(@show, @invite_message), class: "btn btn-secondary",
-                                                                                                    disabled: @invite_message.changed?,
-                                                                                                    data: { invite_preview_target: "testButton" } %>
-    <% end %>
+      <% if @invite_message.persisted? %>
+        <%= render "madmin/application/form_actions", form_id: "invite-editor-form", submit_label: "Update Invite",
+                                                      delete: render("delete_button", invite_message: @invite_message),
+                                                      cancel_path: madmin_show_invite_message_path(@show, @invite_message) %>
+      <% else %>
+        <%= render "madmin/application/form_actions", form_id: "invite-editor-form", submit_label: "Create Invite",
+                                                      cancel_path: madmin_show_invite_messages_path(@show) %>
+      <% end %>
+    </div>
+
+    <section class="invite-preview" aria-label="Preview">
+      <dl class="invite-preview-headers">
+        <dt>From</dt><dd><%= sample[:from] %></dd>
+        <dt>To</dt><dd><%= sample[:to] %></dd>
+        <dt>Subject</dt><dd><%= sample.subject %></dd>
+      </dl>
+      <iframe name="invite-preview" title="Preview of the invite" class="invite-preview-frame"></iframe>
+    </section>
   </div>
-
-  <section class="invite-preview" aria-label="Preview">
-    <dl class="invite-preview-headers">
-      <dt>From</dt><dd><%= sample[:from] %></dd>
-      <dt>To</dt><dd><%= sample[:to] %></dd>
-      <dt>Subject</dt><dd><%= sample.subject %></dd>
-    </dl>
-    <iframe name="invite-preview" title="Preview of the invite" class="invite-preview-frame"></iframe>
-  </section>
 </div>

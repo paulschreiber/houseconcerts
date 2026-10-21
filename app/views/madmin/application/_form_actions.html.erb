@@ -1,0 +1,8 @@
+<%# A form's buttons, rendered after the form rather than in it (see _form):
+    submit, reaching the form by form_id; delete, a button_to of its own, if
+    given; then Cancel, to cancel_path. %>
+<div class="form-secondary-actions">
+  <%= tag.button submit_label, type: "submit", form: form_id, class: "btn btn-primary" %>
+  <%= local_assigns[:delete] %>
+  <%= link_to t("madmin.actions.cancel"), cancel_path, class: "btn" %>
+</div>
