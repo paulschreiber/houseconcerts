@@ -41,8 +41,13 @@ class ShowResource < Madmin::Resource
   # Add actions to the resource's show page
   # Pass collection: true to also render it in each row on the index page
   member_action do |record|
-    link_to("Print Attendance", print_attendance_madmin_show_path(record), class: "btn btn-secondary", target: "_blank", rel: "noopener") +
+    attendance = if record.occurred?
       link_to("Attendance", attendance_madmin_show_path(record), class: "btn btn-secondary")
+    else
+      tag.button("Attendance", type: "button", class: "btn btn-secondary", **ShowResource.disabled_options(ShowResource::AFTER_SHOW))
+    end
+    link_to("Print Attendance", print_attendance_madmin_show_path(record), class: "btn btn-secondary", target: "_blank", rel: "noopener") +
+      attendance
   end
 
   # The invite, on its own row: edit its current revision, or start one if
@@ -65,8 +70,9 @@ class ShowResource < Madmin::Resource
   # The spacer pushes Edit and Delete, which Madmin adds next, to the right
   # of this line, as on other record pages.
   member_action do |record|
-    button_to("Add Nonsubscribers", add_nonsubscribers_madmin_show_path(record), class: "btn btn-secondary") +
-      button_to("Add Phone Numbers", add_phone_numbers_madmin_show_path(record), class: "btn btn-secondary") +
+    options = ShowResource.disabled_options(record.occurred? ? nil : ShowResource::AFTER_SHOW)
+    button_to("Add Nonsubscribers", add_nonsubscribers_madmin_show_path(record), class: "btn btn-secondary", **options) +
+      button_to("Add Phone Numbers", add_phone_numbers_madmin_show_path(record), class: "btn btn-secondary", **options) +
       tag.span(class: "actions-spacer")
   end
 
@@ -104,11 +110,20 @@ class ShowResource < Madmin::Resource
     safe_join([ send_buttons, progress ].compact)
   end
 
+  # Recording attendance and adding RSVPs to the mailing list wait until the
+  # show has started, when its RSVPs are final.
+  AFTER_SHOW = "Available once the show starts".freeze
+
+  # A button's options: disabled, with the reason as its tooltip, if there's
+  # a reason.
+  def self.disabled_options(reason)
+    reason ? { disabled: true, title: reason } : {}
+  end
+
   # Send to Unopened / Send Reminders only make sense after an initial
   # invite has gone out, and invites need one written.
   def self.invite_gate_options(show, kind)
-    reason = BatchRun.not_ready_reason(show, kind)
-    reason ? { disabled: true, title: reason } : {}
+    disabled_options(BatchRun.not_ready_reason(show, kind))
   end
 
   # Customize the display name of records in the admin area.

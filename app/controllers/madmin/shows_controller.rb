@@ -1,6 +1,7 @@
 module Madmin
   class ShowsController < Madmin::ResourceController
     before_action :load_attendees, only: %i[attendance update_attendance print_attendance]
+    before_action :require_started, only: %i[attendance update_attendance]
     before_action :load_batch_run, only: %i[retry_failed_batch_run cancel_batch_run]
 
     # Records how many seats each of the show's attendees used.
@@ -102,6 +103,14 @@ module Madmin
       def load_attendees
         @show = @record
         @rsvps = @show.attendees.order(:last_name, :first_name).to_a
+      end
+
+      # Attendance is recorded once the show has started (the show page's
+      # Attendance button is disabled until then).
+      def require_started
+        return if @show.occurred?
+
+        redirect_to main_app.madmin_show_path(@show), alert: "#{@show.name} hasn’t started yet, so attendance can’t be recorded."
       end
 
       # The batch run for retry and cancel. Keyed on the specific run, not "the
