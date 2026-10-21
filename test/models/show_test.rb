@@ -134,6 +134,13 @@ class ShowTest < ActiveSupport::TestCase
     end
   end
 
+  test "can_confirm_rsvps? needs a complete show, since confirming sends the confirmation" do
+    show = shows(:upcoming)
+    show.artists = []
+
+    assert_not show.can_confirm_rsvps?
+  end
+
   test "dated_name combines the name with an ISO-formatted date" do
     show = shows(:upcoming)
 
@@ -296,5 +303,16 @@ class ShowTest < ActiveSupport::TestCase
 
   test "event_name is the show's name followed by house concert" do
     assert_equal "Test Upcoming Show house concert", shows(:upcoming).event_name
+  end
+
+  test "complete? needs a confirmed show with at least one artist" do
+    show = shows(:upcoming)
+    assert show.complete?
+
+    show.status = "unconfirmed"
+    assert_not show.complete?, "unconfirmed"
+
+    show.reload.artists = []
+    assert_not show.complete?, "no artists"
   end
 end
