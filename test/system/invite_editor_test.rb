@@ -34,7 +34,7 @@ class InviteEditorTest < ApplicationSystemTestCase
     fill_in "Introduction", with: "Unsaved"
 
     assert_button "Send Test", disabled: true
-    click_button "Save"
+    click_button "Update Invite"
     assert_text "Saved revision 1."
     assert_button "Send Test", disabled: false
   end
