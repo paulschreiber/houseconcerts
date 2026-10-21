@@ -33,3 +33,4 @@
 <p>P.S. If you have moved or don’t want to receive house concert invites, <%= link_to "instantly unsubscribe", @unsub_url %>.</p>
 
 </div>
+<%= ld_json_tag(ld_json_gmail_rsvp_action(@rsvp_url)) %>
