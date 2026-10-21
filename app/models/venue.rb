@@ -54,7 +54,7 @@ class Venue < ApplicationRecord
   end
 
   def full_address_calendar
-    "#{address} #{city}, #{province_name} #{postcode}"
+    "#{address}, #{city}, #{province_name} #{postcode}"
   end
 
   # Shared renderer instance
