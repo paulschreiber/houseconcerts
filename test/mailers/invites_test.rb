@@ -104,7 +104,7 @@ class InvitesTest < ActionMailer::TestCase
     end
   end
 
-  test "confirm delivers with a confirmation subject and a calendar link" do
+  test "confirm delivers with a confirmation subject" do
     rsvp = rsvps(:one)
 
     email = InvitesMailer.with(rsvp: rsvp).confirm
@@ -113,7 +113,33 @@ class InvitesTest < ActionMailer::TestCase
       email.deliver_now
     end
     assert_includes email.subject, "RSVP Confirmation"
-    assert_includes email.body.encoded, "calendar.google.com"
+  end
+
+  test "confirm attaches the show as an .ics event with the full address and the guest's link" do
+    rsvp = rsvps(:one)
+    show = rsvp.show
+
+    attachment = InvitesMailer.with(rsvp: rsvp).confirm.attachments.sole
+
+    assert_equal show.ics_filename, attachment.filename
+    assert_equal "text/calendar", attachment.mime_type
+    assert_nil attachment.content_type_parameters["method"]
+    calendar = Icalendar::Calendar.parse(attachment.decoded).sole
+    assert_equal "PUBLISH", calendar.ip_method
+    event = calendar.events.sole
+    rsvp_url = Rails.application.routes.url_helpers.modify_rsvp_url(slug: show.slug, uniqid: rsvp.uniqid)
+    assert_equal "event-#{show.slug}@#{Settings.domain}", event.uid
+    assert_equal show.venue.full_address_calendar, event.location
+    assert_equal rsvp_url, event.url.to_s
+    assert_includes event.description, rsvp_url
+  end
+
+  test "confirm raises for an incomplete show, leaving the confirmation unsent" do
+    rsvp = rsvps(:one)
+    rsvp.show.artists = []
+
+    error = assert_raises(ArgumentError) { InvitesMailer.with(rsvp: rsvp).confirm.deliver_now }
+    assert_equal "#{rsvp.show.name} isn’t complete: it needs to be confirmed, with an artist", error.message
   end
 
   test "confirm includes an open-tracking pixel keyed to the rsvp's uniqid" do
@@ -122,7 +148,7 @@ class InvitesTest < ActionMailer::TestCase
     email = InvitesMailer.with(rsvp: rsvp).confirm
 
     expected_src = tracking_pixel_url(tag: "#{rsvp.show.slug}:confirm", uniqid: rsvp.uniqid, kind: "rsvp")
-    assert_includes email.body.encoded, %(src="#{expected_src}")
+    assert_includes html_body(email), %(src="#{expected_src}")
   end
 
   test "confirm embeds the reservation as parseable JSON-LD, with the full address" do
@@ -194,19 +220,6 @@ class InvitesTest < ActionMailer::TestCase
 
     expected_src = tracking_pixel_url(tag: "#{rsvp.show.slug}:remind", uniqid: rsvp.uniqid, kind: "rsvp")
     assert_includes email.body.encoded, %(src="#{expected_src}")
-  end
-
-  test "confirm links to adding the show to Google Calendar, with the guest's RSVP link" do
-    rsvp = rsvps(:one)
-
-    html = html_body(InvitesMailer.with(rsvp: rsvp).confirm)
-
-    url = Nokogiri::HTML(html).at_css("a:contains('Add to Google Calendar')")["href"]
-    assert url.start_with?("https://calendar.google.com/calendar/r/eventedit?")
-    query = Rack::Utils.parse_query(URI(url).query)
-    assert_equal rsvp.show.event_name, query["text"]
-    assert_equal "Update reservation: #{Rails.application.routes.url_helpers.modify_rsvp_url(slug: rsvp.show.slug, uniqid: rsvp.uniqid)}",
-                 query["details"]
   end
 
   test "rsvp_updated tells the guest what changed and links to their RSVP" do
