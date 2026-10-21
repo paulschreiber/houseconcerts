@@ -558,18 +558,33 @@ body.dashboard.show {
   }
 }
 
-/* Invite/reminder batch progress: one compact row under the buttons,
-   instead of a paragraph per kind. .actions is itself a flex row (madmin's
-   base.css), so without flex-basis: 100% this would just sit inline next
-   to the buttons instead of wrapping onto its own line below them.
-   Edit/Delete render after this in the DOM (madmin's show.html.erb adds
-   them after member_actions), so `order` pulls this visually to the end
-   of the row instead of splitting Edit/Delete onto a third line. */
+/* The show page's member actions (ShowResource): its first line of
+   buttons, ending in a spacer that pushes Edit and Delete to the right,
+   then lines of their own. .actions is a flex row (madmin's base.css), so
+   a line needs flex-basis: 100% to wrap below the buttons instead of
+   sitting beside them. Edit/Delete come after the member actions in the
+   DOM (madmin's show.html.erb), so `order` moves the lines below them
+   instead of splitting Edit/Delete onto a line of their own. */
+.actions-spacer {
+  flex: 1;
+}
+
+.actions-row,
 .batch-progress {
   display: flex;
   order: 1;
   flex-basis: 100%;
   flex-wrap: wrap;
+}
+
+/* The invite and send buttons. */
+.actions-row {
+  gap: 0.5rem;
+}
+
+/* Invite/reminder batch progress: one compact line under the buttons,
+   instead of a paragraph per kind. */
+.batch-progress {
   gap: 1.5rem;
   margin-top: 0.5rem;
   font-size: 0.9em;
