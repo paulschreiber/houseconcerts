@@ -89,8 +89,7 @@ class BatchRunItemJob < ApplicationJob
       # Rechecked at send time: a retry or queued job may run after the show.
       raise SkippedRecipient, "#{batch_run.show.name} has already happened" if batch_run.show.occurred?
 
-      case batch_run.kind
-      when "invite", "invite_unopened"
+      if BatchRun.sends_invite?(batch_run.kind)
         raise InvalidRecipient, "#{recipient.email} is no longer active" unless recipient.can_invite?
         # They may have RSVPd since the batch started.
         raise SkippedRecipient, "#{recipient.email} has already RSVP'd" if RSVP.exists?(show: batch_run.show, email: recipient.email)
@@ -100,7 +99,7 @@ class BatchRunItemJob < ApplicationJob
         # fan-out's "invite%" exclusion).
         InvitesMailer.with(person: recipient, show: batch_run.show, email_type: batch_run.kind,
                            invite_message: batch_run.invite_message).invite.deliver_now
-      when "remind"
+      else
         remind(item, recipient)
       end
     end

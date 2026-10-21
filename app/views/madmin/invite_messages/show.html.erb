@@ -1,16 +1,14 @@
-<%
-  locked = @invite_message.locked?
-  actions = safe_join([
-    (link_to("Edit", edit_madmin_show_invite_message_path(@show, @invite_message), class: "btn btn-primary") unless locked),
-    button_to("Send Test", send_test_madmin_show_invite_message_path(@show, @invite_message), class: "btn btn-secondary"),
-    link_to("New Revision", new_madmin_show_invite_message_path(@show), class: "btn btn-secondary"),
-    link_to("History", madmin_show_invite_messages_path(@show), class: "btn btn-secondary"),
-    (unless locked
-       button_to("Delete", madmin_show_invite_message_path(@show, @invite_message), method: :delete, class: "btn btn-danger",
-                                                                                    data: { turbo_confirm: "Delete revision #{@invite_message.revision}?" })
-     end)
-  ].compact)
-%>
+<% locked = @invite_message.locked? %>
+<% actions = capture do %>
+  <%= link_to "Edit", edit_madmin_show_invite_message_path(@show, @invite_message), class: "btn btn-primary" unless locked %>
+  <%= button_to "Send Test", send_test_madmin_show_invite_message_path(@show, @invite_message), class: "btn btn-secondary" %>
+  <%= link_to "New Revision", new_madmin_show_invite_message_path(@show), class: "btn btn-secondary" %>
+  <%= link_to "History", madmin_show_invite_messages_path(@show), class: "btn btn-secondary" %>
+  <% unless locked %>
+    <%= button_to "Delete", madmin_show_invite_message_path(@show, @invite_message), method: :delete, class: "btn btn-danger",
+                                                                                  data: { turbo_confirm: "Delete revision #{@invite_message.revision}?" } %>
+  <% end %>
+<% end %>
 <%= render "header", title: "Invite, Revision #{@invite_message.revision}", actions: %>
 
 <p class="invite-status">

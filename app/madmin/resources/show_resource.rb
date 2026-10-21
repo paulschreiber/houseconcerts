@@ -100,10 +100,8 @@ class ShowResource < Madmin::Resource
   # Send to Unopened / Send Reminders only make sense after an initial
   # invite has gone out, and invites need one written.
   def self.invite_gate_options(show, kind)
-    return { disabled: true, title: "Send invites first" } if BatchRun.requires_invites_sent?(kind) && !show.invites_sent?
-    return { disabled: true, title: "Write the invite first" } if BatchRun.sends_invite?(kind) && !show.invite_message
-
-    {}
+    reason = BatchRun.not_ready_reason(show, kind)
+    reason ? { disabled: true, title: reason } : {}
   end
 
   # Customize the display name of records in the admin area.

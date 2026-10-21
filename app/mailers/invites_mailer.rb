@@ -48,7 +48,7 @@ class InvitesMailer < ApplicationMailer
     @person = Person.new(first_name: "Jane", last_name: "Smith", email: "jane.smith@example.com")
     @show = params[:show]
     @invite_message = params[:invite_message]
-    @links = { rsvp: "#rsvp", rsvp_yes: "#rsvp_yes", rsvp_no: "#rsvp_no" }
+    @links = InviteMessage::PLACEHOLDERS.keys.to_h { |name| [ name.to_sym, "##{name}" ] }
     @unsub_url = "#unsubscribe"
 
     mail(to: @person.email_address_with_name, subject: subject_for("You’re invited", @show), template_name: "invite")

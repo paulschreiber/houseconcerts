@@ -9,7 +9,7 @@
       </thead>
       <tbody>
         <% @invite_messages.each do |invite_message| %>
-          <% locked = invite_message.locked? %>
+          <% locked = @locked_ids.include?(invite_message.id) %>
           <tr>
             <td><%= link_to "Revision #{invite_message.revision}", madmin_show_invite_message_path(@show, invite_message) %></td>
             <td><%= render "status", invite_message:, locked:, current: invite_message == @current %></td>

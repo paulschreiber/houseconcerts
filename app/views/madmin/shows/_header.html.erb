@@ -1,0 +1,12 @@
+<%# A page about the show: its heading (title, or the show's name), date and
+    Back button, with any actions beside Back. %>
+<% title = local_assigns[:title] %>
+<header class="header">
+  <h1><%= title || @show.name %></h1>
+  <p><% if title %><%= link_to @show.name, madmin_show_path(@show) %> · <% end %><%= @show.start_date %></p>
+
+  <div class="actions">
+    <%= local_assigns[:actions] %>
+    <%= link_to "Back", madmin_show_path(@show), class: "btn btn-secondary" %>
+  </div>
+</header>
