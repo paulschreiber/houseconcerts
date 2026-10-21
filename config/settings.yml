@@ -6,7 +6,8 @@
 :google_analytics_id: "G-1RMTZBQMTP"
 :default_venue_group: 2
 :domain: "houseconcerts.nyc"
-:invites_from_name: "Paul Schreiber"
+:invites_from_first_name: "Paul"
+:invites_from_last_name: "Schreiber"
 :invites_from_email: "paul"
 :confirms_from_name: "House Concerts"
 :confirms_from_email: "info"
