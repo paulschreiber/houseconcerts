@@ -18,6 +18,14 @@ module Madmin
       assert_response :success
     end
 
+    test "show displays multiline text as typed, not as markup" do
+      venues(:one).update_columns(contact_info: "Ring <b>twice</b>\nthen wait") # rubocop:disable Rails/SkipsModelValidations
+
+      get madmin_venue_path(venues(:one))
+
+      assert_select ".multiline-value", text: %r{Ring <b>twice</b>}
+    end
+
     test "edit renders successfully" do
       get edit_madmin_venue_path(venues(:one))
 
