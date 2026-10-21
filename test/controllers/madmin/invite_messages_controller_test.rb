@@ -21,6 +21,32 @@ module Madmin
       assert_response :success
       assert_select "td a", text: "Revision 2"
       assert_select "td a", text: "Revision 1"
+      assert_select "a", text: "Back", count: 0
+    end
+
+    test "the invite pages are headed title / the show, linked like Madmin's record pages" do
+      {
+        madmin_show_invite_messages_path(show) => "Invite History",
+        new_madmin_show_invite_message_path(show) => "New Invite Revision",
+        madmin_show_invite_message_path(show, invite_message) => "Invite, Revision 1",
+        edit_madmin_show_invite_message_path(show, invite_message) => "Invite, Revision 1"
+      }.each do |path, title|
+        get path
+
+        assert_select "h1", text: "#{title} / #{show.dated_name}"
+        assert_select "h1 a[href=?]", madmin_show_path(show), text: show.dated_name
+      end
+    end
+
+    test "index has an Edit button only for unsent revisions" do
+      create_run(status: "completed", sent_count: 1)
+      second = show.invite_messages.create!(intro: "Second", about: "Second")
+
+      get madmin_show_invite_messages_path(show)
+
+      assert_select "td.actions a.btn[href=?]", edit_madmin_show_invite_message_path(show, second), text: "Edit"
+      assert_select "td.actions a[href=?]", edit_madmin_show_invite_message_path(show, invite_message), count: 0
+      assert_select "td.actions form", count: 0
     end
 
     test "new starts from the current revision's text" do
@@ -29,6 +55,26 @@ module Madmin
       assert_response :success
       assert_select "textarea[name='invite_message[intro]']", text: invite_message.intro
       assert_select "iframe[name='invite-preview']"
+    end
+
+    test "new has Create Invite and a Cancel link back to the history, not Back or Delete" do
+      get new_madmin_show_invite_message_path(show)
+
+      assert_select ".form-secondary-actions button[type=submit][form=invite-editor-form]", text: "Create Invite"
+      assert_select ".form-secondary-actions a[href=?]", madmin_show_invite_messages_path(show), text: "Cancel"
+      assert_select ".form-secondary-actions button", text: "Delete", count: 0
+      assert_select "a", text: "Back", count: 0
+    end
+
+    test "edit has Update Invite, Send Test, Delete and a Cancel link back to the revision, not Back" do
+      get edit_madmin_show_invite_message_path(show, invite_message)
+
+      assert_select ".form-secondary-actions button[type=submit][form=invite-editor-form]", text: "Update Invite"
+      assert_select "[data-controller='invite-preview'] .header .actions form[action=?] button[data-invite-preview-target=testButton]", send_test_madmin_show_invite_message_path(show, invite_message), text: "Send Test"
+      assert_select ".form-secondary-actions button", text: "Send Test", count: 0
+      assert_select ".form-secondary-actions form[action=?] button.btn-danger", madmin_show_invite_message_path(show, invite_message), text: "Delete"
+      assert_select ".form-secondary-actions a[href=?]", madmin_show_invite_message_path(show, invite_message), text: "Cancel"
+      assert_select "a", text: "Back", count: 0
     end
 
     test "create saves the next revision, by the signed-in admin" do
@@ -77,8 +123,10 @@ module Madmin
 
     test "show displays a revision read-only, with Edit and Delete only until it's sent" do
       get madmin_show_invite_message_path(show, invite_message)
-      assert_select "a", text: "Edit"
+      assert_select "a.btn-secondary", text: "Edit"
       assert_select "button", text: "Delete"
+      assert_select "button[data-turbo-confirm=?]", "Delete invite revision 1 for #{show.dated_name}?"
+      assert_select "a", text: "Back", count: 0
       assert_select "iframe[src='#{preview_madmin_show_invite_message_path(show, invite_message)}']"
 
       create_run(status: "completed", sent_count: 1)
