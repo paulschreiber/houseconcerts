@@ -29,7 +29,9 @@
 	<div>
 		<%= f.label :phone_number %>
 		<%= f.telephone_field :phone_number, maxlength: 20, size: 50 %>
-		<p class="note">Enter your phone number to receive text message reminders.</p>
+		<% if SendTextMessage.enabled? %>
+			<p class="note">Enter your phone number to receive text message reminders.</p>
+		<% end %>
 	</div>
 
 	<div>

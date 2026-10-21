@@ -27,7 +27,7 @@
 	<title><%= yield(:title).presence || page_title %></title>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
 
-	<%= render "google_analytics" if Rails.env.production? %>
+	<%= render "google_analytics" if google_analytics? %>
 	<%= csrf_meta_tags %>
 	<%= csp_meta_tag %>
     <%= javascript_importmap_tags %>

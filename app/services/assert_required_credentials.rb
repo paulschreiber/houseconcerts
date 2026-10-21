@@ -1,13 +1,14 @@
+# Amazon SES (email) is required. Twilio (text messages) is optional, but
+# once any of its credentials is set, all of them are.
 class AssertRequiredCredentials
   def self.call(credentials = Rails.application.credentials)
     required = {
-      "twilio.auth_token" => credentials.twilio&.auth_token,
-      "twilio.account_sid" => credentials.twilio&.account_sid,
-      "twilio.sms_sender" => credentials.twilio&.sms_sender,
       "amazon.username" => credentials.amazon&.username,
       "amazon.password" => credentials.amazon&.password,
       "amazon.server" => credentials.amazon&.server
     }
+    twilio = SendTextMessage::CREDENTIALS.to_h { [ "twilio.#{it}", credentials.twilio&.public_send(it) ] }
+    required.merge!(twilio) if twilio.values.any?(&:present?)
 
     missing = required.select { |_, value| value.blank? }.keys
     raise "Missing required credentials: #{missing.join(', ')}" if missing.any?
