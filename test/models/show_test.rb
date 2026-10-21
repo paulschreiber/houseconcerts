@@ -141,6 +141,13 @@ class ShowTest < ActiveSupport::TestCase
     assert_not show.can_confirm_rsvps?
   end
 
+  test "ics_filename is the show's name, as a slug, and its date" do
+    show = shows(:upcoming)
+    show.name = "Jane Smith & Café Trio"
+
+    assert_equal "jane-smith-cafe-trio-#{show.start.to_date.iso8601}.ics", show.ics_filename
+  end
+
   test "artists come in the order they were added" do
     show = shows(:upcoming)
     created_first = Artist.create!(name: "Created First")
