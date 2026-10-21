@@ -58,6 +58,18 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "new asks for a phone number, mentioning text reminders only when they're set up" do
+    get rsvp_for_show_path(slug: shows(:upcoming).slug)
+    assert_select "input[name='rsvp[phone_number]']"
+    assert_select ".note", text: /text message reminders/
+
+    with_stubbed(SendTextMessage, :enabled?, -> { false }) do
+      get rsvp_for_show_path(slug: shows(:upcoming).slug)
+    end
+    assert_select "input[name='rsvp[phone_number]']"
+    assert_select ".note", text: /text message reminders/, count: 0
+  end
+
   test "new redirects home for cancelled and unconfirmed shows" do
     %w[cancelled unconfirmed].each do |status|
       shows(:upcoming).update!(status: status)
