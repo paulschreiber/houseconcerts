@@ -31,5 +31,5 @@
 <%= @rsvp.show.venue.formatted_contact_info&.html_safe %>
 
 <p>thanks!
-<br />Paul</p>
+<br /><%= Settings.invites_from_first_name %></p>
 <%= ld_json_tag(ld_json_reservation(@rsvp)) %>

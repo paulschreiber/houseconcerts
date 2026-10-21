@@ -28,7 +28,7 @@
 
 <p><%= link_to "Spend #{@show.day_of_week} evening with #{@show.name}", @rsvp_url_yes %>.</p>
 
-<p><br/>Paul</p>
+<p><br/><%= Settings.invites_from_first_name %></p>
 
 <p>P.S. If you have moved or don’t want to receive house concert invites, <%= link_to "instantly unsubscribe", @unsub_url %>.</p>
 
