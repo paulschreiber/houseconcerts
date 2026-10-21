@@ -26,12 +26,10 @@ Rails.application.configure do
     policy.img_src         :self, :data, *GOOGLE_ANALYTICS_HOSTS
     policy.connect_src     :self, *GOOGLE_ANALYTICS_HOSTS
     # Importmap tags and the inline Google Analytics snippet get a nonce.
-    # Madmin loads tom-select and tailwindcss-stimulus-components from jspm.
-    policy.script_src      :self, "https://*.googletagmanager.com", "https://ga.jspm.io", MADMIN_TRIX_IMPORT_HASH
-    # Turbo's progress bar and Trix inject <style> elements, and Madmin loads
-    # flatpickr and tom-select CSS from unpkg. Inline styles can't run script,
-    # so they're allowed rather than nonced.
-    policy.style_src       :self, :unsafe_inline, "https://unpkg.com"
+    policy.script_src      :self, "https://*.googletagmanager.com", MADMIN_TRIX_IMPORT_HASH
+    # Turbo's progress bar and Trix inject <style> elements. Inline styles
+    # can't run script, so they're allowed rather than nonced.
+    policy.style_src       :self, :unsafe_inline
   end
 
   # Nonces for importmap tags and inline scripts. They're per session, not per
