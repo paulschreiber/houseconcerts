@@ -193,6 +193,13 @@ module Madmin
       assert_select "form[action=?] button", add_phone_numbers_madmin_show_path(shows(:past)), text: "Add Phone Numbers"
     end
 
+    test "show puts the invite buttons and the send buttons on their own rows" do
+      get madmin_show_path(shows(:upcoming))
+
+      assert_select ".actions-row a", text: "Invite History"
+      assert_select ".actions-row form button", text: BatchRun::KINDS["invite"][:button]
+    end
+
     test "add_nonsubscribers adds the show's yes RSVPs to the mailing list and says who" do
       attendee(shows(:past), "Jane")
       Person.create!(first_name: "John", last_name: "Smith", email: "john.smith@example.com", status: "removed")
