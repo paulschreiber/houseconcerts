@@ -141,6 +141,17 @@ class ShowTest < ActiveSupport::TestCase
     assert_not show.can_confirm_rsvps?
   end
 
+  test "artists come in the order they were added" do
+    show = shows(:upcoming)
+    created_first = Artist.create!(name: "Created First")
+    created_second = Artist.create!(name: "Created Second")
+    added = [ created_second, created_first ]
+    show.artists << added
+
+    assert_equal [ artists(:one), *added ], show.reload.artists.to_a
+    assert_equal [ artists(:one), *added ], Show.includes(:artists).find(show.id).artists.to_a
+  end
+
   test "dated_name combines the name with an ISO-formatted date" do
     show = shows(:upcoming)
 
