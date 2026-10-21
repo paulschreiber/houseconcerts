@@ -39,6 +39,19 @@ class InvitesTest < ActionMailer::TestCase
     assert_includes email.body.encoded, %(src="#{expected_src}")
   end
 
+  test "invite has a Gmail go-to action that opens the person's RSVP form" do
+    person = people(:one)
+    show = shows(:upcoming)
+
+    data = ld_json_in(html_body(InvitesMailer.with(person: person, show: show).invite))
+
+    assert_equal "EmailMessage", data["@type"]
+    assert_equal "ViewAction", data.dig("potentialAction", "@type")
+    assert_equal "Reserve seats", data.dig("potentialAction", "name")
+    routes = Rails.application.routes.url_helpers
+    assert_equal routes.modify_rsvp_url(slug: show.slug, uniqid: person.uniqid), data.dig("potentialAction", "url")
+  end
+
   test "waitlisted does nothing for an rsvp that changed to no after it was queued" do
     rsvp = rsvps(:one)
     rsvp.update!(response: "no")
@@ -125,13 +138,15 @@ class InvitesTest < ActionMailer::TestCase
     assert_equal "11201", data.dig("reservationFor", "location", "address", "postalCode")
   end
 
-  test "confirm's JSON-LD links to modifying and cancelling the reservation" do
+  test "confirm's JSON-LD links to modifying (as Update RSVP) and cancelling the reservation" do
     rsvp = rsvps(:one)
 
     data = confirm_ld_json(rsvp)
 
     routes = Rails.application.routes.url_helpers
-    assert_equal routes.modify_rsvp_url(slug: rsvp.show.slug, uniqid: rsvp.uniqid), data["modifyReservationUrl"]
+    modify_url = routes.modify_rsvp_url(slug: rsvp.show.slug, uniqid: rsvp.uniqid)
+    assert_equal modify_url, data["modifyReservationUrl"]
+    assert_equal({ "@type" => "EditAction", "name" => "Update RSVP", "target" => modify_url }, data["potentialAction"])
     assert_equal routes.rsvp_response_url(slug: rsvp.show.slug, uniqid: rsvp.uniqid, response: :no), data["cancelReservationUrl"]
   end
 
