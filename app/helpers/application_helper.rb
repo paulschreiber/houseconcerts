@@ -48,6 +48,12 @@ module ApplicationHelper
     "/concerts.png"
   end
 
+  # Google Analytics is optional: it runs in production when
+  # Settings.google_analytics_id is set.
+  def google_analytics?
+    Rails.env.production? && Settings.google_analytics_id.present?
+  end
+
   # A URL as sent to Google Analytics: link tokens (uniqid) replaced with
   # ":uniqid", and only utm_* campaign parameters kept from the query string
   # (pre-filled RSVP links can carry an email address there), so GA never sees

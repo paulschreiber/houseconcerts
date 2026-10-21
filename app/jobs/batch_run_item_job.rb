@@ -117,23 +117,12 @@ class BatchRunItemJob < ApplicationJob
         item.update!(email_sent_at: Time.current)
       end
 
-      return if rsvp.phone_number.blank?
-
-      return if item.sms_sent_at?
+      return if rsvp.phone_number.blank? || item.sms_sent_at? || !SendTextMessage.enabled?
 
       # A bad number fails the whole item even though the email went out:
       # status is one signal per recipient, not one per channel. Fixing the
       # number on the RSVP stops the retries failing.
-      if Rails.env.production?
-        client = Twilio::REST::Client.new(Rails.application.credentials.twilio.account_sid, Rails.application.credentials.twilio.auth_token)
-        client.api.account.messages.create(
-          from: Rails.application.credentials.twilio.sms_sender,
-          to: rsvp.phone_number_twilio,
-          body: rsvp.sms_reminder
-        )
-      else
-        Rails.logger.debug { "Sending SMS [#{rsvp.phone_number_twilio}]: #{rsvp.sms_reminder}" }
-      end
+      SendTextMessage.call(to: rsvp.phone_number_twilio, body: rsvp.sms_reminder)
       item.update!(sms_sent_at: Time.current)
     end
 

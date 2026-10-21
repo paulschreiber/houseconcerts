@@ -143,6 +143,8 @@ If you’re interested in finding a house concert in another area or hosting you
 
 <p><a property="dct:title" rel="cc:attributionURL" href="https://houseconcerts.nyc/">House concerts website</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">CC BY-NC 4.0</a>.</p>
 
- <p><a href="/privacy">Privacy policy</a> (required for Twilio’s text messaging service).</p>
+<% if SendTextMessage.enabled? %>
+<p><a href="/privacy">Privacy policy</a> (required for Twilio’s text messaging service).</p>
+<% end %>
 
 </div>
