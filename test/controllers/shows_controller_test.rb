@@ -84,9 +84,7 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
 
   test "shows escapes an artist name containing HTML instead of rendering it raw" do
     artist = artists(:one)
-    # ModelCleaners strips HTML from string attributes on save, so bypass it
-    # to test the view's own escaping rather than relying on that callback.
-    artist.update_column(:name, "Evil<script>alert(1)</script>Artist") # rubocop:disable Rails/SkipsModelValidations
+    artist.update!(name: "Evil<script>alert(1)</script>Artist")
     shows(:past).artists = [ artist ]
 
     get past_shows_path
