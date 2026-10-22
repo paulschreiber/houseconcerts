@@ -1,5 +1,5 @@
 <%= render "header", title: "Invite History",
-                     actions: link_to((@invite_messages.any? ? "New Revision" : "Write Invite"), new_madmin_show_invite_message_path(@show), class: "btn btn-secondary") %>
+                     actions: render("new_button", show: @show, label: @invite_messages.any? ? "New Revision" : "Write Invite") %>
 
 <% if @invite_messages.any? %>
   <div class="table-scroll">

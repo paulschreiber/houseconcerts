@@ -2,7 +2,7 @@
 <% actions = capture do %>
   <%= render "edit_button", invite_message: @invite_message, locked: %>
   <%= button_to "Send Test", send_test_madmin_show_invite_message_path(@show, @invite_message), class: "btn btn-secondary" %>
-  <%= link_to "New Revision", new_madmin_show_invite_message_path(@show), class: "btn btn-secondary" %>
+  <%= render "new_button", show: @show, label: "New Revision" %>
   <%= link_to "History", madmin_show_invite_messages_path(@show), class: "btn btn-secondary" %>
   <%= render "delete_button", invite_message: @invite_message unless locked %>
 <% end %>
