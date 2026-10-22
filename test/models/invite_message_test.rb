@@ -49,10 +49,10 @@ class InviteMessageTest < ActiveSupport::TestCase
     assert_not invite_message.current?
   end
 
-  test "renders bold, italics and links" do
-    message = InviteMessage.new(intro: "Some **bold**, *italic* and [linked](https://example.com) text.")
+  test "renders bold, italics, strikethrough and links" do
+    message = InviteMessage.new(intro: "Some **bold**, *italic*, ~~struck~~ and [linked](https://example.com) text.")
 
-    assert_equal %(<p>Some <strong>bold</strong>, <em>italic</em> and <a href="https://example.com">linked</a> text.</p>\n),
+    assert_equal %(<p>Some <strong>bold</strong>, <em>italic</em>, <del>struck</del> and <a href="https://example.com">linked</a> text.</p>\n),
                  message.intro_html(LINKS)
   end
 
