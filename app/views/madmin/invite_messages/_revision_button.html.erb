@@ -1,0 +1,8 @@
+<%# A link (label, path) to start or edit a revision of show's invite.
+    Disabled, with the reason as its tooltip, once the invite is closed (see
+    InviteMessage.closed_reason). %>
+<% if (reason = InviteMessage.closed_reason(show)) %>
+  <%= tag.button label, type: "button", class: "btn btn-secondary", **ShowResource.disabled_options(reason) %>
+<% else %>
+  <%= link_to label, path, class: "btn btn-secondary" %>
+<% end %>

@@ -1,8 +1,10 @@
 module Madmin
   # Writing a show's invite: its revisions, each editable until a batch
-  # sends it (InviteMessage#locked?), with a live preview and test sends.
+  # sends it (InviteMessage#locked?) or the show happens, with a live preview
+  # and test sends.
   class InviteMessagesController < Madmin::ApplicationController
     before_action :load_show
+    before_action :redirect_if_show_over, only: %i[new create edit update]
     before_action :load_invite_message, only: %i[show edit update destroy send_test]
     before_action :redirect_if_locked, only: %i[edit update]
 
@@ -100,6 +102,12 @@ module Madmin
         return unless @invite_message.locked?
 
         redirect_to revision_path, alert: @invite_message.locked_notice
+      end
+
+      # See InviteMessage.closed_reason.
+      def redirect_if_show_over
+        reason = InviteMessage.closed_reason(@show)
+        redirect_to main_app.madmin_show_invite_messages_path(@show), alert: reason if reason
       end
 
       def invite_message_params

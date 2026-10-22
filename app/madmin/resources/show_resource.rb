@@ -55,12 +55,12 @@ class ShowResource < Madmin::Resource
   member_action do |record|
     current = record.invite_message
     buttons = if current.nil?
-      link_to "Write Invite", new_madmin_show_invite_message_path(record), class: "btn btn-secondary"
+      render "madmin/invite_messages/new_button", show: record, label: "Write Invite"
     else
       edit = if current.locked?
-        link_to "New Invite Revision", new_madmin_show_invite_message_path(record), class: "btn btn-secondary"
+        render "madmin/invite_messages/new_button", show: record, label: "New Invite Revision"
       else
-        link_to "Edit Invite", edit_madmin_show_invite_message_path(record, current), class: "btn btn-secondary"
+        render "madmin/invite_messages/edit_button", invite_message: current, locked: false, label: "Edit Invite"
       end
       edit + link_to("Invite History", madmin_show_invite_messages_path(record), class: "btn btn-secondary")
     end

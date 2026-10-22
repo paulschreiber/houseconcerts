@@ -1,2 +1,6 @@
-<%# Edits invite_message, unless it's been sent (locked). %>
-<%= link_to "Edit", edit_madmin_show_invite_message_path(invite_message.show, invite_message), class: "btn btn-secondary" unless locked %>
+<%# Edits invite_message (label: the button text, "Edit" by default). Hidden
+    once it's been sent (locked). %>
+<% unless locked %>
+  <%= render "madmin/invite_messages/revision_button", show: invite_message.show, label: local_assigns.fetch(:label, "Edit"),
+                                                       path: edit_madmin_show_invite_message_path(invite_message.show, invite_message) %>
+<% end %>
