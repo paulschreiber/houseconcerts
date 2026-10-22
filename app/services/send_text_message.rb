@@ -7,7 +7,7 @@ class SendTextMessage
   def self.enabled?(credentials = Rails.application.credentials)
     return true unless Rails.env.production?
 
-    CREDENTIALS.all? { credentials.twilio&.public_send(it).present? }
+    CREDENTIALS.all? { |name| credentials.twilio&.public_send(name).present? }
   end
 
   def self.call(to:, body:)

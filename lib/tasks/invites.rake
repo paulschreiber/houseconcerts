@@ -8,8 +8,8 @@ namespace :invites do
     entries = InviteHistory::Export.entries
     File.write(file, entries.to_yaml(line_width: -1))
     puts "Wrote #{entries.size} invites to #{file}"
-    entries.select { it["warnings"] }.each do |entry|
-      puts "#{entry['commit'][0, 7]} #{entry['subject']}", *entry["warnings"].map { "  #{it}" }
+    entries.select { |entry| entry["warnings"] }.each do |entry|
+      puts "#{entry['commit'][0, 7]} #{entry['subject']}", *entry["warnings"].map { |warning| "  #{warning}" }
     end
   end
 

@@ -93,16 +93,16 @@ module InviteHistory
 
         nodes.chunk_while { |a, b| inline?(a) && inline?(b) }.filter_map do |run|
           next run.first unless inline?(run.first)
-          next if run.all? { blank?(it) }
+          next if run.all? { |node| blank?(node) }
 
           paragraph = Nokogiri::XML::Node.new("p", fragment.document)
-          run.each { paragraph.add_child(it) }
+          run.each { |node| paragraph.add_child(node) }
           paragraph
         end
       end
 
       def only_div(nodes)
-        content = nodes.reject { blank?(it) }
+        content = nodes.reject { |node| blank?(node) }
         content.first if content.one? && content.first.name == "div"
       end
 
@@ -118,10 +118,10 @@ module InviteHistory
       # greeting to the show details; about from the "A bit about" heading to
       # the signature.
       def split(nodes)
-        greeting = nodes.index { text(it).start_with?("Hi {{person.first_name}}") }
-        summary = nodes.index { it.name == "ul" }
-        heading = nodes.index { text(it).start_with?("A bit about") }
-        signature = nodes.index { text(it) == "Paul" }
+        greeting = nodes.index { |node| text(node).start_with?("Hi {{person.first_name}}") }
+        summary = nodes.index { |node| node.name == "ul" }
+        heading = nodes.index { |node| text(node).start_with?("A bit about") }
+        signature = nodes.index { |node| text(node) == "Paul" }
 
         unless greeting && summary && heading && signature
           @warnings << "Couldn’t find the template’s greeting, show details, heading and signature, so all of it is in the intro"
@@ -130,14 +130,14 @@ module InviteHistory
 
         before = nodes[0...greeting]
         @warnings << "Moved text from above the greeting into the intro" if before.any?
-        intro = before + nodes[(greeting + 1)...summary].reject { text(it) == "Short attention span version" }
+        intro = before + nodes[(greeting + 1)...summary].reject { |node| text(node) == "Short attention span version" }
 
-        between = nodes[(summary + 1)...heading].reject { actions?(it) }
+        between = nodes[(summary + 1)...heading].reject { |node| actions?(node) }
         @warnings << "Moved text from between the show details and the heading into the intro" if between.any?
 
         about = nodes[(heading + 1)...signature]
         about.pop if standard_closing?(about.last)
-        after = nodes[(signature + 1)..].reject { unsubscribe?(it) || it.name == "img" }
+        after = nodes[(signature + 1)..].reject { |node| unsubscribe?(node) || node.name == "img" }
         @warnings << "Moved text from below the signature into the about" if after.any?
 
         [ intro + between, about + after ]
@@ -158,7 +158,7 @@ module InviteHistory
 
       # The template's own closing line, which the footer now supplies.
       def standard_closing?(node)
-        node && text(node).match?(/\ASpend .* evening with .*\.\z/) && links(node).all? { it.start_with?(PLACEHOLDER) }
+        node && text(node).match?(/\ASpend .* evening with .*\.\z/) && links(node).all? { |href| href.start_with?(PLACEHOLDER) }
       end
 
       def unsubscribe?(node)
@@ -166,14 +166,14 @@ module InviteHistory
       end
 
       def markdown(nodes)
-        nodes.map { block(it) }.compact_blank.join("\n\n")
+        nodes.map { |node| block(node) }.compact_blank.join("\n\n")
       end
 
       def block(node)
         case node.name
         when "ul", "ol"
           @warnings << "Turned a list into separate paragraphs"
-          node.css("li").map { paragraph(it) }.join("\n\n")
+          node.css("li").map { |item| paragraph(item) }.join("\n\n")
         when "h1", "h2", "h3"
           @warnings << "Turned a #{node.name} heading into a bold paragraph"
           "**#{paragraph(node)}**"
@@ -189,7 +189,7 @@ module InviteHistory
       def inline(node)
         return escape(node.text.gsub(/\s+/, " ")) if node.text?
 
-        content = node.children.map { inline(it) }.join
+        content = node.children.map { |child| inline(child) }.join
         case node.name
         when "strong", "b" then wrap(content, "**")
         when "em", "i", "cite" then wrap(content, "*")

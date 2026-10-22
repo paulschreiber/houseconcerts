@@ -12,7 +12,8 @@ inherit_gem:
 
 AllCops:
   NewCops: enable
-  TargetRubyVersion: 4.0
+  # Production runs Ruby 3.3: match the Gemfile's minimum, not .ruby-version.
+  TargetRubyVersion: 3.3
   Exclude:
     - "db/**/*"
     - "script/**/*"

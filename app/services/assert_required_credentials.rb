@@ -7,7 +7,7 @@ class AssertRequiredCredentials
       "amazon.password" => credentials.amazon&.password,
       "amazon.server" => credentials.amazon&.server
     }
-    twilio = SendTextMessage::CREDENTIALS.to_h { [ "twilio.#{it}", credentials.twilio&.public_send(it) ] }
+    twilio = SendTextMessage::CREDENTIALS.to_h { |name| [ "twilio.#{name}", credentials.twilio&.public_send(name) ] }
     required.merge!(twilio) if twilio.values.any?(&:present?)
 
     missing = required.select { |_, value| value.blank? }.keys
