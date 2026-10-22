@@ -1,7 +1,8 @@
 class InviteMessage < ApplicationRecord
-  # The invite's two editable sections allow only paragraphs, bold, italics
-  # and links. Anything else Markdown produces is reduced to its text.
-  ALLOWED_TAGS = %w[p br strong em a].freeze
+  # The invite's two editable sections allow only paragraphs, bold, italics,
+  # strikethrough and links. Anything else Markdown produces is reduced to its
+  # text.
+  ALLOWED_TAGS = %w[p br strong em del a].freeze
 
   # Per-person links, written as [text][rsvp_yes], and what each links to.
   # The mailer supplies each recipient's URLs (see #intro_html).
@@ -103,7 +104,7 @@ class InviteMessage < ApplicationRecord
       # A parser per render: Redcarpet keeps each render's link definitions on
       # the parser, so a shared one could mix up two recipients' links when
       # jobs render invites at the same time.
-      html = MarkdownRenderer.parser(no_intra_emphasis: true).render("#{markdown}\n\n#{definitions}")
+      html = MarkdownRenderer.parser(no_intra_emphasis: true, strikethrough: true).render("#{markdown}\n\n#{definitions}")
       ActionView::Base.safe_list_sanitizer.sanitize(html, tags: ALLOWED_TAGS, attributes: %w[href]).html_safe # rubocop:disable Rails/OutputSafety
     end
 end
