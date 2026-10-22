@@ -3,7 +3,7 @@ require "test_helper"
 class InvitesRakeTest < ActiveSupport::TestCase
   setup do
     load_rake_tasks
-    %w[export_history import_history].each { Rake::Task["invites:#{it}"].reenable }
+    %w[export_history import_history].each { |task| Rake::Task["invites:#{task}"].reenable }
     @file = Tempfile.new([ "invite_history", ".yml" ])
   end
 
