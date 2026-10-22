@@ -11,11 +11,20 @@ jobs:
   changes:
     uses: ./.github/workflows/detect-changes.yml
 
+  # Production runs Ubuntu's Ruby 3.3; development runs .ruby-version.
   test:
-    name: Tests
+    name: Tests (${{ matrix.label }})
     needs: changes
     if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: production
+            ruby: "3.3"
+          - label: development
+            ruby: .ruby-version
 
     services:
       mysql:
@@ -52,6 +61,7 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@651ff0d62c5c79bed6d53ec518387aae20e72c1a # v1.329.0
         with:
+          ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
 
       - name: Set up database
@@ -62,3 +72,15 @@ jobs:
 
       - name: Run system tests
         run: bin/rails test:system
+
+  # The required "Tests" check: passes when both Ruby versions pass, or when
+  # the tests were skipped because no code changed.
+  tests-passed:
+    name: Tests
+    needs: [changes, test]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if a job failed or was cancelled
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1
