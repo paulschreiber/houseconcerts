@@ -1,16 +1,17 @@
 ---
 - commit: d96442500220351468972864ae9640967a95c1e6
-  date: '2015-07-14T07:46:36-04:00'
+  date: "2015-07-14T07:46:36-04:00"
   subject: mail merge templates/placeholders
-  intro: 'It''s summer: time for good food, good friends and good music. That means it’s time for Carlos Olmeda.'
+  skip: true
+  intro: "It's summer: time for good food, good friends and good music. That means it’s time for Carlos Olmeda."
   about: |-
     TK TK TK
 
     Come join me!
 - commit: 95acc7ddfef80af2b78eefe43c022e4a44ef5447
-  date: '2015-07-15T11:34:35-04:00'
+  date: "2015-07-15T11:34:35-04:00"
   subject: wrote invite for carlos
-  intro: 'Good news: it''s once again summer. More good news: it''s time for an other house concert. Even better news: it''s a Carlos Olmeda house concert!'
+  intro: "Good news: it's once again summer. More good news: it's time for an other house concert. Even better news: it's a Carlos Olmeda house concert!"
   about: |-
     One of the many great singer-songwriters to emerge for San Diego's coffeehouse scene in the late ’90s, Carlos spent time writing and playing with Jason Mraz, Jewel and Martin Sexton, among others.
 
@@ -18,7 +19,7 @@
 
     Now a Mainer, Carlos will play my first show of 2015. I’m excited to host him — [come join us][rsvp].
 - commit: 83f32691486c5b6842e79954d1e0e709685e43a0
-  date: '2015-07-22T01:24:27-04:00'
+  date: "2015-07-22T01:24:27-04:00"
   subject: fix spelling error in invite; add prefix
   intro: |-
     *Some folks told me this ended up in their spam folder. Wanted to make sure you didn’t miss it!*
@@ -31,17 +32,17 @@
 
     Now a Mainer, Carlos will play my first show of 2015. I’m excited to host him — [come join us][rsvp].
   warnings:
-  - Moved text from above the greeting into the intro
-- commit: '094e5fd0cb5dfe6b34e3598bddfc4d3292e0ec4d'
-  date: '2015-09-06T08:12:52-07:00'
-  subject: 'update invite text for Andrew Kerr TODO: put this in database'
-  intro: 'I hope you’re enjoying your long weekend! I’m visting my old home: San Francisco, and thinking about this month''s Andrew Kerr house concert.'
+    - Moved text from above the greeting into the intro
+- commit: "094e5fd0cb5dfe6b34e3598bddfc4d3292e0ec4d"
+  date: "2015-09-06T08:12:52-07:00"
+  subject: "update invite text for Andrew Kerr TODO: put this in database"
+  intro: "I hope you’re enjoying your long weekend! I’m visting my old home: San Francisco, and thinking about this month's Andrew Kerr house concert."
   about: |-
     Andrew Kerr was one of the first people to play at my house, way back in 2002. Since then, he's toured, raised a family, started a construction company…and wrote some more good songs.
 
     Sometimes funny, sometimes thoughtful and always a good storyteller, I’m glad to bring Andrew to Brooklyn.
 - commit: 9bd47f7fce7fc06d8378a8f501674073b84c5842
-  date: '2015-09-12T13:31:58-07:00'
+  date: "2015-09-12T13:31:58-07:00"
   subject: new text for invite
   intro: |-
     Happy Saturday! I’m sitting on the lawn at XOXO in Portland, listening to some great music (and avoiding getting sunburned).
@@ -52,7 +53,7 @@
 
     Sometimes funny, sometimes thoughtful and always a good storyteller, I’m glad to bring Andrew to Brooklyn.
 - commit: 92b6efe2717ce0356ddc21b24a1a33c280e8426d
-  date: '2015-09-18T09:11:53-04:00'
+  date: "2015-09-18T09:11:53-04:00"
   subject: tweak invite for unread folks
   intro: "*There are a handful of seats remaining for tomorrow’s show — I wanted to make sure you didn’t miss the invite.*"
   about: |-
@@ -60,9 +61,9 @@
 
     Sometimes funny, sometimes thoughtful and always a good storyteller, I’m glad to bring Andrew to Brooklyn.
   warnings:
-  - Moved text from above the greeting into the intro
+    - Moved text from above the greeting into the intro
 - commit: 36ecfe7bf114e83a461c2819694ac827e80ff88a
-  date: '2015-09-21T23:53:32-04:00'
+  date: "2015-09-21T23:53:32-04:00"
   subject: update invite for Rebecca Loebe
   intro: |-
     Holy smokes! We had a great time with Andrew Kerr last weekend, and his special guest, Teddy Goldstein.
@@ -75,7 +76,7 @@
 
     [Say yes to Saturday afternoon with Rebecca Loebe][rsvp].
 - commit: ff775ac0e78883767d133556a7d86c935d2ac30c
-  date: '2015-09-22T10:36:23-04:00'
+  date: "2015-09-22T10:36:23-04:00"
   subject: copy edits for invite
   intro: |-
     Holy smokes! Last weekend, had a great time with Andrew Kerr (and his special guest, Teddy Goldstein).
@@ -88,7 +89,7 @@
 
     [Say yes to Saturday afternoon with Rebecca Loebe][rsvp].
 - commit: 01b8ab1bc5f138374e235e61c7ab1eac8072b199
-  date: '2015-09-22T10:38:32-04:00'
+  date: "2015-09-22T10:38:32-04:00"
   subject: fix day of week for loebe
   intro: |-
     Holy smokes! Last weekend, had a great time with Andrew Kerr (and his special guest, Teddy Goldstein).
@@ -101,7 +102,7 @@
 
     [Say yes to Sunday afternoon with Rebecca Loebe][rsvp].
 - commit: b0219dd61d8cf3e69cf40b5313cf3d6cfc7de1b6
-  date: '2015-09-30T08:14:57-04:00'
+  date: "2015-09-30T08:14:57-04:00"
   subject: updated invite text
   intro: |-
     *There are just a few days left until October’s show, and handful of seats remaining. Don’t miss out!*
@@ -114,9 +115,9 @@
 
     [Say yes to Sunday afternoon with Rebecca Loebe][rsvp].
   warnings:
-  - Moved text from above the greeting into the intro
+    - Moved text from above the greeting into the intro
 - commit: ecf5c4fc7f7f502fb18b85ff726b20e87ef9034a
-  date: '2015-10-29T23:59:29-04:00'
+  date: "2015-10-29T23:59:29-04:00"
   subject: update invite for Dan+Laurel
   intro: |-
     I just got back from Canada, where the Montréal Canadiens won nine games in a row to start the season, and Stephen Harper is no longer Prime Minster. Not a bad trip!
@@ -131,9 +132,9 @@
 
     P.P.S. Winnie The Pooh was named after Winnipeg.
   warnings:
-  - Moved text from below the signature into the about
+    - Moved text from below the signature into the about
 - commit: ce2cde009b04a126a55f3752130a387b9a194e38
-  date: '2015-10-30T08:41:31-04:00'
+  date: "2015-10-30T08:41:31-04:00"
   subject: remove extra hyphen
   intro: |-
     I just got back from Canada, where the Montréal Canadiens won nine games in a row to start the season, and Stephen Harper is no longer Prime Minster. Not a bad trip!
@@ -148,9 +149,9 @@
 
     P.P.S. Winnie The Pooh was named after Winnipeg.
   warnings:
-  - Moved text from below the signature into the about
+    - Moved text from below the signature into the about
 - commit: 3b87427622140aa4099d20b3f4830ce8a43bb694
-  date: '2015-11-10T08:09:51-05:00'
+  date: "2015-11-10T08:09:51-05:00"
   subject: updated text for reminder email
   intro: |-
     *Dan and Laurel are this weekend — don’t miss out!*
@@ -165,10 +166,10 @@
 
     P.P.S. Winnie The Pooh was named after Winnipeg.
   warnings:
-  - Moved text from above the greeting into the intro
-  - Moved text from below the signature into the about
+    - Moved text from above the greeting into the intro
+    - Moved text from below the signature into the about
 - commit: c9d17bce217f2594d3d4e300fb828bd5f5bcef8f
-  date: '2015-11-12T01:13:47-05:00'
+  date: "2015-11-12T01:13:47-05:00"
   subject: add yes/no RSVP links (buttons) to email)
   intro: |-
     *Dan and Laurel are this weekend — don’t miss out!*
@@ -183,10 +184,10 @@
 
     P.P.S. Winnie The Pooh was named after Winnipeg.
   warnings:
-  - Moved text from above the greeting into the intro
-  - Moved text from below the signature into the about
+    - Moved text from above the greeting into the intro
+    - Moved text from below the signature into the about
 - commit: 256d0cbb0b44155fd567fe32196411d0e9a5d22f
-  date: '2016-01-19T21:14:50-05:00'
+  date: "2016-01-19T21:14:50-05:00"
   subject: update invite for jen lowe
   intro: |-
     Happy 2016! I spent New Year’s in Boston, where I watched the Montréal Canadiens shellac the Boston Bruins in this year’s Winter Classic — that’s right, outdoor hockey. Like when you were a kid!
@@ -199,7 +200,7 @@
 
     [Say yes to Sunday afternoon with Jen Lowe][rsvp_yes].
 - commit: 8020c3e01918c2e368f3a8db31be33cbcfe52c8f
-  date: '2016-01-27T08:50:14-05:00'
+  date: "2016-01-27T08:50:14-05:00"
   subject: updated text for Jen Lowe reminder
   intro: |-
     I hope you had as much fun in the snow as Shooter and I did last Saturday!
@@ -214,7 +215,7 @@
 
     [Say yes to Sunday afternoon with Jen Lowe][rsvp_yes].
 - commit: 46179b0a1da52c6e1715091d7a355997c2d6d558
-  date: '2016-03-18T01:43:39-04:00'
+  date: "2016-03-18T01:43:39-04:00"
   subject: updated invite for Randi Driscoll
   intro: |-
     March has arrived. Daylight Saving Time has arrived. Last week, I got to visit Denver for the first time.
@@ -229,7 +230,7 @@
 
     In the mood for great music? [Say yes to Saturday evening with Randi Driscoll][rsvp_yes].
 - commit: 20df0c172526194e05c8065a6cad552e9efcbb09
-  date: '2016-05-05T00:57:41-04:00'
+  date: "2016-05-05T00:57:41-04:00"
   subject: updated invite for jay nash
   intro: |-
     I just came back from a terrific long weekend in San Francisco. I celebrated the marriage of two amazing women, ate delicious food, soaked in some California sunshine, and caught up with old friends. There’s another trip coming up soon, but I’m getting ahead of myself...
@@ -242,7 +243,7 @@
 
     Don’t wait. [Say yes to Sunday evening with Jay Nash][rsvp_yes].
 - commit: 838a723ca17634ce155e98848f9be4d0b9787b25
-  date: '2016-09-14T08:34:46-04:00'
+  date: "2016-09-14T08:34:46-04:00"
   subject: update invite for kid beyond
   intro: |-
     Happy September! There are just 54 days left until the election. Even better: there are only 24 days until my next house concert.
@@ -255,9 +256,9 @@
 
     Don’t wait. Grab your seat now before his fans snag them all. [RSVP for Kid Beyond][rsvp_yes].
 - commit: 753d0af025bb511c43e995f536207f22a1aa2d0a
-  date: '2016-09-14T08:45:53-04:00'
+  date: "2016-09-14T08:45:53-04:00"
   subject: simplify KB email
-  intro: 'Happy September! There are just 54 days left until the election. Even better: there are only 24 days until my next house concert.'
+  intro: "Happy September! There are just 54 days left until the election. Even better: there are only 24 days until my next house concert."
   about: |-
     After sixty-three shows, it’s time for a first: my first beatboxer. Yes, you read that right. No guitar. No piano. No instruments, period. Just Kid Beyond and his amazing voice.
 
@@ -265,7 +266,7 @@
 
     Don’t wait. Grab your seat now before his fans snag them all. [RSVP for Kid Beyond][rsvp_yes].
 - commit: f24fbd88e4a8d1da017882c55b1ba48aef556979
-  date: '2017-02-07T00:53:19-05:00'
+  date: "2017-02-07T00:53:19-05:00"
   subject: update invite for ari hest
   intro: |-
     Holy smokes! That was a crazy — and crazy good — Super Bowl.
@@ -278,7 +279,7 @@
 
     I bet his music professor dad’s okay with that, too.
 - commit: 15de07bfe615be4bd75b65940d17b78c8dce3f4a
-  date: '2017-02-21T21:56:54-05:00'
+  date: "2017-02-21T21:56:54-05:00"
   subject: updated invite text for ari hest
   intro: Ari Hest plays in four days. There are just a handful of spots left. It’s my last show on Pacific Street. Come!
   about: |-
@@ -286,9 +287,9 @@
 
     I bet his music professor dad’s okay with that, too.
 - commit: c0045bd9fcd30cc1f785510faa5661b9acdecf6c
-  date: '2017-04-07T09:19:34-04:00'
+  date: "2017-04-07T09:19:34-04:00"
   subject: updated invite for Jesse Terry
-  intro: 'I’m writing from the newest location of Paul’s Brooklyn House Concerts. The lights are up, the stereo is in, the chairs are stacked ... the rest still needs some cleaning up. But have no fear: we’ll be all set in two weeks for Jesse Terry.'
+  intro: "I’m writing from the newest location of Paul’s Brooklyn House Concerts. The lights are up, the stereo is in, the chairs are stacked ... the rest still needs some cleaning up. But have no fear: we’ll be all set in two weeks for Jesse Terry."
   about: |-
     I found out about Jesse my favourite way: while at another concert. Rebecca Loebe asked me to come check out her set. I did — she was great. She performed in the round with two others. One was Jesse.
 
@@ -296,7 +297,7 @@
 
     [RSVP now for Jesse Terry][rsvp_yes].
 - commit: b3a42bc37b4a022f860d420c96dd560aad492611
-  date: '2017-04-18T01:19:01-04:00'
+  date: "2017-04-18T01:19:01-04:00"
   subject: jesse terry invite text update
   intro: |-
     I’m writing from the newest location of Paul’s Brooklyn House Concerts. The lights are up, the stereo is in, the chairs are stacked. Things are looking good for Friday night’s Jesse Terry show.
@@ -309,7 +310,7 @@
 
     [RSVP now for Jesse Terry][rsvp_yes].
 - commit: 328a588727e22e074634d58cacfd725de18b1c7f
-  date: '2017-05-25T00:54:40-04:00'
+  date: "2017-05-25T00:54:40-04:00"
   subject: update invite for Shawna Caspi
   intro: May is wrapping up. It’s almost time for the Stanley Cup, the NBA Finals…and the next house concert.
   about: |-
@@ -321,9 +322,9 @@
 
     [RSVP now for {{show.name}}][rsvp_yes].
 - commit: 699d3b2ecdb9f25934fbcce2dad1bc298c535576
-  date: '2017-06-06T15:22:55-04:00'
+  date: "2017-06-06T15:22:55-04:00"
   subject: updated invite text for caspi reminder
-  intro: 'Three quick updates: (a) the Penguins and Predators are tied 2-2; (b) they both wear the exact same shade of yellow, Pantone 1235C; (c) Shawna Caspi is playing in three days.'
+  intro: "Three quick updates: (a) the Penguins and Predators are tied 2-2; (b) they both wear the exact same shade of yellow, Pantone 1235C; (c) Shawna Caspi is playing in three days."
   about: |-
     I’m always excited when I get to host a Canadian musician. Even when it isn’t Canada’s sesquicentennial. But especially when it is.
 
@@ -333,7 +334,7 @@
 
     [Reserve your seats for {{show.name}}][rsvp_yes].
 - commit: 05300ed7751dade0c5b15744883623f679e06791
-  date: '2017-06-28T00:51:34-04:00'
+  date: "2017-06-28T00:51:34-04:00"
   subject: update invite for Anne Heaton
   intro: |-
     It’s almost July! Canada and the United States will both turn another year older. Professional sports will take a day off. The NYC subway will break down. Hey, at least it’s not on fire…yet.
@@ -348,9 +349,9 @@
 
     [Reserve your seats for {{show.name}}][rsvp_yes].
 - commit: 9fd6ebfd3667634615e7e365308066b4078cb19c
-  date: '2017-10-11T00:28:06-04:00'
+  date: "2017-10-11T00:28:06-04:00"
   subject: update invite for slankard/wong
-  intro: 'Happy October! Now that Canadian Thanksgiving is over, it’s time to get ready for the next big event of the month: the Megan Slankard/Alex Wong house concert.'
+  intro: "Happy October! Now that Canadian Thanksgiving is over, it’s time to get ready for the next big event of the month: the Megan Slankard/Alex Wong house concert."
   about: |-
     I’ve been a fan of Megan Slankard’s for almost a decade and a half. Ever since I’ve been in New York, we’ve been trying to put a show together. Good news: it worked.
 
@@ -362,10 +363,10 @@
 
     \[1\] But not a dancer.
   warnings:
-  - Moved text from below the signature into the about
-  - Kept only the text of a <sup>
+    - Moved text from below the signature into the about
+    - Kept only the text of a <sup>
 - commit: 20e8e36f553527e24b312d010606ac1c5da5f7fd
-  date: '2017-10-25T00:08:56-04:00'
+  date: "2017-10-25T00:08:56-04:00"
   subject: slankard-wong show update
   intro: Megan and Alex’s show is in four days. Don’t miss out!
   about: |-
@@ -379,10 +380,10 @@
 
     \[1\] But not a dancer.
   warnings:
-  - Moved text from below the signature into the about
-  - Kept only the text of a <sup>
+    - Moved text from below the signature into the about
+    - Kept only the text of a <sup>
 - commit: c39ec2e53b426a62afee6eb30295341431279d1a
-  date: '2018-04-01T18:54:45-04:00'
+  date: "2018-04-01T18:54:45-04:00"
   subject: update invite for Patrice Pike
   intro: |-
     Happy spring! I’m excited to announce a great lineup of house concerts for 2018: Edie Carey, Jen Lowe and Carlos Olmeda are confirmed so far, with more to be announced soon.
@@ -397,7 +398,7 @@
 
     [Reserve your seats for {{show.name}}][rsvp_yes].
 - commit: f6a6c98bc21d329508e988d4dd8681232425f171
-  date: '2018-04-17T01:26:08-04:00'
+  date: "2018-04-17T01:26:08-04:00"
   subject: update invite for patrice pike reminder
   intro: |-
     Good news: Patrice Pike is going to be joined by Shelley King \[1\] on Saturday.
@@ -414,9 +415,9 @@
 
     \[1\] The first female Texas State Musician. Yes, that’s a thing.
   warnings:
-  - Moved text from below the signature into the about
+    - Moved text from below the signature into the about
 - commit: f9cf28343b768c39f4b8db71393c27a5aa870b35
-  date: '2018-04-30T23:11:50-04:00'
+  date: "2018-04-30T23:11:50-04:00"
   subject: update invite for edie carey
   intro: |-
     In April, we kicked off the season with an amazing show from Patrice Pike and Shelley King.
@@ -429,7 +430,7 @@
 
     [Reserve your seats for {{show.name}}][rsvp_yes].
 - commit: 966207fb6b50d23b1d98ec24221d3cf56f22fab9
-  date: '2018-05-15T09:40:53-07:00'
+  date: "2018-05-15T09:40:53-07:00"
   subject: update invite for Edie Carey reminder
   intro: |-
     Good morning from slightly-overcast California.
@@ -442,7 +443,7 @@
 
     [Reserve your seats for {{show.name}}][rsvp_yes].
 - commit: ae68e9cedff92714105e4bee1681c074e3366cde
-  date: '2018-05-15T09:45:10-07:00'
+  date: "2018-05-15T09:45:10-07:00"
   subject: adjust invite language
   intro: |-
     Good morning from slightly-overcast California. :-)
@@ -455,7 +456,7 @@
 
     [Reserve your seats for {{show.name}}][rsvp_yes].
 - commit: 7ac1539ec6429abc0297600168dce0b985ba8ac7
-  date: '2018-07-02T22:40:41-04:00'
+  date: "2018-07-02T22:40:41-04:00"
   subject: update invite for jen lowe
   intro: |-
     Good morning from slightly-overcast California. :-)
@@ -470,7 +471,7 @@
 
     [Reserve your seats for {{show.name}}][rsvp_yes].
 - commit: de9ffb77b5465b30bd58d3173102dfbe74514d67
-  date: '2018-07-02T22:53:53-04:00'
+  date: "2018-07-02T22:53:53-04:00"
   subject: fix intro for jen low invite
   intro: Happy July! I’ve returned from another excellent SRCCON in Minneapolis and am excited to kick off four months of shows!
   about: |-
@@ -482,7 +483,7 @@
 
     [Reserve your seats for {{show.name}}][rsvp_yes].
 - commit: dbc4a6686a4408848de68e2ed7336bee8203868f
-  date: '2018-07-02T23:05:17-04:00'
+  date: "2018-07-02T23:05:17-04:00"
   subject: update jen lowe invite
   intro: |-
     Hello, July!
@@ -497,7 +498,7 @@
 
     [Reserve your seats for {{show.name}}][rsvp_yes].
 - commit: f33c309ea1b7af0e693d20a9d5a0da39dd71551f
-  date: '2018-07-02T23:09:34-04:00'
+  date: "2018-07-02T23:09:34-04:00"
   subject: update jen lowe invite
   intro: |-
     Hello, July!
@@ -512,7 +513,7 @@
 
     [Reserve your seats for {{show.name}}][rsvp_yes].
 - commit: 4b6dc6ce5e6e602250e199065ed8516180e92e21
-  date: '2018-07-17T23:16:54-04:00'
+  date: "2018-07-17T23:16:54-04:00"
   subject: update invite for Jen Lowe reminder
   intro: Jen Lowe is coming in three days. We’re also expecting some special guests in the audience. Don’t miss out!
   about: |-
@@ -524,9 +525,9 @@
 
     [Reserve your seats for {{show.name}}][rsvp_yes].
 - commit: 9e7e5d32ca552f292afd47a9e8dd1005ec917f3b
-  date: '2018-08-10T09:10:11-05:00'
+  date: "2018-08-10T09:10:11-05:00"
   subject: update invite for emm gryner
-  intro: 'Hello from beautiful downtown Chicago! I’m wrapping up at WordCamp and need to tell you all about this month’s show: Emm Gryner. Emm played my first-ever house concert back in 2002, and I’m super-thrilled to have her back.'
+  intro: "Hello from beautiful downtown Chicago! I’m wrapping up at WordCamp and need to tell you all about this month’s show: Emm Gryner. Emm played my first-ever house concert back in 2002, and I’m super-thrilled to have her back."
   about: |-
     What hasn’t Emm Gryner done? Snagged a Juno nomination? Check. Tour with David Bowie? Check. Release an album of acoustic covers of hard rock songs? Check. Have Joe Elliott sing your praises (pun intended)? Also check. Run a record label? You get the idea.
 
@@ -534,9 +535,9 @@
 
     [Reserve your seats for {{show.name}}][rsvp_yes].
 - commit: 55c3905eb080215af838c1b0875a53a49bee6358
-  date: '2018-08-10T09:13:10-05:00'
+  date: "2018-08-10T09:13:10-05:00"
   subject: grammat fix in emm gryner invite
-  intro: 'Hello from beautiful downtown Chicago! I’m wrapping up at WordCamp and need to tell you all about this month’s show: Emm Gryner. Emm played my first-ever house concert back in 2002, and I’m super-thrilled to have her back.'
+  intro: "Hello from beautiful downtown Chicago! I’m wrapping up at WordCamp and need to tell you all about this month’s show: Emm Gryner. Emm played my first-ever house concert back in 2002, and I’m super-thrilled to have her back."
   about: |-
     What hasn’t Emm Gryner done? Snag a Juno nomination? Check. Tour with David Bowie? Check. Release an album of acoustic covers of hard rock songs? Check. Have Joe Elliott sing your praises (pun intended)? Also check. Run a record label? You get the idea.
 
@@ -544,8 +545,8 @@
 
     [Reserve your seats for {{show.name}}][rsvp_yes].
 - commit: cbef2c1d553011f03ed892c98b8b9a0052e40269
-  date: '2018-08-22T21:53:22-04:00'
-  subject: 'invite: emm gryner v2'
+  date: "2018-08-22T21:53:22-04:00"
+  subject: "invite: emm gryner v2"
   intro: Emm’s show is in three days. There are just a few seats left. Don’t miss out!
   about: |-
     What hasn’t Emm Gryner done? Snag a Juno nomination? Check. Tour with David Bowie? Check. Release an album of acoustic covers of hard rock songs? Check. Have Joe Elliott sing your praises (pun intended)? Also check. Run a record label? You get the idea.
@@ -554,7 +555,7 @@
 
     [Reserve your seats for {{show.name}}][rsvp_yes].
 - commit: b2e05a5929e920be8894001aa8d9d2e27d4ebee0
-  date: '2018-09-14T09:22:22-04:00'
+  date: "2018-09-14T09:22:22-04:00"
   subject: update invite for martin storrow
   intro: Happy almost-fall! The heat wave appears to have finally ended. The music doesn’t stop.
   about: |-
@@ -566,7 +567,7 @@
 
     [Reserve your seats for {{show.name}}][rsvp_yes].
 - commit: f699d2c3e45243fbc0c7c483280bd7f35df16361
-  date: '2018-09-25T11:03:29-04:00'
+  date: "2018-09-25T11:03:29-04:00"
   subject: update invite text for storrow reminder
   intro: Martin Storrow is playing Saturday. There are still a few seats left. Reserve your seat today. :)
   about: |-
@@ -578,7 +579,7 @@
 
     [Reserve your seats for {{show.name}}][rsvp_yes].
 - commit: f6fefff3dcfa8d0482c66e2d5f44894b4982be12
-  date: '2018-10-10T21:28:58-04:00'
+  date: "2018-10-10T21:28:58-04:00"
   subject: update invite for carlos olmeda
   intro: |-
     Hello, October!
@@ -591,7 +592,7 @@
 
     [Come hear for yourself][rsvp_yes].
 - commit: 38665a8be12399fdb582875e0daf9dab8c5d1396
-  date: '2018-10-24T17:57:16-04:00'
+  date: "2018-10-24T17:57:16-04:00"
   subject: update invite for carlos reminder
   intro: |-
     Carlos Olmeda is playing in three days.
@@ -606,7 +607,7 @@
 
     [Come hear for yourself][rsvp_yes].
 - commit: 68e523b0642de4fa0d580cc9ba264de6f95f52df
-  date: '2019-05-24T07:59:16-04:00'
+  date: "2019-05-24T07:59:16-04:00"
   subject: update invite for terra naomi
   intro: House concerts are back! I have a great set of shows to present in 2019. We’re starting the year off with an old favourite.
   about: |-
@@ -616,7 +617,7 @@
 
     [Reserve your seats][rsvp_yes].
 - commit: e8908874898f9174ffc93166c902bed3a97e0b0a
-  date: '2019-06-08T23:35:31-04:00'
+  date: "2019-06-08T23:35:31-04:00"
   subject: update invite for terra reminder
   intro: Just one week until Terra’s show. I’m excited. Terra’s excited. There are still a few seats left — reserve yours today.
   about: |-
@@ -626,9 +627,9 @@
 
     [Reserve your seats][rsvp_yes].
 - commit: 8af04ce806c80ef48bcb3e3aee49437d6a234f5b
-  date: '2019-07-11T08:11:18-05:00'
+  date: "2019-07-11T08:11:18-05:00"
   subject: natalie gelman invite
-  intro: 'Hello from sunny Minneapolis! I’m back here for SRCCON, my favourite gathering of journalists and technologists. No sense in waiting until I return to tell you about this month’s show: Natalie Gelman is making her Paul’s House Concerts debut.'
+  intro: "Hello from sunny Minneapolis! I’m back here for SRCCON, my favourite gathering of journalists and technologists. No sense in waiting until I return to tell you about this month’s show: Natalie Gelman is making her Paul’s House Concerts debut."
   about: |-
     Raised right here in NYC, Natalie Gelman got her start performing on subway platforms. The singer-songwriter has graduated to more aboveground venues, playing shows in across the United States, in Austria and the Caribbean. Natalie graduated from the University of Miami’s music program, opened for Bon Jovi and played audience at Carnegie Hall.
 
@@ -636,7 +637,7 @@
 
     [Reserve your seats][rsvp_yes].
 - commit: 8bc7bb865afe374fd0bb1ebb034da14f3aaa8c23
-  date: '2019-07-11T08:17:43-05:00'
+  date: "2019-07-11T08:17:43-05:00"
   subject: adjust gelman invite text
   intro: |-
     Hello from sunny Minneapolis! I’m back here for SRCCON, my favourite gathering of journalists and technologists.
@@ -649,7 +650,7 @@
 
     [Reserve your seats][rsvp_yes].
 - commit: a168a2ad13387bb26f8d31f9cdeecdc28912af68
-  date: '2019-07-11T08:20:17-05:00'
+  date: "2019-07-11T08:20:17-05:00"
   subject: adjust gelman invite text
   intro: |-
     Hello from sunny Minneapolis! I’m here for SRCCON, my favourite gathering of journalists and technologists.
@@ -662,7 +663,7 @@
 
     [Reserve your seats][rsvp_yes].
 - commit: 56b9198a3db212d5d9ea6a7e8836780b97b525cb
-  date: '2019-07-21T16:29:01-04:00'
+  date: "2019-07-21T16:29:01-04:00"
   subject: update gelman house concert invite
   intro: |-
     It’s hot here in Brooklyn. My dog is glad he isn’t outside in this heat, with his fur coat and all. :)
@@ -675,7 +676,7 @@
 
     [Reserve your seats][rsvp_yes].
 - commit: d07a9fbc6a21572966040959a5e426a26f3337e9
-  date: '2019-07-21T16:31:16-04:00'
+  date: "2019-07-21T16:31:16-04:00"
   subject: update gelman house concert invite
   intro: |-
     It’s hot here in Brooklyn. My dog is glad he isn’t outside, with his fur coat and all. :)
@@ -688,7 +689,7 @@
 
     [Reserve your seats][rsvp_yes].
 - commit: 141d33916a98d41f8a04798f9a40ece7e6574cb8
-  date: '2019-08-28T19:53:01+02:00'
+  date: "2019-08-28T19:53:01+02:00"
   subject: update invite for Andrew Kerr
   intro: Hallo aus Deutschland! I am here visiting an old friend and am excited to share the music of another old friend with you next month. Yes, Andrew Kerr is back!
   about: |-
@@ -696,7 +697,7 @@
 
     Sometimes funny, sometimes thoughtful and always a good storyteller, it's great to have Andrew grace my living room.
 - commit: cdcf987e403a40d0370a32268cb1f70dcce387f2
-  date: '2019-08-28T20:15:55+02:00'
+  date: "2019-08-28T20:15:55+02:00"
   subject: tweak andrew kerr invite
   intro: Hallo aus Deutschland! I am here visiting an old friend and am excited to share the music of another old friend with you. Yes, Andrew Kerr is back!
   about: |-
@@ -704,7 +705,7 @@
 
     Sometimes funny, sometimes thoughtful and always a good storyteller, it's great to have Andrew grace my living room.
 - commit: c925d674d3bfd53b6da4a11b903e562f9d44ad2a
-  date: '2019-09-09T19:07:40-04:00'
+  date: "2019-09-09T19:07:40-04:00"
   subject: update invite for Kerr reminder
   intro: Yesterday was the 30th -- and final -- NYC Century Bike Tour. The weather cooperated, the peanut butter sandwiches were tasty, and I had a great ride. Now it’s time to remind you about this Saturday’s concert.
   about: |-
@@ -712,7 +713,7 @@
 
     Sometimes funny, sometimes thoughtful and always a good storyteller, it's great to have Andrew grace my living room.
 - commit: 3069e54c7a26e2e162123d8630a99a539d07ca16
-  date: '2019-09-09T19:10:38-04:00'
+  date: "2019-09-09T19:10:38-04:00"
   subject: punctuation tweaks
   intro: Yesterday was the 30th—and final—NYC Century Bike Tour. The weather cooperated, the peanut butter sandwiches were tasty, and I had a great ride. Now it’s time to remind you about this Saturday’s concert.
   about: |-
@@ -720,7 +721,7 @@
 
     Sometimes funny, sometimes thoughtful and always a good storyteller, it's great to have Andrew grace my living room.
 - commit: 79cf4fa52716b15a19c5a9d700d689ff9c62fafb
-  date: '2019-10-12T15:18:47-04:00'
+  date: "2019-10-12T15:18:47-04:00"
   subject: update invite for shawna caspi
   intro: In two days, it will be Canadian Thanksgiving. In two weeks, I’m hosting Canadian singer-songwriter Shawna Caspi. We won’t have turkey and cranberries, but we will have terrific songs and stories.
   about: |-
@@ -730,7 +731,7 @@
 
     When she’s not behind the guitar, Shawna is often behind an easel, creating landscapes of the places she tours.
 - commit: 04c214e0fd4cf9296dbd9abd2f94713db9a63447
-  date: '2019-10-12T15:29:30-04:00'
+  date: "2019-10-12T15:29:30-04:00"
   subject: update invite for shawna caspi
   intro: In two days, it will be Canadian Thanksgiving. In two weeks, I’m hosting Canadian singer-songwriter Shawna Caspi. We won’t have turkey and cranberries, but we will have terrific songs and stories.
   about: |-
@@ -738,7 +739,7 @@
 
     Shawna recently won a silver award in the Mid-Atlantic Song Contest and played at Summerfolk and the Ottawa Grassroots Festival. She’s is also a talented painter, creating (and selling) one-of-a-kind landscapes of the scenes she spots on the road.
 - commit: 85ab14b0a0a505e7eab6ac931143b3c9faca1f68
-  date: '2019-10-22T08:47:01-04:00'
+  date: "2019-10-22T08:47:01-04:00"
   subject: update invite for Caspi reminder
   intro: |-
     Good morning! Yesterday, Canadians voted. There were no voting machines or hanging chads. One polling station stayed open [despite 90 km/h winds](https://twitter.com/MuhammadLila/status/1186440873871065088).
@@ -751,7 +752,7 @@
 
     Shawna recently won a silver award in the Mid-Atlantic Song Contest and played at Summerfolk and the Ottawa Grassroots Festival. She’s is also a talented painter, creating (and selling) one-of-a-kind landscapes of the scenes she spots on the road.
 - commit: 21589b44c8fd31356647e4d8b8dbc209e323ae3c
-  date: '2019-10-30T22:09:25-04:00'
+  date: "2019-10-30T22:09:25-04:00"
   subject: update invite for cynthia catania
   intro: Get those pumpkins carved — Halloween is just around the corner. So is Cynthia Catania.
   about: |-
@@ -763,7 +764,7 @@
 
     Offstage, Cynthia wrote a travel blog for HuffPost, a sex column for Hot Press, and songs for Veronica Mars (take note, marshmallows!).
 - commit: 6bb1d6ace175e7c4a4a4795794c4df77daf0c414
-  date: '2019-10-30T22:14:48-04:00'
+  date: "2019-10-30T22:14:48-04:00"
   subject: tweak cynthia show invite
   intro: Get those pumpkins carved — Halloween is just around the corner. So is November’s house concert.
   about: |-
@@ -775,7 +776,7 @@
 
     Offstage, Cynthia wrote a travel blog for HuffPost, a sex column for Hot Press, and a song for Veronica Mars (take note, marshmallows!).
 - commit: b13f759a70724ad3fcabf33ff7f0d594e4075618
-  date: '2019-11-10T21:25:18-05:00'
+  date: "2019-11-10T21:25:18-05:00"
   subject: update text for catania reminder
   intro: Cynthia’s show—her first time playing one of my house concerts in ten years—is just five days away. We are half full! Grab one of the remaining seats while you can.
   about: |-
@@ -787,7 +788,7 @@
 
     Offstage, Cynthia wrote a travel blog for HuffPost, a sex column for Hot Press, and a song for Veronica Mars (take note, marshmallows!).
 - commit: 58b712139befbabb5062c37f860f9df4979e05ef
-  date: '2019-12-01T16:41:44-05:00'
+  date: "2019-12-01T16:41:44-05:00"
   subject: update invite for jesse terry
   intro: |-
     I hope you enjoyed your Thanksgiving break. I’m back home after spending a few extra hours stuck in traffic.
@@ -800,7 +801,7 @@
 
     Come listen as he serves up some great songs and stories.
 - commit: c20054a13f797aed743508f1c3a1ecb48cb0f5e2
-  date: '2019-12-09T09:17:00-05:00'
+  date: "2019-12-09T09:17:00-05:00"
   subject: update invite for jesse terry reminder
   intro: |-
     Good morning! Now that Black Friday, Cyber Monday and Giving Tuesday have all passed, hopefully your inbox has settled down to a dull roar.
@@ -812,24 +813,24 @@
     We’re lucky Jesse’s such a terrific singer and guitarist, because as he describes it, he is a “dreadful waiter.”
 
     Come listen as he serves up some great songs and stories.
-- commit: '095c6eaa557bf87cda8a09cfee0e4a72680a0f88'
-  date: '2020-01-22T00:48:16-05:00'
+- commit: "095c6eaa557bf87cda8a09cfee0e4a72680a0f88"
+  date: "2020-01-22T00:48:16-05:00"
   subject: update invite for jackson howard
-  intro: 'After taking a well-deserved break in January, I am happy to bring you the first house concert of 2020: Jackson Howard.'
+  intro: "After taking a well-deserved break in January, I am happy to bring you the first house concert of 2020: Jackson Howard."
   about: |-
     Jackson Howard is a singer-songwriter from Philly with an acoustic guitar, a stack of songs…and a PhD in Exercise Physiology. After trading academia for folk life, he toured across the US, Canada, Iceland and western Europe.
 
     Jackson’s 2017 album *Just For the Mystery* is thirteen songs of thoughtful, clever acoustic guitar. Come hear them — and some great stories.
 - commit: 7e24c418383c765c74156df0ee830f0e8635deaf
-  date: '2020-01-22T08:15:03-05:00'
+  date: "2020-01-22T08:15:03-05:00"
   subject: adjust Jackson Howard invite
-  intro: 'After a quick break in January, I am happy to bring you the first house concert of 2020: Jackson Howard.'
+  intro: "After a quick break in January, I am happy to bring you the first house concert of 2020: Jackson Howard."
   about: |-
     Jackson Howard is a singer-songwriter from Philly with an acoustic guitar, a stack of songs…and a PhD in Exercise Physiology. After trading academia for folk life, he toured across the US, Canada, Iceland and western Europe.
 
     Jackson’s 2017 album *Just For the Mystery* is thirteen songs of thoughtful, clever acoustic guitar. Come hear them — and some great stories.
 - commit: 1d7d402d3c27e431e805b7eb9c9cff81bd9c21b1
-  date: '2020-02-04T22:35:37-05:00'
+  date: "2020-02-04T22:35:37-05:00"
   subject: update Jackson Howard invite
   intro: |-
     The Super Bowl is over, the Iowa caucuses somehow still don’t have final results, and it’s only four days until Jackson Howard plays Brooklyn.
@@ -840,8 +841,8 @@
 
     Jackson’s 2017 album *Just For the Mystery* is thirteen songs of thoughtful, clever acoustic guitar. Come hear them — and some great stories.
 - commit: 4d7e93ad025aebac06518cac36ccd86b46f24f69
-  date: '2025-03-09T16:35:45-04:00'
-  subject: 'fix: update invite for Amy Speace'
+  date: "2025-03-09T16:35:45-04:00"
+  subject: "fix: update invite for Amy Speace"
   intro: |-
     After a five-year hiatus, my house concert series is back!
 
@@ -851,8 +852,8 @@
 
     Amy has been heralded by *Rolling Stone*, *Billboard* and *The New York Times* and featured on NPR’s “All Things Considered.” *Performing Songwriter* called her 2013 album “How To Sleep in a Stormy Boat” one of the Top 100 Records of the Last Century. She has played across the US and Europe and has graced stages from Glastonbury Festival in the UK to Rocky Mountain Folks Festival in Colorado.
 - commit: 0dfdcabb58fb32f8da4669dd8009a4d2fb9c5d90
-  date: '2025-04-27T22:47:57-04:00'
-  subject: 'fix: update invite for Anya Marina (#118)'
+  date: "2025-04-27T22:47:57-04:00"
+  subject: "fix: update invite for Anya Marina (#118)"
   intro: Thanks so much to all of you who gave Amy such a warm welcome last month. For May, I’m excited to host Anya Marina for the third time — and the first time in Brooklyn.
   about: |-
     She’s sassy. She’s funny. She’s smart-assy. She once got kicked out of The Mint in Los Angeles for an R-rated lyric.
@@ -861,8 +862,8 @@
 
     Anya now calls New York state home, and I’m thrilled to have her back at my house.
 - commit: 84d47d47828ee6a26a34a4933764b2b925c7f6f8
-  date: '2025-09-13T11:52:10-04:00'
-  subject: 'fix: update invite for Cynthia Catania (#197)'
+  date: "2025-09-13T11:52:10-04:00"
+  subject: "fix: update invite for Cynthia Catania (#197)"
   intro: Happy September! I hope you’ve had a great summer. I’m off to Hudson West fest today. Before I leave, I wanted to make sure you heard about the Cynthia Catania show in two weeks! Cynthia is an old friend of the series, and this is her second time playing here in Brooklyn.
   about: |-
     Cynthia Catania grew up in the New York City music scene. Romanced by California and all things west coast, she moved to Los Angeles on the heels of the Northridge earthquake.
@@ -873,8 +874,8 @@
 
     In November of 2023, Cynthia began collaborating with Rich Devletian. The duo, known for their hypnotic performances, is recording their debut EP in Los Angeles.
 - commit: 3613fa75df2b40a8957603bdbba4f546d7d1c3a4
-  date: '2025-09-13T12:04:43-04:00'
-  subject: 'fix: update invite for Cynthia Catania (#198)'
+  date: "2025-09-13T12:04:43-04:00"
+  subject: "fix: update invite for Cynthia Catania (#198)"
   intro: Happy September! I hope you’ve had a great summer. I’m off to Hudson West Fest today. Before I leave, I wanted to make sure you heard about the Cynthia Catania show in two weeks! Cynthia is an old friend of the series, and this is her second time playing here in Brooklyn.
   about: |-
     Cynthia Catania grew up in the New York City music scene. Romanced by California and all things west coast, she moved to Los Angeles on the heels of the Northridge earthquake.
@@ -885,8 +886,8 @@
 
     In November of 2023, Cynthia began collaborating with Rich Devletian. The duo, known for their hypnotic performances, is recording their debut EP in Los Angeles.
 - commit: 4db251114ee585df72c7cfa33c530fe7fcffbce8
-  date: '2025-09-23T09:56:35-04:00'
-  subject: 'fix: update invite for Cynthia Catania (#206)'
+  date: "2025-09-23T09:56:35-04:00"
+  subject: "fix: update invite for Cynthia Catania (#206)"
   intro: |-
     Some folks haven’t been to a show yet and are probably wondering what this is about! I host house concerts here in Boerum Hill. Musicians who are on tour take a night off from playing in a bar or club to play in my living room.
 
@@ -902,8 +903,8 @@
 
     In November of 2023, Cynthia began collaborating with Rich Devletian. The duo, known for their hypnotic performances, is recording their debut EP in Los Angeles.
 - commit: bb631201395ef0d53050b89ffe88249448666837
-  date: '2026-03-09T15:53:20-04:00'
-  subject: 'fix: update Jackson Howard bio (#307)'
+  date: "2026-03-09T15:53:20-04:00"
+  subject: "fix: update Jackson Howard bio (#307)"
   intro: |-
     After last year’s warmup, I’m excited to present a full slate of shows in 2026! We have seven shows between now and November.
 
@@ -917,8 +918,8 @@
 
     The doctor (and nurse) will see you on {{show.start_date}}.
 - commit: 1bc2794e74841a9432c2966cd00142d84e8c30f5
-  date: '2026-03-09T16:08:44-04:00'
-  subject: 'fix: update Jackson Howard bio (#308)'
+  date: "2026-03-09T16:08:44-04:00"
+  subject: "fix: update Jackson Howard bio (#308)"
   intro: |-
     After last year’s warmup, I’m excited to present a full slate of shows in 2026! We have seven shows between now and November.
 
@@ -932,8 +933,8 @@
 
     The doctor (and nurse) will see you on {{show.start_date_short}}.
 - commit: 15c555610d8d8da98a9a844c237385a899667540
-  date: '2026-03-24T11:47:17-04:00'
-  subject: 'fix: update jackson howard invite (#321)'
+  date: "2026-03-24T11:47:17-04:00"
+  subject: "fix: update jackson howard invite (#321)"
   intro: |-
     Happy Tuesday! We’re four days away from Jackson Howard’s show. There are still a few seats left, and you can help fix that. [Reserve your seat today][rsvp_yes].
 
@@ -945,8 +946,8 @@
 
     The doctor (and nurse) will see you on {{show.start_date_short}}.
 - commit: 4e2e88993b5b3e169de1da9d80e7959ffa2bfdd5
-  date: '2026-04-06T20:46:26-04:00'
-  subject: 'fix: add chris pierce invite, update reminder text (#330)'
+  date: "2026-04-06T20:46:26-04:00"
+  subject: "fix: add chris pierce invite, update reminder text (#330)"
   intro: |-
     We had a great start to the year with Jackson Howard and his wife Jenny — evocative songs and stories, and friendly faces old and new.
 
@@ -958,24 +959,24 @@
 
     Chris has sung with Neil Young, B.B. King, Steve Earle, Aaron Neville and and Blind Boys of Alabama and had his praises sung by *Rolling Stone* and *American Songwriter*.
 - commit: a6b28c61df8b64ab86edecfeee056b0205770c1f
-  date: '2026-06-02T23:37:59-04:00'
-  subject: 'fix: update invite for rebecca (#357)'
+  date: "2026-06-02T23:37:59-04:00"
+  subject: "fix: update invite for rebecca (#357)"
   intro: Happy June! We have two summer shows coming up, starting with Rebecca Loebe on a Sunday! I’m excited to have her back for the first time in a decade.
   about: |-
     Rebecca Loebe’s music has earned praise from *Rolling Stone* and NPR. She’s won awards in Kerrvile and Austin, released a baker’s dozen albums and impressed folks on both sides of the pond. *Billboard*? Check. The BBC? Also check.
 
     Rebecca has played with Shawn Colvin, The Civil Wars, Gregory Alan Isakov, Mary Chapin Carpenter, and Ellis Paul. She’s in the middle of a tour of the northeast, and we’re excited to host her Brooklyn stop.
 - commit: 1c10d6042659d3a1cff687ef30d36735c3b31244
-  date: '2026-06-15T22:51:23-04:00'
-  subject: 'fix: update rebecca invite (#365)'
+  date: "2026-06-15T22:51:23-04:00"
+  subject: "fix: update rebecca invite (#365)"
   intro: We’re looking forward to welcoming Rebecca Loebe to Brooklyn this Sunday, and there are still a handful of seats available. Please reserve your spot so we can ensure a full house for her performance.
   about: |-
     Rebecca Loebe’s music has earned praise from *Rolling Stone* and NPR. She’s won awards in Kerrville and Austin, released a baker’s dozen albums and impressed folks on both sides of the pond. *Billboard*? Check. The BBC? Also check.
 
     Rebecca has played with Shawn Colvin, The Civil Wars, Gregory Alan Isakov, Mary Chapin Carpenter, and Ellis Paul. She’s in the middle of a tour of the northeast, and we’re excited to host her Brooklyn stop.
 - commit: 8243957aa0a99cc0d03bd80b5d85e1915d21fb9e
-  date: '2026-06-24T09:48:12-04:00'
-  subject: 'fix: julie loyd invite (#370)'
+  date: "2026-06-24T09:48:12-04:00"
+  subject: "fix: julie loyd invite (#370)"
   intro: Election Day was yesterday, so we now have a reprieve from endless ads in our mailboxes — at least until October. Let’s celebrate with a Julie Loyd house concert!
   about: |-
     Now more than old enough to rent her own cars, and with even more letters after her name, I’m excited to have Julie Loyd back.
@@ -984,8 +985,8 @@
 
     A child of musical theater, Julie has released six solo albums — some folk-pop, some indie-pop and even one she calls indie-grass (which is not something you can smoke).
 - commit: 4ab86c303396914c82cf1eb416ec10a0988cfab5
-  date: '2026-07-06T23:18:30-04:00'
-  subject: 'fix: update julie loyd reminder (#380)'
+  date: "2026-07-06T23:18:30-04:00"
+  subject: "fix: update julie loyd reminder (#380)"
   intro: |-
     Hope you enjoyed the long weekend — we celebrated with delicious BBQ and Thai fried rice.
 
@@ -997,8 +998,8 @@
 
     A child of musical theater, Julie has released six solo albums — some folk-pop, some indie-pop and even one she calls indie-grass (which is not something you can smoke).
 - commit: adf117de3ac8c94b44ab50900cfe249824273a87
-  date: '2026-08-24T23:01:26-04:00'
-  subject: 'fix: update invite for jen lowe'
+  date: "2026-08-24T23:01:26-04:00"
+  subject: "fix: update invite for jen lowe"
   intro: I’m excited to welcome Jen Lowe back to the house concert series! She’s a songwriter with a gift for turning real life into a good story.
   about: |-
     Now based in Tavares, Florida, Jen writes songs that sit at the crossroads of country, rock and honest Southern storytelling — songs about love and loss, resilience and reinvention, and moving forward.
@@ -1007,8 +1008,8 @@
 
     [Celebrate the end of the summer with {{show.name}}][rsvp_yes].
 - commit: 5c962982c11016e27b262ee5574d48dabdfe2b74
-  date: '2026-09-09T22:38:03-04:00'
-  subject: 'fix: update jen lowe reminder'
+  date: "2026-09-09T22:38:03-04:00"
+  subject: "fix: update jen lowe reminder"
   intro: Jen’s playing in a couple days, and there are a handful of spots left. Let’s fill those seats!
   about: |-
     Jen Lowe is a songwriter with a gift for turning real life into a good story.
@@ -1019,8 +1020,8 @@
 
     [Celebrate the end of the summer with {{show.name}}][rsvp_yes].
 - commit: b4286149c033ffd78da01a01011ddfa1d24ad1f6
-  date: '2026-10-03T15:56:54-04:00'
-  subject: 'fix: update invite for damon castillo'
+  date: "2026-10-03T15:56:54-04:00"
+  subject: "fix: update invite for damon castillo"
   intro: |-
     Happy October! This week, the Liberty beat the top-seeded Lynx, the PWHL announced its 2026–27 schedule and lots of folks learned about the difference between a Hawk and a Hawkeye.
 
