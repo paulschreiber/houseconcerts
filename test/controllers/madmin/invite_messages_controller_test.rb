@@ -49,6 +49,55 @@ module Madmin
       assert_select "td.actions form", count: 0
     end
 
+    test "once the show has happened, its New and Edit buttons are disabled, and Delete stays" do
+      past = shows(:past)
+      reason = InviteMessage.closed_reason(past)
+
+      get madmin_show_invite_messages_path(past)
+      assert_select "button[disabled][title=?]", reason, text: "Write Invite"
+      assert_select "a[href=?]", new_madmin_show_invite_message_path(past), count: 0
+
+      draft = past.invite_messages.create!(intro: "Draft", about: "Draft")
+
+      get madmin_show_invite_message_path(past, draft)
+      assert_select "button[disabled][title=?]", reason, text: "Edit"
+      assert_select "button[disabled][title=?]", reason, text: "New Revision"
+      assert_select "a[href=?]", edit_madmin_show_invite_message_path(past, draft), count: 0
+      assert_select "button", text: "Delete"
+
+      get madmin_show_path(past)
+      assert_select ".actions-row button[disabled]", text: "Edit Invite"
+    end
+
+    test "once the show has happened, new, create, edit and update refuse, and delete still works" do
+      past = shows(:past)
+      draft = past.invite_messages.create!(intro: "Draft", about: "Draft")
+      history = madmin_show_invite_messages_path(past)
+      alert = "#{past.name} has already happened, so its invite can’t be changed."
+
+      get new_madmin_show_invite_message_path(past)
+      assert_redirected_to history
+      assert_equal alert, flash[:alert]
+
+      assert_no_difference("InviteMessage.count") do
+        post madmin_show_invite_messages_path(past), params: { invite_message: { intro: "Late", about: "Late" } }
+      end
+      assert_redirected_to history
+      assert_equal alert, flash[:alert]
+
+      get edit_madmin_show_invite_message_path(past, draft)
+      assert_redirected_to history
+      assert_equal alert, flash[:alert]
+
+      patch madmin_show_invite_message_path(past, draft), params: { invite_message: { intro: "Changed" } }
+      assert_redirected_to history
+      assert_equal alert, flash[:alert]
+      assert_equal "Draft", draft.reload.intro
+
+      delete madmin_show_invite_message_path(past, draft)
+      assert_not InviteMessage.exists?(draft.id)
+    end
+
     test "new starts from the current revision's text" do
       get new_madmin_show_invite_message_path(show)
 
