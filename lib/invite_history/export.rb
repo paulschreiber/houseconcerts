@@ -16,7 +16,7 @@ module InviteHistory
       log.split("\x1e").compact_blank.filter_map do |record|
         header, *paths = record.lines(chomp: true).compact_blank
         commit, date, subject = header.split("\x1f")
-        erb = paths.lazy.filter_map { git(root, "show", "#{commit}:#{it}", allow_failure: true) }.first
+        erb = paths.lazy.filter_map { |path| git(root, "show", "#{commit}:#{path}", allow_failure: true) }.first
         # Written in the invite editor from here on.
         next if erb.nil? || erb.include?("@invite_message")
 

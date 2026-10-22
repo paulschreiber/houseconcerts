@@ -26,10 +26,10 @@ module InviteHistory
     def rows
       @rows ||= begin
         # Each show's latest revision text, to skip entries that repeat it.
-        previous_text = Hash.new { |texts, show| texts[show] = show.invite_message&.then { [ it.intro, it.about ] } }
+        previous_text = Hash.new { |texts, show| texts[show] = show.invite_message&.values_at(:intro, :about) }
         @entries.map do |entry|
           show = show_for(entry)
-          intro, about = [ entry["intro"], entry["about"] ].map { fill_in(it.to_s, show) } if show
+          intro, about = entry.values_at("intro", "about").map { |text| fill_in(text.to_s, show) } if show
           reason = skip_reason(entry, show, intro, about, show && previous_text[show])
           previous_text[show] = [ intro, about ] unless reason
           Row.new(entry:, show:, intro:, about:, skip_reason: reason)
