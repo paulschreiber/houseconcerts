@@ -24,8 +24,16 @@ class JsonLdHelperTest < ActionView::TestCase
     assert_equal show.start.iso8601, event[:startDate]
     assert_equal show.doors.iso8601, event[:doorTime]
     assert_equal show.blurb, event[:description]
+    assert_equal({ "@type": "Organization", name: Settings.site_name, url: root_url }, event[:organizer])
     assert_equal({ "@type": "PostalAddress", addressLocality: "Brooklyn", addressRegion: "NY", addressCountry: "US" },
                  event.dig(:location, :address))
+  end
+
+  test "ld_json_event describes a show without a blurb by its event name" do
+    show = shows(:upcoming)
+    show.blurb = ""
+
+    assert_equal show.event_name, ld_json_event(show)[:description]
   end
 
   test "ld_json_event lists each artist as a performer, and none for a show without artists" do
@@ -47,6 +55,7 @@ class JsonLdHelperTest < ActionView::TestCase
     assert_equal rsvp_for_show_url(slug: show.slug), event[:url]
     assert_equal 20, event.dig(:offers, :price)
     assert_equal "USD", event.dig(:offers, :priceCurrency)
+    assert_equal show.created_at.iso8601, event.dig(:offers, :validFrom)
     assert_equal "https://schema.org/InStock", event.dig(:offers, :availability)
   end
 
