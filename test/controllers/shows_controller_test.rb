@@ -8,6 +8,17 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
     assert_select "h2", text: shows(:upcoming).name
   end
 
+  test "index fetches the first show's first photo first, and only that one" do
+    shows(:upcoming).artists << Artist.create!(name: "Jane Smith", slug: "jane-smith")
+
+    get root_path
+
+    photos = css_select("img.artist")
+    assert_operator photos.size, :>, 1
+    assert_equal "high", photos.first["fetchpriority"]
+    assert_select "img.artist[fetchpriority]", count: 1
+  end
+
   test "index offers a Reserve Seats button for an available show" do
     get root_path
 

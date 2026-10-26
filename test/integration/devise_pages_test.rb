@@ -20,6 +20,19 @@ class DevisePagesTest < ActionDispatch::IntegrationTest
     assert_select ".password-field a[href=?]", new_admin_password_path, text: "Forgot your password?"
   end
 
+  test "the sign in page loads the passkey script" do
+    get new_admin_session_path
+
+    assert_includes response.body, %(import "devise/webauthn")
+  end
+
+  test "other pages neither load nor preload the passkey script" do
+    get root_path
+
+    assert_not_includes response.body, %(import "devise/webauthn")
+    assert_select "link[rel=modulepreload][href*='devise/webauthn']", count: 0
+  end
+
   test "the passkeys page keeps Madmin's layout" do
     sign_in admins(:one)
 
