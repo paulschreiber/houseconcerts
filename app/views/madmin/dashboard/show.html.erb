@@ -77,7 +77,13 @@
           <h3>Recent RSVPs</h3>
           <% if (rsvps = @dashboard.recent_rsvps.to_a).any? %>
             <table>
-              <thead><tr><th>Name</th><th>Response</th><th>When</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Response</th>
+                  <th>When</th>
+                </tr>
+              </thead>
               <tbody>
                 <% rsvps.each do |rsvp| %>
                   <tr>
@@ -98,7 +104,14 @@
           <h3>Unconfirmed RSVPs</h3>
           <% if unconfirmed.any? %>
             <table>
-              <thead><tr><th>Name</th><th class="num">Seats</th><th>RSVPd</th><th class="hide-on-phone"></th></tr></thead>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th class="num">Seats</th>
+                  <th>RSVPd</th>
+                  <th class="hide-on-phone"></th>
+                </tr>
+              </thead>
               <tbody>
                 <% unconfirmed.first(Dashboard::RECENT_LIMIT).each do |rsvp| %>
                   <tr>
@@ -127,7 +140,9 @@
         </div>
       </div>
     <% else %>
-      <header><h2>Next show</h2></header>
+      <header>
+        <h2>Next show</h2>
+      </header>
       <p class="empty">No upcoming confirmed show. <%= link_to "Add a show", new_madmin_show_path %></p>
     <% end %>
   </section>
@@ -154,7 +169,14 @@
     <% if (shows = @dashboard.upcoming_shows.to_a).any? %>
       <% seats_by_show = @dashboard.seats_by_show(shows) %>
       <table>
-        <thead><tr><th>Date</th><th>Show</th><th class="hide-on-phone">Status</th><th class="num">Seats</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Show</th>
+            <th class="hide-on-phone">Status</th>
+            <th class="num">Seats</th>
+          </tr>
+        </thead>
         <tbody>
           <% shows.each do |upcoming| %>
             <tr>
@@ -217,7 +239,9 @@
         <% end %>
       </div>
     <% else %>
-      <header><h2>Previous show</h2></header>
+      <header>
+        <h2>Previous show</h2>
+      </header>
       <p class="empty">No shows have happened yet.</p>
     <% end %>
   </section>
@@ -233,7 +257,13 @@
           <% shows_by_slug = @dashboard.shows_by_slug(opens) %>
           <% openers = @dashboard.openers_by_email(opens) %>
           <table>
-            <thead><tr><th>Name</th><th>Message</th><th>When</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Message</th>
+                <th>When</th>
+              </tr>
+            </thead>
             <tbody>
               <% opens.each do |open| %>
                 <tr>
@@ -255,7 +285,13 @@
         </header>
         <% if (people = @dashboard.recent_unsubscribes.to_a).any? %>
           <table>
-            <thead><tr><th>Name</th><th class="hide-on-phone">Email</th><th>When</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th class="hide-on-phone">Email</th>
+                <th>When</th>
+              </tr>
+            </thead>
             <tbody>
               <% people.each do |person| %>
                 <tr>

@@ -1,50 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta name="description" content="<%= Settings.meta_description %>">
-	<meta name="keywords" content="<%= Settings.meta_keywords %>">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="<%= Settings.meta_description %>">
+    <meta name="keywords" content="<%= Settings.meta_keywords %>">
 
-	<% image = social_media_image(@show || @social_media_show) %>
-	<meta name="twitter:card" content="summary" />
-	<meta name="twitter:widgets:csp" content="on" />
-	<meta name="twitter:title" content="<%= social_media_title(@show) %>" />
-	<meta name="twitter:description" content="<%= social_media_description(@show) %>" />
-	<meta name="twitter:image" content="<%= image %>" />
+    <% image = social_media_image(@show || @social_media_show) %>
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:widgets:csp" content="on" />
+    <meta name="twitter:title" content="<%= social_media_title(@show) %>" />
+    <meta name="twitter:description" content="<%= social_media_description(@show) %>" />
+    <meta name="twitter:image" content="<%= image %>" />
 
-	<meta property="og:locale" content="en_US" />
-	<meta property="og:type" content="website" />
-	<meta property="og:site_name" content="<%= Settings.site_name %>" />
-	<meta property="og:title" content="<%= social_media_title(@show) %>" />
-	<meta property="og:description" content="<%= social_media_description(@show) %>" />
-	<meta property="og:url" content="<%= canonical_url %>" />
-	<meta property="og:image" content="<%= image %>" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="<%= Settings.site_name %>" />
+    <meta property="og:title" content="<%= social_media_title(@show) %>" />
+    <meta property="og:description" content="<%= social_media_description(@show) %>" />
+    <meta property="og:url" content="<%= canonical_url %>" />
+    <meta property="og:image" content="<%= image %>" />
 
-	<link rel="canonical" href="<%= canonical_url %>">
-	<link rel="apple-touch-icon" href="<%= apple_touch_icon %>">
-	<link rel="icon" sizes="any" mask href="<%= svg_icon %>">
-	<title><%= yield(:title).presence || page_title %></title>
+    <link rel="canonical" href="<%= canonical_url %>">
+    <link rel="apple-touch-icon" href="<%= apple_touch_icon %>">
+    <link rel="icon" sizes="any" mask href="<%= svg_icon %>">
+    <title><%= yield(:title).presence || page_title %></title>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
 
-	<%= render "google_analytics" if google_analytics? %>
-	<%= csrf_meta_tags %>
-	<%= csp_meta_tag %>
+    <%= render "google_analytics" if google_analytics? %>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
     <%= javascript_importmap_tags %>
-</head>
-<body>
-	<% if notice.present? %><p class="notice"><%= notice %></p><% end %>
-	<% if alert.present? && alert != t("devise.failure.unauthenticated") %><p class="alert"><%= alert %></p><% end %>
-	<%= render partial: "navbar" %>
+  </head>
+  <body>
+    <% if notice.present? %>
+      <p class="notice"><%= notice %></p>
+    <% end %>
+    <% if alert.present? && alert != t("devise.failure.unauthenticated") %>
+      <p class="alert"><%= alert %></p>
+    <% end %>
+    <%= render partial: "navbar" %>
 
-<%# Devise's pages (sign in, password reset) get the same margins as the site's other text pages. %>
-<% if devise_controller? %>
-<div class="pagetext devise-page">
-<%= yield %>
-</div>
-<% else %>
-<%= yield %>
-<% end %>
+    <%# Devise's pages (sign in, password reset) get the same margins as the site's other text pages. %>
+    <% if devise_controller? %>
+      <div class="pagetext devise-page">
+        <%= yield %>
+      </div>
+    <% else %>
+      <%= yield %>
+    <% end %>
 
-</body>
+  </body>
 </html>

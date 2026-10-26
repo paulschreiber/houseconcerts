@@ -30,12 +30,27 @@
           <summary>Formatting</summary>
           <table>
             <tbody>
-              <tr><td><code>**bold**</code></td><td><strong>bold</strong></td></tr>
-              <tr><td><code>*italics*</code></td><td><em>italics</em></td></tr>
-              <tr><td><code>~~strikethrough~~</code></td><td><del>strikethrough</del></td></tr>
-              <tr><td><code>[text](https://example.com)</code></td><td>a link</td></tr>
+              <tr>
+                <td><code>**bold**</code></td>
+                <td><strong>bold</strong></td>
+              </tr>
+              <tr>
+                <td><code>*italics*</code></td>
+                <td><em>italics</em></td>
+              </tr>
+              <tr>
+                <td><code>~~strikethrough~~</code></td>
+                <td><del>strikethrough</del></td>
+              </tr>
+              <tr>
+                <td><code>[text](https://example.com)</code></td>
+                <td>a link</td>
+              </tr>
               <% InviteMessage::PLACEHOLDERS.each do |name, description| %>
-                <tr><td><code>[text][<%= name %>]</code></td><td><%= description %></td></tr>
+                <tr>
+                  <td><code>[text][<%= name %>]</code></td>
+                  <td><%= description %></td>
+                </tr>
               <% end %>
             </tbody>
           </table>
@@ -59,9 +74,12 @@
 
     <section class="invite-preview" aria-label="Preview">
       <dl class="invite-preview-headers">
-        <dt>From</dt><dd><%= sample[:from] %></dd>
-        <dt>To</dt><dd><%= sample[:to] %></dd>
-        <dt>Subject</dt><dd><%= sample.subject %></dd>
+        <dt>From</dt>
+        <dd><%= sample[:from] %></dd>
+        <dt>To</dt>
+        <dd><%= sample[:to] %></dd>
+        <dt>Subject</dt>
+        <dd><%= sample.subject %></dd>
       </dl>
       <iframe name="invite-preview" title="Preview of the invite" class="invite-preview-frame"></iframe>
     </section>

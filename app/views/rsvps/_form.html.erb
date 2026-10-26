@@ -8,71 +8,70 @@
 <%= content_tag :p, show_errors.first.message, class: "error" unless show_errors.empty? %>
 
 <% if @show.nil? || !(@show.confirmed? && @show.sold_out?) || !@rsvp.new_record? || @updating_existing %>
-	<div class="pagetext">
-	<%= form_with model: @rsvp, url: rsvps_path, html: { data: { controller: "name-paste seat-selection" } } do |f| %>
+  <div class="pagetext">
+    <%= form_with model: @rsvp, url: rsvps_path, html: { data: { controller: "name-paste seat-selection" } } do |f| %>
 
-	<div>
-		<%= f.label :first_name %>
-		<%= f.text_field :first_name, maxlength: 100, size: 50, data: { name_paste_target: "firstName", action: "paste->name-paste#parse" } %>
-	</div>
+      <div>
+        <%= f.label :first_name %>
+        <%= f.text_field :first_name, maxlength: 100, size: 50, data: { name_paste_target: "firstName", action: "paste->name-paste#parse" } %>
+      </div>
 
-	<div>
-		<%= f.label :last_name %>
-		<%= f.text_field :last_name, maxlength: 100, size: 50, data: { name_paste_target: "lastName" } %>
-	</div>
+      <div>
+        <%= f.label :last_name %>
+        <%= f.text_field :last_name, maxlength: 100, size: 50, data: { name_paste_target: "lastName" } %>
+      </div>
 
-	<div>
-		<%= f.label :email %>
-		<%= f.email_field :email, maxlength: 200, size: 50, data: { name_paste_target: "email" } %>
-	</div>
+      <div>
+        <%= f.label :email %>
+        <%= f.email_field :email, maxlength: 200, size: 50, data: { name_paste_target: "email" } %>
+      </div>
 
-	<div>
-		<%= f.label :phone_number %>
-		<%= f.telephone_field :phone_number, maxlength: 20, size: 50 %>
-		<% if SendTextMessage.enabled? %>
-			<p class="note">Enter your phone number to receive text message reminders.</p>
-		<% end %>
-	</div>
+      <div>
+        <%= f.label :phone_number %>
+        <%= f.telephone_field :phone_number, maxlength: 20, size: 50 %>
+        <% if SendTextMessage.enabled? %>
+          <p class="note">Enter your phone number to receive text message reminders.</p>
+        <% end %>
+      </div>
 
-	<div>
-		<%= f.label :postcode, "Zip Code" %>
-		<%= f.text_field :postcode, maxlength: 10, size: 11 %>
-	</div>
+      <div>
+        <%= f.label :postcode, "Zip Code" %>
+        <%= f.text_field :postcode, maxlength: 10, size: 11 %>
+      </div>
 
+      <div class="radio">
+        <strong>Seats</strong>
+        <%= f.hidden_field :seats_reserved, value: 0 %>
+        <% (Settings.show.min_seats..Settings.show.max_seats).each do |count| %>
+          <%= f.radio_button :seats_reserved, count, data: { seat_selection_target: "seat", action: "click->seat-selection#selectYes" } %>
+          <%= f.label :seats_reserved, count, value: count, class: "radio" %>
+        <% end %>
+      </div>
 
-	<div class="radio">
-		<strong>Seats</strong>
-		<%= f.hidden_field :seats_reserved, value: 0 %>
-		<% (Settings.show.min_seats..Settings.show.max_seats).each do |count| %>
-			<%= f.radio_button :seats_reserved, count, data: { seat_selection_target: "seat", action: "click->seat-selection#selectYes" } %>
-			<%= f.label :seats_reserved, count, value: count, class: "radio" %>
-		<% end %>
-	</div>
+      <% seats_errors = @rsvp.errors.select{|s| s.attribute == :seats_reserved } %>
+      <%= content_tag :p, seats_errors.first.message, class: "error" unless seats_errors.empty? %>
 
-	<% seats_errors = @rsvp.errors.select{|s| s.attribute == :seats_reserved } %>
-	<%= content_tag :p, seats_errors.first.message, class: "error" unless seats_errors.empty? %>
+      <div class="radio">
+        <strong>Attending?</strong>
+        <%= f.hidden_field :response %>
+        <% RSVP.responses.each_key do |response| %>
+          <% response_data = response == "yes" ? { seat_selection_target: "yes" } : { action: "click->seat-selection#clearSeats" } %>
+          <%= f.radio_button :response, response, data: response_data %>
+          <%= f.label :response, response.titleize, value: response, class: "radio" %>
+        <% end %>
+      </div>
 
-	<div class="radio">
-		<strong>Attending?</strong>
-		<%= f.hidden_field :response %>
-		<% RSVP.responses.each_key do |response| %>
-			<% response_data = response == "yes" ? { seat_selection_target: "yes" } : { action: "click->seat-selection#clearSeats" } %>
-			<%= f.radio_button :response, response, data: response_data %>
-			<%= f.label :response, response.titleize, value: response, class: "radio" %>
-		<% end %>
-	</div>
+      <% response_errors = @rsvp.errors.select{|s| s.attribute == :response } %>
+      <%= content_tag :p, response_errors.first.message, class: "error" unless response_errors.empty? %>
 
-	<% response_errors = @rsvp.errors.select{|s| s.attribute == :response } %>
-	<%= content_tag :p, response_errors.first.message, class: "error" unless response_errors.empty? %>
+      <div>
+        <%= f.hidden_field :show_id, value: @show.id %>
+        <%# Only when opened from the guest's own link; see RsvpsController#update_existing_rsvp. %>
+        <%= hidden_field_tag :uniqid, @rsvp.uniqid if @verified_link %>
+        <%= f.hidden_field :referrer %>
+        <%= f.submit "Reserve Seats" %>
+      </div>
 
-	<div>
-		<%= f.hidden_field :show_id, value: @show.id %>
-		<%# Only when opened from the guest's own link; see RsvpsController#update_existing_rsvp. %>
-		<%= hidden_field_tag :uniqid, @rsvp.uniqid if @verified_link %>
-		<%= f.hidden_field :referrer %>
-		<%= f.submit "Reserve Seats" %>
-	</div>
-
-	<% end %>
-	</div>
+    <% end %>
+  </div>
 <% end %>

@@ -1,11 +1,11 @@
 <% if @shows.empty? %>
-	<div class="pagetext">
-	<h2>No shows scheduled</h2>
-	<p>No shows are currently scheduled. Check back soon.</p>
-	</div>
+  <div class="pagetext">
+    <h2>No shows scheduled</h2>
+    <p>No shows are currently scheduled. Check back soon.</p>
+  </div>
 
 <% else %>
-	<% @shows.each do |show| %>
-		<%= render partial: 'show', locals: { show: show, mode: :index } %>
-	<% end %>
+  <% @shows.each do |show| %>
+    <%= render partial: 'show', locals: { show: show, mode: :index } %>
+  <% end %>
 <% end %>
