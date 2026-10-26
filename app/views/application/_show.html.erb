@@ -1,27 +1,28 @@
-		<div class="show">
-			<%= ld_json_tag(ld_json_event(show)) %>
-			<% show.artists.each do |artist| %>
-				<a class="imagelink" href="<%= rsvp_for_show_path(slug: show.slug) %>"><img src="/<%= artist.photo %>" class="artist" width="200" height="220" alt="<%= artist.name %>" /></a>
-			<% end %>
-			<% if mode == :index %>
-			<h2><%= show.name %></h2>
-			<% end %>
+<div class="show">
+  <%= ld_json_tag(ld_json_event(show)) %>
+  <% show.artists.each do |artist| %>
+    <a class="imagelink" href="<%= rsvp_for_show_path(slug: show.slug) %>"><img src="/<%= artist.photo %>" class="artist" width="200" height="220" alt="<%= artist.name %>" /></a>
+  <% end %>
+  <% if mode == :index %>
+    <h2><%= show.name %></h2>
+  <% end %>
 
-			<p><%= show.blurb %></p>
+  <p><%= show.blurb %></p>
 
-			<time datetime="<%= show.start.iso8601 %>"><%= show.start_date %><br /><%= show.start_time %></time>
-			<% if mode == :detail %>
-			<p>$<%= show.price %></p>
-			<% end %>
+  <time datetime="<%= show.start.iso8601 %>"><%= show.start_date %><br />
+    <%= show.start_time %></time>
+  <% if mode == :detail %>
+    <p>$<%= show.price %></p>
+  <% end %>
 
-		<% if show.confirmed? %>
-			<% if show.sold_out? %>
-			<p>This show is sold out.</p>
-			<% else %>
-			<% if show.waitlisted? %>
-			<p><em>This show is sold out. Please RSVP now to be added to the waiting list.</em></p>
-			<% end %>
-			<p><%= button_to("Reserve Seats", rsvp_for_show_path(slug: show.slug), method: :get) unless controller_name == "rsvps" %></p>
-			<% end %>
-		<% end %>
-		</div>
+  <% if show.confirmed? %>
+    <% if show.sold_out? %>
+      <p>This show is sold out.</p>
+    <% else %>
+      <% if show.waitlisted? %>
+        <p><em>This show is sold out. Please RSVP now to be added to the waiting list.</em></p>
+      <% end %>
+      <p><%= button_to("Reserve Seats", rsvp_for_show_path(slug: show.slug), method: :get) unless controller_name == "rsvps" %></p>
+    <% end %>
+  <% end %>
+</div>

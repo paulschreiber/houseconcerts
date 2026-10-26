@@ -1,28 +1,29 @@
 <div>
-<p>Hi <%= @person.first_name %>,</p>
+  <p>Hi <%= @person.first_name %>,</p>
 
-<%= @invite_message.intro_html(@links) %>
+  <%= @invite_message.intro_html(@links) %>
 
-<ul class="summary">
-<li><%= @show.name %></li>
-<li><%= @show.start_date %> &middot; <%= @show.start_time %></li>
-<li><%= @show.venue.location %></li>
-<li>RSVP for location/directions</li>
-</ul>
+  <ul class="summary">
+    <li><%= @show.name %></li>
+    <li><%= @show.start_date %> &middot; <%= @show.start_time %></li>
+    <li><%= @show.venue.location %></li>
+    <li>RSVP for location/directions</li>
+  </ul>
 
-<p class="actions"><strong>
-<%= link_to "Yes! I’m in for #{@show.name}!", @links[:rsvp_yes], class: 'button', style: 'background-color: #408000; color: white; padding: 5px 10px; text-decoration: none; display: inline-block; margin-top: 5px; border-radius: 3px;' %>
-<%= link_to "Sorry, I can’t make it", @links[:rsvp_no], class: 'button', style: 'background-color: #444; color: white; padding: 5px 10px; text-decoration: none; display: inline-block; margin-top: 5px; border-radius: 3px;' %>
-</strong></p>
+  <p class="actions"><strong>
+      <%= link_to "Yes! I’m in for #{@show.name}!", @links[:rsvp_yes], class: 'button', style: 'background-color: #408000; color: white; padding: 5px 10px; text-decoration: none; display: inline-block; margin-top: 5px; border-radius: 3px;' %>
+      <%= link_to "Sorry, I can’t make it", @links[:rsvp_no], class: 'button', style: 'background-color: #444; color: white; padding: 5px 10px; text-decoration: none; display: inline-block; margin-top: 5px; border-radius: 3px;' %>
+    </strong></p>
 
-<h2>A bit about <%= @show.name %></h2>
-<%= @invite_message.about_html(@links) %>
+  <h2>A bit about <%= @show.name %></h2>
+  <%= @invite_message.about_html(@links) %>
 
-<p><%= link_to "Spend #{@show.day_of_week} evening with #{@show.name}", @links[:rsvp_yes] %>.</p>
+  <p><%= link_to "Spend #{@show.day_of_week} evening with #{@show.name}", @links[:rsvp_yes] %>.</p>
 
-<p><br/><%= Settings.invites_from_first_name %></p>
+  <p><br/>
+    <%= Settings.invites_from_first_name %></p>
 
-<p>P.S. If you have moved or don’t want to receive house concert invites, <%= link_to "instantly unsubscribe", @unsub_url %>.</p>
+  <p>P.S. If you have moved or don’t want to receive house concert invites, <%= link_to "instantly unsubscribe", @unsub_url %>.</p>
 
 </div>
 <%= ld_json_tag(ld_json_gmail_rsvp_action(@links[:rsvp])) %>

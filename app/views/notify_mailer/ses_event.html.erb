@@ -1,13 +1,22 @@
 <h1><%= @subject %></h1>
 
 <table class="details">
-  <tr><th>Person</th><td><%= link_to @person.full_name, madmin_person_url(@person) %></td></tr>
-  <tr><th>Email</th><td><%= @person.email %></td></tr>
-  <tr><th>Status</th><td><%= @person.status %></td></tr>
+  <tr>
+    <th>Person</th>
+    <td><%= link_to @person.full_name, madmin_person_url(@person) %></td>
+  </tr>
+  <tr>
+    <th>Email</th>
+    <td><%= @person.email %></td>
+  </tr>
+  <tr>
+    <th>Status</th>
+    <td><%= @person.status %></td>
+  </tr>
 </table>
 
 <%- if @event_type == "bounce" -%>
-<p>Mail to <%= @person.email %> bounced permanently, so they’re no longer invited.</p>
+  <p>Mail to <%= @person.email %> bounced permanently, so they’re no longer invited.</p>
 <%- else -%>
-<p>They marked an email to <%= @person.email %> as spam, so they’ve been removed from the mailing list.</p>
+  <p>They marked an email to <%= @person.email %> as spam, so they’ve been removed from the mailing list.</p>
 <%- end -%>

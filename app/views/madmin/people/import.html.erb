@@ -22,11 +22,19 @@
       <div class="table-scroll">
         <table>
           <thead>
-            <tr><th>Line</th><th>Text</th><th>Reason</th></tr>
+            <tr>
+              <th>Line</th>
+              <th>Text</th>
+              <th>Reason</th>
+            </tr>
           </thead>
           <tbody>
             <% lines.each do |line| %>
-              <tr><td><%= line.number %></td><td><%= line.text %></td><td><%= line.reason %></td></tr>
+              <tr>
+                <td><%= line.number %></td>
+                <td><%= line.text %></td>
+                <td><%= line.reason %></td>
+              </tr>
             <% end %>
           </tbody>
         </table>

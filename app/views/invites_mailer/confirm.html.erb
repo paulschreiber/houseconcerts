@@ -3,33 +3,35 @@
 <p>Thanks for signing up for the <%= @rsvp.show.name %> house concert!</p>
 
 <ul class="summary">
-<li><%= @rsvp.show.name %></li>
-<li><strong>Seats:</strong> <%= @rsvp.seats_reserved %></li>
-<li><strong>Date:</strong> <%= @rsvp.show.start_date %>
-<li><strong>Time:</strong> <%= @rsvp.show.start_time %>
-<li><strong>Doors:</strong> <%= @rsvp.show.door_time %> &middot; Please arrive between <%= @rsvp.show.arrival_range %>.</li>
-<li><strong>Location:</strong> <%= @rsvp.show.venue.full_address %></li>
-</ul>
+  <li><%= @rsvp.show.name %></li>
+  <li><strong>Seats:</strong> <%= @rsvp.seats_reserved %></li>
+  <li><strong>Date:</strong> <%= @rsvp.show.start_date %>
+    <li><strong>Time:</strong> <%= @rsvp.show.start_time %>
+      <li><strong>Doors:</strong> <%= @rsvp.show.door_time %> &middot; Please arrive between <%= @rsvp.show.arrival_range %>.</li>
+      <li><strong>Location:</strong> <%= @rsvp.show.venue.full_address %></li>
+    </ul>
 
-<h3>Changing your reservation</h3>
-<p>Remember that your RSVP is a <em>confirmed reservation</em>: we’re holding a seat just for you.</p>
+    <h3>Changing your reservation</h3>
+    <p>Remember that your RSVP is a <em>confirmed reservation</em>: we’re holding a seat just for you.</p>
 
-<p class="actions">Want to bring more or fewer people, or wish to cancel?
-<br /><%= link_to 'Update your reservation', @rsvp_url, class: 'button', style: 'background-color: #444; color: white; padding: 5px 10px; text-decoration: none; display: inline-block; margin-top: 5px; border-radius: 3px;' %>
-</p>
+    <p class="actions">Want to bring more or fewer people, or wish to cancel?
+      <br />
+      <%= link_to 'Update your reservation', @rsvp_url, class: 'button', style: 'background-color: #444; color: white; padding: 5px 10px; text-decoration: none; display: inline-block; margin-top: 5px; border-radius: 3px;' %>
+    </p>
 
-<h3>Stuff to bring</h3>
-<p>As always, you are welcome to bring a snack or drink to share, but it's certainly not required.</p>
+    <h3>Stuff to bring</h3>
+    <p>As always, you are welcome to bring a snack or drink to share, but it's certainly not required.</p>
 
-<h3>Money</h3>
-<p>The suggested contribution is $<%= @rsvp.show.price %>. You may also want a CD or t-shirt, so be sure to bring a bit of spending money. :)</p>
+    <h3>Money</h3>
+    <p>The suggested contribution is $<%= @rsvp.show.price %>. You may also want a CD or t-shirt, so be sure to bring a bit of spending money. :)</p>
 
-<h3>Directions</h3>
-<%= @rsvp.show.venue.formatted_directions&.html_safe %>
+    <h3>Directions</h3>
+    <%= @rsvp.show.venue.formatted_directions&.html_safe %>
 
-<h3>Contact Info</h3>
-<%= @rsvp.show.venue.formatted_contact_info&.html_safe %>
+    <h3>Contact Info</h3>
+    <%= @rsvp.show.venue.formatted_contact_info&.html_safe %>
 
-<p>thanks!
-<br /><%= Settings.invites_from_first_name %></p>
-<%= ld_json_tag(ld_json_reservation(@rsvp)) %>
+    <p>thanks!
+      <br />
+      <%= Settings.invites_from_first_name %></p>
+    <%= ld_json_tag(ld_json_reservation(@rsvp)) %>

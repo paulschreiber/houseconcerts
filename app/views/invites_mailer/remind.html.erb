@@ -3,30 +3,30 @@
 <p>This is a quick reminder about the <%= @rsvp.show.name %> show:</p>
 
 <ul class="summary">
-<li>Seats: <%= @rsvp.seats_reserved %></li>
-<li>Date: <%= @rsvp.show.start_date %>
-<li>Time: <%= @rsvp.show.start_time %> &middot; Please arrive between <%= @rsvp.show.arrival_range %>.</li>
-<li>Location: <%= @rsvp.show.venue.full_address %></li>
-</ul>
+  <li>Seats: <%= @rsvp.seats_reserved %></li>
+  <li>Date: <%= @rsvp.show.start_date %>
+    <li>Time: <%= @rsvp.show.start_time %> &middot; Please arrive between <%= @rsvp.show.arrival_range %>.</li>
+    <li>Location: <%= @rsvp.show.venue.full_address %></li>
+  </ul>
 
-<p>We have few seats left—if you have a friend you can bring, let me know!</p>
+  <p>We have few seats left—if you have a friend you can bring, let me know!</p>
 
-<p>Remember, your RSVP is a <em>confirmed reservation</em>.</p>
-<ul>
-<li>Still coming? Great! See you <%= @rsvp.show.day_of_week %>!</li>
-<% unless @rsvp.show.sold_out? or @rsvp.show.waitlisted? %>
-<li>Bringing another friend? Also great. Update your reservation.</li>
-<% end %>
-<li>Bringing fewer guests? Update your reservation.</li>
-<li>Dog is sick? Last-minute wedding to attend? Cancel your reservation so I don’t worry when you don’t show up.</li>
-</ul>
+  <p>Remember, your RSVP is a <em>confirmed reservation</em>.</p>
+  <ul>
+    <li>Still coming? Great! See you <%= @rsvp.show.day_of_week %>!</li>
+    <% unless @rsvp.show.sold_out? or @rsvp.show.waitlisted? %>
+      <li>Bringing another friend? Also great. Update your reservation.</li>
+    <% end %>
+    <li>Bringing fewer guests? Update your reservation.</li>
+    <li>Dog is sick? Last-minute wedding to attend? Cancel your reservation so I don’t worry when you don’t show up.</li>
+  </ul>
 
-<p class="actions">
-<%= link_to 'Update your reservation', @rsvp_url, class: 'button', style: 'background-color: #444; color: white; padding: 5px 10px; text-decoration: none; display: inline-block; margin-top: 5px; border-radius: 3px;' %>
-</p>
+  <p class="actions">
+    <%= link_to 'Update your reservation', @rsvp_url, class: 'button', style: 'background-color: #444; color: white; padding: 5px 10px; text-decoration: none; display: inline-block; margin-top: 5px; border-radius: 3px;' %>
+  </p>
 
-<p>I appreciate it and <%= @rsvp.show.name %> very much appreciates it. :)</p>
+  <p>I appreciate it and <%= @rsvp.show.name %> very much appreciates it. :)</p>
 
-<p>I look forward to seeing you there!</p>
+  <p>I look forward to seeing you there!</p>
 
-<p><%= Settings.invites_from_first_name %></p>
+  <p><%= Settings.invites_from_first_name %></p>

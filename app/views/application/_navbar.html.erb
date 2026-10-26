@@ -1,6 +1,6 @@
 <div id="tabs">
-<ul>
-<%
+  <ul>
+    <%
 
 tabList = {
 	root_path => "House Concerts",
@@ -14,13 +14,13 @@ current_url = request.path
 current_url = mailing_list_path if controller_name == "mailing_list"
 %>
 
-<% tabList.each_pair do |url, text| %>
-	<% if current_url == url %>
-		<li class='here'><%= text %></li>
-	<% else %>
-		<li><a href='<%= url %>'><%= text %></a></li>
-	<% end %>
-<% end %>
+    <% tabList.each_pair do |url, text| %>
+      <% if current_url == url %>
+        <li class='here'><%= text %></li>
+      <% else %>
+        <li><a href='<%= url %>'><%= text %></a></li>
+      <% end %>
+    <% end %>
 
-</ul>
+  </ul>
 </div>

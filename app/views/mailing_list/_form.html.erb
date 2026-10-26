@@ -3,33 +3,33 @@
 <h1>Get notified of future shows</h1>
 
 <div class="pagetext">
-<p>Join my mailing list to get invited to future house concerts.</p>
+  <p>Join my mailing list to get invited to future house concerts.</p>
 
-<%= form_with model: @person, html: { data: { controller: "name-paste" } } do |f| %>
+  <%= form_with model: @person, html: { data: { controller: "name-paste" } } do |f| %>
 
-<div>
-	<%= f.label :first_name %>
-	<%= f.text_field :first_name, maxlength: 100, size: 50, data: { name_paste_target: "firstName", action: "paste->name-paste#parse" } %>
-</div>
+    <div>
+      <%= f.label :first_name %>
+      <%= f.text_field :first_name, maxlength: 100, size: 50, data: { name_paste_target: "firstName", action: "paste->name-paste#parse" } %>
+    </div>
 
-<div>
-	<%= f.label :last_name %>
-	<%= f.text_field :last_name, maxlength: 100, size: 50, data: { name_paste_target: "lastName" } %>
-</div>
+    <div>
+      <%= f.label :last_name %>
+      <%= f.text_field :last_name, maxlength: 100, size: 50, data: { name_paste_target: "lastName" } %>
+    </div>
 
-<div>
-	<%= f.label :email %>
-	<%= f.email_field :email, maxlength: 200, size: 50, data: { name_paste_target: "email" } %>
-</div>
+    <div>
+      <%= f.label :email %>
+      <%= f.email_field :email, maxlength: 200, size: 50, data: { name_paste_target: "email" } %>
+    </div>
 
-<div>
-	<%= f.label :postcode, "Zip Code" %>
-	<%= f.text_field :postcode, maxlength: 10, size: 11 %>
-</div>
+    <div>
+      <%= f.label :postcode, "Zip Code" %>
+      <%= f.text_field :postcode, maxlength: 10, size: 11 %>
+    </div>
 
-<div>
-	<%= f.submit "Join Mailing List" %>
-</div>
+    <div>
+      <%= f.submit "Join Mailing List" %>
+    </div>
 
-<% end %>
+  <% end %>
 </div>

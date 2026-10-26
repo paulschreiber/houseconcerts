@@ -1,55 +1,55 @@
 <!doctype html>
 <html>
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<style>
-			.button {
-				color: white;
-				padding: 5px 10px;
-				text-decoration: none;
-				display: inline-block;
-				margin-top: 5px;
-				border-radius: 3px;
-			}
-			.summary {
-				padding: 0.5em 2em;
-				margin: 0.5em 0;
-				background-color: #ddd;
-				display: inline-block;
-			}
-			ul {
-				padding-left: 1em;
-			}
-			h2, h3 {
-				margin-bottom: 0;
-			}
-			h2 + p, h3 + p {
-				margin-top: 0;
-			}
-			.actions {
-				margin-top: 0;
-			}
-			@media screen and (max-width: 480px) {
-				body {
-					padding: 10px;
-				}
-				.button {
-					width: 100%;
-					min-height: 44px;
-					line-height: 44px;
-					box-sizing: border-box;
-				}
-				.summary {
-					width: 100%;
-					box-sizing: border-box;
-				}
-			}
-	</style>
-	</head>
-	<body>
-		<%= yield %>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      .button {
+      	color: white;
+      	padding: 5px 10px;
+      	text-decoration: none;
+      	display: inline-block;
+      	margin-top: 5px;
+      	border-radius: 3px;
+      }
+      .summary {
+      	padding: 0.5em 2em;
+      	margin: 0.5em 0;
+      	background-color: #ddd;
+      	display: inline-block;
+      }
+      ul {
+      	padding-left: 1em;
+      }
+      h2, h3 {
+      	margin-bottom: 0;
+      }
+      h2 + p, h3 + p {
+      	margin-top: 0;
+      }
+      .actions {
+      	margin-top: 0;
+      }
+      @media screen and (max-width: 480px) {
+      	body {
+      		padding: 10px;
+      	}
+      	.button {
+      		width: 100%;
+      		min-height: 44px;
+      		line-height: 44px;
+      		box-sizing: border-box;
+      	}
+      	.summary {
+      		width: 100%;
+      		box-sizing: border-box;
+      	}
+      }
+    </style>
+  </head>
+  <body>
+    <%= yield %>
 
-		<%= image_tag(@track_url, alt: '') if @track_url %>
-	</body>
+    <%= image_tag(@track_url, alt: '') if @track_url %>
+  </body>
 </html>

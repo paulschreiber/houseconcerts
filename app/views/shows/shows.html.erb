@@ -4,47 +4,55 @@
 
 <div class="pagetext shows">
 
-<% if @shows.empty? %>
-<h2>No shows found</h2>
-<p>No past shows were found.</p>
-<% else %>
+  <% if @shows.empty? %>
+    <h2>No shows found</h2>
+    <p>No past shows were found.</p>
+  <% else %>
 
-<ol class="columnheads">
-<li><h3>Musician</h3><h3>Date</h3></li>
-<li><h3>Musician</h3><h3>Date</h3></li>
-<li><h3>Musician</h3><h3>Date</h3></li>
-</ol>
+    <ol class="columnheads">
+      <li>
+        <h3>Musician</h3>
+        <h3>Date</h3>
+      </li>
+      <li>
+        <h3>Musician</h3>
+        <h3>Date</h3>
+      </li>
+      <li>
+        <h3>Musician</h3>
+        <h3>Date</h3>
+      </li>
+    </ol>
 
-<ol class="past-shows">
+    <ol class="past-shows">
 
-	<% @shows.each do |show| %>
+      <% @shows.each do |show| %>
 
-		<%
+        <%
 			artist_for_photo = show.artists.sample
 			next unless artist_for_photo
 			artist_links = show.artists.map { |artist| link_to_if(artist.url?, artist.name, artist.url) }
 		%>
 
-		<li>
-		<%= ld_json_tag(ld_json_event(show)) %>
-		<div class='artists'>
+        <li>
+          <%= ld_json_tag(ld_json_event(show)) %>
+          <div class='artists'>
 
-			<% photo = tag.img(class: "artist", src: "/photos/headshots/thumb/#{artist_for_photo.slug}.jpg", width: 50, height: 50, alt: artist_for_photo.name) %>
-			<%= artist_for_photo.url? ? link_to(photo, artist_for_photo.url, class: "imagelink") : photo %>
+            <% photo = tag.img(class: "artist", src: "/photos/headshots/thumb/#{artist_for_photo.slug}.jpg", width: 50, height: 50, alt: artist_for_photo.name) %>
+            <%= artist_for_photo.url? ? link_to(photo, artist_for_photo.url, class: "imagelink") : photo %>
 
-			<%= artist_links.to_sentence.html_safe %>
+            <%= artist_links.to_sentence.html_safe %>
 
-		</div>
+          </div>
 
-		<time datetime='<%= show.start.iso8601 %>'><%= show.start.strftime("%B %e, %Y").strip %></time>
+          <time datetime='<%= show.start.iso8601 %>'><%= show.start.strftime("%B %e, %Y").strip %></time>
 
-		</li>
+        </li>
 
-		<% end # shows.each %>
+      <% end # shows.each %>
 
-</ol>
+    </ol>
 
-<% end %>
-
+  <% end %>
 
 </div>
