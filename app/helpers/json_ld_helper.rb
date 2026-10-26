@@ -21,9 +21,10 @@ module JsonLdHelper
       doorTime: show.doors.iso8601,
       eventStatus: "https://schema.org/EventScheduled",
       eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
-      description: show.blurb.presence,
+      description: show.blurb.presence || show.event_name,
       image: show.artists.map(&:photo_url),
       performer: show.artists.map { |artist| ld_json_person(artist) },
+      organizer: ld_json_organization,
       location: {
         "@type": "Place",
         name: Settings.site_name,
@@ -38,6 +39,7 @@ module JsonLdHelper
         url: url,
         price: show.price,
         priceCurrency: "USD",
+        validFrom: show.created_at.iso8601,
         availability: show.available? ? "https://schema.org/InStock" : "https://schema.org/SoldOut"
       }
     end
@@ -50,7 +52,7 @@ module JsonLdHelper
     {
       "@type": "EmailMessage",
       potentialAction: { "@type": "ViewAction", url: rsvp_url, name: "Reserve seats" },
-      publisher: { "@type": "Organization", name: Settings.site_name, url: root_url }
+      publisher: ld_json_organization
     }
   end
 
@@ -74,6 +76,11 @@ module JsonLdHelper
       cancelReservationUrl: rsvp_response_url(slug: show.slug, uniqid: rsvp.uniqid, response: :no),
       potentialAction: { "@type": "EditAction", name: "Update RSVP", target: modify_url }
     }
+  end
+
+  # The site, as a schema.org Organization.
+  def ld_json_organization
+    { "@type": "Organization", name: Settings.site_name, url: root_url }
   end
 
   def ld_json_person(artist)
