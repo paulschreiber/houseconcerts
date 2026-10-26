@@ -33,22 +33,23 @@
     <%= javascript_importmap_tags %>
   </head>
   <body>
-    <% if notice.present? %>
-      <p class="notice"><%= notice %></p>
-    <% end %>
-    <% if alert.present? && alert != t("devise.failure.unauthenticated") %>
-      <p class="alert"><%= alert %></p>
-    <% end %>
     <%= render partial: "navbar" %>
 
-    <%# Devise's pages (sign in, password reset) get the same margins as the site's other text pages. %>
-    <% if devise_controller? %>
-      <div class="pagetext devise-page">
+    <main>
+      <% if notice.present? %>
+        <p class="notice"><%= notice %></p>
+      <% end %>
+      <% if alert.present? && alert != t("devise.failure.unauthenticated") %>
+        <p class="alert"><%= alert %></p>
+      <% end %>
+      <%# Devise's pages (sign in, password reset) get the same margins as the site's other text pages. %>
+      <% if devise_controller? %>
+        <div class="pagetext devise-page">
+          <%= yield %>
+        </div>
+      <% else %>
         <%= yield %>
-      </div>
-    <% else %>
-      <%= yield %>
-    <% end %>
-
+      <% end %>
+    </main>
   </body>
 </html>
