@@ -5,7 +5,7 @@
   </div>
 
 <% else %>
-  <% @shows.each do |show| %>
-    <%= render partial: 'show', locals: { show: show, mode: :index } %>
+  <% @shows.each_with_index do |show, index| %>
+    <%= render partial: 'show', locals: { show: show, mode: :index, priority: index.zero? } %>
   <% end %>
 <% end %>
