@@ -1,8 +1,8 @@
 <div class="show">
   <%= ld_json_tag(ld_json_event(show)) %>
   <% show.artists.each do |artist| %>
-    <a class="imagelink" href="<%= rsvp_for_show_path(slug: show.slug) %>"><img src="/<%= artist.photo %>" class="artist" width="200" height="220" alt="<%= artist.name %>" /></a>
-  <% end %>
+    <% photo = image_tag("/#{artist.photo}", class: "artist", width: 200, height: 220, alt: artist.name) %>
+    <%= link_to_unless show.sold_out?, photo, rsvp_for_show_path(slug: show.slug), class: "imagelink" %>  <% end %>
   <% if mode == :index %>
     <h2><%= show.name %></h2>
   <% end %>
