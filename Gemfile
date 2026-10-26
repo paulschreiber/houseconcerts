@@ -56,6 +56,7 @@ group :development, :test do
 end
 
 group :development do
+  gem "htmlbeautifier", require: false
   gem "letter_opener"
   gem "rubocop", require: false
   gem "rubocop-performance", require: false
