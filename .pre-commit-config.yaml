@@ -43,6 +43,12 @@ repos:
         language: system
         files: \.js$
 
+      - id: htmlbeautifier
+        name: htmlbeautifier
+        entry: bundle exec htmlbeautifier --keep-blank-lines 1
+        language: system
+        files: \.html\.erb$
+
       - id: prettier
         name: prettier
         entry: npx --no-install prettier --write --ignore-unknown
