@@ -58,6 +58,12 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "new fetches the show's photo first" do
+    get rsvp_for_show_path(slug: shows(:upcoming).slug)
+
+    assert_select "img.artist[fetchpriority=high]", count: 1
+  end
+
   test "new asks for a phone number, mentioning text reminders only when they're set up" do
     get rsvp_for_show_path(slug: shows(:upcoming).slug)
     assert_select "input[name='rsvp[phone_number]']"
