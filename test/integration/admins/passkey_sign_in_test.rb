@@ -20,7 +20,7 @@ module Admins
         post admin_session_path, params: { public_key_credential: assertion.to_json }
       end
 
-      assert_redirected_to root_path
+      assert_redirected_to madmin_root_path
       assert_nil session[:authentication_challenge]
       follow_redirect!
       get mission_control_jobs_path

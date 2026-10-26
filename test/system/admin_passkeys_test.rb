@@ -22,8 +22,9 @@ class AdminPasskeysTest < ApplicationSystemTestCase
     visit new_admin_session_path
     click_button "Log in with a passkey"
 
-    assert_current_path root_path
-    assert_text "Signed in successfully."
+    # No "Signed in successfully." notice: Turbo reloads the page on the way
+    # into Madmin's layout (different stylesheets), after the flash is used.
+    assert_current_path madmin_root_path
     assert_includes page.driver.browser.manage.all_cookies.pluck(:name), "remember_admin_token"
   end
 

@@ -78,7 +78,7 @@ class AdminLoginTest < ActionDispatch::IntegrationTest
         password_confirmation: "a brand new password"
       }
     }
-    assert_redirected_to root_path
+    assert_redirected_to madmin_root_path
     assert cookies["remember_admin_token"].present?
 
     delete destroy_admin_session_path
@@ -86,7 +86,7 @@ class AdminLoginTest < ActionDispatch::IntegrationTest
     post admin_session_path, params: {
       admin: { email: admin.email, password: "a brand new password" }
     }
-    assert_redirected_to root_path
+    assert_redirected_to madmin_root_path
   end
 
   test "tracks sign in count and timestamps" do
