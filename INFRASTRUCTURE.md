@@ -321,6 +321,14 @@ Fight Mode, and put it above any rule that could match.
 
     Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
 
+    # How long browsers keep files from public/ (see Cache lifetimes).
+    <LocationMatch "^/assets/">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </LocationMatch>
+    <LocationMatch "^/photos/">
+        Header set Cache-Control "public, max-age=604800"
+    </LocationMatch>
+
     # Redirect other host names (e.g. www.) to the canonical one.
     RewriteEngine on
     RewriteCond %{HTTP_HOST} !^houseconcerts\.example$ [NC]
@@ -332,6 +340,22 @@ Fight Mode, and put it above any rule that could match.
 </VirtualHost>
 </IfModule>
 ```
+
+### Cache lifetimes
+
+Apache serves the files in `public/` itself, so Rails’
+`config.public_file_server.headers` never reaches them. The vhost sets their
+`Cache-Control` instead:
+
+- **`/assets/`, 1 year:** each file has a fingerprint in its name
+  (`application-9346c3cd.css`) that changes whenever its content does, so
+  browsers can keep it, without rechecking (`immutable`), until the name
+  changes.
+- **`/photos/`, 7 days:** an artist photo keeps its name when it’s replaced, so
+  a new photo shows up within 7 days.
+
+To check, `curl -sI` a stylesheet and a photo. Their `cache-control` should
+show `max-age=31536000, immutable` and `max-age=604800`.
 
 ### Real visitor IPs
 

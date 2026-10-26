@@ -2,7 +2,7 @@
 
 <h1>Reserve seats for <%= @show.name %></h1>
 
-<%= render partial: 'show', locals: { show: @show, mode: :detail } %>
+<%= render partial: 'show', locals: { show: @show, mode: :detail, priority: true } %>
 
 <% show_errors = @rsvp.errors.select{|s| s.attribute == :show } %>
 <%= content_tag :p, show_errors.first.message, class: "error" unless show_errors.empty? %>

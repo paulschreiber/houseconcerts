@@ -1,7 +1,9 @@
 <div class="show">
   <%= ld_json_tag(ld_json_event(show)) %>
-  <% show.artists.each do |artist| %>
-    <% photo = image_tag("/#{artist.photo}", class: "artist", width: 200, height: 220, alt: artist.name) %>
+  <%# priority: this show is the page's main image, so its first photo is fetched first. %>
+  <% show.artists.each_with_index do |artist, index| %>
+    <% photo = image_tag("/#{artist.photo}", class: "artist", width: 200, height: 220, alt: artist.name,
+                                              fetchpriority: ("high" if priority && index.zero?)) %>
     <%= link_to_unless show.sold_out?, photo, rsvp_for_show_path(slug: show.slug), class: "imagelink" %>  <% end %>
   <% if mode == :index %>
     <h2><%= show.name %></h2>
