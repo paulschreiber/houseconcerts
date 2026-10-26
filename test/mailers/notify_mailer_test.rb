@@ -23,13 +23,13 @@ class NotifyMailerTest < ActionMailer::TestCase
   test "rsvp shows the seats for a new rsvp" do
     rsvp = rsvps(:one)
 
-    assert_includes NotifyMailer.rsvp(rsvp, "new", nil).body.decoded, "<th>Seats</th><td>#{rsvp.seats_reserved}</td>"
+    assert_equal rsvp.seats_reserved.to_s, detail(NotifyMailer.rsvp(rsvp, "new", nil).body.decoded, "Seats")
   end
 
   test "rsvp shows the seat change for an updated rsvp" do
     rsvp = rsvps(:one)
 
-    assert_includes NotifyMailer.rsvp(rsvp, "update", 1).body.decoded, "<td>1 → #{rsvp.seats_reserved}</td>"
+    assert_equal "1 → #{rsvp.seats_reserved}", detail(NotifyMailer.rsvp(rsvp, "update", 1).body.decoded, "Seats")
   end
 
   test "rsvp delivers exactly one email" do
@@ -363,6 +363,13 @@ class NotifyMailerTest < ActionMailer::TestCase
   end
 
   private
+
+    # The value beside label in the email's details table.
+    def detail(body, label)
+      row = Nokogiri::HTML(body).css(".details tr").find { |tr| tr.at_css("th")&.text&.strip == label }
+      assert row, "no #{label} row"
+      row.at_css("td").text.strip
+    end
 
     def history_rows(body)
       Nokogiri::HTML(body).css(".history tbody tr")
