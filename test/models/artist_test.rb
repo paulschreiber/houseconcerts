@@ -43,4 +43,33 @@ class ArtistTest < ActiveSupport::TestCase
     end
     assert_includes artist.shows, shows(:past)
   end
+
+  test "invite_messages are ordered by show date, then revision" do
+    artist = artists(:one)
+    artist.shows << shows(:past)
+    # Created out of order, so the ids don't match the expected order.
+    upcoming_second = new_revision(shows(:upcoming))
+    past_first = new_revision(shows(:past))
+    past_second = new_revision(shows(:past))
+    expected = [ past_first, past_second, invite_messages(:upcoming), upcoming_second ]
+
+    assert_equal expected, artist.invite_messages.to_a
+    assert_equal expected, Artist.preload(:invite_messages).find(artist.id).invite_messages.to_a
+  end
+
+  test "invite_messages keep each show's revisions together when shows start at the same time" do
+    artist = artists(:one)
+    same_start = shows(:upcoming).dup.tap { |show| show.update!(slug: nil, name: "Same Start Show") }
+    artist.shows << same_start
+    later_show_first = new_revision(same_start)
+    upcoming_second = new_revision(shows(:upcoming))
+
+    assert_equal [ invite_messages(:upcoming), upcoming_second, later_show_first ], artist.invite_messages.to_a
+  end
+
+  private
+
+    def new_revision(show)
+      show.invite_messages.create!(intro: "Intro", about: "About")
+    end
 end
