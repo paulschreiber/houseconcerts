@@ -5,6 +5,9 @@ class Artist < ApplicationRecord
 
   has_many :artist_shows, dependent: :delete_all
   has_many :shows, through: :artist_shows
+  # Every revision, drafts included. joins(:show) keeps the ordering when
+  # preloaded, which loads shows separately; eager_load ignores it.
+  has_many :invite_messages, -> { joins(:show).reorder(shows: { start: :asc, id: :asc }, revision: :asc) }, through: :shows
 
   validates :name, presence: true
   validates :url, url: true, allow_blank: true
