@@ -63,6 +63,12 @@ module Madmin
       assert_response :success
     end
 
+    test "show links the email address with mailto:" do
+      get madmin_rsvp_path(@rsvp)
+
+      assert_select "a[href=?]", "mailto:#{@rsvp.email}", text: @rsvp.email
+    end
+
     test "the delete confirmation names the RSVP's guest" do
       get madmin_rsvp_path(@rsvp)
 
