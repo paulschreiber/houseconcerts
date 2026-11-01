@@ -7,13 +7,11 @@
 #   same label for the index and the show page, so the controller sets
 #   Current.admin_action to tell them apart.
 class ShortDateTimeField < Madmin::Fields::DateTime
+  include CustomPartials
+
+  custom_partials :index
+
   DEFAULT_FORMAT = "%Y-%m-%d %H:%M".freeze
-
-  def to_partial_path(name)
-    return "/madmin/fields/short_date_time_field/index" if name.to_s == "index"
-
-    "/madmin/fields/date_time/#{name}"
-  end
 
   def index_format
     options[:format] || DEFAULT_FORMAT

@@ -3,14 +3,17 @@
 # form: false, show: false, index: true, compute: ->(record) { record.show.name }`.
 # With `link: true`, the index links it to the record, like LinkedStringField.
 class ComputedField < Madmin::Fields::String
+  include CustomPartials
+
   def value(record)
     options.compute.call(record)
   end
 
-  # Renders like a string field.
+  # Renders like a string field (CustomPartials' fallback), except for a
+  # linked index.
   def to_partial_path(name)
     return "/madmin/fields/linked_string_field/index" if name.to_s == "index" && options.link
 
-    "/madmin/fields/string/#{name}"
+    super
   end
 end
