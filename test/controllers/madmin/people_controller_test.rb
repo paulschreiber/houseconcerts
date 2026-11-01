@@ -27,6 +27,12 @@ module Madmin
       assert_response :success
     end
 
+    test "show links the email address with mailto:" do
+      get madmin_person_path(@person)
+
+      assert_select "a[href=?]", "mailto:#{@person.email}", text: @person.email
+    end
+
     test "create creates a person and redirects to their show page" do
       assert_difference "Person.count", 1 do
         post madmin_people_path, params: { person: { first_name: "New", last_name: "Person", email: "new.person@example.com" } }
