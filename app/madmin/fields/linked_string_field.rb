@@ -1,9 +1,6 @@
+# A string field whose index renders the value as a link to the record.
 class LinkedStringField < Madmin::Fields::String
-  # Only the index view gets a custom partial (a link to the record); show
-  # and form still render like a plain string field.
-  def to_partial_path(name)
-    return super if name.to_s == "index"
+  include CustomPartials
 
-    "/madmin/fields/string/#{name}"
-  end
+  custom_partials :index
 end
