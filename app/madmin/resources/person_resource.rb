@@ -5,7 +5,7 @@ class PersonResource < Madmin::Resource
   attribute :uniqid, form: false, show: false, searchable: false
   attribute :first_name, searchable: true
   attribute :last_name, searchable: true
-  attribute :email, searchable: true
+  attribute :email, field: EmailField, searchable: true
   attribute :phone_number, searchable: false
   attribute :postcode, label: "Postal Code", searchable: false
   attribute :notes, field: MultilineTextField, searchable: false

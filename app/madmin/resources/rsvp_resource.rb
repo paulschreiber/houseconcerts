@@ -7,7 +7,7 @@ class RSVPResource < Madmin::Resource
   attribute :uniqid, form: false, show: false, searchable: false
   attribute :first_name, searchable: true
   attribute :last_name, searchable: true
-  attribute :email, searchable: true
+  attribute :email, field: EmailField, searchable: true
   attribute :phone_number, searchable: true
   attribute :postcode, label: "Postal Code", searchable: false
   attribute :seats_reserved, label: "Seats", index: true
