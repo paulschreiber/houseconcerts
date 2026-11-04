@@ -28,11 +28,10 @@ module Admins
     end
 
     def create
-      existing_ids = resource.passkeys.ids
       super
-      resource.passkeys.where.not(id: existing_ids).find_each do |passkey|
-        AdminMailer.passkey_added(resource, passkey.name, request.remote_ip).deliver_later
-      end
+      return unless @passkey
+
+      AdminMailer.passkey_added(resource, @passkey.name, request.remote_ip).deliver_later
     end
 
     def destroy
@@ -47,6 +46,14 @@ module Admins
 
       def after_update_path
         admin_passkeys_path
+      end
+
+      # The gem treats create's return value as success, but an invalid
+      # record (e.g. a blank name) is truthy too. Return it only once saved,
+      # so failures get the verification-failed alert.
+      def verify_and_save_passkey(passkey_from_params)
+        passkey = super
+        @passkey = passkey if passkey.persisted?
       end
 
       def require_current_password
