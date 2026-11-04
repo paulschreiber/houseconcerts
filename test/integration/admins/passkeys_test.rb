@@ -38,9 +38,7 @@ module Admins
     test "creates a passkey with a valid credential" do
       sign_in @admin
 
-      post admin_passkey_registration_options_path
-      challenge = session[:webauthn_challenge]
-      credential = @client.create(challenge: challenge, user_verified: true)
+      credential = registration_credential
 
       assert_difference("@admin.passkeys.count", 1) do
         post admin_passkeys_path, params: { name: "My Passkey", current_password: PASSWORD, public_key_credential: credential.to_json }
@@ -53,9 +51,7 @@ module Admins
     test "does not create a passkey when user verification was not performed" do
       sign_in @admin
 
-      post admin_passkey_registration_options_path
-      challenge = session[:webauthn_challenge]
-      credential = @client.create(challenge: challenge, user_verified: false)
+      credential = registration_credential(user_verified: false)
 
       assert_no_difference("@admin.passkeys.count") do
         post admin_passkeys_path, params: { name: "Unverified Passkey", current_password: PASSWORD, public_key_credential: credential.to_json }
@@ -75,8 +71,7 @@ module Admins
       sign_in @admin
 
       [ nil, "wrong password" ].each do |password|
-        post admin_passkey_registration_options_path
-        credential = @client.create(challenge: session[:webauthn_challenge], user_verified: true)
+        credential = registration_credential
 
         assert_no_difference("@admin.passkeys.count") do
           post admin_passkeys_path, params: { name: "Stolen", current_password: password, public_key_credential: credential.to_json }.compact
@@ -89,8 +84,7 @@ module Admins
 
     test "emails the admin when a passkey is added" do
       sign_in @admin
-      post admin_passkey_registration_options_path
-      credential = @client.create(challenge: session[:webauthn_challenge], user_verified: true)
+      credential = registration_credential
 
       assert_enqueued_email_with AdminMailer, :passkey_added, args: [ @admin, "My Passkey", "127.0.0.1" ] do
         post admin_passkeys_path, params: { name: "My Passkey", current_password: PASSWORD, public_key_credential: credential.to_json }
@@ -99,8 +93,7 @@ module Admins
 
     test "does not email when adding a passkey fails" do
       sign_in @admin
-      post admin_passkey_registration_options_path
-      credential = @client.create(challenge: session[:webauthn_challenge], user_verified: false)
+      credential = registration_credential(user_verified: false)
 
       assert_no_enqueued_emails do
         post admin_passkeys_path, params: { name: "Unverified", current_password: PASSWORD, public_key_credential: credential.to_json }
@@ -145,5 +138,14 @@ module Admins
 
       assert_equal 1, @admin.passkeys.count
     end
+
+    private
+
+      # Starts a passkey registration and answers its challenge with the
+      # fake authenticator.
+      def registration_credential(user_verified: true)
+        post admin_passkey_registration_options_path
+        @client.create(challenge: session[:webauthn_challenge], user_verified: user_verified)
+      end
   end
 end
