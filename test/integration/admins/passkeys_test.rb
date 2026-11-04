@@ -45,6 +45,7 @@ module Admins
       end
 
       assert_redirected_to admin_passkeys_path
+      assert_equal "Passkey “My Passkey” created successfully.", flash[:notice]
       assert_nil session[:webauthn_challenge]
     end
 
@@ -65,6 +66,8 @@ module Admins
       assert_difference("@admin.passkeys.count", -1) do
         delete admin_passkey_path(passkey)
       end
+
+      assert_equal "Passkey “Test Passkey” deleted successfully.", flash[:notice]
     end
 
     test "does not create a passkey without the current password" do
