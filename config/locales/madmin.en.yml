@@ -3,8 +3,8 @@ en:
     layout:
       admin_suffix: ""
     confirmations:
-      # %{record} is filled in by Madmin::ApplicationController#translate.
-      delete: "Are you sure you want to delete the %{record}?"
+      # See MadminPatches::DeleteConfirmation.
+      delete: "Are you sure you want to delete the %{resource} %{name}?"
     shows:
       attendance:
         not_saved: "Attendance wasn’t saved. Enter a valid number of seats used for each attendee."

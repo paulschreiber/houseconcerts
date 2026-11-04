@@ -565,7 +565,7 @@ DEPENDENCIES
   jbuilder
   json (< 4)
   letter_opener
-  madmin
+  madmin (>= 3.4.1)
   mission_control-jobs
   mysql2
   net-smtp

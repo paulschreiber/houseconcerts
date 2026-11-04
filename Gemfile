@@ -44,7 +44,7 @@ gem "validate_url"
 gem "validation_kit"
 
 gem "jbuilder"
-gem "madmin"
+gem "madmin", ">= 3.4.1" # Resource.delete_confirmation
 
 group :production do
   gem "cloudflare-rails"

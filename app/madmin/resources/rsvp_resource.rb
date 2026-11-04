@@ -80,9 +80,9 @@ class RSVPResource < Madmin::Resource
     "#{record.full_name} — #{record.show.dated_name}"
   end
 
-  # For the delete confirmation: "the RSVP for Jane Smith".
-  def self.delete_confirmation_description(record)
-    "RSVP for #{record.full_name}"
+  # Just the name: the display name also includes the show and date.
+  def self.delete_confirmation(record)
+    "Are you sure you want to delete the RSVP for #{record.full_name}?"
   end
 
   # Customize the default sort column and direction. full_name sorts by last
