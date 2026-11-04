@@ -23,7 +23,7 @@
 <% end %>
 
 <% if record.persisted? && !resource.readonly? %>
-  <% delete = button_to t("madmin.actions.delete"), resource.show_path(record), method: :delete, data: { turbo_confirm: t("madmin.confirmations.delete") }, class: "btn btn-danger" %>
+  <% delete = button_to t("madmin.actions.delete"), resource.show_path(record), method: :delete, data: { turbo_confirm: resource.delete_confirmation(record) }, class: "btn btn-danger" %>
 <% end %>
 <%= render "madmin/application/form_actions", form_id: form_dom_id, submit_label: form_builder.send(:submit_default_value), delete:,
                                               cancel_path: (record.persisted? ? resource.show_path(record) : resource.index_path) %>

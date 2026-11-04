@@ -430,9 +430,7 @@ module Madmin
                     "Are you sure you want to delete the person #{@person.full_name}?"
     end
 
-    # Other t calls keep their options (here count:), which the override passes
-    # through untouched.
-    test "other Madmin translations keep their options" do
+    test "the form errors message is pluralized" do
       patch madmin_person_path(@person), params: { person: { first_name: "" } }
 
       assert_select ".alert-danger", text: /There were \d+ errors with your submission/

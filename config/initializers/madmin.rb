@@ -38,11 +38,12 @@ module MadminPatches
     end
   end
 
-  # Display names (the edit page's title and heading) come from the saved
-  # record: after a failed save, Madmin re-renders the edit page with the
-  # record as edited, which could have a blank name or no show. Each resource
-  # defines its own display_name, so inherited puts this module in front of
-  # each one as it's defined.
+  # Display names (the edit page's title and heading) and delete confirmations
+  # come from the saved record: after a failed save, Madmin re-renders the edit
+  # page with the record as edited, which could have a blank name or no show.
+  # Resources define their own display_name (and RSVPResource its own
+  # delete_confirmation), so inherited puts this module in front of each one
+  # as it's defined.
   module SavedDisplayName
     def inherited(base)
       super
@@ -50,14 +51,40 @@ module MadminPatches
     end
 
     def display_name(record)
-      record = record.class.find_by(id: record.id) || record if record.persisted? && record.changed?
-      super
+      super(saved_record(record))
+    end
+
+    def delete_confirmation(record)
+      super(saved_record(record))
+    end
+
+    private
+
+      def saved_record(record)
+        return record unless record.persisted? && record.changed?
+
+        record.class.find_by(id: record.id) || record
+      end
+  end
+
+  # Delete confirmations read "the person Jane Smith", not "the Person Jane
+  # Smith". Mirrors madmin 3.4.1's Resource.delete_confirmation, but lowercases
+  # %{resource}; recheck it when upgrading Madmin.
+  module DeleteConfirmation
+    def delete_confirmation(record)
+      I18n.t("madmin.resources.#{model.model_name.i18n_key}.confirmations.delete",
+             default: :"madmin.confirmations.delete",
+             resource: friendly_name.downcase,
+             name: display_name(record))
     end
   end
 end
 
 Madmin::Field.prepend(MadminPatches::FieldVisibility)
-ActiveSupport.on_load(:madmin_resource) { singleton_class.prepend(MadminPatches::SavedDisplayName) }
+ActiveSupport.on_load(:madmin_resource) do
+  singleton_class.prepend(MadminPatches::SavedDisplayName)
+  singleton_class.prepend(MadminPatches::DeleteConfirmation)
+end
 
 # Fields and resources that change with the index scope or the action (see
 # FieldVisibility and ShortDateTimeField's index_label) read them from Current.

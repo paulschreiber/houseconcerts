@@ -76,6 +76,15 @@ module Madmin
                     "Are you sure you want to delete the RSVP for #{@rsvp.full_name}?"
     end
 
+    test "after a failed save, the delete confirmation names the RSVP's saved guest" do
+      saved_name = @rsvp.full_name
+      patch madmin_rsvp_path(@rsvp), params: { rsvp: { first_name: "" } }
+
+      assert_response :unprocessable_content
+      assert_select "form[action='#{madmin_rsvp_path(@rsvp)}'] button[data-turbo-confirm=?]",
+                    "Are you sure you want to delete the RSVP for #{saved_name}?"
+    end
+
     test "create creates an rsvp and redirects to its show page" do
       assert_difference "RSVP.count", 1 do
         post madmin_rsvps_path, params: { rsvp: {
