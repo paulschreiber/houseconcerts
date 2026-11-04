@@ -134,12 +134,15 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
     assert_includes ld_json_event_names, shows(:upcoming).event_name
   end
 
-  test "shows embeds each past show as JSON-LD" do
+  # Google doesn't show past events in event results, and flags the missing
+  # offers on events that can't be booked.
+  test "shows doesn't embed past shows as JSON-LD" do
     shows(:past).artists << artists(:one)
 
     get past_shows_path
 
-    assert_equal [ shows(:past).event_name ], ld_json_event_names
+    assert_response :success
+    assert_empty ld_json_event_names
   end
 
   test "shows shows a message when there are no past shows" do
