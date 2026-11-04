@@ -35,11 +35,11 @@ module Admins
     end
 
     def destroy
-      passkey = resource.passkeys.find_by(id: params[:id])
+      # Loaded before super so its name is still available for the flash and
+      # the email. The gem's destroy raises if the record isn't destroyed.
+      @passkey = resource.passkeys.find(params.expect(:id))
       super
-      return unless passkey && !resource.passkeys.exists?(passkey.id)
-
-      AdminMailer.passkey_removed(resource, passkey.name, request.remote_ip).deliver_later
+      AdminMailer.passkey_removed(resource, @passkey.name, request.remote_ip).deliver_later
     end
 
     private
@@ -54,6 +54,12 @@ module Admins
       def verify_and_save_passkey(passkey_from_params)
         passkey = super
         @passkey = passkey if passkey.persisted?
+      end
+
+      # Devise's hook for flash message interpolation; lets the locale name
+      # the passkey (devise.passkeys.admin.passkey_created / passkey_deleted).
+      def devise_i18n_options(options)
+        super.merge(name: @passkey&.name)
       end
 
       def require_current_password
