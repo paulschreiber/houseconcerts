@@ -37,7 +37,7 @@ class AdminPasskeysTest < ApplicationSystemTestCase
     fill_in "Password", with: "correct horse battery staple"
     click_button "Create Passkey"
 
-    assert_text "Passkey created successfully."
+    assert_text "Passkey “Test laptop” created successfully."
     assert_selector "table.passkeys td", text: "Test laptop"
   end
 
