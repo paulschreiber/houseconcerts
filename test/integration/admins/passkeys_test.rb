@@ -100,6 +100,21 @@ module Admins
       end
     end
 
+    test "does not create a passkey with a blank name" do
+      sign_in @admin
+      credential = registration_credential
+
+      assert_no_difference("@admin.passkeys.count") do
+        assert_no_enqueued_emails do
+          post admin_passkeys_path, params: { name: "   ", current_password: PASSWORD, public_key_credential: credential.to_json }
+        end
+      end
+
+      assert_redirected_to admin_passkeys_path
+      assert_nil flash[:notice]
+      assert_equal "Passkey verification failed.", flash[:alert]
+    end
+
     test "lists the admin's passkeys with a way to remove each one" do
       passkey = @admin.passkeys.create!(external_id: "listed-id", public_key: "key", name: "Laptop", sign_count: 0)
       sign_in @admin
