@@ -29,7 +29,7 @@ module Admins
 
     def create
       super
-      return unless @passkey
+      return unless @passkey&.persisted?
 
       AdminMailer.passkey_added(resource, @passkey.name, request.remote_ip).deliver_later
     end
@@ -48,12 +48,10 @@ module Admins
         admin_passkeys_path
       end
 
-      # The gem treats create's return value as success, but an invalid
-      # record (e.g. a blank name) is truthy too. Return it only once saved,
-      # so failures get the verification-failed alert.
+      # Keeps the new passkey for the flash message and the email. It may be
+      # unsaved (e.g. a blank name); the gem checks persisted? itself.
       def verify_and_save_passkey(passkey_from_params)
-        passkey = super
-        @passkey = passkey if passkey.persisted?
+        @passkey = super
       end
 
       # Devise's hook for flash message interpolation; lets the locale name

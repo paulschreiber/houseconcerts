@@ -32,7 +32,7 @@ gem "net-smtp"
 gem "carmen"
 gem "config"
 gem "devise"
-gem "devise-webauthn"
+gem "devise-webauthn", ">= 0.5.1" # create checks persisted?; Admins::PasskeysController relies on it
 gem "friendly_id"
 gem "humanize"
 gem "icalendar"
