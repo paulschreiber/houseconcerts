@@ -2,6 +2,10 @@
 namespace :madmin, path: Settings.admin_prefix do
   resources :admins
   resources :artists
+  # Removing an attachment, such as an artist's photo (see ArtistPhotoField).
+  namespace :active_storage do
+    resources :attachments, only: :destroy
+  end
   resources :opens
   resources :people do
     member do
