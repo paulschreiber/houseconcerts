@@ -15,7 +15,22 @@ SERVER=deploy.example.com  # replace with your actual server
 
 ## 1. Prepare the server
 
-Over SSH, as yourself (with sudo):
+Over SSH, as yourself (with sudo), install the packages the app needs (tested on
+Ubuntu 26.04):
+
+```bash
+sudo apt install ruby ruby-dev build-essential git libmysqlclient-dev \
+  libvips libheif-plugin-libde265 libheif-plugin-dav1d \
+  apache2 libapache2-mod-passenger certbot python3-certbot-apache
+sudo gem install bundler -v '~> 4.0'
+```
+
+Add `mysql-server` if MySQL runs on the same machine. `ruby-dev`,
+`build-essential` and `libmysqlclient-dev` build the gems with native code. The
+libheif plugins let libvips read HEIC and AVIF photos (see “Image libraries” in
+[`INFRASTRUCTURE.md`](INFRASTRUCTURE.md)). Ubuntu’s own Bundler is too old.
+
+Then check:
 
 - `ruby -v; bundle -v` shows the system Ruby (`/usr/bin/ruby`) and Bundler 4,
   which the deploy user needs on its `PATH`. `setup_deploy_user.sh` checks this
