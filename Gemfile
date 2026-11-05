@@ -21,8 +21,6 @@ gem "bootsnap", require: false
 gem "puma"
 gem "thruster", require: false
 
-# Only needed to run deploys, so the server skips this group (see
-# config/deploy.rb)
 group :deploy do
   gem "capistrano"
   gem "capistrano-bundler"
