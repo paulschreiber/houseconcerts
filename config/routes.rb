@@ -7,6 +7,16 @@ Rails.application.routes.draw do
   end
   mount MissionControl::Jobs::Engine, at: "#{Settings.admin_prefix}/jobs"
 
+  # Resized photos (Active Storage variants), the only uploaded files served.
+  # Active Storage's own routes are off (see config/application.rb).
+  scope ActiveStorage.routes_prefix do
+    get "/representations/proxy/:signed_blob_id/:variation_key/*filename" => "active_storage/representations/proxy#show",
+        as: :rails_blob_representation_proxy
+  end
+  resolve("ActiveStorage::VariantWithRecord") do |variant, options|
+    route_for(:rails_blob_representation_proxy, variant.blob.signed_id, variant.variation.key, variant.blob.filename, options)
+  end
+
   root "shows#index"
   get "about", to: "shows#about", as: "about"
   get "musicians", to: "shows#musicians", as: "musicians"

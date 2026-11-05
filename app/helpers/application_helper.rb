@@ -1,4 +1,6 @@
 module ApplicationHelper
+  include ArtistPhotosHelper
+
   def page_title(item = nil)
     page_title = [ Settings.site_name ]
     if item.is_a?(Show)
@@ -29,10 +31,10 @@ module ApplicationHelper
     end
   end
 
-  # The show's first artist's photo, or the site image when there's no show
-  # or it has no artists.
+  # The photo of the show's first artist that has one, or the site image when
+  # there's no show or none of its artists has a photo.
   def social_media_image(show)
-    photo_url = show.artists.first.photo_url if show&.complete?
+    photo_url = show.artists.lazy.filter_map { |artist| artist_photo_url(artist) }.first if show&.complete?
     photo_url || "#{Rails.application.routes.url_helpers.root_url}concerts.png"
   end
 

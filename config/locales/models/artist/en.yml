@@ -1,0 +1,14 @@
+en:
+  activerecord:
+    errors:
+      models:
+        artist:
+          attributes:
+            photo:
+              # Full sentences, shown as written (see config/locales/models/rsvp/en.yml).
+              format: "%{message}"
+              content_type: "Choose a JPEG, HEIC, AVIF or WebP photo"
+              too_large: "Choose a photo smaller than %{size}"
+              too_many_pixels: "Choose a photo of at most %{megapixels} megapixels"
+              too_small: "Choose a photo at least %{width} × %{height} pixels"
+              unreadable: "This photo couldn’t be read. Choose a JPEG, HEIC, AVIF or WebP photo"
