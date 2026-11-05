@@ -59,6 +59,15 @@ class ImportArtistPhotosTest < ActiveSupport::TestCase
     assert_not artists(:one).reload.photo.attached?
   end
 
+  test "a dry run reports a file that couldn't be attached" do
+    add_file("not_an_image.jpg", as: artists(:one).slug)
+
+    result = ImportArtistPhotos.call(dry_run: true, directory: @dir)
+
+    assert_equal [ artists(:one) ], result.failed.keys
+    assert_empty result.attached
+  end
+
   private
 
     def add_file(fixture, as:)
