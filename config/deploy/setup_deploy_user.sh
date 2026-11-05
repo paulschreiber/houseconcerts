@@ -17,7 +17,7 @@
 
 set -euo pipefail
 
-DEPLOY_USER=${DEPLOY_USER:-houseconcerts-deploy}
+DEPLOY_USER=houseconcerts-deploy
 GROUP=houseconcerts
 APP=/data/sites/houseconcerts
 SUDOERS=/etc/sudoers.d/$DEPLOY_USER
@@ -26,11 +26,18 @@ if [[ $EUID -ne 0 ]]; then
   echo "Run this as root (sudo)." >&2
   exit 1
 fi
-for key in "$@"; do
-  if ! ssh-keygen -l -f "$key" >/dev/null 2>&1; then
-    echo "$key isn't a public key." >&2
-    exit 1
-  fi
+# Checked one line at a time: ssh-keygen -l also accepts a whole private key
+# file, but not a line of one.
+keys=()
+for file in "$@"; do
+  while IFS= read -r line || [[ -n $line ]]; do
+    [[ -z $line || $line == \#* ]] && continue
+    if ! ssh-keygen -l -f - <<<"$line" >/dev/null 2>&1; then
+      echo "$file isn't a public key file." >&2
+      exit 1
+    fi
+    keys+=("$line")
+  done <"$file"
 done
 
 # 1. The user, with a home directory for its SSH keys and a shell for
@@ -44,20 +51,24 @@ fi
 usermod --password '*' --append --groups "$GROUP" "$DEPLOY_USER"
 HOME_DIR=$(getent passwd "$DEPLOY_USER" | cut -d: -f6)
 
-# 2. SSH keys
-install -d -m 700 -o "$DEPLOY_USER" -g "$DEPLOY_USER" "$HOME_DIR/.ssh"
+# 2. SSH keys, written as the deploy user: it owns ~/.ssh, so it could swap
+#    in a symlink that root would follow.
+as_deploy_user() {
+  sudo -u "$DEPLOY_USER" "$@"
+}
 KEYS=$HOME_DIR/.ssh/authorized_keys
-touch "$KEYS"
-for key in "$@"; do
-  line=$(<"$key")
-  grep -qF -- "$line" "$KEYS" || echo "restrict $line" >>"$KEYS"
+as_deploy_user install -d -m 700 "$HOME_DIR/.ssh"
+as_deploy_user touch "$KEYS"
+as_deploy_user chmod 600 "$KEYS"
+for line in "${keys[@]}"; do
+  as_deploy_user grep -qxF -- "restrict $line" "$KEYS" ||
+    as_deploy_user tee -a "$KEYS" >/dev/null <<<"restrict $line"
 done
-chown "$DEPLOY_USER:$DEPLOY_USER" "$KEYS"
-chmod 600 "$KEYS"
 
 # 3. The app directory: releases, shared files, the git cache and the
 #    current symlink. Only the owner changes; setup_solidqueue_user.sh sets
 #    the group on the files the worker shares.
+mkdir -p "$APP"
 chown -R "$DEPLOY_USER" "$APP"
 
 # 4. Restarting the worker, for the solid_queue:restart Capistrano task.
@@ -70,6 +81,16 @@ visudo -cqf "$tmp"
 install -m 0440 -o root -g root "$tmp" "$SUDOERS"
 rm "$tmp"
 
-# 5. Check the tools a deploy needs are on the deploy user's PATH.
-sudo -u "$DEPLOY_USER" -H bash -c 'for tool in git ruby bundle; do command -v "$tool" >/dev/null || { echo "$tool not found" >&2; exit 1; }; done; bundle --version'
-echo "ok: $DEPLOY_USER is set up with $(grep -c . "$KEYS") key(s)"
+# 5. Check the tools a deploy needs are on the PATH Capistrano's SSH commands
+#    get, which sshd takes from /etc/environment (on Debian and Ubuntu), not
+#    sudo's secure_path.
+as_deploy_user env -i HOME="$HOME_DIR" bash <<'EOF'
+set -a
+. /etc/environment 2>/dev/null || true
+set +a
+for tool in git ruby bundle; do
+  command -v "$tool" >/dev/null || { echo "$tool not found" >&2; exit 1; }
+done
+bundle --version
+EOF
+echo "ok: $DEPLOY_USER is set up with $(as_deploy_user grep -c . "$KEYS") key(s)"
