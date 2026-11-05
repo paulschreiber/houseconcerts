@@ -6,4 +6,13 @@ class ArtistPhotoField < Madmin::Fields::Attachment
   include CustomPartials
 
   custom_partials :index, :show, :form
+
+  # The artist's saved photo. After an upload fails validation, the record
+  # holds the rejected one, which isn't stored.
+  def saved_photo(record)
+    photo = value(record)
+    return photo if !photo.attached? || photo.attachment.persisted?
+
+    record.class.find_by(id: record.id)&.photo if record.persisted?
+  end
 end
