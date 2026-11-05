@@ -28,11 +28,3 @@ Admins can also sign in with a passkey instead of a password. Password login sta
   MemoryDenyWriteExecute=no
   ```
   then `sudo systemctl daemon-reload && sudo systemctl restart apache2`.
-
-## TODO
-
-- [ ] Mail merge invites
-- [ ] Navigation on mobile
-- [ ] Gmail mail actions (https://developers.google.com/gmail/markup/)
-- [ ] Calendar event in confirmation email
-- [ ] Calendar feed for upcoming shows
