@@ -7,7 +7,7 @@
 #
 # Run on the server as root (sudo), with the public keys allowed to deploy
 # (e.g. your own and the GitHub Actions deploy key) as arguments:
-#   sudo bash setup_deploy_user.sh laptop.pub houseconcerts_deploy_key.pub
+#   sudo bash setup_deploy_user.sh id_ed25519.pub houseconcerts_deploy_key.pub
 # Each key is added with "restrict" (no terminal or forwarding, which
 # Capistrano doesn't need).
 #
