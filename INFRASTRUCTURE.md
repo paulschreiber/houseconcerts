@@ -399,3 +399,30 @@ LogFormat "%v:%p %a %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\"" v
 ```
 
 `%a` is the visitor’s address as worked out by `mod_remoteip`.
+
+### Boot errors
+
+Errors raised while Passenger starts the app, before a worker exists, go to
+Apache’s global error log (`/var/log/apache2/error.log`), not the vhost’s
+`ErrorLog`. Check both when the app won’t start.
+
+### Native gems and systemd hardening
+
+Gems that use `ffi` (such as `ruby-vips`, for Active Storage image variants)
+generate code at runtime, which systemd’s `MemoryDenyWriteExecute=yes` blocks.
+If `apache2.service` sets it, Passenger can’t start the app, and the global
+error log shows a garbled `RuntimeError` from `ffi/function.rb` in `attach`. On
+a new server, check before the first deploy:
+
+```bash
+systemctl show apache2 -p MemoryDenyWriteExecute
+```
+
+If it says `yes`, turn it off with `sudo systemctl edit apache2`:
+
+```ini
+[Service]
+MemoryDenyWriteExecute=no
+```
+
+Then `sudo systemctl daemon-reload && sudo systemctl restart apache2`.
