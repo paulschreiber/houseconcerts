@@ -26,7 +26,8 @@ set :log_level, :info
 set :linked_files, %w[config/database.yml config/master.key config/credentials.yml.enc]
 
 # Default value for linked_dirs is []
-set :linked_dirs, fetch(:linked_dirs, []).push("log", "vendor/bundle")
+# storage holds uploaded files (artist photos), which must outlive each release.
+set :linked_dirs, fetch(:linked_dirs, []).push("log", "storage", "vendor/bundle")
 
 set :passenger_restart_with_touch, true
 
