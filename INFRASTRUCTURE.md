@@ -516,22 +516,24 @@ Apache’s global error log (`/var/log/apache2/error.log`), not the vhost’s
 ### Image libraries
 
 libvips resizes artist photos. Reading HEIC and AVIF uploads also needs
-libheif’s decoder plugins, which aren’t always installed with it:
+libheif’s decoder plugins, which `SETUP.md` installs:
 
-```bash
-sudo apt install libvips42t64 libheif-plugin-libde265 libheif-plugin-dav1d
-```
+- `libheif-plugin-libde265` decodes HEIC. libvips doesn’t install it, and
+  without it HEIC uploads are refused as unreadable.
+- `libheif-plugin-dav1d` decodes AVIF. On Ubuntu 26.04, libvips already brings
+  `libheif-plugin-aomdec`, which also does, but dav1d is faster.
 
-(The libvips package is `libvips42` on older releases.) To check, from the
+libvips lists `.heic` and `.avif` among the formats it reads even when no
+plugin can decode them, so check by decoding the sample photos, from the
 deployed app:
 
 ```bash
 cd /data/sites/houseconcerts/current
-bundle exec ruby -e 'require "vips"; puts Vips.version_string; puts Vips.get_suffixes.grep(/heic|avif/)'
+bundle exec ruby -e 'require "vips"; %w[heic avif].each { |f| Vips::Image.new_from_file("test/fixtures/files/photo.#{f}").avg; puts "#{f}: ok" }'
 ```
 
-It should print the libvips version, then `.heic` and `.avif`. Without the
-plugins, HEIC or AVIF uploads are refused as unreadable.
+It should print `heic: ok` and `avif: ok`. A missing plugin raises a
+`Vips::Error` instead.
 
 ### Native gems and systemd hardening
 
