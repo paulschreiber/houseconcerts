@@ -1,5 +1,4 @@
-<%# A photo that failed validation isn't saved, so it has no URL to show. %>
-<% if (photo = field.value(record)).attached? && photo.attachment.persisted? %>
+<% if (photo = field.saved_photo(record))&.attached? %>
   <% width, height = ArtistPhotosHelper::PHOTO_DISPLAY_SIZES[:card] %>
   <%= image_tag main_app.url_for(photo.variant(:card)), width:, height:, alt: record.name %>
 

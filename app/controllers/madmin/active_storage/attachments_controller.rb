@@ -4,9 +4,13 @@ module Madmin
     # page of the record it belonged to. Its file is deleted in the background.
     class AttachmentsController < Madmin::ResourceController
       def destroy
-        @record.destroy!
         owner = @record.record
-        redirect_to Madmin.resource_for(owner).show_path(owner), status: :see_other
+        owner_path = Madmin.resource_for(owner).show_path(owner)
+        if @record.destroy
+          redirect_to owner_path, status: :see_other
+        else
+          destroy_failed destroy_errors
+        end
       end
     end
   end
