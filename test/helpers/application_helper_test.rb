@@ -49,10 +49,15 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_equal "http://test.host/about", canonical_url
   end
 
-  test "social_media_image uses the show's first artist photo when the show has artists" do
+  test "social_media_image uses the photo of the show's first artist that has one" do
     show = shows(:upcoming)
+    show.artists = [ Artist.create!(name: "Jane Smith"), attach_photo(artists(:one)) ]
 
-    assert_equal "http://example.com/#{show.artists.first.photo}", social_media_image(show)
+    assert_equal artist_photo_url(artists(:one)), social_media_image(show)
+  end
+
+  test "social_media_image falls back to the site image when no artist has a photo" do
+    assert_equal "http://example.com/concerts.png", social_media_image(shows(:upcoming))
   end
 
   test "social_media_image falls back to the site image with no show" do

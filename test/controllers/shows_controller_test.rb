@@ -9,7 +9,8 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "index fetches the first show's first photo first, and only that one" do
-    shows(:upcoming).artists << Artist.create!(name: "Jane Smith", slug: "jane-smith")
+    attach_photo(artists(:one))
+    shows(:upcoming).artists << attach_photo(Artist.create!(name: "Jane Smith"))
 
     get root_path
 
@@ -47,17 +48,32 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
     Show.create!(name: "Another Upcoming Show", venue: venues(:one).dup.tap(&:save!), price: 20,
                  artists: [ artists(:one) ], start: 2.months.from_now)
 
+    attach_photo(artists(:one))
+
     assert_queries_match(/FROM `artists`/, count: 1) do
-      assert_queries_match(/FROM `venues`/, count: 1) { get root_path }
+      assert_queries_match(/FROM `venues`/, count: 1) do
+        assert_queries_match(/FROM `active_storage_attachments`/, count: 1) { get root_path }
+      end
     end
 
     assert_response :success
   end
 
-  test "index uses the next show's artist photo as its social media image" do
+  test "index shows each artist's photo, leaving out artists without one" do
+    shows(:upcoming).artists << attach_photo(Artist.create!(name: "Jane Smith"))
+
     get root_path
 
-    assert_select "meta[property='og:image'][content=?]", shows(:upcoming).artists.first.photo_url
+    assert_select "img.artist", count: 1
+    assert_select "img.artist[alt=?]", "Jane Smith"
+  end
+
+  test "index uses the next show's artist photo as its social media image" do
+    attach_photo(artists(:one))
+
+    get root_path
+
+    assert_match %r{/rails/active_storage/representations/proxy/.+/photo\.jpg\z}, css_select("meta[property='og:image']").first["content"]
   end
 
   test "past shows use the site image as their social media image" do
@@ -86,8 +102,12 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
     Show.create!(name: "Another Past Show", venue: venues(:one).dup.tap(&:save!), price: 20,
                  artists: [ artists(:one) ], start: 2.months.ago)
 
+    attach_photo(artists(:one))
+
     assert_queries_match(/FROM `artists`/, count: 1) do
-      assert_queries_match(/FROM `venues`/, count: 1) { get past_shows_path }
+      assert_queries_match(/FROM `venues`/, count: 1) do
+        assert_queries_match(/FROM `active_storage_attachments`/, count: 1) { get past_shows_path }
+      end
     end
 
     assert_response :success
@@ -105,15 +125,33 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
     assert_includes @response.body, "&lt;script&gt;"
   end
 
+  test "shows a past show's photo as a thumbnail linking to the artist" do
+    shows(:past).artists = [ attach_photo(artists(:one)) ]
+
+    get past_shows_path
+
+    assert_select "a.imagelink[href=?] img.artist[width='50'][height='50']", artists(:one).url
+  end
+
   test "shows omits the image link wrapper when the sampled artist has no url" do
-    artist = artists(:one)
+    artist = attach_photo(artists(:one))
     artist.update!(url: nil)
     shows(:past).artists = [ artist ]
 
     get past_shows_path
 
     assert_response :success
+    assert_select "img.artist", count: 1
     assert_no_match(/<a class=.imagelink./, @response.body)
+  end
+
+  test "shows a past show without a photo when none of its artists has one" do
+    shows(:past).artists = [ artists(:one) ]
+
+    get past_shows_path
+
+    assert_select "div.artists", text: /#{artists(:one).name}/
+    assert_select "img.artist", false
   end
 
   test "shows renders an artist's name as plain text instead of a link when they have no url" do

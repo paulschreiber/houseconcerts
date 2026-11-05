@@ -27,8 +27,105 @@ class ArtistTest < ActiveSupport::TestCase
     assert_includes artist.errors.attribute_names, :url
   end
 
-  test "photo is derived from the slug" do
-    assert_equal "photos/headshots/#{artists(:one).slug}.jpg", artists(:one).photo
+  %w[photo.jpg photo.heic photo.avif photo.webp].each do |file|
+    test "accepts a #{File.extname(file)} photo" do
+      artist = artists(:one)
+      artist.photo.attach(io: file_fixture(file).open, filename: file)
+
+      assert artist.valid?, artist.errors.full_messages.to_sentence
+    end
+  end
+
+  test "rejects a PNG photo, even one named .jpg" do
+    %w[photo.png png_named.jpg].each do |file|
+      artist = Artist.new(name: "Jane Smith", photo: { io: file_fixture(file).open, filename: file })
+
+      assert_not artist.valid?
+      assert_equal [ "Choose a JPEG, HEIC, AVIF or WebP photo" ], artist.errors.full_messages
+    end
+  end
+
+  test "rejects a file that isn't an image" do
+    artist = Artist.new(name: "Jane Smith", photo: { io: file_fixture("not_an_image.jpg").open, filename: "not_an_image.jpg" })
+
+    assert_not artist.valid?
+    assert_equal [ "This photo couldn’t be read. Choose a JPEG, HEIC, AVIF or WebP photo" ], artist.errors.full_messages
+  end
+
+  test "rejects a photo with too many pixels, before decoding it" do
+    artist = Artist.new(name: "Jane Smith", photo: { io: StringIO.new(Vips::Image.black(8000, 7000).jpegsave_buffer), filename: "huge.jpg" })
+
+    assert_not artist.valid?
+    assert_equal [ "Choose a photo of at most 50 megapixels" ], artist.errors.full_messages
+  end
+
+  test "rejects a photo whose data is cut off" do
+    artist = Artist.new(name: "Jane Smith", photo: { io: file_fixture("truncated.jpg").open, filename: "truncated.jpg" })
+
+    assert_not artist.valid?
+    assert_equal [ "This photo couldn’t be read. Choose a JPEG, HEIC, AVIF or WebP photo" ], artist.errors.full_messages
+  end
+
+  test "checks the minimum size of a sideways photo as it's displayed" do
+    # Stored 440 × 400, with an EXIF orientation that displays it 400 × 440.
+    artist = Artist.new(name: "Jane Smith", photo: { io: file_fixture("sideways.jpg").open, filename: "sideways.jpg" })
+
+    assert artist.valid?, artist.errors.full_messages.to_sentence
+  end
+
+  test "rejects a photo smaller than the minimum size" do
+    artist = Artist.new(name: "Jane Smith", photo: { io: file_fixture("tiny.jpg").open, filename: "tiny.jpg" })
+
+    assert_not artist.valid?
+    assert_equal [ "Choose a photo at least 400 × 440 pixels" ], artist.errors.full_messages
+  end
+
+  test "accepts a photo smaller than the minimum size when importing" do
+    artist = Artist.new(name: "Jane Smith", photo: { io: file_fixture("tiny.jpg").open, filename: "tiny.jpg" })
+
+    assert artist.valid?(:photo_import)
+  end
+
+  test "rejects a photo larger than the size limit" do
+    Dir.mktmpdir do |dir|
+      path = File.join(dir, "large.jpg")
+      Vips::Image.gaussnoise(2600, 2600).cast(:uchar).bandjoin([ 0, 0 ]).copy(interpretation: :srgb).write_to_file(path, Q: 100)
+      assert_operator File.size(path), :>, Artist::PHOTO_MAX_BYTES
+
+      artist = Artist.new(name: "Jane Smith", photo: { io: File.open(path), filename: "large.jpg" })
+
+      assert_not artist.valid?
+      assert_equal [ "Choose a photo smaller than 10 MB" ], artist.errors.full_messages
+    end
+  end
+
+  test "stores a photo as an upright JPEG without metadata, whatever was uploaded" do
+    artist = attach_photo(artists(:one), "sideways.jpg")
+    image = Vips::Image.new_from_buffer(artist.photo.download, "")
+
+    assert_equal [ "sideways.jpg", "image/jpeg" ], [ artist.photo.filename.to_s, artist.photo.content_type ]
+    assert_equal [ 400, 440 ], [ image.width, image.height ]
+    assert_empty image.get_fields.grep(/exif|orientation/)
+
+    attach_photo(artist, "photo.heic")
+    assert_equal [ "photo.jpg", "image/jpeg" ], [ artist.photo.filename.to_s, artist.photo.content_type ]
+    assert_equal "jpegload_buffer", Vips::Image.new_from_buffer(artist.photo.download, "").get("vips-loader")
+  end
+
+  test "doesn't recheck a photo that's already saved" do
+    artist = attach_photo(artists(:one))
+
+    assert artist.reload.valid?(:update)
+  end
+
+  test "makes each photo size, and a social size no larger than 1200 pixels" do
+    artist = attach_photo(artists(:one))
+
+    Artist::PHOTO_SIZES.merge(social: [ 400, 440 ]).each do |name, size|
+      image = Vips::Image.new_from_buffer(artist.photo.variant(name).processed.download, "")
+
+      assert_equal size, [ image.width, image.height ], name
+    end
   end
 
   test "shows association resolves through artist_shows" do
