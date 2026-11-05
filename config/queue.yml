@@ -4,7 +4,9 @@ default: &default
       batch_size: 500
   workers:
     - queues: "*"
-      threads: 3
+      # Batch sends spend most of their time waiting on SES's SMTP server.
+      # Needs a database pool of threads + 2 (config/database.yml).
+      threads: 10
       processes: <%= ENV.fetch("JOB_CONCURRENCY", 1) %>
       polling_interval: 0.1
 
