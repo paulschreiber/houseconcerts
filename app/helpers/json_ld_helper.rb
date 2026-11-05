@@ -1,6 +1,8 @@
 # schema.org JSON-LD for search engines (public show pages) and email
 # clients (Gmail markup).
 module JsonLdHelper
+  include ArtistPhotosHelper
+
   # Data as a JSON-LD script tag. json_escape keeps a value like "</script>"
   # from closing the tag. Gmail accepts the https context, though its own
   # examples use http.
@@ -22,7 +24,7 @@ module JsonLdHelper
       eventStatus: "https://schema.org/EventScheduled",
       eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
       description: show.blurb.presence || show.event_name,
-      image: show.artists.map(&:photo_url),
+      image: show.artists.filter_map { |artist| artist_photo_url(artist) }.presence,
       performer: show.artists.map { |artist| ld_json_person(artist) },
       organizer: ld_json_organization,
       location: {
@@ -84,7 +86,7 @@ module JsonLdHelper
   end
 
   def ld_json_person(artist)
-    { "@type": "Person", name: artist.name, url: artist.url.presence, image: artist.photo_url }.compact
+    { "@type": "Person", name: artist.name, url: artist.url.presence, image: artist_photo_url(artist) }.compact
   end
 
   def ld_json_address(venue)
