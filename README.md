@@ -23,6 +23,7 @@ A web app for managing house concerts.
 - Confirming and waitlisting RSVPs
 - Attendance tracking and printable attendance lists
 - Bulk import of people to the mailing list
+- Artist photos, uploaded as JPEG, HEIC, AVIF or WebP and cropped to fit
 - Passkey sign-in
 
 Mobile/responsive throughout.
