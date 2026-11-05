@@ -59,6 +59,8 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "new fetches the show's photo first" do
+    attach_photo(artists(:one))
+
     get rsvp_for_show_path(slug: shows(:upcoming).slug)
 
     assert_select "img.artist[fetchpriority=high]", count: 1

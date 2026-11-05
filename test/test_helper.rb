@@ -16,6 +16,13 @@ module ActiveSupport
 
     fixtures :all
 
+    # Attaches a photo from test/fixtures/files to the artist, and returns
+    # the artist.
+    def attach_photo(artist, file = "photo.jpg")
+      artist.update!(photo: { io: file_fixture(file).open, filename: file })
+      artist
+    end
+
     def load_rake_tasks
       Rails.application.load_tasks unless Rake::Task.task_defined?("next_show:invite")
     end
