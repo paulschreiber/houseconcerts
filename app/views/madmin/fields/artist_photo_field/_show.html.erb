@@ -1,0 +1,10 @@
+<%# A photo that failed validation isn't saved, so it has no URL to show. %>
+<% if (photo = field.value(record)).attached? && photo.attachment.persisted? %>
+  <% width, height = ArtistPhotosHelper::PHOTO_DISPLAY_SIZES[:card] %>
+  <%= image_tag main_app.url_for(photo.variant(:card)), width:, height:, alt: record.name %>
+
+  <% if (remove_path = field.remove_path(photo)) %>
+    <%= link_to t("madmin.actions.remove"), remove_path,
+                data: { turbo_method: :delete, turbo_confirm: t("madmin.confirmations.remove_with_changes", name: photo.filename.to_s) } %>
+  <% end %>
+<% end %>
