@@ -17,7 +17,8 @@ class ImportArtistPhotos
     @directory = Pathname(directory)
   end
 
-  # With dry_run, nothing is attached: attached lists the artists that would be.
+  # With dry_run, nothing is saved: attached lists the artists whose photos
+  # would be, and failed the ones that wouldn't.
   def call
     files = directory.glob("*.jpg").index_by { |path| path.basename(".jpg").to_s }
     result = Result.new(attached: [], skipped: [], missing: [], unmatched: [], failed: {})
@@ -28,7 +29,7 @@ class ImportArtistPhotos
         result.skipped << artist
       elsif file.nil?
         result.missing << artist
-      elsif dry_run || attach(artist, file)
+      elsif attach(artist, file)
         result.attached << artist
       else
         result.failed[artist] = artist.errors.full_messages.to_sentence
@@ -46,7 +47,8 @@ class ImportArtistPhotos
     def attach(artist, file)
       file.open("rb") do |io|
         artist.photo = { io:, filename: file.basename.to_s }
-        artist.save(context: %i[update photo_import])
+        context = %i[update photo_import]
+        dry_run ? artist.valid?(context) : artist.save(context:)
       end
     end
 end

@@ -4,11 +4,7 @@ class ArtistResource < Madmin::Resource
   attribute :name, field: LinkedStringField
   attribute :slug, field: ReadonlyStringField, form: false, new: true, edit: true
   attribute :url, label: "URL"
-  attribute :photo, field: ArtistPhotoField,
-                    description: I18n.t("madmin.artists.photo_description",
-                                        width: Artist::PHOTO_MIN_SIZE[0], height: Artist::PHOTO_MIN_SIZE[1],
-                                        megapixels: Artist::PHOTO_MAX_PIXELS / 1_000_000,
-                                        size: ActiveSupport::NumberHelper.number_to_human_size(Artist::PHOTO_MAX_BYTES))
+  attribute :photo, field: ArtistPhotoField, description: I18n.t("madmin.artists.photo_description", **Artist.photo_limits)
   attribute :created_at
   attribute :updated_at
 
