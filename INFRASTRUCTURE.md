@@ -337,12 +337,19 @@ It deploys `main`, and only runs for the repository’s owner. It needs:
 | Environment `production` → Deployment branches           | `main` only                                                                                 |
 | Environment `production` → Required reviewers            | optional; if set, approve each run                                                          |
 | Environment `production` → secret `DEPLOY_SSH_KEY`       | private half of a key used only for this, in `houseconcerts-deploy`’s keys                  |
-| Environment `production` → variable `DEPLOY_KNOWN_HOSTS` | the server’s line from your `~/.ssh/known_hosts`, e.g. `<server> ecdsa-sha2-nistp256 AAAA…` |
+| Environment `production` → variable `DEPLOY_KNOWN_HOSTS` | every line for the server in your `~/.ssh/known_hosts`, including its `ssh-ed25519` key     |
 
 Create the environment before adding the secret, and add the secret to the
 environment, never to the repository: any workflow, from any branch, can read a
 repository secret. Deploys refuse to connect if the server’s host key isn’t in
-`DEPLOY_KNOWN_HOSTS` (`verify_host_key: :always`).
+`DEPLOY_KNOWN_HOSTS` (`verify_host_key: :always`). With the `ed25519` gem,
+net-ssh asks for the server’s ED25519 host key first, so `known_hosts` (yours
+too, for deploys from your laptop) needs that key, not only ECDSA. To add it,
+copied over a connection you already trust:
+
+```bash
+ssh <server> cat /etc/ssh/ssh_host_ed25519_key.pub | awk '{print "<server>", $1, $2}' >> ~/.ssh/known_hosts
+```
 
 ### One-time setup
 
