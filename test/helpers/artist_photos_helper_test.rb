@@ -9,7 +9,7 @@ class ArtistPhotosHelperTest < ActionView::TestCase
     img = Nokogiri::HTML5.fragment(artist_photo_tag(artist, :card, class: "artist")).at_css("img")
 
     assert_match PROXY_URL, img["src"]
-    assert_equal [ "200", "220", artist.name, "artist" ], img.values_at("width", "height", "alt", "class")
+    assert_equal([ "200", "220", artist.name, "artist" ], %w[width height alt class].map { |name| img[name] })
   end
 
   test "artist_photo_tag is nil, and artist_photo? false, for an artist without a photo" do
