@@ -5,6 +5,7 @@
 !/log/.keep
 /tmp
 
+/storage
 /public/assets
 /coverage/
 **.orig
