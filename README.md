@@ -4,11 +4,28 @@ A web app for managing house concerts.
 
 ## Features
 
-- Support for multiple artists per show
-- Support for multiple venues
-- Support for grouping venues together
-- Mobile/responsive
-- Admin UI for managing shows, artists and reservations
+### Public site
+
+- Upcoming and past shows, and a calendar feed
+- Mailing-list signup and one-click unsubscribe
+- RSVPs that guests can change or cancel from their email, with a waitlist for full shows
+
+### Shows and invites
+
+- Shows with multiple artists, at multiple venues, which can be grouped
+- Invites sent in batches with live progress, and resent to people who didn’t open them
+- Automatic reminders by email and text message
+- Email open tracking, and SES bounces and complaints handled automatically
+
+### Admin (`/backstage/`)
+
+- Dashboard with the next show’s invites, seats and RSVPs
+- Confirming and waitlisting RSVPs
+- Attendance tracking and printable attendance lists
+- Bulk import of people to the mailing list
+- Passkey sign-in
+
+Mobile/responsive throughout.
 
 ## Admin access
 
