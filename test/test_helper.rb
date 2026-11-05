@@ -14,10 +14,7 @@ module ActiveSupport
     # Each worker process gets its own test database (houseconcerts_test-N).
     parallelize(workers: :number_of_processors)
 
-    # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
-
-    # Add more helper methods to be used by all tests here...
 
     def load_rake_tasks
       Rails.application.load_tasks unless Rake::Task.task_defined?("next_show:invite")
