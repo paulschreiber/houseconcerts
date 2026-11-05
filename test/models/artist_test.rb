@@ -112,6 +112,36 @@ class ArtistTest < ActiveSupport::TestCase
     assert_equal "jpegload_buffer", Vips::Image.new_from_buffer(artist.photo.download, "").get("vips-loader")
   end
 
+  test "stores a photo in another color space with its colors converted to sRGB" do
+    # display_p3.jpg is photo.jpg converted to Display P3, with that profile.
+    artist = attach_photo(artists(:one), "display_p3.jpg")
+    stored = Vips::Image.new_from_buffer(artist.photo.download, "")
+    original = Vips::Image.new_from_file(file_fixture("photo.jpg").to_s)
+
+    assert_equal 0, stored.get_typeof("icc-profile-data")
+    assert_in_delta original.avg, stored.avg, 1
+  end
+
+  test "doesn't save an unreadable photo when saving without validation" do
+    artist = artists(:one)
+    artist.photo = { io: file_fixture("not_an_image.jpg").open, filename: "not_an_image.jpg" }
+
+    assert_not artist.save(validate: false)
+    assert_not artists(:one).reload.photo.attached?
+  end
+
+  test "stores the clean JPEG once when saved again before the transaction commits" do
+    artist = artists(:one)
+
+    assert_difference("ActiveStorage::Blob.count", 1) do
+      Artist.transaction do
+        artist.update!(photo: { io: file_fixture("photo.heic").open, filename: "photo.heic" })
+        artist.update!(name: "Jane Smith")
+      end
+    end
+    assert_equal "photo.jpg", artist.reload.photo.filename.to_s
+  end
+
   test "doesn't recheck a photo that's already saved" do
     artist = attach_photo(artists(:one))
 

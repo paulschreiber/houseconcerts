@@ -117,6 +117,8 @@ module Madmin
 
       assert_response :unprocessable_content
       assert_select ".alert li", text: "Choose a photo at least 400 × 440 pixels"
+      assert_select "img[src*='/representations/proxy/'][alt=?]", artist.name
+      assert_select "a[href=?]", madmin_active_storage_attachment_path(artist.photo.attachment), text: "Remove"
       assert_equal "photo.jpg", artist.reload.photo.filename.to_s
     end
 
