@@ -36,8 +36,8 @@ Lint before every commit. CI runs all of these and fails on any offense.
 
 ## Code guidelines
 
-- Prefer a framework or gem's extension points (hooks, subclass overrides, config) over monkey patching. If a patch can't be avoided, prepend a named module (as `MadminPatches` does) and comment why it's needed. Copy a whole gem template (e.g. a Madmin view) only when neither works.
-- When working around a bug in a gem, say so in a comment that names the gem version, so the workaround can be removed once it's fixed upstream.
+- Prefer a framework or gem’s extension points (hooks, subclass overrides, config) over monkey patching. If a patch can’t be avoided, prepend a named module (as `MadminPatches` does) and comment why it’s needed. Copy a whole gem template (e.g. a Madmin view) only when neither works.
+- When working around a bug in a gem, say so in a comment that names the gem version, so the workaround can be removed once it’s fixed upstream.
 - Comments describe what the code does now and why. No history (“used to”, “previously”); that belongs in commit messages.
 - Write Ruby methods as `def … end`, never endless `def x = …` (RuboCop enforces this).
 - End JavaScript statements with semicolons, including in generator output (ESLint and Prettier enforce this).
@@ -52,6 +52,10 @@ Lint before every commit. CI runs all of these and fails on any offense.
 - Example data in code, tests, commits and PRs uses placeholders (Jane Smith, jane@example.com), never real people’s names.
 - Check new or changed pages and emails at 375px wide. Madmin table cells don’t wrap, so hide columns that would overflow with the `hide-on-phone` class.
 
+### Documentation
+
+- Use typographic quotes and apostrophes (“ ” ’) in documentation too: `README.md`, `INFRASTRUCTURE.md`, `SETUP.md` and this file. Keep straight quotes inside code spans and code blocks.
+
 ## Product decisions
 
 - Mailing-list signup is single opt-in: new addresses are added immediately. Don’t propose double opt-in. The resulting signup enumeration is an accepted risk.
@@ -64,7 +68,7 @@ Lint before every commit. CI runs all of these and fails on any offense.
 - Every behavior change gets tests. Bug fixes get a test that would have caught the bug. Skip tests for one-line declarative changes, such as a Madmin attribute option.
 - CI has no `RAILS_MASTER_KEY`, so `Rails.application.credentials` is empty there. Test credential-dependent code with `config/master.key` moved aside, and prefer `ENV["X"].presence || Rails.application.credentials.dig(...)`.
 - Don’t use `Object#stub`: on Minitest 6 it silently does nothing on objects with `delegate_missing_to`, such as credentials. Set `ENV` values in `setup` and restore them in `teardown` instead.
-- If you can't run the tests (e.g. no database access), say so. Don't claim they pass.
+- If you can’t run the tests (e.g. no database access), say so. Don’t claim they pass.
 
 ## Review
 
@@ -81,11 +85,11 @@ Also run `/security-review` when a change touches security-sensitive code, inclu
 ## Git
 
 - **Commit only when asked.** Stop with the changes uncommitted, run the reviews above, then ask.
-- **Branches:** name branches `fix/…` or `feat/…`, e.g. `fix/passkey-flash-names`, `feat/calendar-feed`. Use another Conventional Commits type (e.g. `test/`, `docs/`) only when neither fits. Don't commit directly to `main`.
+- **Branches:** name branches `fix/…` or `feat/…`, e.g. `fix/passkey-flash-names`, `feat/calendar-feed`. Use another Conventional Commits type (e.g. `test/`, `docs/`) only when neither fits. Don’t commit directly to `main`.
 - Create branches with `git switch -c X --no-track origin/main`, so a branch never has `main` as its upstream.
 - Sync branches with `git rebase`, never `git merge`.
 - **Commits:** use Conventional Commits (`type: summary`, or `type(scope): summary`). The `conventional-pre-commit` hook and CI enforce this. Types in use: `feat`, `fix`, `test`, `build`, `chore`, `style`, `refactor`, `docs`.
 - Split work into logical commits. Put tests in their own `test:` commit right after the code they cover. A test-only refactor can go first.
 - Commit bodies are a few short, factual statements of what changed. No backstory.
-- The pre-commit hooks can reject a commit and leave the changes staged. Check the commit's exit status and `git status` before any checkout or `git reset --hard`.
-- **Pull requests:** follow `.github/pull_request_template.md` (Description, Related Issues). The title needs a Conventional Commits prefix too (CI checks it); use the main commit's subject.
+- The pre-commit hooks can reject a commit and leave the changes staged. Check the commit’s exit status and `git status` before any checkout or `git reset --hard`.
+- **Pull requests:** follow `.github/pull_request_template.md` (Description, Related Issues). The title needs a Conventional Commits prefix too (CI checks it); use the main commit’s subject.
