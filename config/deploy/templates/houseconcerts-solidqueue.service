@@ -35,6 +35,9 @@ Group=houseconcerts
 WorkingDirectory=/data/sites/houseconcerts/current
 Environment=RAILS_ENV=production
 Environment=BOOTSNAP_CACHE_DIR=/var/cache/houseconcerts-jobs
+# houseconcerts-jobs has no home directory (/nonexistent), so Bundler would
+# warn and fall back to a temporary one on every start
+Environment=HOME=/var/cache/houseconcerts-jobs
 CacheDirectory=houseconcerts-jobs
 ExecStart=/usr/bin/ruby bin/jobs
 Restart=always
