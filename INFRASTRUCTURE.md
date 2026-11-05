@@ -345,6 +345,43 @@ gem, net-ssh asks for the server’s ED25519 host key first, so `known_hosts`
 (yours too, for deploys from your development machine) needs that key, not
 only ECDSA.
 
+## File storage
+
+Uploaded files (artist photos) are stored with Active Storage.
+`storage_service` in `config/settings.yml` picks the service in
+`config/storage.yml`:
+
+- **`local` (the default):** files go in `storage/`, which Capistrano links to
+  `shared/storage` so they outlive each release. Back up `shared/storage` with
+  the database: the database only records which files exist.
+- **`amazon`:** an S3 bucket. Add `gem "aws-sdk-s3", require: false` to the
+  `Gemfile`, add this service to `config/storage.yml` with the bucket’s name and
+  region, add the `aws` keys to the credentials, then set
+  `storage_service: "amazon"`. The bucket stays private: the keys need
+  `s3:PutObject`, `s3:GetObject`, `s3:DeleteObject` and `s3:ListBucket` on it.
+
+  ```yaml
+  amazon:
+    service: S3
+    access_key_id: <%= Rails.application.credentials.dig(:aws, :access_key_id) %>
+    secret_access_key: <%= Rails.application.credentials.dig(:aws, :secret_access_key) %>
+    region: …
+    bucket: …
+  ```
+
+An uploaded photo is stored as a JPEG, rotated upright and without metadata
+(such as where it was taken), whatever format was uploaded. Each photo size is
+a JPEG made from it by libvips the first time it’s requested, then stored (see
+[Image libraries](#image-libraries)).
+
+Only the photo sizes are served, through Rails (URLs under
+`/rails/active_storage/representations/proxy/`), never straight from the disk
+or the bucket. Images stay on the site’s own domain, so the content security
+policy’s `img-src 'self'` allows them and Cloudflare caches them. Active
+Storage’s other routes are turned off (`draw_routes` in
+`config/application.rb`): they would serve the stored photo itself to anyone
+with a photo size’s URL, and accept uploads from anyone.
+
 ## Apache
 
 ### Virtual hosts
@@ -420,6 +457,10 @@ Apache serves the files in `public/` itself, so Rails’
 - **`/photos/`, 7 days:** an artist photo keeps its name when it’s replaced, so
   a new photo shows up within 7 days.
 
+Uploaded photos (`/rails/active_storage/`) don’t come from `public/`, so Rails
+sets their `Cache-Control` itself: public and cached indefinitely, since a
+replaced photo gets a new URL.
+
 To check, `curl -sI` a stylesheet and a photo. Their `cache-control` should
 show `max-age=31536000, immutable` and `max-age=604800`.
 
@@ -471,6 +512,26 @@ LogFormat "%v:%p %a %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\"" v
 Errors raised while Passenger starts the app, before a worker exists, go to
 Apache’s global error log (`/var/log/apache2/error.log`), not the vhost’s
 `ErrorLog`. Check both when the app won’t start.
+
+### Image libraries
+
+libvips resizes artist photos. Reading HEIC and AVIF uploads also needs
+libheif’s decoder plugins, which aren’t always installed with it:
+
+```bash
+sudo apt install libvips42t64 libheif-plugin-libde265 libheif-plugin-dav1d
+```
+
+(The libvips package is `libvips42` on older releases.) To check, from the
+deployed app:
+
+```bash
+cd /data/sites/houseconcerts/current
+bundle exec ruby -e 'require "vips"; puts Vips.version_string; puts Vips.get_suffixes.grep(/heic|avif/)'
+```
+
+It should print the libvips version, then `.heic` and `.avif`. Without the
+plugins, HEIC or AVIF uploads are refused as unreadable.
 
 ### Native gems and systemd hardening
 
