@@ -42,6 +42,7 @@ jobs:
     env:
       RAILS_ENV: test
       DB_HOST: 127.0.0.1
+      BUNDLE_WITHOUT: deploy
 
     steps:
       - name: Check out repository
