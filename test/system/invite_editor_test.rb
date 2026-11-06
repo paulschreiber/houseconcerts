@@ -4,12 +4,7 @@ require "application_system_test_case"
 # so it runs in a real browser.
 class InviteEditorTest < ApplicationSystemTestCase
   setup do
-    admins(:one).update!(password: "correct horse battery staple")
-    visit new_admin_session_path
-    fill_in "Email", with: admins(:one).email
-    fill_in "Password", with: "correct horse battery staple"
-    click_button "Log in"
-    assert_no_current_path new_admin_session_path
+    sign_in_as_admin
 
     @show = shows(:upcoming)
     visit edit_madmin_show_invite_message_path(@show, @show.invite_message)
