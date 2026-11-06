@@ -5,12 +5,7 @@ require "application_system_test_case"
 # a real browser to check the confirmation is honored either way.
 class MadminBatchButtonsTest < ApplicationSystemTestCase
   setup do
-    admins(:one).update!(password: "correct horse battery staple")
-    visit new_admin_session_path
-    fill_in "Email", with: admins(:one).email
-    fill_in "Password", with: "correct horse battery staple"
-    click_button "Log in"
-    assert_no_current_path new_admin_session_path
+    sign_in_as_admin
 
     visit madmin_show_path(shows(:upcoming))
   end

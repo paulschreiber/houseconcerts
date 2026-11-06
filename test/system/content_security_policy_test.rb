@@ -6,10 +6,6 @@ require "application_system_test_case"
 class ContentSecurityPolicyTest < ApplicationSystemTestCase
   PUBLIC_PAGES = %w[/ /about /musicians /shows /privacy /list /rsvps/show/test-upcoming-show].freeze
 
-  setup do
-    admins(:one).update!(password: "correct horse battery staple")
-  end
-
   test "public pages and the admin sign-in page load without CSP violations" do
     (PUBLIC_PAGES + [ new_admin_session_path ]).each do |path|
       visit path
@@ -42,14 +38,6 @@ class ContentSecurityPolicyTest < ApplicationSystemTestCase
   end
 
   private
-
-    def sign_in_as_admin
-      visit new_admin_session_path
-      fill_in "Email", with: admins(:one).email
-      fill_in "Password", with: "correct horse battery staple"
-      click_button "Log in"
-      assert_no_current_path new_admin_session_path
-    end
 
     # Waits for the page's JavaScript to load, then checks the console log.
     # Stimulus starts once the module scripts and their imports have run (the
