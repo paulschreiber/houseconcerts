@@ -19,6 +19,14 @@ class VenueTest < ActiveSupport::TestCase
     assert_includes venue.errors.attribute_names, :province
   end
 
+  test "a blank capacity gets one error" do
+    venue = venues(:one)
+    venue.capacity = nil
+
+    assert_not venue.valid?
+    assert_equal [ "can't be blank" ], venue.errors[:capacity]
+  end
+
   test "requires capacity within the configured range" do
     venue = Venue.new(venues(:one).attributes.except("id").merge("capacity" => Settings.venue.max_capacity + 1))
     assert_not venue.valid?
