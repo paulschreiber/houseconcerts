@@ -36,5 +36,7 @@ en:
               less_than_or_equal_to: "Select the number of seats you want"
             response:
               inclusion: "Select whether or not you’re coming"
+            confirmed:
+              inclusion: "Select a valid confirmation status"
             show:
               required: "Select a show"

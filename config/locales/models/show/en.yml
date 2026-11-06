@@ -13,6 +13,8 @@ en:
               blank: "Enter a show name"
             status:
               inclusion: "Enter a valid show status"
+            availability:
+              inclusion: "Enter a valid show availability"
             price:
               blank: "Enter a price for the show"
               not_a_number: "Enter a price for the show"
