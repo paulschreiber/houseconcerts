@@ -10,6 +10,10 @@ en:
       attendance:
         not_saved: "Attendance wasn’t saved. Enter a valid number of seats used for each attendee."
         seats_used_blank: "Enter the seats used."
+    form:
+      errors:
+        one: "Please correct the following error"
+        other: "Please correct the following errors"
     artists:
       photo_description: "A JPEG, HEIC, AVIF or WebP photo, at least %{width} × %{height} pixels, at most %{megapixels} megapixels and smaller than %{size}. It’s cropped around the face to fit each size."
     people:

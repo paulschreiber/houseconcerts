@@ -31,6 +31,12 @@
   font-weight: normal;
 }
 
+/* A form's error list (madmin/application/_form_errors): space it from the
+   first field. Flashes are banners above the header, so they don't get this. */
+.form-errors {
+  margin-bottom: 1.5rem;
+}
+
 /* Read-only form fields: start on a new line, like a real input does */
 .form-value {
   display: block;
