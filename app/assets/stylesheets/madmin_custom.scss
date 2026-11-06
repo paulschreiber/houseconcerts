@@ -31,6 +31,12 @@
   font-weight: normal;
 }
 
+/* Artist edit form: the current photo and its Remove link, above the file
+   input that replaces it */
+.photo-field-current {
+  margin-bottom: 0.75rem;
+}
+
 /* A form's error list (madmin/application/_form_errors): space it from the
    first field. Flashes are banners above the header, so they don't get this. */
 .form-errors {

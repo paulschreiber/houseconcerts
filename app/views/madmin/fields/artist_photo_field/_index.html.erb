@@ -1,4 +1,0 @@
-<% if (photo = field.value(record)).attached? %>
-  <% width, height = ArtistPhotosHelper::PHOTO_DISPLAY_SIZES[:thumb] %>
-  <%= image_tag main_app.url_for(photo.variant(:thumb)), width:, height:, alt: "" %>
-<% end %>

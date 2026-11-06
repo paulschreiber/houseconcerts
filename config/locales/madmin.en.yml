@@ -14,7 +14,8 @@ en:
         one: "Please correct the following error"
         other: "Please correct the following errors"
     artists:
-      photo_description: "A JPEG, HEIC, AVIF or WebP photo, at least %{width} × %{height} pixels, at most %{megapixels} megapixels and smaller than %{size}. It’s cropped around the face to fit each size."
+      remove_photo_confirmation: "Are you sure you want to delete the photo for %{artist}?"
+      photo_description: "A JPEG, HEIC, AVIF or WebP photo, at least %{width} × %{height} pixels, at most %{megapixels} megapixels and smaller than %{size}."
     people:
       import:
         nothing_to_import: "Paste some names and email addresses, or choose a file."
