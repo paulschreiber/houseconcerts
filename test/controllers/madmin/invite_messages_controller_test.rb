@@ -140,7 +140,8 @@ module Madmin
       post madmin_show_invite_messages_path(show), params: { invite_message: { intro: "[Yes][rsvp_yse]", about: "" } }
 
       assert_response :unprocessable_content
-      assert_select ".alert-danger li", text: /rsvp_yse/
+      assert_select "p.error", text: /rsvp_yse/
+      assert_select ".form-errors", false
       assert_equal 1, show.invite_messages.count
     end
 

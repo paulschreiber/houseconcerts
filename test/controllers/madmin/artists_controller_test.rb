@@ -114,7 +114,8 @@ module Madmin
       patch madmin_artist_path(artist), params: { artist: { photo: fixture_file_upload("png_named.jpg", "image/jpeg") } }
 
       assert_response :unprocessable_content
-      assert_select ".alert li", text: "the photo must be a JPEG, HEIC, AVIF or WebP file"
+      assert_select ".form-errors", text: /\APlease correct the following error:/
+      assert_select ".form-errors li", text: "the photo must be a JPEG, HEIC, AVIF or WebP file"
       assert_not artist.reload.photo.attached?
     end
 
