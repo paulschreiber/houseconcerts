@@ -8,6 +8,14 @@ class ModelCleanersTest < ActiveSupport::TestCase
     assert_equal "Smith & Li <b>Jones</b> &lt;3", artist.reload.name
   end
 
+  test "validation checks the cleaned text" do
+    # 15,000 characters as typed, 9,999 once trimmed and with \n line breaks.
+    message = shows(:upcoming).invite_messages.new(intro: "a\r\n" * 5_000, about: "About")
+
+    assert_predicate message, :valid?
+    assert_equal 9_999, message.intro.length
+  end
+
   test "saving stores a textarea's CRLF line breaks as LF" do
     venue = venues(:one)
     venue.update!(directions: "Line 1\r\nline 2")
