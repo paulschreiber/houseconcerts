@@ -9,8 +9,8 @@ class RSVP < ApplicationRecord
 
   belongs_to :show
 
-  enum :response, { no: 0, yes: 1 }, default: :no, validate: true
-  enum :confirmed, { unconfirmed: 0, waitlisted: 1, confirmed: 2 }, prefix: true, default: :unconfirmed, validate: true
+  enum :response, { no: 0, yes: 1 }, default: :no
+  enum :confirmed, { unconfirmed: 0, waitlisted: 1, confirmed: 2 }, prefix: true, default: :unconfirmed
 
   alias confirmed? confirmed_confirmed?
   alias waitlisted? confirmed_waitlisted?

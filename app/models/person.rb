@@ -7,7 +7,7 @@ class Person < ApplicationRecord
   has_many :person_venue_groups, dependent: :delete_all
   has_many :venue_groups, through: :person_venue_groups
 
-  enum :status, { active: 0, bouncing: 1, moved: 2, removed: 3 }, default: :active, validate: true
+  enum :status, { active: 0, bouncing: 1, moved: 2, removed: 3 }, default: :active
 
   # Active people in the default venue group who haven't RSVPd for the show.
   scope :invitable_for, lambda { |show|
