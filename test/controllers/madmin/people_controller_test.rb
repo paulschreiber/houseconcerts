@@ -430,10 +430,19 @@ module Madmin
                     "Are you sure you want to delete the person #{@person.full_name}?"
     end
 
-    test "the form errors message is pluralized" do
+    test "the form errors heading is pluralized, and lists a message shared by two errors once" do
       patch madmin_person_path(@person), params: { person: { first_name: "", last_name: "" } }
 
-      assert_select ".alert-danger", text: /There were 2 errors with your submission/
+      assert_select ".alert-danger", text: /\APlease correct the following errors:/
+      assert_select ".alert-danger li", 2
+      assert_select ".alert-danger li", text: "Enter your first name", count: 1
+    end
+
+    test "the form errors heading is singular for one message" do
+      patch madmin_person_path(@person), params: { person: { first_name: "" } }
+
+      assert_select ".alert-danger", text: /\APlease correct the following error:/
+      assert_select ".alert-danger li", 1
     end
   end
 end
