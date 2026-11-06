@@ -43,14 +43,24 @@ Lint before every commit. CI runs all of these and fails on any offense.
 - End JavaScript statements with semicolons, including in generator output (ESLint and Prettier enforce this).
 - Normalize input in the model (`normalizes`) instead of in each caller.
 - After fixing a bug that belongs to a class of defect, search the codebase for other instances and fix them too.
+- Before styling a shared class (e.g. `.alert-danger`, which Madmin also uses for flashes), check where else it’s used. Add a specific class for the case you mean.
+- Name stored files and generated identifiers from the record (e.g. an artist’s photo is `<slug>.jpg`), not from user input such as an uploaded file’s name.
 
 ### User-facing text
 
 - User-facing text goes in `config/locales/*.yml`. Use typographic quotes and apostrophes (“ ” ’).
 - Name the email address a message is about, e.g. “this email address (jane@example.com)”.
+- Confirmations name what they affect, e.g. “Are you sure you want to delete the photo for Jane Smith?”, not “Are you sure?”.
+- Give each failed validation its own message (“at least 400 pixels wide”, “at least 440 pixels tall”), and list each message once.
 - Make link and button text describe the action. No “click here”.
 - Example data in code, tests, commits and PRs uses placeholders (Jane Smith, jane@example.com), never real people’s names.
 - Check new or changed pages and emails at 375px wide. Madmin table cells don’t wrap, so hide columns that would overflow with the `hide-on-phone` class.
+
+### Admin (Madmin)
+
+- Destructive controls (Delete, Remove) go on edit forms, not on show or index pages.
+- An action taken from inside a form (e.g. removing a photo) keeps the admin on the form and keeps their unsaved changes: respond with a Turbo Stream, not a redirect.
+- Madmin forms list validation errors at the top, and `form_error.rb` also adds each field’s messages after it. A field that can fail several checks at once, such as an artist’s photo, turns those inline messages off with `data: { inline_errors: false }`, so they appear only at the top.
 
 ### Documentation
 
@@ -66,6 +76,7 @@ Lint before every commit. CI runs all of these and fails on any offense.
 
 - Minitest with fixtures (`test/fixtures`). Integration tests are in `test/integration`, browser tests in `test/system`.
 - Every behavior change gets tests. Bug fixes get a test that would have caught the bug. Skip tests for one-line declarative changes, such as a Madmin attribute option.
+- When a change affects how a form is submitted (file inputs, Turbo, JavaScript), test the real submission in a system test. Controller tests that post the parameters directly don’t catch a form that never sends them.
 - CI has no `RAILS_MASTER_KEY`, so `Rails.application.credentials` is empty there. Test credential-dependent code with `config/master.key` moved aside, and prefer `ENV["X"].presence || Rails.application.credentials.dig(...)`.
 - Don’t use `Object#stub`: on Minitest 6 it silently does nothing on objects with `delegate_missing_to`, such as credentials. Set `ENV` values in `setup` and restore them in `teardown` instead.
 - If you can’t run the tests (e.g. no database access), say so. Don’t claim they pass.
