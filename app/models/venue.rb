@@ -23,6 +23,13 @@ class Venue < ApplicationRecord
     less_than_or_equal_to: Settings.venue.max_capacity
   }
 
+  # A rename changes the slug. Defined here, not in a concern included by
+  # ApplicationRecord, so it takes precedence over friendly_id's Slugged
+  # module, which only fills in a blank slug.
+  def should_generate_new_friendly_id?
+    name_changed? || super
+  end
+
   def province_name
     Carmen::Country.coded(Settings.default_country).subregions.coded(province)
   end

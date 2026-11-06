@@ -38,11 +38,19 @@ class Artist < ApplicationRecord
   # Most photos imported from public/photos/headshots are smaller.
   validate :photo_must_be_big_enough, if: :new_photo?, except_on: :photo_import
   before_save :store_new_photo_as_clean_jpeg, if: :new_photo?
+  after_save :name_photo_after_slug, if: -> { photo.attached? && photo.filename != photo_filename }
 
   # The photo limits, as values for the messages that describe them.
   def self.photo_limits
     { width: PHOTO_MIN_SIZE[0], height: PHOTO_MIN_SIZE[1], megapixels: PHOTO_MAX_PIXELS / 1_000_000,
       size: ActiveSupport::NumberHelper.number_to_human_size(PHOTO_MAX_BYTES) }
+  end
+
+  # A rename changes the slug. Defined here, not in a concern included by
+  # ApplicationRecord, so it takes precedence over friendly_id's Slugged
+  # module, which only fills in a blank slug.
+  def should_generate_new_friendly_id?
+    name_changed? || super
   end
 
   private
@@ -90,8 +98,19 @@ class Artist < ApplicationRecord
       throw :abort if jpeg.nil?
 
       @new_photo_values = nil
-      self.photo = { io: StringIO.new(jpeg), filename: "#{slug}.jpg", content_type: "image/jpeg" }
+      self.photo = { io: StringIO.new(jpeg), filename: photo_filename, content_type: "image/jpeg" }
       @clean_photo_change = attachment_changes["photo"]
+    end
+
+    # The stored photo's name, after the artist's slug.
+    def photo_filename
+      "#{slug}.jpg"
+    end
+
+    # Renames the stored photo after the slug, when a rename changed it (or
+    # the photo was stored under another name).
+    def name_photo_after_slug
+      photo.blob.update!(filename: photo_filename)
     end
 
     # The new photo, rotated upright by its EXIF orientation, or nil when
