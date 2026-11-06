@@ -6,12 +6,12 @@ class PersonTest < ActiveSupport::TestCase
   end
 
   test "rejects values longer than the form allows" do
-    { first_name: 100, last_name: 100, postcode: 10 }.each do |attribute, maximum|
+    { first_name: [ 100, "first name" ], last_name: [ 100, "last name" ], postcode: [ 10, "zip code" ] }.each do |attribute, (maximum, label)|
       record = people(:one)
       record[attribute] = "A" * (maximum + 1)
 
       assert_not record.valid?, "#{attribute} should be invalid"
-      assert_includes record.errors[attribute], "is too long (maximum is #{maximum} characters)"
+      assert_includes record.errors[attribute], "Your #{label} cannot be longer than #{maximum} characters"
     end
   end
 
@@ -20,7 +20,7 @@ class PersonTest < ActiveSupport::TestCase
     record.email = "#{'a' * 189}@example.com"
 
     assert_not record.valid?
-    assert_includes record.errors[:email], "is too long (maximum is 200 characters)"
+    assert_includes record.errors[:email], "Your email address cannot be longer than 200 characters"
   end
 
   test "rejects a phone number longer than 30 characters once formatted" do
@@ -28,7 +28,7 @@ class PersonTest < ActiveSupport::TestCase
     record.phone_number = "2125551234 ext 1234567890123"
 
     assert_not record.valid?
-    assert_includes record.errors[:phone_number], "is too long (maximum is 30 characters)"
+    assert_includes record.errors[:phone_number], "Your phone number cannot be longer than 30 characters"
   end
 
   test "accepts a phone number with an extension that the form allows" do
@@ -47,15 +47,26 @@ class PersonTest < ActiveSupport::TestCase
     assert record.valid?, record.errors.full_messages.to_sentence
   end
 
-  test "rejects a name with fewer than two letters" do
-    [ "X.", "J-", "A " ].each do |name|
+  test "strips spaces around contact details before checking them" do
+    record = people(:one)
+    name = "Jane" * 25 # 100 characters, the most allowed
+    record.first_name = " #{name} "
+    record.postcode = " 10001 "
+
+    assert record.valid?, record.errors.full_messages.to_sentence
+    assert_equal name, record.first_name
+    assert_equal "10001", record.postcode
+  end
+
+  test "rejects a blank name or one with fewer than two letters, with one error" do
+    [ nil, "", " ", " " * 101, "X", "X.", "J-", "A " ].each do |name|
       record = people(:one)
       record.first_name = name
       record.last_name = name
 
       assert_not record.valid?, "#{name.inspect} should be invalid"
-      assert_includes record.errors[:first_name], "Enter your first name"
-      assert_includes record.errors[:last_name], "Enter your last name"
+      assert_equal [ "Enter your first name" ], record.errors[:first_name], name.inspect
+      assert_equal [ "Enter your last name" ], record.errors[:last_name], name.inspect
     end
   end
 

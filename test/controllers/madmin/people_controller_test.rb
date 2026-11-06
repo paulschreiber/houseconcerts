@@ -431,9 +431,9 @@ module Madmin
     end
 
     test "the form errors message is pluralized" do
-      patch madmin_person_path(@person), params: { person: { first_name: "" } }
+      patch madmin_person_path(@person), params: { person: { first_name: "", last_name: "" } }
 
-      assert_select ".alert-danger", text: /There were \d+ errors with your submission/
+      assert_select ".alert-danger", text: /There were 2 errors with your submission/
     end
   end
 end
