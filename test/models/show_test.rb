@@ -6,6 +6,14 @@ class ShowTest < ActiveSupport::TestCase
     assert shows(:past).valid?
   end
 
+  test "a blank price gets one error" do
+    show = shows(:upcoming)
+    show.price = nil
+
+    assert_not show.valid?
+    assert_equal [ "enter a price for the show" ], show.errors[:price]
+  end
+
   test "requires a venue that exists" do
     show = shows(:upcoming)
     show.venue_id = 0
@@ -50,6 +58,21 @@ class ShowTest < ActiveSupport::TestCase
     show.valid?
 
     assert_equal Settings.show_duration.hours, show.end - show.start
+  end
+
+  test "a blank start is an error, not a crash" do
+    show = Show.new(name: "Jane Smith Live", venue: venues(:one), price: 20)
+
+    assert_not show.valid?
+    assert_equal [ "enter a valid start date/time" ], show.errors[:start]
+  end
+
+  test "an invalid start says so" do
+    show = shows(:upcoming)
+    show.start = "not a date"
+
+    assert_not show.valid?
+    assert_equal [ "enter a valid start date/time" ], show.errors[:start]
   end
 
   test "requires end to be after start" do

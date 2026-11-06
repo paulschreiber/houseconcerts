@@ -24,6 +24,16 @@ module Madmin
       assert_response :success
     end
 
+    test "create with a blank start shows the error instead of crashing" do
+      assert_no_difference("Show.count") do
+        post madmin_shows_path, params: { show: { name: "Jane Smith Live", start: "", end: "", price: "", venue_id: "" } }
+      end
+
+      assert_response :unprocessable_content
+      assert_select ".alert li", text: %r{enter a valid start date/time}
+      assert_select ".alert li", text: /enter a price for the show/, count: 1
+    end
+
     test "edit renders successfully" do
       get edit_madmin_show_path(shows(:upcoming))
 
