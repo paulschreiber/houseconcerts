@@ -1,10 +1,12 @@
-<%# A form's validation errors, above its fields. %>
+<%# A form's validation errors, above its fields. Some validations share a
+    message (a blank name is also too short), so each is listed once. %>
 <% if record.errors.any? %>
-  <div class="alert alert-danger">
-    <div class=""><%= t("madmin.form.errors", count: record.errors.full_messages.count) %>:</div>
+  <% messages = record.errors.full_messages.uniq %>
+  <div class="alert alert-danger form-errors">
+    <div><%= t("madmin.form.errors", count: messages.count) %>:</div>
 
     <ul>
-      <% record.errors.full_messages.each do |message| %>
+      <% messages.each do |message| %>
         <li><%= message %></li>
       <% end %>
     </ul>
