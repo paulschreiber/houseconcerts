@@ -60,7 +60,7 @@ Lint before every commit. CI runs all of these and fails on any offense.
 
 - Destructive controls (Delete, Remove) go on edit forms, not on show or index pages.
 - An action taken from inside a form (e.g. removing a photo) keeps the admin on the form and keeps their unsaved changes: respond with a Turbo Stream, not a redirect.
-- Madmin forms list validation errors at the top, and `form_error.rb` also adds each field’s messages after it. A field that can fail several checks at once, such as an artist’s photo, turns those inline messages off with `data: { inline_errors: false }`, so they appear only at the top.
+- Madmin forms show each field’s validation errors after it (`form_error.rb`). The list at the top of the form holds only the errors no field shows: those with no field of their own (e.g. a show’s venue), and those of a field that can fail several checks at once, such as an artist’s photo, which turns its inline messages off with `data: { inline_errors: false }`.
 
 ### Documentation
 
