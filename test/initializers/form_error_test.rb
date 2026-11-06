@@ -22,4 +22,24 @@ class FormErrorTest < ActionView::TestCase
     assert_select "span.field_with_errors input[type=text][data-inline-errors=false]"
     assert_select "p.error", 2
   end
+
+  test "the form errors summary lists only errors that no field shows" do
+    rsvp = RSVP.new
+    rsvp.errors.add(:email, "Enter your email address")
+    rsvp.errors.add(:first_name, "Enter your first name")
+    rsvp.errors.add(:show, "Enter your email address")
+
+    @rendered = form_with(model: rsvp, url: "/") do |f|
+      render(layout: "madmin/application/form_errors", locals: { record: rsvp }) do
+        f.email_field(:email) + f.text_field(:first_name, data: { inline_errors: false })
+      end
+    end
+
+    assert_select ".form-errors + span.field_with_errors input[type=email]"
+    assert_select ".form-errors", text: /\APlease correct the following errors:/
+    assert_select ".form-errors li", 2
+    assert_select ".form-errors li", text: "Enter your first name"
+    assert_select ".form-errors li", text: "Enter your email address"
+    assert_select "p.error", text: "Enter your email address"
+  end
 end
