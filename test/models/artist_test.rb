@@ -153,7 +153,25 @@ class ArtistTest < ActiveSupport::TestCase
         artist.update!(name: "Jane Smith")
       end
     end
+    assert_equal "jane-smith.jpg", artist.reload.photo.filename.to_s
+  end
+
+  test "a photo stored under another name is renamed after the slug when the artist is saved" do
+    artist = attach_photo(artists(:one))
+    artist.photo.blob.update!(filename: "Jane Smith - by John Doe.jpg")
+
+    artist.reload.save!
+
     assert_equal "test-artist.jpg", artist.reload.photo.filename.to_s
+  end
+
+  test "renaming changes the slug and the photo's name" do
+    artist = attach_photo(artists(:one))
+
+    artist.update!(name: "Jane Smith")
+
+    assert_equal "jane-smith", artist.slug
+    assert_equal "jane-smith.jpg", artist.reload.photo.filename.to_s
   end
 
   test "names a new artist's photo after their new slug" do

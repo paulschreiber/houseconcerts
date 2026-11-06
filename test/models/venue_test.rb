@@ -5,6 +5,12 @@ class VenueTest < ActiveSupport::TestCase
     assert venues(:one).valid?
   end
 
+  test "renaming changes the slug" do
+    venues(:one).update!(name: "Jane Smith's House")
+
+    assert_equal "jane-smith-s-house", venues(:one).slug
+  end
+
   test "requires name, address, and city" do
     venue = Venue.new(venues(:one).attributes.except("id").merge("name" => "", "address" => "", "city" => ""))
     assert_not venue.valid?
