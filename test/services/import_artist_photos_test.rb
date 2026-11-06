@@ -32,13 +32,13 @@ class ImportArtistPhotosTest < ActiveSupport::TestCase
   end
 
   test "skips artists who already have a photo, so it can run again" do
-    attach_photo(artists(:one))
+    saved = attach_photo(artists(:one)).photo.blob
     add_file("photo.jpg", as: artists(:one).slug)
 
     result = ImportArtistPhotos.call(directory: @dir)
 
     assert_equal [ artists(:one) ], result.skipped
-    assert_equal "photo.jpg", artists(:one).reload.photo.filename.to_s
+    assert_equal saved, artists(:one).reload.photo.blob
   end
 
   test "reports a file that can't be attached" do

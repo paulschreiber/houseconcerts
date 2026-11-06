@@ -1,7 +1,7 @@
 require "test_helper"
 
 class ArtistPhotosHelperTest < ActionView::TestCase
-  PROXY_URL = %r{\Ahttp://[^/]+/rails/active_storage/representations/proxy/.+/photo\.jpg\z}
+  PROXY_URL = %r{\Ahttp://[^/]+/rails/active_storage/representations/proxy/.+/test-artist\.jpg\z}
 
   test "artist_photo_tag shows an uploaded photo at half its image's size" do
     artist = attach_photo(artists(:one))

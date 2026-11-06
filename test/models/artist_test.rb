@@ -113,16 +113,16 @@ class ArtistTest < ActiveSupport::TestCase
     end
   end
 
-  test "stores a photo as an upright JPEG without metadata, whatever was uploaded" do
+  test "stores a photo as an upright JPEG named after the slug, without metadata, whatever was uploaded" do
     artist = attach_photo(artists(:one), "sideways.jpg")
     image = Vips::Image.new_from_buffer(artist.photo.download, "")
 
-    assert_equal [ "sideways.jpg", "image/jpeg" ], [ artist.photo.filename.to_s, artist.photo.content_type ]
+    assert_equal [ "test-artist.jpg", "image/jpeg" ], [ artist.photo.filename.to_s, artist.photo.content_type ]
     assert_equal [ 400, 440 ], [ image.width, image.height ]
     assert_empty image.get_fields.grep(/exif|orientation/)
 
     attach_photo(artist, "photo.heic")
-    assert_equal [ "photo.jpg", "image/jpeg" ], [ artist.photo.filename.to_s, artist.photo.content_type ]
+    assert_equal [ "test-artist.jpg", "image/jpeg" ], [ artist.photo.filename.to_s, artist.photo.content_type ]
     assert_equal "jpegload_buffer", Vips::Image.new_from_buffer(artist.photo.download, "").get("vips-loader")
   end
 
@@ -153,7 +153,13 @@ class ArtistTest < ActiveSupport::TestCase
         artist.update!(name: "Jane Smith")
       end
     end
-    assert_equal "photo.jpg", artist.reload.photo.filename.to_s
+    assert_equal "test-artist.jpg", artist.reload.photo.filename.to_s
+  end
+
+  test "names a new artist's photo after their new slug" do
+    artist = Artist.create!(name: "Jane Smith", photo: { io: file_fixture("photo.jpg").open, filename: "Jane Smith - by John Doe.jpg" })
+
+    assert_equal "jane-smith.jpg", artist.photo.filename.to_s
   end
 
   test "doesn't recheck a photo that's already saved" do
