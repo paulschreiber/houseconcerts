@@ -7,6 +7,23 @@ class RsvpTest < ActiveSupport::TestCase
     assert rsvps(:one).valid?
   end
 
+  test "an unknown response is invalid, not an error" do
+    rsvp = rsvps(:one)
+    rsvp.response = "maybe"
+
+    assert_not rsvp.valid?
+    assert_equal [ "Select whether or not you’re coming" ], rsvp.errors.full_messages
+  end
+
+  test "an unknown confirmation is invalid, not an error" do
+    rsvp = rsvps(:one)
+    rsvp.response = "yes"
+    rsvp.confirmed = "pending"
+
+    assert_not rsvp.valid?
+    assert_equal [ "Select a valid confirmation status" ], rsvp.errors[:confirmed]
+  end
+
   test "rejects values longer than the form allows" do
     { first_name: [ 100, "first name" ], last_name: [ 100, "last name" ], postcode: [ 10, "zip code" ] }.each do |attribute, (maximum, label)|
       record = rsvps(:one)

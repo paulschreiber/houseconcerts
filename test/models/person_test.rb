@@ -120,6 +120,14 @@ class PersonTest < ActiveSupport::TestCase
     assert_includes person.errors.attribute_names, :email
   end
 
+  test "an unknown status is invalid, not an error" do
+    person = people(:one)
+    person.status = "archived"
+
+    assert_not person.valid?
+    assert_equal [ "Select a valid status" ], person.errors.full_messages
+  end
+
   test "status predicate methods reflect the status attribute" do
     person = Person.new(status: "active")
     assert person.active?
