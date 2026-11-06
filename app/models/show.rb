@@ -33,6 +33,7 @@ class Show < ApplicationRecord
   validates :end, timeliness: { type: :datetime, after: ->(record) { record.start } }
   validates :name, presence: true
   validates :price, presence: true, numericality: {
+    allow_nil: true,
     only_integer: true,
     greater_than_or_equal_to: Settings.show.min_price,
     less_than_or_equal_to: Settings.show.max_price
@@ -207,7 +208,7 @@ class Show < ApplicationRecord
   end
 
   def set_end_time
-    self.end = start + Settings.show_duration.hours unless self.end
+    self.end ||= start + Settings.show_duration.hours if start
   end
 
   private

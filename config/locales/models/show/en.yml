@@ -9,10 +9,11 @@ en:
             status:
               inclusion: "enter a valid show status"
             price:
+              blank: "enter a price for the show"
               not_a_number: "enter a price for the show"
             venue:
               required: "select a venue"
             end:
               invalid_datetime: "enter a valid end date/time"
             start:
-              invalid_datetime: "enter a valid end date/time"
+              invalid_datetime: "enter a valid start date/time"
