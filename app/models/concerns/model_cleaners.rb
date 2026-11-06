@@ -2,6 +2,9 @@ module ModelCleaners
   extend ActiveSupport::Concern
 
   included do
+    # Before validation, so length checks count what's stored; again before
+    # saving, for a save that skips validation.
+    before_validation :clean_variables
     before_save :clean_variables
   end
 
