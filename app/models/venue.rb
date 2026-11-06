@@ -17,6 +17,7 @@ class Venue < ApplicationRecord
   validates :postcode, postal_code: { country: Settings.default_country }
   validates :country, inclusion: { in: ->(record) { record.country_codes } }
   validates :capacity, presence: true, numericality: {
+    allow_nil: true,
     only_integer: true,
     greater_than_or_equal_to: Settings.venue.min_capacity,
     less_than_or_equal_to: Settings.venue.max_capacity
