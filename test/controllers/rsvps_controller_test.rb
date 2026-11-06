@@ -20,6 +20,19 @@ class RsvpsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to rsvp_thanks_path(uniqid: new_rsvp.uniqid)
   end
 
+  test "create with an unknown response shows the form's error instead of crashing" do
+    assert_no_difference("RSVP.count") do
+      post rsvps_path, params: {
+        rsvp: { first_name: "Jane", last_name: "Smith", email: "jane@example.com",
+                show_id: shows(:upcoming).id, response: "maybe", seats_reserved: 2 }
+      }
+    end
+
+    assert_response :unprocessable_content
+    assert_select "p.error", 1
+    assert_select "p.error", text: "Select whether or not you’re coming"
+  end
+
   test "create refuses a new rsvp for a past show" do
     assert_no_difference("RSVP.count") do
       post rsvps_path, params: {

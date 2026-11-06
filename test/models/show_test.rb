@@ -14,6 +14,16 @@ class ShowTest < ActiveSupport::TestCase
     assert_equal [ "Enter a price for the show" ], show.errors[:price]
   end
 
+  test "an unknown status or availability is invalid, not an error" do
+    show = shows(:upcoming)
+    show.status = "postponed"
+    show.availability = "unknown"
+
+    assert_not show.valid?
+    assert_equal [ "Enter a valid show status" ], show.errors[:status]
+    assert_equal [ "Enter a valid show availability" ], show.errors[:availability]
+  end
+
   test "requires a venue that exists" do
     show = shows(:upcoming)
     show.venue_id = 0
