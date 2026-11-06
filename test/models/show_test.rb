@@ -11,7 +11,7 @@ class ShowTest < ActiveSupport::TestCase
     show.price = nil
 
     assert_not show.valid?
-    assert_equal [ "enter a price for the show" ], show.errors[:price]
+    assert_equal [ "Enter a price for the show" ], show.errors[:price]
   end
 
   test "requires a venue that exists" do
@@ -19,7 +19,7 @@ class ShowTest < ActiveSupport::TestCase
     show.venue_id = 0
 
     assert_not show.valid?
-    assert_includes show.errors[:venue], "select a venue"
+    assert_includes show.errors[:venue], "Select a venue"
   end
 
   test "upcoming scope includes only shows that haven't happened yet" do
@@ -60,11 +60,50 @@ class ShowTest < ActiveSupport::TestCase
     assert_equal Settings.show_duration.hours, show.end - show.start
   end
 
+  test "moving the start moves the end, keeping the show's length" do
+    show = shows(:upcoming)
+    show.update!(end: show.start + 3.hours)
+
+    show.update!(start: show.start + 1.day)
+
+    assert_equal 3.hours, show.end - show.start
+  end
+
+  test "an end changed along with the start is kept" do
+    show = shows(:upcoming)
+    new_end = show.start + 1.day + 4.hours
+
+    show.update!(start: show.start + 1.day, end: new_end)
+
+    assert_equal new_end, show.end
+  end
+
+  test "messages name what's wrong, without the attribute in front" do
+    show = shows(:upcoming)
+    show.assign_attributes(name: "", price: Settings.show.max_price + 1, end: show.start - 1.hour)
+
+    assert_not show.valid?
+    assert_equal [ "Enter a show name", "The end must be after the start",
+                   "The price cannot be more than $#{Settings.show.max_price}" ].sort, show.errors.full_messages.sort
+  end
+
+  test "a price below the minimum, or with cents, says so" do
+    show = shows(:upcoming)
+
+    show.price = Settings.show.min_price - 1
+    assert_not show.valid?
+    assert_equal [ "The price must be at least $#{Settings.show.min_price}" ], show.errors[:price]
+
+    show.price = 20.5
+    assert_not show.valid?
+    assert_equal [ "Enter the price in whole dollars" ], show.errors[:price]
+  end
+
   test "a blank start is an error, not a crash" do
     show = Show.new(name: "Jane Smith Live", venue: venues(:one), price: 20)
 
     assert_not show.valid?
-    assert_equal [ "enter a valid start date/time" ], show.errors[:start]
+    assert_equal [ "Enter a valid start date/time" ], show.errors[:start]
   end
 
   test "an invalid start says so" do
@@ -72,7 +111,7 @@ class ShowTest < ActiveSupport::TestCase
     show.start = "not a date"
 
     assert_not show.valid?
-    assert_equal [ "enter a valid start date/time" ], show.errors[:start]
+    assert_equal [ "Enter a valid start date/time" ], show.errors[:start]
   end
 
   test "requires end to be after start" do

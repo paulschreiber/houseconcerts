@@ -30,8 +30,8 @@ module Madmin
       end
 
       assert_response :unprocessable_content
-      assert_select ".alert li", text: %r{enter a valid start date/time}
-      assert_select ".alert li", text: /enter a price for the show/, count: 1
+      assert_select ".alert li", text: %r{Enter a valid start date/time}
+      assert_select ".alert li", text: /Enter a price for the show/, count: 1
     end
 
     test "edit renders successfully" do
@@ -72,6 +72,18 @@ module Madmin
 
       assert_equal "Updated Show", show.reload.name
       assert_redirected_to madmin_show_path(show)
+    end
+
+    test "update moves the end with the start when the form sends the end back unchanged" do
+      length = show.end - show.start
+      start = show.start + 1.day
+
+      patch madmin_show_path(show), params: { show: { start: start.strftime("%Y-%m-%dT%H:%M"),
+                                                      end: show.end.strftime("%Y-%m-%dT%H:%M") } }
+
+      assert_redirected_to madmin_show_path(show)
+      assert_equal start, show.reload.start
+      assert_equal length, show.end - show.start
     end
 
     test "update with invalid attributes renders edit" do
