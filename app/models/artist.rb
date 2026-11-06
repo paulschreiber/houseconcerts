@@ -79,9 +79,9 @@ class Artist < ApplicationRecord
       errors.add(:photo, :too_short, **self.class.photo_limits) if new_photo_image.height < height
     end
 
-    # Stores the new photo as a JPEG, rotated upright and without metadata
-    # (such as where it was taken, the camera and the time), in place of the
-    # file uploaded.
+    # Stores the new photo as a JPEG named after the artist's slug, rotated
+    # upright and without metadata (such as where it was taken, the camera and
+    # the time), in place of the file uploaded.
     # Then drops what was worked out from the upload, which the record would
     # otherwise hold in memory (the upload, its pixels and the JPEG). An
     # unreadable photo, saved without validation, isn't saved.
@@ -90,7 +90,7 @@ class Artist < ApplicationRecord
       throw :abort if jpeg.nil?
 
       @new_photo_values = nil
-      self.photo = { io: StringIO.new(jpeg), filename: "#{photo.filename.base}.jpg", content_type: "image/jpeg" }
+      self.photo = { io: StringIO.new(jpeg), filename: "#{slug}.jpg", content_type: "image/jpeg" }
       @clean_photo_change = attachment_changes["photo"]
     end
 
