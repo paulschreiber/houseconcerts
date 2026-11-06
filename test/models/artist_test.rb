@@ -41,7 +41,7 @@ class ArtistTest < ActiveSupport::TestCase
       artist = Artist.new(name: "Jane Smith", photo: { io: file_fixture(file).open, filename: file })
 
       assert_not artist.valid?
-      assert_equal [ "Choose a JPEG, HEIC, AVIF or WebP photo" ], artist.errors.full_messages
+      assert_equal [ "the photo must be a JPEG, HEIC, AVIF or WebP file" ], artist.errors.full_messages
     end
   end
 
@@ -49,21 +49,21 @@ class ArtistTest < ActiveSupport::TestCase
     artist = Artist.new(name: "Jane Smith", photo: { io: file_fixture("not_an_image.jpg").open, filename: "not_an_image.jpg" })
 
     assert_not artist.valid?
-    assert_equal [ "This photo couldn’t be read. Choose a JPEG, HEIC, AVIF or WebP photo" ], artist.errors.full_messages
+    assert_equal [ "This photo couldn’t be read. Choose a JPEG, HEIC, AVIF or WebP file." ], artist.errors.full_messages
   end
 
   test "rejects a photo with too many pixels, before decoding it" do
     artist = Artist.new(name: "Jane Smith", photo: { io: StringIO.new(Vips::Image.black(8000, 7000).jpegsave_buffer), filename: "huge.jpg" })
 
     assert_not artist.valid?
-    assert_equal [ "Choose a photo of at most 50 megapixels" ], artist.errors.full_messages
+    assert_equal [ "the photo must be at most 50 megapixels" ], artist.errors.full_messages
   end
 
   test "rejects a photo whose data is cut off" do
     artist = Artist.new(name: "Jane Smith", photo: { io: file_fixture("truncated.jpg").open, filename: "truncated.jpg" })
 
     assert_not artist.valid?
-    assert_equal [ "This photo couldn’t be read. Choose a JPEG, HEIC, AVIF or WebP photo" ], artist.errors.full_messages
+    assert_equal [ "This photo couldn’t be read. Choose a JPEG, HEIC, AVIF or WebP file." ], artist.errors.full_messages
   end
 
   test "checks the minimum size of a sideways photo as it's displayed" do
@@ -73,11 +73,25 @@ class ArtistTest < ActiveSupport::TestCase
     assert artist.valid?, artist.errors.full_messages.to_sentence
   end
 
-  test "rejects a photo smaller than the minimum size" do
+  test "rejects a photo narrower than the minimum width" do
+    artist = Artist.new(name: "Jane Smith", photo: { io: StringIO.new(Vips::Image.black(399, 440).jpegsave_buffer), filename: "narrow.jpg" })
+
+    assert_not artist.valid?
+    assert_equal [ "the photo must be at least 400 pixels wide" ], artist.errors.full_messages
+  end
+
+  test "rejects a photo shorter than the minimum height" do
+    artist = Artist.new(name: "Jane Smith", photo: { io: StringIO.new(Vips::Image.black(400, 439).jpegsave_buffer), filename: "short.jpg" })
+
+    assert_not artist.valid?
+    assert_equal [ "the photo must be at least 440 pixels tall" ], artist.errors.full_messages
+  end
+
+  test "rejects a photo too narrow and too short with both messages" do
     artist = Artist.new(name: "Jane Smith", photo: { io: file_fixture("tiny.jpg").open, filename: "tiny.jpg" })
 
     assert_not artist.valid?
-    assert_equal [ "Choose a photo at least 400 × 440 pixels" ], artist.errors.full_messages
+    assert_equal [ "the photo must be at least 400 pixels wide", "the photo must be at least 440 pixels tall" ], artist.errors.full_messages
   end
 
   test "accepts a photo smaller than the minimum size when importing" do
@@ -95,7 +109,7 @@ class ArtistTest < ActiveSupport::TestCase
       artist = Artist.new(name: "Jane Smith", photo: { io: File.open(path), filename: "large.jpg" })
 
       assert_not artist.valid?
-      assert_equal [ "Choose a photo smaller than 10 MB" ], artist.errors.full_messages
+      assert_equal [ "the photo must be smaller than 10 MB" ], artist.errors.full_messages
     end
   end
 
