@@ -1,7 +1,13 @@
-<%= form.file_field field.to_param, accept: Artist::PHOTO_CONTENT_TYPES.join(","), class: "form-input" %>
+<% if (photo = field.saved_photo(record))&.attached? %>
+  <div class="photo-field-current" id="<%= dom_id(record, field.attribute_name) %>">
+    <%= render partial: field.to_partial_path("show"), locals: { field:, record:, photo: } %>
 
-<% if form.object.persisted? %>
-  <div class="mt-2">
-    <%= render partial: field.to_partial_path("show"), locals: { field: field, record: record } %>
+    <% if (remove_path = field.remove_path(photo)) %>
+      <%= link_to t("madmin.actions.remove"), remove_path,
+                  data: { turbo_method: :delete, turbo_confirm: t("madmin.artists.remove_photo_confirmation", artist: record.name_in_database) } %>
+    <% end %>
   </div>
 <% end %>
+
+<%# The photo's errors are listed at the top of the form, so not after it too. %>
+<%= form.file_field field.to_param, accept: Artist::PHOTO_CONTENT_TYPES.join(","), class: "form-input", data: { inline_errors: false } %>

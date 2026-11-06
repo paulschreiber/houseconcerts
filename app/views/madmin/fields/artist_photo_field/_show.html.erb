@@ -1,9 +1,4 @@
-<% if (photo = field.saved_photo(record))&.attached? %>
+<% if (photo = local_assigns.fetch(:photo) { field.saved_photo(record) })&.attached? %>
   <% width, height = ArtistPhotosHelper::PHOTO_DISPLAY_SIZES[:card] %>
-  <%= image_tag main_app.url_for(photo.variant(:card)), width:, height:, alt: record.name %>
-
-  <% if (remove_path = field.remove_path(photo)) %>
-    <%= link_to t("madmin.actions.remove"), remove_path,
-                data: { turbo_method: :delete, turbo_confirm: t("madmin.confirmations.remove_with_changes", name: photo.filename.to_s) } %>
-  <% end %>
+  <%= image_tag main_app.url_for(photo.variant(:card)), width:, height:, alt: record.name_in_database %>
 <% end %>
