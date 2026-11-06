@@ -207,8 +207,17 @@ class Show < ApplicationRecord
     "#{name} (#{start&.to_date&.iso8601})"
   end
 
+  # A show without an end lasts Settings.show_duration hours. Moving the start
+  # moves the end too, keeping the show's length, unless the end was changed
+  # as well.
   def set_end_time
-    self.end ||= start + Settings.show_duration.hours if start
+    return unless start
+
+    if self.end.nil?
+      self.end = start + Settings.show_duration.hours
+    elsif start_in_database && will_save_change_to_start? && !will_save_change_to_end?
+      self.end += start - start_in_database
+    end
   end
 
   private
