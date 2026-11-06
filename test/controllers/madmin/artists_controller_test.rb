@@ -74,6 +74,14 @@ module Madmin
       assert_redirected_to madmin_artists_path
     end
 
+    test "renaming goes to the new slug" do
+      artist = artists(:one)
+
+      patch madmin_artist_path(artist), params: { artist: { name: "Jane Smith" } }
+
+      assert_redirected_to madmin_artist_path("jane-smith")
+    end
+
     test "update attaches an uploaded photo" do
       artist = artists(:one)
 
