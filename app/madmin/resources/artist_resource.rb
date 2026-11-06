@@ -4,7 +4,7 @@ class ArtistResource < Madmin::Resource
   attribute :name, field: LinkedStringField
   attribute :slug, field: ReadonlyStringField, form: false, new: true, edit: true
   attribute :url, label: "URL"
-  attribute :photo, field: ArtistPhotoField, index: true, description: I18n.t("madmin.artists.photo_description", **Artist.photo_limits)
+  attribute :photo, field: ArtistPhotoField, index: false, description: I18n.t("madmin.artists.photo_description", **Artist.photo_limits)
   attribute :created_at
   attribute :updated_at
 

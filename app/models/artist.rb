@@ -9,8 +9,7 @@ class Artist < ApplicationRecord
   # The most pixels a photo can have, checked before it's decoded: enough for
   # a 48-megapixel phone camera.
   PHOTO_MAX_PIXELS = 50_000_000
-  # The smallest photo accepted, as [width, height]: big enough for :card.
-  PHOTO_MIN_SIZE = [ 400, 440 ].freeze
+  PHOTO_MIN_SIZE = PHOTO_SIZES[:card]
   PHOTO_JPEG_QUALITY = 85
 
   friendly_id :name_slug_candidates, use: :slugged
@@ -76,7 +75,8 @@ class Artist < ApplicationRecord
       return if errors.include?(:photo)
 
       width, height = PHOTO_MIN_SIZE
-      errors.add(:photo, :too_small, **self.class.photo_limits) if new_photo_image.width < width || new_photo_image.height < height
+      errors.add(:photo, :too_narrow, **self.class.photo_limits) if new_photo_image.width < width
+      errors.add(:photo, :too_short, **self.class.photo_limits) if new_photo_image.height < height
     end
 
     # Stores the new photo as a JPEG, rotated upright and without metadata
