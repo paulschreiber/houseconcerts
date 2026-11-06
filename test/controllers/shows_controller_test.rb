@@ -73,7 +73,7 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
 
     get root_path
 
-    assert_match %r{/rails/active_storage/representations/proxy/.+/photo\.jpg\z}, css_select("meta[property='og:image']").first["content"]
+    assert_match %r{/rails/active_storage/representations/proxy/.+/test-artist\.jpg\z}, css_select("meta[property='og:image']").first["content"]
   end
 
   test "past shows use the site image as their social media image" do

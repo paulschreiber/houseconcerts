@@ -80,7 +80,7 @@ module Madmin
       patch madmin_artist_path(artist), params: { artist: { photo: fixture_file_upload("photo.heic", "image/heic") } }
 
       assert_redirected_to madmin_artist_path(artist)
-      assert_equal "photo.jpg", artist.reload.photo.filename.to_s
+      assert_equal "#{artist.slug}.jpg", artist.reload.photo.filename.to_s
     end
 
     test "update replaces the artist's photo" do
@@ -112,6 +112,7 @@ module Madmin
 
     test "update refusing a new photo keeps the artist's saved one" do
       artist = attach_photo(artists(:one))
+      saved = artist.photo.blob
 
       patch madmin_artist_path(artist), params: { artist: { photo: fixture_file_upload("tiny.jpg", "image/jpeg") } }
 
@@ -123,7 +124,7 @@ module Madmin
       assert_select "p.error", false
       assert_select "img[src*='/representations/proxy/'][alt=?]", artist.name
       assert_select "a[href=?]", madmin_active_storage_attachment_path(artist.photo.attachment), text: "Remove"
-      assert_equal "photo.jpg", artist.reload.photo.filename.to_s
+      assert_equal saved, artist.reload.photo.blob
     end
 
     test "after a refused name, the photo and its Remove link use the saved name" do
