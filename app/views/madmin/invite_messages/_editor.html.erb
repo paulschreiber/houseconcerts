@@ -13,53 +13,53 @@
       <%= form_with model: [:madmin, @show, @invite_message], id: "invite-editor-form", class: "invite-editor-form",
                     authenticity_token: form_authenticity_token,
                     data: { invite_preview_target: "form", action: "input->invite-preview#changed" } do |form| %>
-        <%= render "madmin/application/form_errors", record: @invite_message %>
+        <%= render layout: "madmin/application/form_errors", locals: { record: @invite_message } do %>
+          <div class="form-group">
+            <%= form.label :intro, "Introduction" %>
+            <%= form.text_area :intro, rows: 8, class: "form-input" %>
+            <div class="form-description">Above the show details and RSVP buttons.</div>
+          </div>
 
-        <div class="form-group">
-          <%= form.label :intro, "Introduction" %>
-          <%= form.text_area :intro, rows: 8, class: "form-input" %>
-          <div class="form-description">Above the show details and RSVP buttons.</div>
-        </div>
+          <div class="form-group">
+            <%= form.label :about, "A bit about #{@show.name}" %>
+            <%= form.text_area :about, rows: 14, class: "form-input" %>
+          </div>
 
-        <div class="form-group">
-          <%= form.label :about, "A bit about #{@show.name}" %>
-          <%= form.text_area :about, rows: 14, class: "form-input" %>
-        </div>
-
-        <details class="invite-editor-help">
-          <summary>Formatting</summary>
-          <table>
-            <tbody>
-              <tr>
-                <td><code>**bold**</code></td>
-                <td><strong>bold</strong></td>
-              </tr>
-              <tr>
-                <td><code>*italics*</code></td>
-                <td><em>italics</em></td>
-              </tr>
-              <tr>
-                <td><code>~~strikethrough~~</code></td>
-                <td><del>strikethrough</del></td>
-              </tr>
-              <tr>
-                <td><code>[text](https://example.com)</code></td>
-                <td>a link</td>
-              </tr>
-              <% InviteMessage::PLACEHOLDERS.each do |name, description| %>
+          <details class="invite-editor-help">
+            <summary>Formatting</summary>
+            <table>
+              <tbody>
                 <tr>
-                  <td><code>[text][<%= name %>]</code></td>
-                  <td><%= description %></td>
+                  <td><code>**bold**</code></td>
+                  <td><strong>bold</strong></td>
                 </tr>
-              <% end %>
-            </tbody>
-          </table>
-          <p>A blank line starts a new paragraph.</p>
-        </details>
+                <tr>
+                  <td><code>*italics*</code></td>
+                  <td><em>italics</em></td>
+                </tr>
+                <tr>
+                  <td><code>~~strikethrough~~</code></td>
+                  <td><del>strikethrough</del></td>
+                </tr>
+                <tr>
+                  <td><code>[text](https://example.com)</code></td>
+                  <td>a link</td>
+                </tr>
+                <% InviteMessage::PLACEHOLDERS.each do |name, description| %>
+                  <tr>
+                    <td><code>[text][<%= name %>]</code></td>
+                    <td><%= description %></td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+            <p>A blank line starts a new paragraph.</p>
+          </details>
 
-        <%= form.button "Preview", type: "submit", hidden: true,
-                        formaction: preview_madmin_show_invite_messages_path(@show), formtarget: "invite-preview",
-                        data: { invite_preview_target: "previewButton", turbo: false } %>
+          <%= form.button "Preview", type: "submit", hidden: true,
+                          formaction: preview_madmin_show_invite_messages_path(@show), formtarget: "invite-preview",
+                          data: { invite_preview_target: "previewButton", turbo: false } %>
+        <% end %>
       <% end %>
 
       <% if @invite_message.persisted? %>
