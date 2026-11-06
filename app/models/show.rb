@@ -14,8 +14,8 @@ class Show < ApplicationRecord
   before_validation :set_end_time
   before_update :reset_auto_remind, if: :will_save_change_to_start?
 
-  enum :status, { confirmed: 0, unconfirmed: 1, cancelled: 2 }, default: :confirmed, validate: true
-  enum :availability, { available: 0, waitlisted: 1, sold_out: 2 }, default: :available, validate: true
+  enum :status, { confirmed: 0, unconfirmed: 1, cancelled: 2 }, default: :confirmed
+  enum :availability, { available: 0, waitlisted: 1, sold_out: 2 }, default: :available
 
   scope :occurred, -> { confirmed.where(start: ...Time.zone.now).order(:start) }
   scope :upcoming, -> { confirmed.where("start > ?", Time.zone.now).order(:start) }
