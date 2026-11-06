@@ -46,7 +46,7 @@ class ImportArtistPhotosTest < ActiveSupport::TestCase
 
     result = ImportArtistPhotos.call(directory: @dir)
 
-    assert_equal({ artists(:one) => "This photo couldn’t be read. Choose a JPEG, HEIC, AVIF or WebP photo" }, result.failed)
+    assert_equal({ artists(:one) => "This photo couldn’t be read. Choose a JPEG, HEIC, AVIF or WebP file." }, result.failed)
     assert_not artists(:one).reload.photo.attached?
   end
 
