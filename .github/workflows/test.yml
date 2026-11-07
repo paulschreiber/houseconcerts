@@ -53,11 +53,14 @@ jobs:
       - name: Refresh apt package index
         run: sudo apt-get update
 
+      # libvips resizes artist photos. The libheif plugins let it read HEIC
+      # (libde265) and AVIF (dav1d) uploads; this action doesn't install
+      # recommended packages, so they're listed here.
       - name: Install libvips
         uses: awalsh128/cache-apt-pkgs-action@553a35bb8ebd9fcabcb1c9451aa4c98e1b4ca8a9 # v1.6.3
         with:
-          packages: libvips
-          version: 1.0
+          packages: libvips libheif-plugin-libde265 libheif-plugin-dav1d
+          version: 1.1
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@7f797815d8adceb1c412e7abefdd1ab4abc47a5f # v1.335.0

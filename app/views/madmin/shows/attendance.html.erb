@@ -22,7 +22,7 @@
             <td><%= rsvp.seats_reserved %></td>
             <td>
               <%= number_field_tag "seats_used[#{rsvp.id}]", value, id: "seats_used_#{rsvp.id}", min: 0, max: Settings.show.max_seats_used, step: 1 %>
-              <% rsvp.errors.full_messages.each do |message| %>
+              <% rsvp.errors.full_messages.uniq.each do |message| %>
                 <p class="error"><%= message %></p>
               <% end %>
             </td>

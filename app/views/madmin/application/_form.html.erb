@@ -11,14 +11,14 @@
 %>
 <%= form_with model: [:madmin, record], url: (record.persisted? ? resource.show_path(record) : resource.index_path), local: true, html: { id: form_dom_id } do |form| %>
   <% form_builder = form %>
-  <%= render "madmin/application/form_errors", record: form.object %>
-
-  <% resource.attributes.values.select{ _1.field.present? && _1.field.visible?(action_name) }.each do |attribute| %>
-    <div class="form-group">
-      <%= render "madmin/shared/label", form: form, field: attribute.field %>
-      <%= render partial: attribute.field.to_partial_path("form"), locals: { field: attribute.field, record: record, form: form, resource: resource } %>
-      <%= tag.div attribute.field.options.description, class: "form-description" if attribute.field.options.description.present? %>
-    </div>
+  <%= render layout: "madmin/application/form_errors", locals: { record: form.object } do %>
+    <% resource.attributes.values.select{ _1.field.present? && _1.field.visible?(action_name) }.each do |attribute| %>
+      <div class="form-group">
+        <%= render "madmin/shared/label", form: form, field: attribute.field %>
+        <%= render partial: attribute.field.to_partial_path("form"), locals: { field: attribute.field, record: record, form: form, resource: resource } %>
+        <%= tag.div attribute.field.options.description, class: "form-description" if attribute.field.options.description.present? %>
+      </div>
+    <% end %>
   <% end %>
 <% end %>
 

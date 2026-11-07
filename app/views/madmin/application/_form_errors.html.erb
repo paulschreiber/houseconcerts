@@ -1,12 +1,20 @@
-<%# A form's validation errors, above its fields. %>
-<% if record.errors.any? %>
-  <div class="alert alert-danger">
-    <div class=""><%= t("madmin.form.errors", count: record.errors.full_messages.count) %>:</div>
+<%# A layout for a form's fields that lists, above them, the validation errors
+    no field shows (form_error.rb): those of a field that opts out of inline
+    messages, such as an artist's photo, and ones with no field of their own.
+    The fields render first, so it knows which those are. Some validations
+    share a message, so each is listed once. %>
+<% fields = yield %>
+<% inline = @inline_error_attributes.to_h[record] || Set.new %>
+<% messages = record.errors.reject { inline.include?(_1.attribute.to_s) }.map(&:full_message).uniq %>
+<% if messages.any? %>
+  <div class="alert alert-danger form-errors">
+    <div><%= t("madmin.form.errors", count: messages.count) %>:</div>
 
     <ul>
-      <% record.errors.full_messages.each do |message| %>
+      <% messages.each do |message| %>
         <li><%= message %></li>
       <% end %>
     </ul>
   </div>
 <% end %>
+<%= fields %>

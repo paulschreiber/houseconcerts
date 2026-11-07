@@ -1,0 +1,14 @@
+en:
+  activerecord:
+    errors:
+      models:
+        artist:
+          attributes:
+            photo:
+              format: "%{message}"
+              content_type: "the photo must be a JPEG, HEIC, AVIF or WebP file"
+              too_large: "the photo must be smaller than %{size}"
+              too_many_pixels: "the photo must be at most %{megapixels} megapixels"
+              too_narrow: "the photo must be at least %{width} pixels wide"
+              too_short: "the photo must be at least %{height} pixels tall"
+              unreadable: "This photo couldn’t be read. Choose a JPEG, HEIC, AVIF or WebP file."

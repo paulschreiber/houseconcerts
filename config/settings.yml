@@ -15,6 +15,9 @@
 :show_duration: 2
 :notify_rsvp: "yes"
 :admin_prefix: "backstage"
+# The config/storage.yml service for uploaded files in production: "local"
+# (the server's disk) or "amazon" (S3). See INFRASTRUCTURE.md.
+:storage_service: "local"
 :uniqid_length: 16
 
 :venue:

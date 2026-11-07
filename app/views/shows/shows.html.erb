@@ -29,16 +29,18 @@
       <% @shows.each do |show| %>
 
         <%
-			artist_for_photo = show.artists.sample
-			next unless artist_for_photo
+			next if show.artists.empty?
+			artist_for_photo = show.artists.select { |artist| artist_photo?(artist, :thumb) }.sample
 			artist_links = show.artists.map { |artist| link_to_if(artist.url?, artist.name, artist.url) }
 		%>
 
         <li>
           <div class='artists'>
 
-            <% photo = tag.img(class: "artist", src: "/photos/headshots/thumb/#{artist_for_photo.slug}.jpg", width: 50, height: 50, alt: artist_for_photo.name) %>
-            <%= artist_for_photo.url? ? link_to(photo, artist_for_photo.url, class: "imagelink") : photo %>
+            <% if artist_for_photo %>
+              <% photo = artist_photo_tag(artist_for_photo, :thumb, class: "artist") %>
+              <%= artist_for_photo.url? ? link_to(photo, artist_for_photo.url, class: "imagelink") : photo %>
+            <% end %>
 
             <%= artist_links.to_sentence.html_safe %>
 

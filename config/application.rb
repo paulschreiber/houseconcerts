@@ -32,6 +32,15 @@ module Houseconcerts
     # config/locales/models/*/en.yml).
     config.active_model.i18n_customize_full_message = true
 
+    # Only photo sizes (Active Storage variants) are served; config/routes.rb
+    # draws just their route. Active Storage's own routes would serve the
+    # stored photo itself to anyone with a photo size's URL (both use the same
+    # signed blob id), and accept direct uploads from anyone. Photo sizes are
+    # served through the app, so their URLs stay on the site's own domain: the
+    # content security policy's img-src 'self' allows them, and Cloudflare
+    # caches them.
+    config.active_storage.draw_routes = false
+
     # Gate Mission Control - Jobs behind the existing admin login instead of
     # its default HTTP Basic auth.
     config.mission_control.jobs.base_controller_class = "AdminController"

@@ -24,6 +24,13 @@ class ShowTest < ActiveSupport::TestCase
     assert_equal [ "Enter a valid show availability" ], show.errors[:availability]
   end
 
+  # Sent invitations link to the show by its slug, and opens are tagged with it.
+  test "renaming keeps the slug" do
+    shows(:upcoming).update!(name: "Jane Smith Live")
+
+    assert_equal "test-upcoming-show", shows(:upcoming).slug
+  end
+
   test "requires a venue that exists" do
     show = shows(:upcoming)
     show.venue_id = 0

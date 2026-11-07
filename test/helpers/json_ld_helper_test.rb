@@ -41,10 +41,24 @@ class JsonLdHelperTest < ActionView::TestCase
     show.artists << Artist.create!(name: "Second Artist")
 
     assert_equal [ artists(:one).name, "Second Artist" ], ld_json_event(show)[:performer].pluck(:name)
-    assert_equal show.artists.map(&:photo_url), ld_json_event(show)[:image]
 
     show.artists = []
     assert_equal [], ld_json_event(show.reload)[:performer]
+  end
+
+  test "ld_json_event's images are the photos of the artists who have one" do
+    show = shows(:upcoming)
+    show.artists << Artist.create!(name: "Second Artist")
+    attach_photo(artists(:one))
+
+    event = ld_json_event(show)
+
+    assert_equal [ artist_photo_url(artists(:one)) ], event[:image]
+    assert_equal [ artist_photo_url(artists(:one)), nil ], event[:performer].pluck(:image)
+  end
+
+  test "ld_json_event has no image when no artist has a photo" do
+    assert_not ld_json_event(shows(:upcoming)).key?(:image)
   end
 
   test "ld_json_event links to and offers seats for a show taking RSVPs" do

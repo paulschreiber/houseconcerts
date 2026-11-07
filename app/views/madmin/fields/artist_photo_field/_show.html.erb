@@ -1,0 +1,4 @@
+<% if (photo = local_assigns.fetch(:photo) { field.saved_photo(record) })&.attached? %>
+  <% width, height = ArtistPhotosHelper::PHOTO_DISPLAY_SIZES[:card] %>
+  <%= image_tag main_app.url_for(photo.variant(:card)), width:, height:, alt: record.name_in_database %>
+<% end %>
