@@ -12,6 +12,7 @@ class Show < ApplicationRecord
   belongs_to :venue
 
   before_validation :set_end_time
+  before_save :assign_availability, if: :will_save_change_to_venue_id?
   before_update :reset_auto_remind, if: :will_save_change_to_start?
 
   enum :status, { confirmed: 0, unconfirmed: 1, cancelled: 2 }, default: :confirmed
@@ -112,6 +113,42 @@ class Show < ApplicationRecord
   # artist. (Every saved show has a venue.)
   def complete?
     confirmed? && artists.any?
+  end
+
+  # Whether the show is full, has room on its waitlist, or is sold out follows
+  # its RSVPs' seats (T) against the venue's capacity (C) and the waitlist
+  # capacity (W): available below C, waitlisted from C, sold out from C + W.
+  # Waitlisted seats count in T, so waitlisting an RSVP doesn't change the
+  # state. Within Settings.show.availability_cutoff_hours of the start there's
+  # no time to work a waitlist: a full show goes straight to sold out, and no
+  # state goes back to a better one as seats free up.
+  def computed_availability
+    return availability unless confirmed? && start && !occurred?
+
+    seats = rsvps.yes.sum(:seats_reserved)
+    capacity = venue.capacity
+    waitlist_limit = capacity + Settings.show.waitlist_capacity
+
+    if start <= Settings.show.availability_cutoff_hours.hours.from_now
+      limit = waitlisted? ? waitlist_limit : capacity
+      return seats >= limit ? "sold_out" : availability
+    end
+
+    if seats >= waitlist_limit
+      "sold_out"
+    elsif seats >= capacity
+      "waitlisted"
+    else
+      "available"
+    end
+  end
+
+  # Saves the computed availability on a saved show, for when its RSVPs or
+  # venue capacity change. It skips validations and callbacks, which have
+  # nothing to say about it.
+  def update_availability
+    value = computed_availability
+    update_columns(availability: value) unless value == availability # rubocop:disable Rails/SkipsModelValidations
   end
 
   def can_waitlist_rsvps?
@@ -221,6 +258,10 @@ class Show < ApplicationRecord
   end
 
   private
+
+    def assign_availability
+      self.availability = computed_availability
+    end
 
     # A new date gets its own reminders: the automatic attempt is reset, and
     # reminders sent before now no longer count (see reminders_handled?).
