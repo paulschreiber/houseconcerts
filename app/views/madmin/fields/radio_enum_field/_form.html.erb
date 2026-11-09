@@ -6,3 +6,6 @@
     </label>
   <% end %>
 </div>
+<% if field.options[:hint] %>
+  <small><%= field.options[:hint].call %></small>
+<% end %>
