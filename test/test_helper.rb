@@ -16,6 +16,24 @@ module ActiveSupport
 
     fixtures :all
 
+    # Books the seats as yes RSVPs, in parties of the most seats allowed. Each
+    # one recalculates the show's availability. Returns the RSVPs.
+    def book(show, seats)
+      parties = []
+      while seats.positive?
+        party = [ seats, Settings.show.max_seats ].min
+        parties << RSVP.create!(show:, first_name: "Jane", last_name: "Smith", email: "jane-#{SecureRandom.hex(4)}@example.com",
+                                response: "yes", seats_reserved: party)
+        seats -= party
+      end
+      parties
+    end
+
+    # The fixture venue, shrunk to the smallest capacity a venue can have.
+    def small_venue
+      venues(:one).tap { |venue| venue.update_columns(capacity: Settings.venue.min_capacity) } # rubocop:disable Rails/SkipsModelValidations
+    end
+
     def load_rake_tasks
       Rails.application.load_tasks unless Rake::Task.task_defined?("next_show:invite")
     end

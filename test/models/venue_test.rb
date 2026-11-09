@@ -19,6 +19,20 @@ class VenueTest < ActiveSupport::TestCase
     assert_includes venue.errors.attribute_names, :province
   end
 
+  test "changing the capacity recalculates the availability of upcoming shows only" do
+    venue = venues(:one)
+    show = shows(:upcoming)
+    past = shows(:past)
+    past.update_columns(availability: "sold_out") # rubocop:disable Rails/SkipsModelValidations
+    book(show, 12)
+    assert_equal "available", show.reload.availability
+
+    venue.update!(capacity: Settings.venue.min_capacity)
+
+    assert_equal "waitlisted", show.reload.availability
+    assert_equal "sold_out", past.reload.availability
+  end
+
   test "a blank capacity gets one error" do
     venue = venues(:one)
     venue.capacity = nil
