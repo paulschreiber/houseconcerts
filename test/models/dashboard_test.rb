@@ -16,6 +16,29 @@ class DashboardTest < ActiveSupport::TestCase
     assert_equal 2, @dashboard.invites_sent
   end
 
+  test "next_show_waitlisted_rsvps counts the next show's waitlisted yes RSVPs" do
+    rsvp(shows(:upcoming), "Jane", confirmed: "waitlisted")
+    rsvp(shows(:upcoming), "John", confirmed: "waitlisted", seats_reserved: 3)
+    rsvp(shows(:upcoming), "Joan", response: "no")
+    other = shows(:sold_out)
+    other.update!(availability: "available")
+    rsvp(other, "Jill", confirmed: "waitlisted")
+
+    assert_equal 2, @dashboard.next_show_waitlisted_rsvps
+  end
+
+  test "waitlisted_seats_by_show sums waitlisted yes seats for each show" do
+    rsvp(shows(:upcoming), "Jane", confirmed: "waitlisted")
+    rsvp(shows(:upcoming), "John", confirmed: "waitlisted", seats_reserved: 3)
+    rsvp(shows(:upcoming), "Joan")
+    shows(:sold_out).update!(availability: "available")
+    rsvp(shows(:sold_out), "Jill", confirmed: "waitlisted", seats_reserved: 1)
+
+    shows = [ shows(:upcoming), shows(:sold_out), shows(:past) ]
+
+    assert_equal({ shows(:upcoming).id => 5, shows(:sold_out).id => 1 }, @dashboard.waitlisted_seats_by_show(shows))
+  end
+
   test "invites_opened counts invited people who opened an invite to the next show" do
     jane, john, joan = %w[Jane John Joan].map { |name| person(name) }
     sent(jane, kind: "invite")
