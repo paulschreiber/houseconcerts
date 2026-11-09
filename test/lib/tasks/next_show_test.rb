@@ -257,8 +257,8 @@ class NextShowRakeTest < ActiveSupport::TestCase
   end
 
   test "confirm waitlists unconfirmed rsvps and delivers waitlisted emails when the show is waitlisted" do
-    shows(:upcoming).update!(availability: "waitlisted")
     rsvp = RSVP.create!(show: shows(:upcoming), email: "to-waitlist@example.com", first_name: "To", last_name: "Waitlist", response: "yes", seats_reserved: 1)
+    shows(:upcoming).update!(availability: "waitlisted")
 
     assert_emails 1 do
       capture_io { Rake::Task["next_show:confirm"].invoke }

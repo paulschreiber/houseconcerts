@@ -269,6 +269,116 @@ class ShowTest < ActiveSupport::TestCase
     assert_not shows(:past).accepting_rsvps?
   end
 
+  # The venue holds 10 seats and the waitlist Settings.show.waitlist_capacity
+  # more. The upcoming show already has 2 seats from a fixture RSVP.
+  test "availability moves from available to waitlisted to sold out as seats are booked" do
+    show = shows(:upcoming)
+    small_venue
+
+    book(show, 7)
+    assert_equal "available", show.reload.availability
+
+    book(show, 1)
+    assert_equal "waitlisted", show.reload.availability
+
+    book(show, Settings.show.waitlist_capacity - 1)
+    assert_equal "waitlisted", show.reload.availability
+
+    book(show, 1)
+    assert_equal "sold_out", show.reload.availability
+  end
+
+  test "availability counts waitlisted seats, so waitlisting an RSVP doesn't change it" do
+    show = shows(:upcoming)
+    small_venue
+    book(show, 8).first.waitlist!
+
+    assert_equal "waitlisted", show.reload.availability
+  end
+
+  test "availability returns to available when seats free up" do
+    show = shows(:upcoming)
+    small_venue
+    parties = book(show, 8)
+    assert_equal "waitlisted", show.reload.availability
+
+    parties.first.cancel!
+    assert_equal "available", show.reload.availability
+
+    book(show, 4).last.destroy
+    assert_equal "available", show.reload.availability
+  end
+
+  test "an admin's sold out is recalculated when RSVPs change" do
+    show = shows(:upcoming)
+    show.update!(availability: "sold_out")
+
+    rsvps(:one).cancel!
+
+    assert_equal "available", show.reload.availability
+  end
+
+  test "a show close to its start goes straight to sold out when full, with no waitlist" do
+    show = shows(:upcoming)
+    small_venue
+    start_soon(show)
+
+    book(show, 7)
+    assert_equal "available", show.reload.availability
+
+    book(show, 1)
+    assert_equal "sold_out", show.reload.availability
+  end
+
+  test "a show close to its start doesn't go back to a better availability" do
+    show = shows(:upcoming)
+    small_venue
+    parties = book(show, 8)
+    assert_equal "waitlisted", show.reload.availability
+    start_soon(show)
+
+    parties.first.cancel!
+    assert_equal "waitlisted", show.reload.availability
+
+    show.update_columns(availability: "sold_out") # rubocop:disable Rails/SkipsModelValidations
+    show.update_availability
+    assert_equal "sold_out", show.reload.availability
+  end
+
+  test "a waitlisted show close to its start sells out once the waitlist is full" do
+    show = shows(:upcoming)
+    small_venue
+    book(show, 8)
+    start_soon(show)
+
+    book(show, Settings.show.waitlist_capacity)
+
+    assert_equal "sold_out", show.reload.availability
+  end
+
+  test "availability is left alone for cancelled and past shows" do
+    cancelled = shows(:upcoming)
+    cancelled.update!(status: "cancelled", availability: "sold_out")
+    past = shows(:past)
+    past.update_columns(availability: "sold_out") # rubocop:disable Rails/SkipsModelValidations
+
+    cancelled.update_availability
+    past.update_availability
+
+    assert_equal "sold_out", cancelled.reload.availability
+    assert_equal "sold_out", past.reload.availability
+  end
+
+  test "changing a show's venue recalculates its availability" do
+    show = shows(:upcoming)
+    book(show, 8)
+    small = Venue.create!(venues(:one).attributes.except("id", "slug").merge("name" => "Small Venue", "capacity" => 10))
+
+    show.update!(venue: small)
+
+    assert_equal "waitlisted", show.reload.availability
+  end
+
   test "rsvps.awaiting_confirmation returns unconfirmed and waitlisted yes rsvps" do
     show = shows(:upcoming)
     unconfirmed = RSVP.create!(show:, email: "unconfirmed@example.com", first_name: "Jane", last_name: "Smith", response: "yes", seats_reserved: 1)
@@ -405,4 +515,12 @@ class ShowTest < ActiveSupport::TestCase
     show.reload.artists = []
     assert_not show.complete?, "no artists"
   end
+
+  private
+
+    # Moves the show inside the window where it gets no waitlist.
+    def start_soon(show)
+      soon = (Settings.show.availability_cutoff_hours - 1).hours.from_now
+      show.update_columns(start: soon, end: soon + 2.hours) # rubocop:disable Rails/SkipsModelValidations
+    end
 end

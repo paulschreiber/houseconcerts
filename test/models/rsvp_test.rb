@@ -512,6 +512,22 @@ class RsvpTest < ActiveSupport::TestCase
     assert_not_includes RSVP.nonsubscribers, rsvp
   end
 
+  test "cancelling or deleting an rsvp recalculates the show's availability" do
+    show = shows(:upcoming)
+    small_venue
+    parties = book(show, 8)
+    assert_equal "waitlisted", show.reload.availability
+
+    parties.first.cancel!
+    assert_equal "available", show.reload.availability
+
+    parties.first.update!(response: "yes", seats_reserved: 4)
+    assert_equal "waitlisted", show.reload.availability
+
+    parties.last.destroy
+    assert_equal "available", show.reload.availability
+  end
+
   test "rejects a new yes rsvp for a sold out show" do
     rsvp = RSVP.new(
       first_name: "Sold",
@@ -529,6 +545,7 @@ class RsvpTest < ActiveSupport::TestCase
   test "rejects switching an existing rsvp from no to yes on a sold out show" do
     rsvp = rsvps(:one)
     rsvp.update!(show: shows(:sold_out), response: "no")
+    shows(:sold_out).update!(availability: "sold_out")
 
     rsvp.response = "yes"
     rsvp.seats_reserved = 2
@@ -540,6 +557,7 @@ class RsvpTest < ActiveSupport::TestCase
   test "rejects increasing seats_reserved on an already-yes rsvp for a sold out show" do
     rsvp = rsvps(:one)
     rsvp.update!(show: shows(:sold_out), response: "yes", seats_reserved: 1)
+    shows(:sold_out).update!(availability: "sold_out")
 
     rsvp.seats_reserved = 2
 
