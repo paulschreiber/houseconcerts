@@ -39,7 +39,15 @@ module Madmin
 
       assert_select "td", text: /Jane Smith\s+Waitlisted/
       assert_select ".metric", text: /Seats\s+2\s+2 confirmed · 0 unconfirmed/
-      assert_select ".metric", text: /Waitlisted\s+4/
+      assert_select ".metric", text: /Waitlisted\s+4\s+seats · 1 RSVP/
+    end
+
+    test "shows the seats waiting beside an upcoming show's seats" do
+      rsvp(shows(:upcoming), "Jane", confirmed: "waitlisted", seats_reserved: 4)
+
+      get madmin_root_path
+
+      assert_select "td.num small", text: "(+4 waiting)"
     end
 
     test "shows seats with a yes response in the recent RSVPs" do
