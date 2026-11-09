@@ -30,6 +30,11 @@ class Dashboard
     @next_show_seats ||= next_show_rsvps.yes.group(:confirmed).sum(:seats_reserved)
   end
 
+  # How many of the next show's yes RSVPs are on the waitlist.
+  def next_show_waitlisted_rsvps
+    @next_show_waitlisted_rsvps ||= next_show_rsvps.yes.confirmed_waitlisted.count
+  end
+
   # People an invite batch sent the next show's invite to, counting each
   # once. Single invites (InvitePerson) aren't recorded, so aren't counted.
   def invites_sent
@@ -69,6 +74,11 @@ class Dashboard
   # Seats reserved, keyed by show id.
   def seats_by_show(shows)
     RSVP.where(show: shows).holding_seats.group(:show_id).sum(:seats_reserved)
+  end
+
+  # Seats on waitlisted RSVPs, keyed by show id.
+  def waitlisted_seats_by_show(shows)
+    RSVP.where(show: shows).yes.confirmed_waitlisted.group(:show_id).sum(:seats_reserved)
   end
 
   def recent_opens
