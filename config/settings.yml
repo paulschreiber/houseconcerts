@@ -27,6 +27,8 @@
   :min_seats: 1
   :max_seats: 4
   :max_seats_used: 10
+  :waitlist_capacity: 10
+  :availability_cutoff_hours: 8
 
 :reminders:
   # Reminders go out automatically this many days before a show, at this
