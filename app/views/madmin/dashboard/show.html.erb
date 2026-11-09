@@ -68,7 +68,7 @@
         <div class="metric">
           <h4>Waitlisted</h4>
           <p><%= seats.fetch("waitlisted", 0) %></p>
-          <small>seats</small>
+          <small>seats · <%= pluralize(@dashboard.next_show_waitlisted_rsvps, "RSVP") %></small>
         </div>
       </div>
 
@@ -168,6 +168,7 @@
     </header>
     <% if (shows = @dashboard.upcoming_shows.to_a).any? %>
       <% seats_by_show = @dashboard.seats_by_show(shows) %>
+      <% waiting_by_show = @dashboard.waitlisted_seats_by_show(shows) %>
       <table>
         <thead>
           <tr>
@@ -183,7 +184,10 @@
               <td class="when"><%= upcoming.start.strftime("%a, %b %-d") %></td>
               <td><%= link_to upcoming.name, madmin_show_path(upcoming) %></td>
               <td class="hide-on-phone"><%= show_badge(upcoming.confirmed? ? upcoming.availability : upcoming.status) %></td>
-              <td class="num"><%= seats_by_show.fetch(upcoming.id, "—") %></td>
+              <td class="num">
+                <%= seats_by_show.fetch(upcoming.id, "—") %>
+                <% if (waiting = waiting_by_show[upcoming.id]) %><small>(+<%= waiting %> waiting)</small><% end %>
+              </td>
             </tr>
           <% end %>
         </tbody>
