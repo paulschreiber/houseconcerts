@@ -9,6 +9,7 @@ A web app for managing house concerts.
 - Upcoming and past shows, and a calendar feed
 - Mailing-list signup and one-click unsubscribe
 - RSVPs that guests can change or cancel from their email, with a waitlist for full shows
+- Shows switch between available, waitlisted and sold out automatically as RSVPs come in, based on the venue’s capacity and the waitlist capacity
 
 ### Shows and invites
 

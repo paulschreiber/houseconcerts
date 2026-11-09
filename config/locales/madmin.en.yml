@@ -6,6 +6,7 @@ en:
       # See MadminPatches::DeleteConfirmation.
       delete: "Are you sure you want to delete the %{resource} %{name}?"
     shows:
+      availability_hint: "Set automatically from the RSVPs and the venue’s capacity, and recalculated whenever they change. Within %{hours} hours of the show, it only moves toward sold out, with no waitlist."
       attendance:
         not_saved: "Attendance wasn’t saved. Enter a valid number of seats used for each attendee."
         seats_used_blank: "Enter the seats used."
