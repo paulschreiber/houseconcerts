@@ -9,6 +9,7 @@ class Venue < ApplicationRecord
   has_many :shows, dependent: :restrict_with_error
 
   before_validation :upcase_province_and_country
+  after_update :update_shows_availability, if: :saved_change_to_capacity?
 
   validates :name, presence: true
   validates :address, presence: true
@@ -51,4 +52,10 @@ class Venue < ApplicationRecord
   def formatted_contact_info
     markdown_renderer.render(contact_info) if contact_info
   end
+
+  private
+
+    def update_shows_availability
+      shows.upcoming.each(&:update_availability)
+    end
 end

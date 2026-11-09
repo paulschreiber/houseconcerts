@@ -31,8 +31,10 @@ class RSVP < ApplicationRecord
   before_save :update_confirmation_date
   before_save :update_cancellation_date
   before_save :update_response_date
+  after_destroy :update_show_availability, unless: :destroyed_by_association
   after_save :update_phone_number
   after_save -> { NotifyAdminOfRSVP.call(self) }
+  after_save :update_show_availability, if: -> { saved_change_to_response? || saved_change_to_seats_reserved? }
 
   attribute :uniqid, default: -> { SecureRandom.alphanumeric(Settings.uniqid_length) }
 
@@ -86,6 +88,10 @@ class RSVP < ApplicationRecord
     # already emailed.
     self.confirmation_emailed_at = nil
     self.waitlist_emailed_at = nil
+  end
+
+  def update_show_availability
+    show&.update_availability
   end
 
   def tickets_available?
