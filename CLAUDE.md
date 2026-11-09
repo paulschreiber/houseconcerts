@@ -39,6 +39,7 @@ Lint before every commit. CI runs all of these and fails on any offense.
 - Prefer a framework or gem’s extension points (hooks, subclass overrides, config) over monkey patching. If a patch can’t be avoided, prepend a named module (as `MadminPatches` does) and comment why it’s needed. Copy a whole gem template (e.g. a Madmin view) only when neither works.
 - When working around a bug in a gem, say so in a comment that names the gem version, so the workaround can be removed once it’s fixed upstream.
 - Comments describe what the code does now and why. No history (“used to”, “previously”); that belongs in commit messages.
+- Don’t add comments to new entries in `config/settings.yml`. Explain how a setting is used where the code reads it.
 - Write Ruby methods as `def … end`, never endless `def x = …` (RuboCop enforces this).
 - End JavaScript statements with semicolons, including in generator output (ESLint and Prettier enforce this).
 - Normalize input in the model (`normalizes`) instead of in each caller.
