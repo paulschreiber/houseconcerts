@@ -129,11 +129,14 @@ class Show < ApplicationRecord
     capacity = venue.capacity
     waitlist_limit = capacity + Settings.show.waitlist_capacity
 
+    # After the cutoff, availability is no longer opened up: it stays as set
+    # and can only change to sold out.
     if start <= Settings.show.availability_cutoff_hours.hours.from_now
       limit = waitlisted? ? waitlist_limit : capacity
       return seats >= limit ? "sold_out" : availability
     end
 
+    # Before the cutoff, availability follows the seat counts alone.
     if seats >= waitlist_limit
       "sold_out"
     elsif seats >= capacity
