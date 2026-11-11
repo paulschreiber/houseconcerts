@@ -1,0 +1,10 @@
+<%# An association's errors, after its field. They're on the association (venue,
+    venue_groups), not its foreign key (venue_id), so form_error.rb doesn't
+    see them. %>
+<% messages = record.errors[field.attribute_name].uniq %>
+<% if messages.any? %>
+  <% ((@inline_error_attributes ||= {}.compare_by_identity)[record] ||= Set.new) << field.attribute_name.to_s %>
+  <% messages.each do |message| %>
+    <%= tag.p message, class: "error" %>
+  <% end %>
+<% end %>

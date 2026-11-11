@@ -4,6 +4,9 @@ en:
       models:
         artist:
           attributes:
+            name:
+              blank: "Enter the artist’s name."
+              invalid: "Enter the artist’s name."
             photo:
               format: "%{message}"
               content_type: "the photo must be a JPEG, HEIC, AVIF or WebP file"

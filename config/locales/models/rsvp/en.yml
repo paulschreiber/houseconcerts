@@ -37,6 +37,6 @@ en:
             response:
               inclusion: "Select whether or not you’re coming"
             confirmed:
-              inclusion: "Select a valid confirmation status"
+              inclusion: "Select a valid confirmation status."
             show:
-              required: "Select a show"
+              required: "Select a show."

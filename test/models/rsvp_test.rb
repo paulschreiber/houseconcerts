@@ -21,7 +21,7 @@ class RsvpTest < ActiveSupport::TestCase
     rsvp.confirmed = "pending"
 
     assert_not rsvp.valid?
-    assert_equal [ "Select a valid confirmation status" ], rsvp.errors[:confirmed]
+    assert_equal [ "Select a valid confirmation status." ], rsvp.errors[:confirmed]
   end
 
   test "rejects values longer than the form allows" do
@@ -659,7 +659,7 @@ class RsvpTest < ActiveSupport::TestCase
     rsvp.show_id = 0
 
     assert_not rsvp.valid?
-    assert_includes rsvp.errors[:show], "Select a show"
+    assert_includes rsvp.errors[:show], "Select a show."
   end
 
   # The messages are full sentences shown under each field, so full_messages

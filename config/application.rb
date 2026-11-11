@@ -32,6 +32,10 @@ module Houseconcerts
     # config/locales/models/*/en.yml).
     config.active_model.i18n_customize_full_message = true
 
+    # Lets the en-admin locale (see Madmin::ApplicationController) override only
+    # the messages it words differently and use the en ones for the rest.
+    config.i18n.fallbacks = true
+
     # Only photo sizes (Active Storage variants) are served; config/routes.rb
     # draws just their route. Active Storage's own routes would serve the
     # stored photo itself to anyone with a photo size's URL (both use the same

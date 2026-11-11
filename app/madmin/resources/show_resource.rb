@@ -20,7 +20,7 @@ class ShowResource < Madmin::Resource
   attribute :price
   attribute :created_at
   attribute :updated_at
-  attribute :availability, field: RadioEnumField, hint: -> { I18n.t("madmin.shows.availability_hint", hours: Settings.show.availability_cutoff_hours) }
+  attribute :availability, field: RadioEnumField
   attribute :status, field: RadioEnumField
 
   # Associations

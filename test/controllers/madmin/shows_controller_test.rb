@@ -30,8 +30,8 @@ module Madmin
       end
 
       assert_response :unprocessable_content
-      assert_select "p.error", text: "Enter a valid start date/time"
-      assert_select "p.error", text: "Enter a price for the show", count: 1
+      assert_select "p.error", text: "Enter a valid start date/time."
+      assert_select "p.error", text: "Enter a price for the show.", count: 1
     end
 
     test "edit renders successfully" do
@@ -67,13 +67,13 @@ module Madmin
       assert_response :unprocessable_content
     end
 
-    test "create lists an error with no field of its own above the form" do
+    test "create shows the venue error after the venue field, with no summary" do
       post madmin_shows_path, params: { show: { name: "", start: 2.months.from_now.iso8601, venue_id: "", price: 20 } }
 
       assert_response :unprocessable_content
-      assert_select ".form-errors li", text: "Select a venue"
-      assert_select ".form-errors li", text: /show name/, count: 0
-      assert_select "p.error", text: "Enter a show name"
+      assert_select ".form-group select[name='show[venue_id]'] ~ p.error", text: "Select a venue.", count: 1
+      assert_select ".form-errors", count: 0
+      assert_select "p.error", text: "Enter a show name."
     end
 
     test "update updates the show and redirects to its show page" do

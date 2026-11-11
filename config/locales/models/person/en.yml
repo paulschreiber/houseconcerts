@@ -31,4 +31,4 @@ en:
               invalid: "Enter your zip code"
               too_long: "Your zip code cannot be longer than %{count} characters"
             status:
-              inclusion: "Select a valid status"
+              inclusion: "Select a valid status."

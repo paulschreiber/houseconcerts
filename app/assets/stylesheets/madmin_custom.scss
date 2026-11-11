@@ -6,6 +6,17 @@
   font-weight: 700;
 }
 
+/* A field with errors is wrapped in an inline span (form_error.rb), which
+   leaves a line's descender gap under the field. Make it a block, so its
+   error follows directly. */
+.form-group span.field_with_errors {
+  display: block;
+}
+
+.form-group p.error {
+  margin: 0.25rem 0 0;
+}
+
 /* Edit form: Update ends the resource form on its own row. Delete (its own
    button_to form) and Cancel (a plain link) render after that form closes,
    so they're free to share this flex row -- no need to collapse either

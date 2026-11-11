@@ -104,6 +104,15 @@ module Madmin
       assert_response :unprocessable_content
     end
 
+    test "create words its errors for the admin, falling back to the public ones" do
+      post madmin_rsvps_path, params: { rsvp: { first_name: "", show_id: "" } }
+
+      assert_response :unprocessable_content
+      assert_select "p.error", text: "Enter a first name."
+      assert_select "p.error", text: "Select a show."
+      assert_select "p.error", text: /translation missing/i, count: 0
+    end
+
     test "update updates the rsvp and redirects to its show page" do
       patch madmin_rsvp_path(@rsvp), params: { rsvp: { first_name: "Updated" } }
 

@@ -125,7 +125,7 @@ class PersonTest < ActiveSupport::TestCase
     person.status = "archived"
 
     assert_not person.valid?
-    assert_equal [ "Select a valid status" ], person.errors.full_messages
+    assert_equal [ "Select a valid status." ], person.errors.full_messages
   end
 
   test "status predicate methods reflect the status attribute" do
