@@ -41,4 +41,4 @@ Admins can also sign in with a passkey instead of a password. Password login sta
 
 ## Deployment
 
-Production runs on Apache and Phusion Passenger. See [`INFRASTRUCTURE.md`](INFRASTRUCTURE.md) for hosting, email (Amazon SES) and Cloudflare, and [`SETUP.md`](SETUP.md) for the server’s deploy user and deploys from GitHub Actions.
+Production runs on Apache and Phusion Passenger. See [`INFRASTRUCTURE.md`](INFRASTRUCTURE.md) for hosting, email (Amazon SES) and Cloudflare, and [`SETUP.md`](SETUP.md) for the server’s deploy user and deploys from GitHub Actions. On the server, run the console and rake tasks as the deploy user (see “Running commands in production” in `INFRASTRUCTURE.md`).

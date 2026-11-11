@@ -299,6 +299,25 @@ Both are in the `houseconcerts` group, which can read the app’s secrets in
 `systemctl restart houseconcerts-solidqueue` (see [sudo](#sudo)). To work on
 the server as it, log in as yourself and run `sudo -iu houseconcerts-deploy`.
 
+### Running commands in production
+
+Run the console, rake tasks and `rails runner` as `houseconcerts-deploy`, from
+`current`:
+
+```sh
+sudo -iu houseconcerts-deploy
+cd /data/sites/houseconcerts/current
+RAILS_ENV=production bundle exec rails console
+```
+
+Other users can’t read `shared/config` (it holds the database password and
+`master.key`). As root, the command runs, but it leaves root-owned files in
+`shared/storage` (uploaded photos and their sizes) and `shared/log`. The web app
+runs as the deploy user and then can’t write to those directories: uploads and
+new photo sizes fail with `Permission denied`. After running something as root,
+check with `sudo find /data/sites/houseconcerts/shared -not -user houseconcerts-deploy`
+and fix what it lists with `chown`.
+
 ### sudo
 
 The deploy user’s one sudo rule, for the `solid_queue:restart` Capistrano task,
