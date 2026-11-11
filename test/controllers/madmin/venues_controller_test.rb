@@ -42,7 +42,7 @@ module Madmin
       assert_difference "Venue.count", 1 do
         post madmin_venues_path, params: { venue: {
           name: "New Venue", address: "456 Side St", city: "Brooklyn", province: "NY",
-          postcode: "11201", country: "US", capacity: 40
+          postcode: "11201", country: "US", capacity: 40, venue_group_ids: [ venue_groups(:two).id ]
         } }
       end
 
@@ -55,6 +55,19 @@ module Madmin
       end
 
       assert_response :unprocessable_content
+    end
+
+    test "create without a venue group shows the error after the field" do
+      assert_no_difference "Venue.count" do
+        post madmin_venues_path, params: { venue: {
+          name: "New Venue", address: "456 Side St", city: "Brooklyn", province: "NY",
+          postcode: "11201", country: "US", capacity: 40
+        } }
+      end
+
+      assert_response :unprocessable_content
+      assert_select "p.error", text: "Select at least one venue group.", count: 1
+      assert_select ".form-errors", count: 0
     end
 
     test "update updates the venue and redirects to its show page" do
@@ -76,8 +89,7 @@ module Madmin
     end
 
     test "destroy destroys the venue and redirects to the index page" do
-      venue = venues(:one).dup.tap { |copy| copy.name = "Empty Hall" }
-      venue.save!
+      venue = create_venue(name: "Empty Hall")
 
       assert_difference "Venue.count", -1 do
         delete madmin_venue_path(venue)
@@ -99,8 +111,7 @@ module Madmin
     end
 
     test "index lists venues by name, with the sort arrow on Name" do
-      zebra = venues(:one).dup.tap { |venue| venue.name = "Zebra Hall" }
-      zebra.save!
+      create_venue(name: "Zebra Hall")
       venues(:one).update!(name: "Aardvark Hall")
       # Newest first (Madmin's default) would put Zebra first.
       venues(:one).update_column(:created_at, 1.day.ago) # rubocop:disable Rails/SkipsModelValidations

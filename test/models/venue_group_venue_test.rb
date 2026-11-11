@@ -16,7 +16,8 @@ class VenueGroupVenueTest < ActiveSupport::TestCase
     venue_group = venue_groups(:one)
     VenueGroupVenue.create!(venue_group: venue_group, venue: venues(:one))
     other_venue = Venue.create!(name: "Other Venue", address: "456 Elm St", city: "Brooklyn",
-                                province: "NY", postcode: "11201", country: "US", capacity: 30)
+                                province: "NY", postcode: "11201", country: "US", capacity: 30,
+                                venue_groups: [ venue_groups(:two) ])
 
     assert VenueGroupVenue.new(venue_group: venue_group, venue: other_venue).valid?
   end

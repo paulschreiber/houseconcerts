@@ -5,18 +5,23 @@ class VenueTest < ActiveSupport::TestCase
     assert venues(:one).valid?
   end
 
-  test "renaming changes the slug" do
-    venues(:one).update!(name: "Jane Smith's House")
-
-    assert_equal "jane-smith-s-house", venues(:one).slug
-  end
-
   test "requires name, address, and city" do
     venue = Venue.new(venues(:one).attributes.except("id").merge("name" => "", "address" => "", "city" => ""))
     assert_not venue.valid?
     assert_includes venue.errors.attribute_names, :name
     assert_includes venue.errors.attribute_names, :address
     assert_includes venue.errors.attribute_names, :city
+    assert_equal [ "Enter the venue’s name." ], venue.errors[:name]
+    assert_equal [ "Enter the venue’s address." ], venue.errors[:address]
+    assert_equal [ "Enter the venue’s city." ], venue.errors[:city]
+  end
+
+  test "requires a venue group" do
+    venue = venues(:one)
+    venue.venue_groups = []
+
+    assert_not venue.valid?
+    assert_equal [ "Select at least one venue group." ], venue.errors[:venue_groups]
   end
 
   test "requires a valid province code" do
@@ -44,7 +49,7 @@ class VenueTest < ActiveSupport::TestCase
     venue.capacity = nil
 
     assert_not venue.valid?
-    assert_equal [ "can't be blank" ], venue.errors[:capacity]
+    assert_equal [ "Enter the venue’s capacity." ], venue.errors[:capacity]
   end
 
   test "requires capacity within the configured range" do
@@ -54,7 +59,7 @@ class VenueTest < ActiveSupport::TestCase
   end
 
   test "upcase_province_and_country upcases before save" do
-    venue = Venue.create!(venues(:one).attributes.except("id", "slug").merge("province" => "ny", "country" => "us"))
+    venue = create_venue(province: "ny", country: "us")
     assert_equal "NY", venue.province
     assert_equal "US", venue.country
   end

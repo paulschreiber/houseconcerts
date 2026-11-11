@@ -10,6 +10,7 @@ class VenueGroupTest < ActiveSupport::TestCase
     venue_group = VenueGroup.new(name: "")
     assert_not venue_group.valid?
     assert_includes venue_group.errors.attribute_names, :name
+    assert_equal [ "Enter the venue group’s name." ], venue_group.errors[:name]
   end
 
   test "adding a venue creates the join record" do

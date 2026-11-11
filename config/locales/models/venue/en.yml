@@ -1,0 +1,27 @@
+en:
+  activerecord:
+    errors:
+      models:
+        venue:
+          format: "%{message}"
+          attributes:
+            name:
+              blank: "Enter the venue’s name."
+            address:
+              blank: "Enter the venue’s address."
+            city:
+              blank: "Enter the venue’s city."
+            province:
+              inclusion: "Enter a valid province."
+            postcode:
+              invalid: "Enter a valid postal code."
+            country:
+              inclusion: "Enter a valid country."
+            venue_groups:
+              blank: "Select at least one venue group."
+            capacity:
+              blank: "Enter the venue’s capacity."
+              not_a_number: "Enter the venue’s capacity as a number."
+              not_an_integer: "Enter the venue’s capacity as a whole number."
+              greater_than_or_equal_to: "The capacity must be at least %{count}."
+              less_than_or_equal_to: "The capacity cannot be more than %{count}."
