@@ -428,9 +428,6 @@ with a photo size’s URL, and accept uploads from anyone.
     <LocationMatch "^/assets/">
         Header set Cache-Control "public, max-age=31536000, immutable"
     </LocationMatch>
-    <LocationMatch "^/photos/">
-        Header set Cache-Control "public, max-age=604800"
-    </LocationMatch>
 
     # Redirect other host names (e.g. www.) to the canonical one.
     RewriteEngine on
@@ -454,15 +451,13 @@ Apache serves the files in `public/` itself, so Rails’
   (`application-9346c3cd.css`) that changes whenever its content does, so
   browsers can keep it, without rechecking (`immutable`), until the name
   changes.
-- **`/photos/`, 7 days:** an artist photo keeps its name when it’s replaced, so
-  a new photo shows up within 7 days.
 
 Uploaded photos (`/rails/active_storage/`) don’t come from `public/`, so Rails
 sets their `Cache-Control` itself: public and cached indefinitely, since a
 replaced photo gets a new URL.
 
-To check, `curl -sI` a stylesheet and a photo. Their `cache-control` should
-show `max-age=31536000, immutable` and `max-age=604800`.
+To check, `curl -sI` a stylesheet. Its `cache-control` should show
+`max-age=31536000, immutable`.
 
 ### Real visitor IPs
 
