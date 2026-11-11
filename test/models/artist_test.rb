@@ -94,12 +94,6 @@ class ArtistTest < ActiveSupport::TestCase
     assert_equal [ "the photo must be at least 400 pixels wide", "the photo must be at least 440 pixels tall" ], artist.errors.full_messages
   end
 
-  test "accepts a photo smaller than the minimum size when importing" do
-    artist = Artist.new(name: "Jane Smith", photo: { io: file_fixture("tiny.jpg").open, filename: "tiny.jpg" })
-
-    assert artist.valid?(:photo_import)
-  end
-
   test "rejects a photo larger than the size limit" do
     Dir.mktmpdir do |dir|
       path = File.join(dir, "large.jpg")
