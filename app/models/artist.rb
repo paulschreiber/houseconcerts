@@ -33,8 +33,7 @@ class Artist < ApplicationRecord
   validates :name, presence: true
   validates :url, url: true, allow_blank: true
   validate :photo_must_be_usable, if: :new_photo?
-  # Most photos imported from public/photos/headshots are smaller.
-  validate :photo_must_be_big_enough, if: :new_photo?, except_on: :photo_import
+  validate :photo_must_be_big_enough, if: :new_photo?
   before_save :store_new_photo_as_clean_jpeg, if: :new_photo?
   after_save :name_photo_after_slug, if: -> { photo.attached? && photo.filename != photo_filename }
 
