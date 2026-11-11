@@ -1,7 +1,5 @@
 class Show < ApplicationRecord
-  extend FriendlyId
-
-  friendly_id :name_slug_candidates, use: :slugged
+  include NamedSlug
 
   # In the order the artists were added, usually the headliner first.
   has_many :artist_shows, -> { order(:id) }, dependent: :delete_all, inverse_of: :show

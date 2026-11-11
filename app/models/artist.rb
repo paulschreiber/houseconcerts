@@ -1,5 +1,5 @@
 class Artist < ApplicationRecord
-  extend FriendlyId
+  include NamedSlug
 
   # The photo's sizes, as [width, height]: twice the size they're shown at
   # (ArtistPhotosHelper), for high-resolution screens.
@@ -11,8 +11,6 @@ class Artist < ApplicationRecord
   PHOTO_MAX_PIXELS = 50_000_000
   PHOTO_MIN_SIZE = PHOTO_SIZES[:card]
   PHOTO_JPEG_QUALITY = 85
-
-  friendly_id :name_slug_candidates, use: :slugged
 
   has_many :artist_shows, dependent: :delete_all
   has_many :shows, through: :artist_shows
@@ -44,13 +42,6 @@ class Artist < ApplicationRecord
   def self.photo_limits
     { width: PHOTO_MIN_SIZE[0], height: PHOTO_MIN_SIZE[1], megapixels: PHOTO_MAX_PIXELS / 1_000_000,
       size: ActiveSupport::NumberHelper.number_to_human_size(PHOTO_MAX_BYTES) }
-  end
-
-  # A rename changes the slug. Defined here, not in a concern included by
-  # ApplicationRecord, so it takes precedence over friendly_id's Slugged
-  # module, which only fills in a blank slug.
-  def should_generate_new_friendly_id?
-    name_changed? || super
   end
 
   private
