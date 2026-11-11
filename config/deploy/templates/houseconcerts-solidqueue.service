@@ -14,11 +14,12 @@
 #   sudo systemctl enable houseconcerts-solidqueue
 #   sudo systemctl restart houseconcerts-solidqueue
 #
-# The sandboxing below makes everything read-only except the shared log
-# directory and the worker's cache directory (/var/cache/houseconcerts-jobs,
-# which systemd creates). It also hides /home: if Ruby or any gems live there
-# (e.g. rbenv in the deploy user's home), change ProtectHome=yes to
-# ProtectHome=read-only.
+# The sandboxing below makes everything read-only except the shared log and
+# storage directories and the worker's cache directory
+# (/var/cache/houseconcerts-jobs, which systemd creates). The worker writes
+# photo sizes to storage and deletes the files of replaced photos. It also
+# hides /home: if Ruby or any gems live there (e.g. rbenv in the deploy user's
+# home), change ProtectHome=yes to ProtectHome=read-only.
 #
 # After changing this file on the server, check it with:
 #   sudo systemd-analyze verify /etc/systemd/system/houseconcerts-solidqueue.service
@@ -44,15 +45,15 @@ Restart=always
 RestartSec=1
 
 # Sandboxing
-# Group-writable, so log files the worker creates stay writable for the web app
-# (which runs as the deploy user, also in the houseconcerts group), and not
-# readable by anyone else.
+# Group-writable, so log and storage files the worker creates stay writable for
+# the web app (which runs as the deploy user, also in the houseconcerts group),
+# and not readable by anyone else.
 UMask=0007
 NoNewPrivileges=yes
 CapabilityBoundingSet=
 ProtectSystem=strict
 ProtectHome=yes
-ReadWritePaths=/data/sites/houseconcerts/shared/log
+ReadWritePaths=/data/sites/houseconcerts/shared/log /data/sites/houseconcerts/shared/storage
 PrivateTmp=yes
 PrivateDevices=yes
 ProtectKernelTunables=yes
