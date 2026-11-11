@@ -1,8 +1,6 @@
 class Venue < ApplicationRecord
   include Geography
-  extend FriendlyId
-
-  friendly_id :name_slug_candidates, use: :slugged
+  include NamedSlug
 
   has_many :venue_group_venues, dependent: :delete_all
   has_many :venue_groups, through: :venue_group_venues
@@ -23,13 +21,6 @@ class Venue < ApplicationRecord
     greater_than_or_equal_to: Settings.venue.min_capacity,
     less_than_or_equal_to: Settings.venue.max_capacity
   }
-
-  # A rename changes the slug. Defined here, not in a concern included by
-  # ApplicationRecord, so it takes precedence over friendly_id's Slugged
-  # module, which only fills in a blank slug.
-  def should_generate_new_friendly_id?
-    name_changed? || super
-  end
 
   def province_name
     Carmen::Country.coded(Settings.default_country).subregions.coded(province)
