@@ -286,13 +286,13 @@ The app lives in `/data/sites/houseconcerts`, deployed there by Capistrano
 
 To set up a new server, or add a deploy key, follow [`SETUP.md`](SETUP.md).
 
-| User                   | What it does                                                                                     | Set up by                  |
-| ---------------------- | ------------------------------------------------------------------------------------------------ | -------------------------- |
-| `houseconcerts-deploy` | Capistrano logs in as it; owns the app directory; Passenger runs the web app as it               | `setup_deploy_user.sh`     |
-| `houseconcerts-jobs`   | runs the Solid Queue worker (`houseconcerts-solidqueue` systemd service); can only write to logs | `setup_solidqueue_user.sh` |
+| User                   | What it does                                                                                                 | Set up by                  |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------ | -------------------------- |
+| `houseconcerts-deploy` | Capistrano logs in as it; owns the app directory; Passenger runs the web app as it                           | `setup_deploy_user.sh`     |
+| `houseconcerts-jobs`   | runs the Solid Queue worker (`houseconcerts-solidqueue` systemd service); can only write to logs and storage | `setup_solidqueue_user.sh` |
 
 Both are in the `houseconcerts` group, which can read the app’s secrets in
-`shared/config` and write to `shared/log`.
+`shared/config` and write to `shared/log` and `shared/storage`.
 
 `houseconcerts-deploy` has no password and logs in only with the SSH keys in its
 `~/.ssh/authorized_keys`, each limited with `restrict`. Its only sudo right is
