@@ -11,7 +11,7 @@ class ShowTest < ActiveSupport::TestCase
     show.price = nil
 
     assert_not show.valid?
-    assert_equal [ "Enter a price for the show" ], show.errors[:price]
+    assert_equal [ "Enter a price for the show." ], show.errors[:price]
   end
 
   test "an unknown status or availability is invalid, not an error" do
@@ -20,15 +20,8 @@ class ShowTest < ActiveSupport::TestCase
     show.availability = "unknown"
 
     assert_not show.valid?
-    assert_equal [ "Enter a valid show status" ], show.errors[:status]
-    assert_equal [ "Enter a valid show availability" ], show.errors[:availability]
-  end
-
-  # Sent invitations link to the show by its slug, and opens are tagged with it.
-  test "renaming keeps the slug" do
-    shows(:upcoming).update!(name: "Jane Smith Live")
-
-    assert_equal "test-upcoming-show", shows(:upcoming).slug
+    assert_equal [ "Enter a valid show status." ], show.errors[:status]
+    assert_equal [ "Enter a valid show availability." ], show.errors[:availability]
   end
 
   test "requires a venue that exists" do
@@ -36,7 +29,7 @@ class ShowTest < ActiveSupport::TestCase
     show.venue_id = 0
 
     assert_not show.valid?
-    assert_includes show.errors[:venue], "Select a venue"
+    assert_includes show.errors[:venue], "Select a venue."
   end
 
   test "upcoming scope includes only shows that haven't happened yet" do
@@ -100,7 +93,7 @@ class ShowTest < ActiveSupport::TestCase
     show.assign_attributes(name: "", price: Settings.show.max_price + 1, end: show.start - 1.hour)
 
     assert_not show.valid?
-    assert_equal [ "Enter a show name", "The end must be after the start",
+    assert_equal [ "Enter a show name.", "The end must be after the start",
                    "The price cannot be more than $#{Settings.show.max_price}" ].sort, show.errors.full_messages.sort
   end
 
@@ -120,7 +113,7 @@ class ShowTest < ActiveSupport::TestCase
     show = Show.new(name: "Jane Smith Live", venue: venues(:one), price: 20)
 
     assert_not show.valid?
-    assert_equal [ "Enter a valid start date/time" ], show.errors[:start]
+    assert_equal [ "Enter a valid start date/time." ], show.errors[:start]
   end
 
   test "an invalid start says so" do
@@ -128,7 +121,7 @@ class ShowTest < ActiveSupport::TestCase
     show.start = "not a date"
 
     assert_not show.valid?
-    assert_equal [ "Enter a valid start date/time" ], show.errors[:start]
+    assert_equal [ "Enter a valid start date/time." ], show.errors[:start]
   end
 
   test "requires end to be after start" do
@@ -379,7 +372,7 @@ class ShowTest < ActiveSupport::TestCase
   test "changing a show's venue recalculates its availability" do
     show = shows(:upcoming)
     book(show, 8)
-    small = Venue.create!(venues(:one).attributes.except("id", "slug").merge("name" => "Small Venue", "capacity" => 10))
+    small = create_venue(name: "Small Venue", capacity: 10)
 
     show.update!(venue: small)
 

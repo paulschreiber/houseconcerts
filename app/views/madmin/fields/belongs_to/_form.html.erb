@@ -1,0 +1,4 @@
+<%# A copy of Madmin 3.4.1's belongs_to field form, with the association's
+    errors added after the select. %>
+<%= form.select field.to_param, field.options_for_select(record), { prompt: true }, { class: "form-input", data: { controller: "select", select_url_value: field.index_path } } %>
+<%= render "madmin/application/association_errors", field: field, record: record %>

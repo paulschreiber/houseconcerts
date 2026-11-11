@@ -434,8 +434,8 @@ module Madmin
       patch madmin_person_path(@person), params: { person: { first_name: "", last_name: "" } }
 
       assert_response :unprocessable_content
-      assert_select "p.error", text: "Enter your first name", count: 1
-      assert_select "p.error", text: "Enter your last name", count: 1
+      assert_select "p.error", text: "Enter a first name.", count: 1
+      assert_select "p.error", text: "Enter a last name.", count: 1
       assert_select ".form-errors", false
     end
   end

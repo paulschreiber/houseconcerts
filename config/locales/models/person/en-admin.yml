@@ -1,0 +1,27 @@
+en-admin:
+  activerecord:
+    errors:
+      models:
+        person:
+          attributes:
+            first_name:
+              blank: "Enter a first name."
+              invalid: "Enter a first name."
+              all_lowercase: "The first name cannot be in all lowercase"
+              all_caps: "The first name cannot be in all caps"
+              too_long: "The first name cannot be longer than %{count} characters"
+            last_name:
+              blank: "Enter a last name."
+              invalid: "Enter a last name."
+              all_lowercase: "The last name cannot be in all lowercase"
+              all_caps: "The last name cannot be in all caps"
+              too_long: "The last name cannot be longer than %{count} characters"
+            email:
+              invalid: "Enter an email address."
+              too_long: "The email address cannot be longer than %{count} characters"
+            :phone_number:
+              invalid: "Enter a phone number."
+              too_long: "The phone number cannot be longer than %{count} characters"
+            postcode:
+              invalid: "Enter a zip code."
+              too_long: "The zip code cannot be longer than %{count} characters"

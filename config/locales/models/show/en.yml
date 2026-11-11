@@ -10,21 +10,21 @@ en:
           format: "%{message}"
           attributes:
             name:
-              blank: "Enter a show name"
+              blank: "Enter a show name."
             status:
-              inclusion: "Enter a valid show status"
+              inclusion: "Enter a valid show status."
             availability:
-              inclusion: "Enter a valid show availability"
+              inclusion: "Enter a valid show availability."
             price:
-              blank: "Enter a price for the show"
-              not_a_number: "Enter a price for the show"
+              blank: "Enter a price for the show."
+              not_a_number: "Enter a price for the show."
               not_an_integer: "Enter the price in whole dollars"
               greater_than_or_equal_to: "The price must be at least $%{count}"
               less_than_or_equal_to: "The price cannot be more than $%{count}"
             venue:
-              required: "Select a venue"
+              required: "Select a venue."
             end:
-              invalid_datetime: "Enter a valid end date/time"
+              invalid_datetime: "Enter a valid end date/time."
               after: "The end must be after the start"
             start:
-              invalid_datetime: "Enter a valid start date/time"
+              invalid_datetime: "Enter a valid start date/time."
