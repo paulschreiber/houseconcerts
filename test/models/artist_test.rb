@@ -94,6 +94,15 @@ class ArtistTest < ActiveSupport::TestCase
     assert_equal [ "the photo must be at least 400 pixels wide", "the photo must be at least 440 pixels tall" ], artist.errors.full_messages
   end
 
+  test "an artist whose stored photo is smaller than the minimum size can still be renamed" do
+    artist = artists(:one)
+    blob = ActiveStorage::Blob.create_and_upload!(io: file_fixture("tiny.jpg").open, filename: "tiny.jpg", content_type: "image/jpeg")
+    ActiveStorage::Attachment.create!(record: artist, name: "photo", blob:)
+
+    assert artist.reload.update(name: "Jane Smith")
+    assert_equal "jane-smith.jpg", artist.photo.filename.to_s
+  end
+
   test "rejects a photo larger than the size limit" do
     Dir.mktmpdir do |dir|
       path = File.join(dir, "large.jpg")
