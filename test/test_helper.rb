@@ -29,6 +29,12 @@ module ActiveSupport
       parties
     end
 
+    # A saved copy of the fixture venue, in a venue group, with the attributes
+    # overridden.
+    def create_venue(**attrs)
+      Venue.create!(venues(:one).attributes.except("id", "slug").merge("venue_groups" => [ venue_groups(:two) ]).merge(attrs.stringify_keys))
+    end
+
     # The fixture venue, shrunk to the smallest capacity a venue can have.
     def small_venue
       venues(:one).tap { |venue| venue.update_columns(capacity: Settings.venue.min_capacity) } # rubocop:disable Rails/SkipsModelValidations

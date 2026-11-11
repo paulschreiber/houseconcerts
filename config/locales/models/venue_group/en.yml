@@ -1,0 +1,9 @@
+en:
+  activerecord:
+    errors:
+      models:
+        venue_group:
+          format: "%{message}"
+          attributes:
+            name:
+              blank: "Enter the venue group’s name."

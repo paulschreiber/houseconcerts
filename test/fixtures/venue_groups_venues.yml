@@ -1,0 +1,5 @@
+# Every venue needs a venue group. This table has no model of its own name, so
+# the foreign keys are the fixtures' ids.
+one:
+  venue_id: <%= ActiveRecord::FixtureSet.identify(:one) %>
+  venue_group_id: 2

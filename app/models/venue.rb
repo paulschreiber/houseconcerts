@@ -10,6 +10,7 @@ class Venue < ApplicationRecord
   after_update :update_shows_availability, if: :saved_change_to_capacity?
 
   validates :name, presence: true
+  validate :venue_groups_present
   validates :address, presence: true
   validates :city, presence: true
   validates :province, inclusion: { in: ->(record) { record.province_codes } }
@@ -52,6 +53,11 @@ class Venue < ApplicationRecord
   end
 
   private
+
+    # Not `presence: true`, which loads every group to check for one.
+    def venue_groups_present
+      errors.add(:venue_groups, :blank) if venue_groups.empty?
+    end
 
     def update_shows_availability
       shows.upcoming.each(&:update_availability)

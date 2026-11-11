@@ -45,7 +45,7 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "index preloads artists and venues instead of querying per show" do
-    Show.create!(name: "Another Upcoming Show", venue: venues(:one).dup.tap(&:save!), price: 20,
+    Show.create!(name: "Another Upcoming Show", venue: create_venue, price: 20,
                  artists: [ artists(:one) ], start: 2.months.from_now)
 
     attach_photo(artists(:one))
@@ -99,7 +99,7 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
 
   test "shows preloads artists and venues instead of querying per show" do
     shows(:past).artists << artists(:one)
-    Show.create!(name: "Another Past Show", venue: venues(:one).dup.tap(&:save!), price: 20,
+    Show.create!(name: "Another Past Show", venue: create_venue, price: 20,
                  artists: [ artists(:one) ], start: 2.months.ago)
 
     attach_photo(artists(:one))
