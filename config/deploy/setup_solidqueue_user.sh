@@ -61,6 +61,14 @@ chgrp -R "$GROUP" "$SHARED/log"
 as_deploy_user chmod 2775 "$SHARED/log"
 find "$SHARED/log" -type f -exec chmod g+w {} +
 
+# 2b. Storage: the worker writes photo sizes and deletes the files of replaced
+#     photos, and the web app reads and writes them too. The directories are
+#     group-writable and setgid, like the logs. The web app creates new files
+#     and directories group-writable too (config/initializers/umask.rb).
+chgrp -R "$GROUP" "$SHARED/storage"
+find "$SHARED/storage" -type d -exec chmod 2775 {} +
+find "$SHARED/storage" -type f -exec chmod g+w {} +
+
 # 3. Secrets: readable by the group, not by everyone.
 for file in config/master.key config/database.yml config/credentials.yml.enc; do
   as_deploy_user chgrp "$GROUP" "$SHARED/$file"
@@ -69,11 +77,13 @@ done
 
 # 4. Check the worker can boot the app and reach the database, as the
 #    service will: this reads the gems, master.key and database.yml, connects
-#    to MySQL, and writes to the log. The environment matches the unit's, and
-#    its cache directory (the unit's CacheDirectory=) is created here, since
-#    systemd only creates it when the service starts.
+#    to MySQL, and writes to the log and storage. The environment matches the
+#    unit's, and its cache directory (the unit's CacheDirectory=) is created
+#    here, since systemd only creates it when the service starts.
 CACHE=/var/cache/$SERVICE_USER
 install -d -m 0755 -o "$SERVICE_USER" -g "$GROUP" "$CACHE"
 sudo -u "$SERVICE_USER" env RAILS_ENV=production BOOTSNAP_CACHE_DIR="$CACHE" HOME="$CACHE" \
   bash -c "cd $APP/current && /usr/bin/ruby bin/rails runner 'SolidQueue::Job.count'"
-echo "ok: $SERVICE_USER can boot the app and reach the database"
+sudo -u "$SERVICE_USER" touch "$SHARED/storage/.write-test"
+rm -f "$SHARED/storage/.write-test"
+echo "ok: $SERVICE_USER can boot the app, reach the database and write to storage"
