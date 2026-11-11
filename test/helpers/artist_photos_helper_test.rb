@@ -12,9 +12,8 @@ class ArtistPhotosHelperTest < ActionView::TestCase
     assert_equal([ "200", "220", artist.name, "artist" ], %w[width height alt class].map { |name| img[name] })
   end
 
-  test "artist_photo_tag is nil, and artist_photo? false, for an artist without a photo" do
+  test "artist_photo_tag is nil for an artist without a photo" do
     assert_nil artist_photo_tag(artists(:one), :card)
-    assert_not artist_photo?(artists(:one))
   end
 
   test "artist_photo_url is the uploaded photo's social size, or nil without one" do

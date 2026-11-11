@@ -30,7 +30,7 @@
 
         <%
 			next if show.artists.empty?
-			artist_for_photo = show.artists.select { |artist| artist_photo?(artist) }.sample
+			artist_for_photo = show.artists.select { |artist| artist.photo.attached? }.sample
 			artist_links = show.artists.map { |artist| link_to_if(artist.url?, artist.name, artist.url) }
 		%>
 
