@@ -117,13 +117,12 @@ namespace :next_show do
       exit
     end
 
-    rsvps, service = NextShowTasks.confirm_targets(show)
-
-    sent = rsvps.count do |rsvp|
+    sent = failed = 0
+    NextShowTasks.each_confirm_target(show) do |rsvp, service|
       puts "Emailing #{rsvp.email_address_with_name}..."
-      service.call(rsvp)
+      service.call(rsvp) ? sent += 1 : failed += 1
     end
-    puts "Sent #{sent} #{'email'.pluralize(sent)}, #{rsvps.size - sent} failed."
+    puts "Sent #{sent} #{'email'.pluralize(sent)}, #{failed} failed."
   end
 
   desc "Remind RSVPs for next show"
