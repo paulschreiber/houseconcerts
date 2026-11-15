@@ -188,7 +188,7 @@ class ShowTest < ActiveSupport::TestCase
     assert_not show.invites_sent?
   end
 
-  test "can_confirm_rsvps? and can_waitlist_rsvps? across every status/availability combination" do
+  test "can_waitlist_rsvps? across every status/availability combination" do
     show = shows(:upcoming)
     statuses = %w[confirmed unconfirmed cancelled]
     availabilities = %w[available waitlisted sold_out]
@@ -197,20 +197,10 @@ class ShowTest < ActiveSupport::TestCase
       show.status = status
       show.availability = availability
 
-      expected_can_confirm = status == "confirmed" && availability == "available"
-      expected_can_waitlist = status == "confirmed" && availability == "waitlisted"
-      combo = "status=#{status} availability=#{availability}"
+      expected = status == "confirmed" && availability != "available"
 
-      assert_equal expected_can_confirm, show.can_confirm_rsvps?, "can_confirm_rsvps? wrong for #{combo}"
-      assert_equal expected_can_waitlist, show.can_waitlist_rsvps?, "can_waitlist_rsvps? wrong for #{combo}"
+      assert_equal expected, show.can_waitlist_rsvps?, "can_waitlist_rsvps? wrong for status=#{status} availability=#{availability}"
     end
-  end
-
-  test "can_confirm_rsvps? needs a complete show, since confirming sends the confirmation" do
-    show = shows(:upcoming)
-    show.artists = []
-
-    assert_not show.can_confirm_rsvps?
   end
 
   test "ics_filename is the show's name, as a slug, and its date" do

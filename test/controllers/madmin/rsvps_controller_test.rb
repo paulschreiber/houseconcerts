@@ -153,7 +153,8 @@ module Madmin
     end
 
     test "waitlist waitlists the rsvp, emails it, and redirects with a notice" do
-      @rsvp.show.update!(availability: "waitlisted")
+      small_venue
+      book(@rsvp.show, 10).each(&:confirm!)
 
       assert_emails 1 do
         patch waitlist_madmin_rsvp_path(@rsvp)
@@ -409,7 +410,8 @@ module Madmin
     end
 
     test "index shows a Waitlist button for an rsvp that can be waitlisted" do
-      @rsvp.show.update!(availability: "waitlisted")
+      small_venue
+      book(@rsvp.show, 10).each(&:confirm!)
 
       get madmin_rsvps_path
 
