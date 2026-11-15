@@ -70,6 +70,7 @@ module Madmin
       get madmin_root_path
 
       assert_select ".metric", text: /Invites sent\s+1\s+1 opened \(100%\) ·\s+#{not_yet_invited} not yet invited/
+      assert_select ".metric a[href=?]", madmin_people_path(scope: "not_yet_invited"), text: "#{not_yet_invited} not yet invited"
     end
 
     test "says when there's nothing to do for the previous show" do
