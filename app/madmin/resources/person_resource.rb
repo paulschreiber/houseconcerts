@@ -22,6 +22,7 @@ class PersonResource < Madmin::Resource
   # Add scopes to easily filter records
   scope :active
   scope :removed
+  scope :not_yet_invited
 
   # Add actions to the resource's show page
   # Pass collection: true to also render it in each row on the index page

@@ -52,7 +52,7 @@
               <% opened = @dashboard.invites_opened %>
               <%= opened %> opened (<%= number_to_percentage(100.0 * opened / @dashboard.invites_sent, precision: 0) %>) ·
             <% end %>
-            <%= @dashboard.not_yet_invited %> not yet invited
+            <%= link_to "#{@dashboard.not_yet_invited} not yet invited", madmin_people_path(scope: "not_yet_invited") %>
           </small>
         </div>
         <div class="metric">

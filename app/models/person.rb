@@ -16,6 +16,14 @@ class Person < ApplicationRecord
           .where("NOT EXISTS (SELECT 1 FROM rsvps WHERE rsvps.show_id = ? AND rsvps.email = people.email)", show.id)
   end
 
+  # Invitable people no invite batch has sent the show's invite to.
+  def self.not_yet_invited(show = Show.next)
+    return none unless show
+
+    invited_ids = BatchRunItem.person_invites_for(show).select(:recipient_id)
+    invitable_for(show).where.not(id: invited_ids)
+  end
+
   before_save :set_ip_address
   before_save :update_removal_status
   before_save :ensure_venue_group
