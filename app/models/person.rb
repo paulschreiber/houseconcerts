@@ -10,11 +10,11 @@ class Person < ApplicationRecord
   enum :status, { active: 0, bouncing: 1, moved: 2, removed: 3 }, default: :active
 
   # Active people in the default venue group who haven't RSVPd for the show.
-  scope :invitable_for, lambda { |show|
+  def self.invitable_for(show)
     active.includes(:venue_groups)
           .where(venue_groups: { id: Settings.default_venue_group })
           .where("NOT EXISTS (SELECT 1 FROM rsvps WHERE rsvps.show_id = ? AND rsvps.email = people.email)", show.id)
-  }
+  end
 
   before_save :set_ip_address
   before_save :update_removal_status
