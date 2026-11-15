@@ -9,4 +9,12 @@ class BatchRunItem < ApplicationRecord
   # reclaimable by a job that's already enqueued for it (or a stray
   # redelivery) once the run's been cancelled.
   enum :status, { pending: 0, sent: 1, failed: 2, cancelled: 3 }, default: :pending
+
+  # Sent invites to people (batch invites, not single InvitePerson ones,
+  # which aren't recorded) for the show.
+  def self.person_invites_for(show)
+    sent.where(recipient_type: "Person")
+        .joins(:batch_run)
+        .where(batch_runs: { show_id: show, kind: %w[invite invite_unopened] })
+  end
 end

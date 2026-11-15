@@ -49,7 +49,7 @@ class Dashboard
 
   # People who can be invited to the next show but haven't been sent an invite.
   def not_yet_invited
-    Person.invitable_for(next_show).where.not(id: invited_people.select(:recipient_id)).count
+    Person.not_yet_invited(next_show).count
   end
 
   # RSVP counts keyed by response.
@@ -146,8 +146,7 @@ class Dashboard
     end
 
     def invited_people
-      BatchRunItem.sent.where(recipient_type: "Person").joins(:batch_run)
-                  .where(batch_runs: { show_id: next_show, kind: %w[invite invite_unopened] })
+      BatchRunItem.person_invites_for(next_show)
     end
 
     # Seats reserved more than GRAPH_DAYS before the show count as reserved
