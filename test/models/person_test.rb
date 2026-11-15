@@ -225,4 +225,23 @@ class PersonTest < ActiveSupport::TestCase
 
     assert_includes record.errors.full_messages, "Enter your first name"
   end
+
+  test "not_yet_invited leaves out people an invite batch sent the show's invite to" do
+    show = shows(:upcoming)
+    invited = Person.create!(first_name: "Jane", last_name: "Smith", email: "jane@example.com")
+    waiting = Person.create!(first_name: "John", last_name: "Smith", email: "john@example.com")
+    BatchRun.create!(show:, kind: "invite", status: "completed", total_count: 1)
+            .batch_run_items.create!(recipient: invited, status: "sent")
+
+    assert_includes Person.not_yet_invited(show), waiting
+    assert_not_includes Person.not_yet_invited(show), invited
+  end
+
+  test "not_yet_invited defaults to the next show and is empty for no show" do
+    waiting = Person.create!(first_name: "John", last_name: "Smith", email: "john@example.com")
+
+    assert_includes Person.not_yet_invited, waiting
+
+    assert_empty Person.not_yet_invited(nil)
+  end
 end

@@ -338,6 +338,19 @@ module Madmin
       assert_select "thead th a[href*='sort=full_name'][href*='direction=asc']"
     end
 
+    test "the not_yet_invited scope lists only people no invite batch has reached" do
+      invited = Person.create!(first_name: "Jane", last_name: "Smith", email: "jane@example.com")
+      waiting = Person.create!(first_name: "John", last_name: "Smith", email: "john@example.com")
+      BatchRun.create!(show: shows(:upcoming), kind: "invite", status: "completed", total_count: 1)
+              .batch_run_items.create!(recipient: invited, status: "sent")
+
+      get madmin_people_path(scope: "not_yet_invited")
+
+      assert_response :success
+      assert_includes response.body, waiting.full_name
+      assert_not_includes response.body, invited.full_name
+    end
+
     test "index links to the import page" do
       get madmin_people_path
 
