@@ -256,14 +256,29 @@ class NextShowRakeTest < ActiveSupport::TestCase
     assert rsvp.reload.confirmed?
   end
 
-  test "confirm waitlists unconfirmed rsvps and delivers waitlisted emails when the show is waitlisted" do
-    rsvp = RSVP.create!(show: shows(:upcoming), email: "to-waitlist@example.com", first_name: "To", last_name: "Waitlist", response: "yes", seats_reserved: 1)
-    shows(:upcoming).update!(availability: "waitlisted")
+  test "confirm confirms unconfirmed rsvps when the last one took the show past capacity" do
+    small_venue
+    rsvps = book(shows(:upcoming), 7) + book(shows(:upcoming), Settings.show.max_seats)
+    assert_equal "waitlisted", shows(:upcoming).reload.availability
 
-    assert_emails 1 do
+    assert_emails rsvps.size do
       capture_io { Rake::Task["next_show:confirm"].invoke }
     end
-    assert rsvp.reload.waitlisted?
+    assert(rsvps.all? { |rsvp| rsvp.reload.confirmed? })
+  end
+
+  test "confirm waitlists the newest unconfirmed rsvps that don't fit and confirms the earlier ones" do
+    small_venue
+    first = RSVP.create!(show: shows(:upcoming), email: "first@example.com", first_name: "First", last_name: "Rsvp", response: "yes", seats_reserved: 1)
+    *middle, last = book(shows(:upcoming), 11)
+    assert_equal "waitlisted", shows(:upcoming).reload.availability
+
+    assert_emails 1 + middle.size + 1 do
+      capture_io { Rake::Task["next_show:confirm"].invoke }
+    end
+    assert first.reload.confirmed?
+    assert(middle.all? { |rsvp| rsvp.reload.confirmed? })
+    assert last.reload.waitlisted?
   end
 
   test "confirm reports a failed confirmation instead of miscounting it as sent" do

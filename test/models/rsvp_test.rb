@@ -385,20 +385,94 @@ class RsvpTest < ActiveSupport::TestCase
     responses = %w[yes no]
     confirmed_states = %w[unconfirmed waitlisted confirmed]
 
-    availabilities.product(statuses, responses, confirmed_states).each do |availability, status, response, confirmed|
+    availabilities.product(statuses, responses, confirmed_states, [ true, false ]).each do |availability, status, response, confirmed, fits|
       show.availability = availability
       show.status = status
+      show.venue.capacity = fits ? 50 : 0
       rsvp.response = response
       rsvp.confirmed = confirmed
 
       show_confirmed = status == "confirmed"
-      expected_can_confirm = confirmed != "confirmed" && response == "yes" && show_confirmed && availability == "available"
-      expected_can_waitlist = confirmed == "unconfirmed" && response == "yes" && show_confirmed && availability == "waitlisted"
-      combo = "availability=#{availability} status=#{status} response=#{response} confirmed=#{confirmed}"
+      expected_can_confirm = confirmed != "confirmed" && response == "yes" && show_confirmed && fits
+      expected_can_waitlist = confirmed == "unconfirmed" && response == "yes" && show_confirmed && availability != "available" && !fits
+      combo = "availability=#{availability} status=#{status} response=#{response} confirmed=#{confirmed} fits=#{fits}"
 
       assert_equal expected_can_confirm, rsvp.can_confirm?, "can_confirm? wrong for #{combo}"
       assert_equal expected_can_waitlist, rsvp.can_waitlist?, "can_waitlist? wrong for #{combo}"
     end
+  end
+
+  # The venue holds 10 seats. The upcoming show already has 2 confirmed seats
+  # from rsvps(:one). The RSVPs the tests book are unconfirmed, and each is
+  # earlier than the ones booked after it.
+  test "can_confirm? is true for an rsvp that fills the show exactly to capacity" do
+    small_venue
+    *, last = book(shows(:upcoming), 8)
+
+    assert_equal "waitlisted", shows(:upcoming).reload.availability
+    assert last.can_confirm?
+    assert_not last.can_waitlist?
+  end
+
+  test "can_confirm? is true for the rsvp that takes the show over capacity, and false for the next one" do
+    small_venue
+    book(shows(:upcoming), 7)
+    last = book(shows(:upcoming), Settings.show.max_seats).first
+    assert last.can_confirm?
+    assert_not last.can_waitlist?
+
+    after = book(shows(:upcoming), 1).first
+    assert_not after.can_confirm?
+    assert after.can_waitlist?
+  end
+
+  test "a later rsvp doesn't stop an earlier one being confirmed" do
+    small_venue
+    first, second, third = book(shows(:upcoming), 4 + 4 + 4)
+
+    assert first.can_confirm?
+    assert second.can_confirm?
+    assert_not third.can_confirm?
+  end
+
+  test "waitlisting an earlier rsvp makes room to confirm a later one" do
+    small_venue
+    first, _second, third = book(shows(:upcoming), 4 + 4 + 4)
+    assert_not third.can_confirm?
+
+    first.waitlist!
+
+    assert third.can_confirm?
+  end
+
+  test "can_confirm? for a waitlisted rsvp needs room beside the confirmed seats" do
+    small_venue
+    waitlisted = book(shows(:upcoming), 1).first
+    waitlisted.waitlist!
+    first, second = book(shows(:upcoming), 4 + 4)
+    first.confirm!
+    assert waitlisted.can_confirm?
+
+    second.confirm!
+    assert_not waitlisted.can_confirm?
+  end
+
+  test "can_confirm? is true for an rsvp with room ahead of it even when the show is labelled sold out" do
+    rsvp = rsvps(:one)
+    rsvp.update_column(:confirmed, RSVP.confirmeds[:unconfirmed]) # rubocop:disable Rails/SkipsModelValidations
+    rsvp.show.update_columns(availability: "sold_out") # rubocop:disable Rails/SkipsModelValidations
+
+    assert rsvp.can_confirm?
+  end
+
+  test "can_confirm? needs a complete show, since confirming sends the confirmation" do
+    rsvp = rsvps(:one)
+    rsvp.update_column(:confirmed, RSVP.confirmeds[:unconfirmed]) # rubocop:disable Rails/SkipsModelValidations
+    assert rsvp.can_confirm?
+
+    rsvp.show.artists = []
+
+    assert_not rsvp.can_confirm?
   end
 
   test "can_waitlist? is false for an rsvp that's already waitlisted" do
