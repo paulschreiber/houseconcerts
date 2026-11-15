@@ -27,12 +27,18 @@ module NextShowTasks
     puts e.message
   end
 
-  # The RSVPs the confirm task emails for the show's availability, and the
-  # service that emails each one. A sold-out show has none.
-  def confirm_targets(show)
-    return [ show.rsvps.awaiting_confirmation.to_a, ConfirmRSVP ] if show.can_confirm_rsvps?
-    return [ show.rsvps.yes.confirmed_unconfirmed.to_a, WaitlistRSVP ] if show.can_waitlist_rsvps?
-
-    [ [], nil ]
+  # Yields each RSVP the confirm task emails, oldest first, with the service
+  # that emails it: ConfirmRSVP for an RSVP that can be confirmed, WaitlistRSVP
+  # for an unconfirmed one that can't. Each RSVP is checked when it's reached,
+  # after the service has run for the ones before it, since waitlisting one
+  # RSVP leaves room for the next.
+  def each_confirm_target(show)
+    show.rsvps.awaiting_confirmation.order(:id).each do |rsvp|
+      if rsvp.can_confirm?
+        yield rsvp, ConfirmRSVP
+      elsif rsvp.can_waitlist?
+        yield rsvp, WaitlistRSVP
+      end
+    end
   end
 end

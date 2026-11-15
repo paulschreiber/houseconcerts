@@ -182,12 +182,26 @@ class RSVP < ApplicationRecord
     RSVP.where(show: Show.next)
   end
 
+  # An RSVP made while the show had room can be confirmed, even if its own
+  # seats take the show to or past capacity (or to sold out): what matters is
+  # whether the seats ahead of it already fill the venue. Confirming sends the
+  # confirmation email, which needs a complete show.
   def can_confirm?
-    !confirmed? && yes? && show&.can_confirm_rsvps?
+    !confirmed? && yes? && show&.complete? && room_before_this_rsvp?
   end
 
+  # Waitlisting is for an RSVP that can't be confirmed.
   def can_waitlist?
-    unconfirmed? && yes? && show&.can_waitlist_rsvps?
+    unconfirmed? && yes? && show&.can_waitlist_rsvps? && !room_before_this_rsvp?
+  end
+
+  # Whether the seats ahead of this RSVP leave the venue room: the seats of
+  # confirmed RSVPs, and of unconfirmed ones that came earlier. Waitlisted
+  # RSVPs hold no seats.
+  def room_before_this_rsvp?
+    others = show.rsvps.yes.where.not(id:)
+    ahead = others.confirmed_confirmed.or(others.confirmed_unconfirmed.where(id: ...id))
+    ahead.sum(:seats_reserved) < show.venue.capacity
   end
 
   def can_cancel?(next_show = Show.next)

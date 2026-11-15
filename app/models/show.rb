@@ -102,11 +102,6 @@ class Show < ApplicationRecord
     venue&.location
   end
 
-  # Confirming sends the confirmation email, which needs a complete show.
-  def can_confirm_rsvps?
-    available? && complete?
-  end
-
   # Ready for guest-facing emails and pages: confirmed, with at least one
   # artist. (Every saved show has a venue.)
   def complete?
@@ -152,8 +147,10 @@ class Show < ApplicationRecord
     update_columns(availability: value) unless value == availability # rubocop:disable Rails/SkipsModelValidations
   end
 
+  # A full show tells RSVPs that don't fit they're waitlisted, whether or not
+  # its own waitlist is also full.
   def can_waitlist_rsvps?
-    confirmed? && waitlisted?
+    confirmed? && (waitlisted? || sold_out?)
   end
 
   # The highest revision of the invite, the only one that can be sent.
