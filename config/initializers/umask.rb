@@ -4,4 +4,8 @@
 # write alongside them. This matches the worker unit's UMask=0007, which the
 # worker would otherwise lose when the app boots. See
 # config/deploy/setup_solidqueue_user.sh.
-File.umask(0o007) if Rails.env.production?
+#
+# Precompiling assets keeps the default umask: Apache serves public/assets as
+# a user outside that group, so the compiled files must be world-readable.
+precompiling_assets = defined?(Rake) && Rake.respond_to?(:application) && Rake.application.top_level_tasks.include?("assets:precompile")
+File.umask(0o007) if Rails.env.production? && !precompiling_assets
