@@ -614,6 +614,11 @@ body.dashboard.show {
   color: var(--light-text-color);
 }
 
+/* Put the status on its own line in every item, regardless of width. */
+.batch-progress-item strong {
+  display: block;
+}
+
 .batch-progress-none {
   font-style: italic;
 }
