@@ -38,3 +38,11 @@ jobs:
 
       - name: Deploy
         run: bundle exec cap production deploy
+
+      - name: Save the Capistrano log
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: capistrano-log
+          path: log/capistrano.log
+          if-no-files-found: ignore
