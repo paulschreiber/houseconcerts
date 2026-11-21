@@ -27,6 +27,30 @@ module Madmin
       assert_response :success
     end
 
+    test "show lists the shows attended and the RSVPs cancelled" do
+      past = shows(:past)
+      past.update_columns(start: 2.months.ago, end: 2.months.ago + 2.hours) # rubocop:disable Rails/SkipsModelValidations
+      attended = RSVP.create!(show: past, email: @person.email, first_name: "Jane", last_name: "Smith",
+                              response: "yes", seats_reserved: 2, confirmed: "confirmed", seats_used: 1)
+      cancelled = RSVP.create!(show: shows(:upcoming), email: @person.email, first_name: "Jane", last_name: "Smith",
+                               response: "yes", seats_reserved: 2)
+      cancelled.cancel!
+
+      get madmin_person_path(@person)
+
+      assert_select "th.label", text: "Attendance History"
+      assert_select "table.history tbody tr", count: 2
+      assert_select "table.history tr.unused-seats td", text: "1 / 2"
+      assert_select "table.history td", text: "Cancelled #{cancelled.reload.cancelled_at.to_date.iso8601}"
+      assert_select "table.history td", text: attended.show.name
+    end
+
+    test "show says when there are no previous reservations" do
+      get madmin_person_path(@person)
+
+      assert_select "td p.empty", text: "No previous reservations."
+    end
+
     test "show links the email address with mailto:" do
       get madmin_person_path(@person)
 
