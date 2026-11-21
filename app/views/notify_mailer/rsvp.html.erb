@@ -32,35 +32,5 @@
 
 <%- if @rsvp.yes? -%>
   <h2>Attendance History</h2>
-  <%- if @history.any? %>
-    <table class="history">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Show</th>
-          <th>Seats used</th>
-        </tr>
-      </thead>
-      <tbody>
-        <%- @history.each do |kind, past_rsvp| %>
-          <%- if kind == :cancelled -%>
-            <tr>
-              <td><%= past_rsvp.start.to_date.iso8601 %></td>
-              <td><%= past_rsvp.name %></td>
-              <td class="empty">Cancelled <%= past_rsvp.cancelled_at.to_date.iso8601 %></td>
-            </tr>
-          <%- else -%>
-            <%# Shows before attendance was recorded have no seats_used: a dash, not a no-show. %>
-            <%= tag.tr(class: ("unused-seats" if past_rsvp.seats_used && past_rsvp.seats_used < past_rsvp.seats_reserved)) do %>
-              <td><%= past_rsvp.start.to_date.iso8601 %></td>
-              <td><%= past_rsvp.name %></td>
-              <td><%= past_rsvp.seats_used || "—" %> / <%= past_rsvp.seats_reserved %></td>
-            <%- end -%>
-          <%- end -%>
-        <%- end -%>
-      </tbody>
-    </table>
-  <%- else -%>
-    <p class="empty">No previous reservations.</p>
-  <%- end -%>
+  <%= render "people/attendance_history", history: @history %>
 <%- end -%>

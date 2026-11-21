@@ -15,6 +15,8 @@ class PersonResource < Madmin::Resource
   attribute :created_at, field: ShortDateTimeField, index: true, show: true
   attribute :updated_at
   attribute :status, field: RadioEnumField, index: true
+  attribute :rsvp_history, field: AttendanceHistoryField, label: "Attendance History",
+                           form: false, index: false, compute: ->(record) { record.rsvp_history }
 
   # Associations
   attribute :venue_groups
