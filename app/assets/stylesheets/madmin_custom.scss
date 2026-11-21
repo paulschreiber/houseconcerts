@@ -69,6 +69,21 @@ td > .multiline-value:first-child {
   margin-top: 0;
 }
 
+/* A person's attendance history on the show page: seats unused by a no-show
+   are bold, cancellations muted. */
+.history {
+  margin: 0;
+
+  .unused-seats {
+    font-weight: 700;
+  }
+}
+
+.history .empty,
+.table-scroll > p.empty {
+  color: var(--light-text-color);
+}
+
 /* The Invites list's columns are computed or numeric, so Madmin's search
    box would never match anything. */
 body.invites.index .header form.search {
