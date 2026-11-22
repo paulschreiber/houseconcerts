@@ -1,5 +1,5 @@
-<%# A tile in the totals row above a list (see .metrics--totals). note is optional. %>
-<div class="metric">
+<%# A tile in the totals row above a list (see .metrics--totals). note is optional; long: true is for labels too long to fit at the usual phone size. %>
+<div class="<%= class_names("metric", "metric--long": local_assigns[:long]) %>">
   <h4><%= label %></h4>
   <p><%= value %></p>
   <% if local_assigns[:note] %>
