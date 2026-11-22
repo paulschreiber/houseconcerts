@@ -61,7 +61,11 @@ class Show < ApplicationRecord
 
   # The next round number of shows to reach: 25, 50, then every 50.
   def self.next_milestone(count)
-    MILESTONES.find { |milestone| milestone > count } || (((count / MILESTONE_STEP) + 1) * MILESTONE_STEP)
+    early_milestone = MILESTONES.find { |milestone| milestone > count }
+    return early_milestone if early_milestone
+
+    steps_reached = count / MILESTONE_STEP
+    (steps_reached + 1) * MILESTONE_STEP
   end
 
   def self.previous
