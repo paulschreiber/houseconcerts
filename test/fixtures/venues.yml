@@ -7,3 +7,14 @@ one:
   postcode: "11201"
   country: "US"
   capacity: 50
+
+inactive:
+  name: "Inactive Venue"
+  slug: "inactive-venue"
+  address: "456 Side St"
+  city: "Brooklyn"
+  province: "NY"
+  postcode: "11201"
+  country: "US"
+  capacity: 50
+  active: false
