@@ -5,7 +5,18 @@ en:
     confirmations:
       # See MadminPatches::DeleteConfirmation.
       delete: "Are you sure you want to delete the %{resource} %{name}?"
+    rsvps:
+      totals:
+        rsvps: "RSVPs"
+        seats: "Seats"
     shows:
+      totals:
+        shows: "Shows"
+        held: "Held"
+        upcoming: "Upcoming"
+        unconfirmed: "Unconfirmed"
+        artists: "Artists"
+        to_go: "%{count} to go until %{milestone}"
       attendance:
         not_saved: "Attendance wasn’t saved. Enter a valid number of seats used for each attendee."
         seats_used_blank: "Enter the seats used."

@@ -1,0 +1,11 @@
+<%# The counts above the list. Madmin renders this partial below the header, so they get a full-width row of their own. %>
+<% totals = show_totals %>
+<div class="metrics metrics--totals">
+  <%= render "madmin/application/metric", label: t("madmin.shows.totals.shows"), value: totals[:total],
+             note: t("madmin.shows.totals.to_go", count: totals[:next_milestone] - totals[:total], milestone: totals[:next_milestone]) %>
+  <%= render "madmin/application/metric", label: t("madmin.shows.totals.held"), value: totals[:held] %>
+  <%= render "madmin/application/metric", label: t("madmin.shows.totals.upcoming"), value: totals[:upcoming] %>
+  <%= render "madmin/application/metric", label: t("madmin.shows.totals.unconfirmed"), value: totals[:unconfirmed] %>
+  <%= render "madmin/application/metric", label: t("madmin.shows.totals.artists"), value: totals[:artists] %>
+</div>
+<%= render "madmin/application/active_filters" %>

@@ -4,6 +4,8 @@ module Madmin
     before_action :require_started, only: %i[attendance update_attendance]
     before_action :load_batch_run, only: %i[retry_failed_batch_run cancel_batch_run]
 
+    helper_method :show_totals
+
     # Records how many seats each of the show's attendees used.
     def attendance; end
 
@@ -95,6 +97,22 @@ module Madmin
     end
 
     private
+
+      # The counts shown above the shows list. They cover every show, not the
+      # filtered list, so they're the same on each scope.
+      def show_totals
+        @show_totals ||= begin
+          total = Show.where.not(status: :cancelled).count
+          {
+            total:,
+            next_milestone: Show.next_milestone(total),
+            held: Show.past.count,
+            upcoming: Show.upcoming.count,
+            unconfirmed: Show.unconfirmed.count,
+            artists: Artist.joins(:shows).merge(Show.past).distinct.count
+          }
+        end
+      end
 
       def people_sentence(records)
         records.map(&:full_name).to_sentence

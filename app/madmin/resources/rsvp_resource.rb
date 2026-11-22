@@ -55,15 +55,6 @@ class RSVPResource < Madmin::Resource
 
   # Add actions to the resource's index page
   collection_action do
-    next unless (totals = attendee_totals)
-
-    tag.div class: "metrics" do
-      tag.div(class: "metric") { tag.h4("RSVPs") + tag.p(totals[:count]) } +
-        tag.div(class: "metric") { tag.h4("Seats") + tag.p(totals[:seats_reserved]) }
-    end
-  end
-
-  collection_action do
     next unless Current.admin_scope == "next_show_attendees" && @next_show
 
     link_to "Print", print_attendance_madmin_show_path(@next_show), class: "btn btn-secondary", target: "_blank", rel: "noopener"
