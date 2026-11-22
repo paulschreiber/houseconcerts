@@ -163,20 +163,51 @@ main:has(> #sidebar) {
   }
 }
 
-.actions .metrics {
-  .metric {
-    margin-right: 0;
+/* The totals above the shows and RSVPs lists: one row of up to five tiles.
+   Madmin's .metrics is a fixed two columns, so this needs the extra
+   specificity to win. */
+.metrics.metrics--totals {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
 
-    &:not(:last-child) {
-      border-top-right-radius: 0;
-      border-bottom-right-radius: 0;
+  .metric {
+    margin: 0;
+    padding: 0.75rem 1rem;
+
+    h4 {
+      margin-bottom: 0.25rem;
+      overflow-wrap: anywhere;
     }
 
-    &:not(:first-child) {
-      margin-left: 0;
-      border-left: none;
-      border-top-left-radius: 0;
-      border-bottom-left-radius: 0;
+    p {
+      font-size: 1.75rem;
+    }
+
+    small {
+      display: block;
+      color: var(--light-text-color);
+      margin-top: 0.25rem;
+    }
+  }
+
+  @media (width <= 768px) {
+    gap: 0.375rem;
+
+    .metric {
+      padding: 0.5rem;
+
+      h4 {
+        font-size: 0.6875rem;
+      }
+
+      p {
+        font-size: 1.25rem;
+      }
+
+      small {
+        font-size: 0.6875rem;
+      }
     }
   }
 }

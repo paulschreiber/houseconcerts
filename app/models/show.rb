@@ -1,6 +1,9 @@
 class Show < ApplicationRecord
   include NamedSlug
 
+  MILESTONES = [ 25, 50, 100 ].freeze
+  MILESTONE_STEP = 50
+
   # In the order the artists were added, usually the headliner first.
   has_many :artist_shows, -> { order(:id) }, dependent: :delete_all, inverse_of: :show
   has_many :artists, through: :artist_shows
@@ -54,6 +57,11 @@ class Show < ApplicationRecord
 
   def self.past
     occurred
+  end
+
+  # The next round number of shows to reach: 25, 50, 100, then every 50.
+  def self.next_milestone(count)
+    MILESTONES.find { |milestone| milestone > count } || (((count / MILESTONE_STEP) + 1) * MILESTONE_STEP)
   end
 
   def self.previous

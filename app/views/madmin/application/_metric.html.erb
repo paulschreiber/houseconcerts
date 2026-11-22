@@ -1,0 +1,8 @@
+<%# A tile in the totals row above a list (see .metrics--totals). note is optional. %>
+<div class="metric">
+  <h4><%= label %></h4>
+  <p><%= value %></p>
+  <% if local_assigns[:note] %>
+    <small><%= note %></small>
+  <% end %>
+</div>

@@ -1,3 +1,10 @@
+<%# The counts for the attendee lists. Madmin renders this partial below the header, so they get a full-width row of their own. %>
+<% if (totals = attendee_totals) %>
+  <div class="metrics metrics--totals">
+    <%= render "madmin/application/metric", label: t("madmin.rsvps.totals.rsvps"), value: totals[:count] %>
+    <%= render "madmin/application/metric", label: t("madmin.rsvps.totals.seats"), value: totals[:seats_reserved] %>
+  </div>
+<% end %>
 <%# The ?show=<slug> filter, as a chip like Madmin's own filters' %>
 <% if filtered_show %>
   <div class="active-filters show-filter">
