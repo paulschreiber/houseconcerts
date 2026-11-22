@@ -1,7 +1,7 @@
 class Show < ApplicationRecord
   include NamedSlug
 
-  MILESTONES = [ 25, 50, 100 ].freeze
+  MILESTONES = [ 25, 50 ].freeze
   MILESTONE_STEP = 50
 
   # In the order the artists were added, usually the headliner first.
@@ -59,7 +59,7 @@ class Show < ApplicationRecord
     occurred
   end
 
-  # The next round number of shows to reach: 25, 50, 100, then every 50.
+  # The next round number of shows to reach: 25, 50, then every 50.
   def self.next_milestone(count)
     MILESTONES.find { |milestone| milestone > count } || (((count / MILESTONE_STEP) + 1) * MILESTONE_STEP)
   end
