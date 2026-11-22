@@ -530,6 +530,14 @@ class ShowTest < ActiveSupport::TestCase
     assert_not show.complete?, "no artists"
   end
 
+  test "next_milestone is 25, 50 and 100, then every 50" do
+    expected = { 0 => 25, 24 => 25, 25 => 50, 49 => 50, 50 => 100, 99 => 100, 100 => 150, 149 => 150, 150 => 200, 230 => 250 }
+
+    expected.each do |count, milestone|
+      assert_equal milestone, Show.next_milestone(count), "after #{count} shows"
+    end
+  end
+
   private
 
     # Moves the show inside the window where it gets no waitlist.

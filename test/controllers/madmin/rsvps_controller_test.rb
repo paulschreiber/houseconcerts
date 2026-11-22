@@ -274,6 +274,25 @@ module Madmin
       assert_no_match(/>Cancel</, response.body)
     end
 
+    test "index shows the RSVP and seat totals below the header in the attendee scopes" do
+      Madmin::RsvpsController::ATTENDEE_SCOPES.each do |scope|
+        get madmin_rsvps_path(scope:)
+
+        assert_select "header .actions .metrics", count: 0, message: scope
+        assert_select ".metrics--totals .metric h4", { count: 2 }, scope
+        assert_select ".metrics--totals .metric h4", text: "RSVPs"
+        assert_select ".metrics--totals .metric h4", text: "Seats"
+      end
+    end
+
+    test "index shows no totals outside the attendee scopes" do
+      [ nil, "next_show", "previous_show" ].each do |scope|
+        get madmin_rsvps_path(scope:)
+
+        assert_select ".metrics--totals", count: 0, message: scope.inspect
+      end
+    end
+
     test "index shows a Print link in the next_show_attendees scope" do
       get madmin_rsvps_path(scope: "next_show_attendees")
 

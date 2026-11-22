@@ -18,6 +18,31 @@ module Madmin
       assert_response :success
     end
 
+    test "index shows the show totals below the header" do
+      get madmin_shows_path
+
+      total = Show.where.not(status: :cancelled).count
+      assert_select "header .actions .metrics", count: 0
+      assert_select ".metrics--totals .metric", count: 5
+      assert_metric "Shows", total
+      assert_select ".metrics--totals small", text: "#{Show.next_milestone(total) - total} to go until #{Show.next_milestone(total)}"
+      assert_metric "Held", Show.past.count
+      assert_metric "Upcoming", Show.upcoming.count
+      assert_metric "Unconfirmed", Show.unconfirmed.count
+      assert_metric "Artists", Artist.joins(:shows).merge(Show.past).distinct.count
+    end
+
+    test "index totals leave out cancelled shows and count each artist once" do
+      total = Show.where.not(status: :cancelled).count
+      shows(:upcoming).update!(status: :cancelled)
+      shows(:past).artist_shows.create!(artist: artists(:one))
+
+      get madmin_shows_path
+
+      assert_metric "Shows", total - 1
+      assert_metric "Artists", 1
+    end
+
     test "show renders successfully" do
       get madmin_show_path(shows(:upcoming))
 
@@ -1103,6 +1128,13 @@ module Madmin
     end
 
     private
+
+      def assert_metric(label, value)
+        assert_select ".metrics--totals .metric" do |metrics|
+          metric = metrics.find { |node| node.at_css("h4").text == label }
+          assert_equal value.to_s, metric.at_css("p").text, label
+        end
+      end
 
       def attendee(show, first_name, seats_reserved: 2, **attrs)
         RSVP.create!(show:, first_name:, last_name: "Smith", email: "#{first_name.downcase}.smith@example.com",
