@@ -43,6 +43,22 @@ module Madmin
       assert_metric "Artists", 1
     end
 
+    test "index marks the long tile labels so they get the smaller phone size" do
+      get madmin_shows_path
+
+      long = css_select(".metrics--totals .metric--long h4").map(&:text)
+      assert_equal %w[Upcoming Unconfirmed], long
+    end
+
+    test "index links each show's name, with the full name as its title for when it's cut off" do
+      show = shows(:upcoming)
+      show.update!(name: "Jane Smith and the Very Long Named Band Live in Concert")
+
+      get madmin_shows_path
+
+      assert_select "a.linked-name[href='#{madmin_show_path(show)}'][title='#{show.name}']", text: show.name
+    end
+
     test "show renders successfully" do
       get madmin_show_path(shows(:upcoming))
 
