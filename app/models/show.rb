@@ -9,6 +9,8 @@ class Show < ApplicationRecord
   has_many :invite_messages, -> { order(:revision) }, dependent: :destroy, inverse_of: :show
   belongs_to :venue
 
+  validate :venue_active, if: :will_save_change_to_venue_id?
+
   before_validation :set_end_time
   before_save :assign_availability, if: :will_save_change_to_venue_id?
   before_update :reset_auto_remind, if: :will_save_change_to_start?
@@ -256,6 +258,12 @@ class Show < ApplicationRecord
   end
 
   private
+
+    # A show can be given an active venue only. One that's saved with a venue
+    # keeps it, even after the venue is deactivated.
+    def venue_active
+      errors.add(:venue, :inactive) if venue && !venue.active?
+    end
 
     def assign_availability
       self.availability = computed_availability

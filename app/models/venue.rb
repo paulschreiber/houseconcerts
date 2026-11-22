@@ -6,6 +6,8 @@ class Venue < ApplicationRecord
   has_many :venue_groups, through: :venue_group_venues
   has_many :shows, dependent: :restrict_with_error
 
+  scope :active, -> { where(active: true) }
+
   before_validation :upcase_province_and_country
   after_update :update_shows_availability, if: :saved_change_to_capacity?
 
