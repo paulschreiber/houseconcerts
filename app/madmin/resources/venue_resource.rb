@@ -9,10 +9,13 @@ class VenueResource < Madmin::Resource
   attribute :postcode, label: "Postal Code"
   attribute :country
   attribute :capacity
+  attribute :active
   attribute :created_at
   attribute :updated_at
   attribute :directions, field: MultilineTextField
   attribute :contact_info, field: MultilineTextField
+
+  scope :active
 
   # Associations
   attribute :venue_groups

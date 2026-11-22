@@ -23,6 +23,7 @@ en:
               less_than_or_equal_to: "The price cannot be more than $%{count}"
             venue:
               required: "Select a venue."
+              inactive: "Select an active venue."
             end:
               invalid_datetime: "Enter a valid end date/time."
               after: "The end must be after the start"

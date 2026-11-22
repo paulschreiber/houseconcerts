@@ -26,7 +26,7 @@ class ShowResource < Madmin::Resource
   # Associations
   attribute :artists
   attribute :rsvps, form: false, show: false
-  attribute :venue
+  attribute :venue, field: ActiveVenueField
 
   # Add scopes to easily filter records
   scope :upcoming
