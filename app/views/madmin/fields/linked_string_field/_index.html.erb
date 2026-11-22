@@ -1,1 +1,2 @@
-<%= link_to field.value(record), resource.show_path(record) %>
+<% name = field.value(record) %>
+<%= link_to name, resource.show_path(record), class: "linked-name", title: name %>

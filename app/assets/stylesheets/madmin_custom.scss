@@ -163,6 +163,22 @@ main:has(> #sidebar) {
   }
 }
 
+/* A record's name in an index row. Madmin's table cells don't wrap, so a long
+   name would push the row's buttons off screen; it's cut off with an ellipsis
+   instead (the full name is the link's title). */
+.linked-name {
+  display: inline-block;
+  max-width: 24rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+
+  @media (width <= 768px) {
+    max-width: 8rem;
+  }
+}
+
 /* The totals above the shows and RSVPs lists: one row of up to five tiles.
    Madmin's .metrics is a fixed two columns, so this needs the extra
    specificity to win. */
@@ -195,10 +211,15 @@ main:has(> #sidebar) {
     gap: 0.375rem;
 
     .metric {
-      padding: 0.5rem;
+      padding: 0.5rem 0.25rem;
 
       h4 {
-        font-size: 0.6875rem;
+        font-size: 1rem;
+        white-space: nowrap;
+      }
+
+      &.metric--long h4 {
+        font-size: 0.65rem;
       }
 
       p {
