@@ -32,6 +32,32 @@ class ShowTest < ActiveSupport::TestCase
     assert_includes show.errors[:venue], "Select a venue."
   end
 
+  test "requires an active venue for a new show" do
+    venues(:one).update!(active: false)
+    show = Show.new(name: "Jane Smith Live", venue: venues(:one), price: 20)
+
+    assert_not show.valid?
+    assert_includes show.errors[:venue], "Select an active venue."
+  end
+
+  test "requires an active venue when changing a show's venue" do
+    other = venues(:one).dup.tap { |venue| venue.assign_attributes(name: "Other Venue", slug: "other-venue", active: false, venue_groups: venues(:one).venue_groups) }
+    other.save!
+    show = shows(:upcoming)
+    show.venue = other
+
+    assert_not show.valid?
+    assert_includes show.errors[:venue], "Select an active venue."
+  end
+
+  test "keeps its venue after the venue is deactivated" do
+    show = shows(:upcoming)
+    show.venue.update!(active: false)
+    show.name = "Renamed"
+
+    assert_predicate show, :valid?
+  end
+
   test "upcoming scope includes only shows that haven't happened yet" do
     assert_includes Show.upcoming, shows(:upcoming)
     assert_not_includes Show.upcoming, shows(:past)

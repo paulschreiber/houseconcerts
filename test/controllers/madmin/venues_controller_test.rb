@@ -12,6 +12,14 @@ module Madmin
       assert_response :success
     end
 
+    test "active scope lists only active venues" do
+      venues(:one).update!(active: false)
+
+      get madmin_venues_path(scope: "active", format: :json)
+
+      assert_empty response.parsed_body
+    end
+
     test "show renders successfully" do
       get madmin_venue_path(venues(:one))
 

@@ -5,6 +5,17 @@ class VenueTest < ActiveSupport::TestCase
     assert venues(:one).valid?
   end
 
+  test "is active by default, and the active scope leaves out inactive venues" do
+    venue = venues(:one)
+
+    assert_predicate venue, :active?
+    assert_includes Venue.active, venue
+
+    venue.update!(active: false)
+
+    assert_not_includes Venue.active, venue
+  end
+
   test "requires name, address, and city" do
     venue = Venue.new(venues(:one).attributes.except("id").merge("name" => "", "address" => "", "city" => ""))
     assert_not venue.valid?

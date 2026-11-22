@@ -59,6 +59,46 @@ module Madmin
       assert_redirected_to madmin_show_path(Show.last)
     end
 
+    test "create with an inactive venue shows the venue error" do
+      venues(:one).update!(active: false)
+      start = 2.months.from_now.change(hour: 19, min: 0, sec: 0)
+
+      assert_no_difference "Show.count" do
+        post madmin_shows_path, params: { show: {
+          name: "New Show", venue_id: venues(:one).id, price: 20,
+          start: start.iso8601, end: (start + 2.hours).iso8601
+        } }
+      end
+
+      assert_response :unprocessable_content
+      assert_select "p.error", text: "Select an active venue."
+    end
+
+    test "new lists only active venues" do
+      venues(:one).update!(active: false)
+
+      get new_madmin_show_path
+
+      assert_select "select[name='show[venue_id]'] option", text: "Test Venue", count: 0
+      assert_select "select[data-select-url-value$='scope=active']"
+    end
+
+    test "edit keeps a deactivated venue selected" do
+      venues(:one).update!(active: false)
+
+      get edit_madmin_show_path(shows(:upcoming))
+
+      assert_select "select[name='show[venue_id]'] option[selected]", text: "Test Venue"
+    end
+
+    test "update keeps a deactivated venue" do
+      venues(:one).update!(active: false)
+
+      patch madmin_show_path(shows(:upcoming)), params: { show: { name: "Updated Show" } }
+
+      assert_equal "Updated Show", shows(:upcoming).reload.name
+    end
+
     test "create with invalid attributes renders new" do
       assert_no_difference "Show.count" do
         post madmin_shows_path, params: { show: { name: "", start: 2.months.from_now.iso8601, venue_id: venues(:one).id, price: 20 } }
