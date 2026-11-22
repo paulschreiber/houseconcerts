@@ -3,3 +3,7 @@
 one:
   venue_id: <%= ActiveRecord::FixtureSet.identify(:one) %>
   venue_group_id: 2
+
+inactive:
+  venue_id: <%= ActiveRecord::FixtureSet.identify(:inactive) %>
+  venue_group_id: 2

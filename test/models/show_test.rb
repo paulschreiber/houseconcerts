@@ -41,10 +41,8 @@ class ShowTest < ActiveSupport::TestCase
   end
 
   test "requires an active venue when changing a show's venue" do
-    other = venues(:one).dup.tap { |venue| venue.assign_attributes(name: "Other Venue", slug: "other-venue", active: false, venue_groups: venues(:one).venue_groups) }
-    other.save!
     show = shows(:upcoming)
-    show.venue = other
+    show.venue = venues(:inactive)
 
     assert_not show.valid?
     assert_includes show.errors[:venue], "Select an active venue."
