@@ -239,16 +239,46 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes response.body, "Twilio"
   end
 
-  test "about renders the about page" do
+  test "musicians never mentions Twilio" do
+    get musicians_path
+
+    assert_not_includes response.body, "Twilio"
+  end
+
+  test "about renders the saved page, with its title in the tab and its own heading" do
+    pages(:about).update!(title: "About these concerts")
+
     get about_path
 
     assert_response :success
+    assert_select "title", text: /\AAbout these concerts/
+    assert_select "h1", count: 1
+    assert_select ".pagetext h1", text: "About these shows"
+    assert_select ".pagetext h2#frequently-asked-questions", text: "Frequently asked questions"
+    assert_select ".pagetext h3", text: "Where is the concert?"
+    assert_select ".pagetext p", text: "In the living room."
   end
 
-  test "musicians renders the musician info page" do
+  test "musicians renders the saved page, with headings its text can link to" do
     get musicians_path
 
     assert_response :success
+    assert_select "title", text: /\AMusician Info/
+    assert_select "h1", count: 1
+    assert_select ".pagetext h1", text: "Information for musicians"
+    assert_select ".pagetext a[href='#requirements']", text: "Read the requirements"
+    assert_select ".pagetext h2#requirements", text: "Requirements"
+  end
+
+  test "a page nobody has saved shows the neutral text" do
+    Page.delete_all
+
+    get about_path
+
+    assert_response :success
+    assert_select "title", text: /\A#{I18n.t('pages.about.title')}/
+    assert_select "h1", count: 1
+    assert_select ".pagetext h2", text: "Frequently asked questions"
   end
 
   private

@@ -1,0 +1,9 @@
+about:
+  slug: about
+  title: About
+  body: "# About these shows\n\nAn introduction.\n\n## Frequently asked questions\n\n### Where is the concert?\n\nIn the living room."
+
+musicians:
+  slug: musicians
+  title: Musician Info
+  body: "# Information for musicians\n\nWant to get booked? [Read the requirements](#requirements) first.\n\n## Requirements\n\nSend a link to your music."
