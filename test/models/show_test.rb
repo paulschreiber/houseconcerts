@@ -81,7 +81,7 @@ class ShowTest < ActiveSupport::TestCase
     assert_not show.confirmed?
   end
 
-  test "set_end_time fills in end based on show_duration when blank" do
+  test "set_end_time fills in end based on Settings.show.duration when blank" do
     show = Show.new(
       name: "Duration Test",
       venue: venues(:one),
@@ -91,7 +91,7 @@ class ShowTest < ActiveSupport::TestCase
     )
     show.valid?
 
-    assert_equal Settings.show_duration.hours, show.end - show.start
+    assert_equal Settings.show.duration.hours, show.end - show.start
   end
 
   test "moving the start moves the end, keeping the show's length" do
