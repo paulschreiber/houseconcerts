@@ -429,6 +429,11 @@ with a photo size’s URL, and accept uploads from anyone.
         Header set Cache-Control "public, max-age=31536000, immutable"
     </LocationMatch>
 
+    # Artist photo uploads (see ModSecurity and photo uploads).
+    <LocationMatch "^/backstage/artists(/[^/]+)?$">
+        SecRuleRemoveById 200004
+    </LocationMatch>
+
     # Redirect other host names (e.g. www.) to the canonical one.
     RewriteEngine on
     RewriteCond %{HTTP_HOST} !^houseconcerts\.example$ [NC]
@@ -440,6 +445,25 @@ with a photo size’s URL, and accept uploads from anyone.
 </VirtualHost>
 </IfModule>
 ```
+
+### ModSecurity and photo uploads
+
+If Apache runs ModSecurity (`libapache2-mod-security2`), its recommended
+configuration (`/etc/modsecurity/modsecurity.conf`) denies some photo uploads
+with a plain Apache “403 Forbidden” page, before the request reaches Rails.
+Apache’s error log names the rule:
+
+```
+ModSecurity: Access denied with code 403 (phase 2). Match of "eq 0" against
+"MULTIPART_UNMATCHED_BOUNDARY" required. [id "200004"] [msg "Multipart parser
+detected a possible unmatched boundary."] [uri "/backstage/artists/jane-smith"]
+```
+
+Rule 200004 mistakes bytes in a photo for a multipart boundary, so whether an
+upload is refused depends on the photo. The vhost turns off just that rule for
+the artist pages, the only forms with a file field. Other rules still apply,
+and other pages keep this one. `SecRuleRemoveById` in a `LocationMatch` works
+because `modsecurity.conf` is loaded before the vhost.
 
 ### Cache lifetimes
 
