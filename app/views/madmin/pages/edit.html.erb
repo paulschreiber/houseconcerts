@@ -1,0 +1,73 @@
+<% content_for :title, t("madmin.titles.edit", name: @page.title_in_database || @page.title) %>
+
+<header class="header">
+  <h1>
+    <%= link_to PageResource.friendly_plural_name, madmin_pages_path %>
+    /
+    <strong><%= t("madmin.actions.edit") %> <%= @page.title_in_database || @page.title %></strong>
+  </h1>
+
+  <div class="actions">
+    <%= link_to t("madmin.pages.view_on_site"), main_app.public_send("#{@page.slug}_path"), class: "btn btn-secondary", target: "_blank", rel: "noopener" %>
+  </div>
+</header>
+
+<div data-controller="live-preview">
+  <div class="markdown-editor">
+    <div class="markdown-editor-pane">
+      <%# The session-wide CSRF token, not one scoped to this form's action:
+          the Preview button submits the form to a different URL. %>
+      <%= form_with model: @page, url: madmin_page_path(@page), method: :patch, id: "page-editor-form", class: "markdown-editor-form",
+                    authenticity_token: form_authenticity_token,
+                    data: { live_preview_target: "form", action: "input->live-preview#changed" } do |form| %>
+        <%= render layout: "madmin/application/form_errors", locals: { record: @page } do %>
+          <div class="form-group">
+            <%= form.label :title %>
+            <%= form.text_field :title, class: "form-input" %>
+            <div class="form-description"><%= t("madmin.pages.edit.title_help") %></div>
+          </div>
+
+          <div class="form-group">
+            <%= form.label :body, t("madmin.pages.edit.text") %>
+            <%= form.text_area :body, rows: 24, class: "form-input" %>
+            <div class="form-description"><%= t("madmin.pages.edit.text_help") %></div>
+          </div>
+
+          <details class="markdown-editor-help">
+            <summary><%= t("madmin.pages.edit.formatting") %></summary>
+            <table>
+              <tbody>
+                <% [ [ "# Heading", "heading" ],
+                     [ "## Section", "section" ],
+                     [ "### Question", "question" ],
+                     [ "**bold**", "bold" ],
+                     [ "*italics*", "italics" ],
+                     [ "~~strikethrough~~", "strikethrough" ],
+                     [ "[text](https://example.com)", "link" ],
+                     [ "[text](#section)", "heading_link" ],
+                     [ "- item", "list" ] ].each do |markdown, key| %>
+                  <tr>
+                    <td><code><%= markdown %></code></td>
+                    <td><%= t("madmin.pages.formatting.#{key}") %></td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+            <p><%= t("madmin.pages.formatting.paragraph") %></p>
+          </details>
+
+          <%= form.button t("madmin.pages.edit.preview"), type: "submit", hidden: true,
+                          formaction: preview_madmin_page_path(@page), formtarget: "page-preview",
+                          data: { live_preview_target: "previewButton", turbo: false } %>
+        <% end %>
+      <% end %>
+
+      <%= render "madmin/application/form_actions", form_id: "page-editor-form", submit_label: t("madmin.pages.edit.update"),
+                                                    cancel_path: madmin_pages_path %>
+    </div>
+
+    <section aria-label="<%= t("madmin.pages.edit.preview") %>">
+      <iframe name="page-preview" title="<%= t("madmin.pages.edit.preview_title") %>" class="markdown-preview-frame"></iframe>
+    </section>
+  </div>
+</div>

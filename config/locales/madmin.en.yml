@@ -27,6 +27,32 @@ en:
     artists:
       remove_photo_confirmation: "Are you sure you want to delete the photo for %{artist}?"
       photo_description: "A JPEG, HEIC, AVIF or WebP photo, at least %{width} × %{height} pixels, at most %{megapixels} megapixels and smaller than %{size}."
+    pages:
+      saved: "Saved “%{title}”."
+      view_on_site: "View on site"
+      index:
+        title: "Title"
+        saved: "Last saved"
+        not_saved: "Not saved yet"
+      edit:
+        update: "Update Page"
+        text: "Text"
+        formatting: "Formatting"
+        preview: "Preview"
+        preview_title: "Preview of the page"
+        title_help: "Shown in the browser’s tab."
+        text_help: "The page starts with a # heading."
+      formatting:
+        heading: "the page’s heading"
+        section: "a section heading"
+        question: "a question, or a smaller heading"
+        bold: "bold"
+        italics: "italics"
+        strikethrough: "strikethrough"
+        link: "a link"
+        heading_link: "a link to a heading in the page, by its text in lowercase with dashes"
+        list: "a list"
+        paragraph: "A blank line starts a new paragraph."
     people:
       import:
         nothing_to_import: "Paste some names and email addresses, or choose a file."
