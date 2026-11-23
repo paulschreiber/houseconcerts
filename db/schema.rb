@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_22_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_24_120000) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", precision: nil, null: false
@@ -147,6 +147,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_22_120000) do
     t.datetime "updated_at", precision: nil, null: false
     t.index ["created_at"], name: "index_opens_on_created_at"
     t.index ["tag", "email"], name: "index_opens_on_tag_and_email"
+  end
+
+  create_table "pages", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.text "body", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.string "slug", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", precision: nil, null: false
+    t.index ["slug"], name: "index_pages_on_slug", unique: true
   end
 
   create_table "people", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
