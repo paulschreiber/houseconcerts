@@ -2,15 +2,17 @@
 # relative "/" and "#" links. Redcarpet's safe_links_only list can't be
 # changed to add tel, so #link replaces Redcarpet's own version, check, and
 # escaping. As with Redcarpet's check, "/" and "#" need a letter or digit
-# next, which keeps out "//evil.example". Returning nil leaves an unsafe
+# next (except "/" on its own, the home page), which keeps out
+# "//evil.example". Returning nil leaves an unsafe
 # link as escaped plain text. <url> autolinks still use Redcarpet's own
 # renderer and safe_links_only check.
 class MarkdownRenderer < Redcarpet::Render::HTML
-  SAFE_LINK = %r{\A(?:https?://[[:alnum:]]|mailto:|tel:\+?[\d(]|[/#][[:alnum:]])}i
+  SAFE_LINK = %r{\A(?:https?://[[:alnum:]]|mailto:|tel:\+?[\d(]|/\z|[/#][[:alnum:]])}i
 
   # A Markdown parser using this renderer, with any Redcarpet extensions.
-  def self.parser(**extensions)
-    Redcarpet::Markdown.new(new(hard_wrap: true, escape_html: true, safe_links_only: true), **extensions)
+  # with_toc_data: true gives each heading an id made from its text.
+  def self.parser(with_toc_data: false, **extensions)
+    Redcarpet::Markdown.new(new(hard_wrap: true, escape_html: true, safe_links_only: true, with_toc_data:), **extensions)
   end
 
   # [text](url "title")

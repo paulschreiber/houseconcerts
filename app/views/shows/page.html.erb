@@ -1,0 +1,8 @@
+<% content_for :title, page_title(@page.title) %>
+
+<div class="pagetext">
+  <%= @page.body_html %>
+  <% if @page.slug == "about" && SendTextMessage.enabled? %>
+    <p><a href="/privacy">Privacy policy</a> (required for Twilio’s text messaging service).</p>
+  <% end %>
+</div>

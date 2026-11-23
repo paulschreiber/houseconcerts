@@ -9,6 +9,16 @@ class ShowsController < ApplicationController
     @shows = Show.past.occurred.includes(:venue, artists: { photo_attachment: :blob })
   end
 
+  def about
+    @page = Page.for("about")
+    render :page
+  end
+
+  def musicians
+    @page = Page.for("musicians")
+    render :page
+  end
+
   def calendar
     events = Show.upcoming.includes(:venue).map { |show| show.ical_event(url: rsvp_for_show_url(slug: show.slug)) }
     render plain: Show.ical(events), content_type: "text/calendar"

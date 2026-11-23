@@ -1,0 +1,36 @@
+en:
+  pages:
+    about:
+      title: "About"
+      body: |-
+        # About
+
+        Write a few sentences about your house concerts here: how they started, and what a guest can expect.
+
+        ## Frequently asked questions
+
+        ### Where is the concert?
+
+        Say where guests should go, and when to arrive.
+
+        ### How much are the shows?
+
+        Say what a guest should contribute, and who gets the money.
+    musicians:
+      title: "Musician Info"
+      body: |-
+        # Information for musicians
+
+        Tell musicians what to expect when they play your house concerts, and how to get in touch.
+
+        ## Confirmed acts
+
+        ### How long do I play for?
+
+        Say how long the sets are.
+
+        ## Prospective acts
+
+        ### Requirements
+
+        Say what you look for before you book an act.
