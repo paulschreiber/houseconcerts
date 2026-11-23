@@ -21,7 +21,7 @@ class ShowResource < Madmin::Resource
   attribute :created_at
   attribute :updated_at
   attribute :availability, field: RadioEnumField
-  attribute :status, field: RadioEnumField
+  attribute :status, field: RadioEnumField, index: true, index_scopes: [ nil ]
 
   # Associations
   attribute :artists
