@@ -3,6 +3,7 @@ class Person < ApplicationRecord
   include NameHelpers
   include NumberHelpers
   include IPAddress
+  include Uniqid
 
   has_many :person_venue_groups, dependent: :delete_all
   has_many :venue_groups, through: :person_venue_groups
@@ -27,8 +28,6 @@ class Person < ApplicationRecord
   before_save :set_ip_address
   before_save :update_removal_status
   before_save :ensure_venue_group
-
-  attribute :uniqid, default: -> { SecureRandom.alphanumeric(Settings.uniqid_length) }
 
   def ensure_venue_group
     return unless venue_groups.empty?

@@ -232,7 +232,7 @@ class Show < ApplicationRecord
     event.summary = event_name
     event.location = location
     event.url = url
-    event.uid = "event-#{slug}@#{Settings.domain}"
+    event.uid = "event-#{slug}@#{Settings.organization.domain}"
     event
   end
 

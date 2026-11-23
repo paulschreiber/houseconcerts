@@ -68,7 +68,7 @@ class AdminTest < ActiveSupport::TestCase
     end
 
     email = ActionMailer::Base.deliveries.last
-    assert_equal [ "#{Settings.confirms_from_email}@#{Settings.domain}" ], email.from
-    assert_equal Settings.confirms_from_name, email[:from].display_names.first
+    assert_equal [ "#{Settings.organization.confirms_from_email}@#{Settings.organization.domain}" ], email.from
+    assert_equal Settings.organization.confirms_from_name, email[:from].display_names.first
   end
 end

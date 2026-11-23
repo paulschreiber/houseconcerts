@@ -1,7 +1,7 @@
 # Settings that differ from Devise's defaults. The full list of options is in
 # the gem's lib/generators/templates/devise.rb.
 Devise.setup do |config|
-  config.mailer_sender = ->(_mapping) { ActionMailer::Base.email_address_with_name("#{Settings.confirms_from_email}@#{Settings.domain}", Settings.confirms_from_name) }
+  config.mailer_sender = ->(_mapping) { ActionMailer::Base.email_address_with_name("#{Settings.organization.confirms_from_email}@#{Settings.organization.domain}", Settings.organization.confirms_from_name) }
 
   require "devise/orm/active_record"
 

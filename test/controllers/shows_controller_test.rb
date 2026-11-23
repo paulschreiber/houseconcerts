@@ -213,7 +213,7 @@ class ShowsControllerTest < ActionDispatch::IntegrationTest
     assert_includes @response.body, "SUMMARY:#{show.event_name}"
     assert_includes @response.body, "DTSTART:#{show.start.utc.strftime('%Y%m%dT%H%M%SZ')}"
     assert_includes @response.body, "DTEND:#{show.end.utc.strftime('%Y%m%dT%H%M%SZ')}"
-    assert_includes @response.body, "UID:event-#{show.slug}@#{Settings.domain}"
+    assert_includes @response.body, "UID:event-#{show.slug}@#{Settings.organization.domain}"
     assert_includes @response.body, rsvp_for_show_url(slug: show.slug)
     # Matches Icalendar::Values::Text#value_ical's own escaping order: a
     # literal backslash must be doubled before the comma is escaped, or an
