@@ -29,6 +29,15 @@ module ActiveSupport
       parties
     end
 
+    # Runs the block with Settings.show.overbook_seats set to seats.
+    def with_overbook(seats)
+      original = Settings.show.overbook_seats
+      Settings.show.overbook_seats = seats
+      yield
+    ensure
+      Settings.show.overbook_seats = original
+    end
+
     # A saved copy of the fixture venue, in a venue group, with the attributes
     # overridden.
     def create_venue(**attrs)
