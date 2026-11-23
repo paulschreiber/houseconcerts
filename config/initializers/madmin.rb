@@ -67,6 +67,25 @@ module MadminPatches
       end
   end
 
+  # The id of the form control a field's label names (the label partial uses
+  # it as the label's `for`), or nil when the field's form partial has no one
+  # control for it to name. Madmin's label always uses the attribute's id,
+  # which no element has for a read-only value, a radio group, or an
+  # association select (its id ends in _id or _ids). The association fields
+  # use their select's id; fields with no control include NoLabelTarget.
+  module LabelTarget
+    def label_target_id(form)
+      form.field_id(attribute_name)
+    end
+  end
+
+  module AssociationLabelTarget
+    def label_target_id(form)
+      param = to_param
+      form.field_id(param.is_a?(Hash) ? param.each_key.first : param)
+    end
+  end
+
   # Delete confirmations read "the person Jane Smith", not "the Person Jane
   # Smith". Mirrors madmin 3.4.1's Resource.delete_confirmation, but lowercases
   # %{resource}; recheck it when upgrading Madmin.
@@ -81,6 +100,9 @@ module MadminPatches
 end
 
 Madmin::Field.prepend(MadminPatches::FieldVisibility)
+Madmin::Field.prepend(MadminPatches::LabelTarget)
+Madmin::Fields::BelongsTo.prepend(MadminPatches::AssociationLabelTarget)
+Madmin::Fields::HasMany.prepend(MadminPatches::AssociationLabelTarget)
 ActiveSupport.on_load(:madmin_resource) do
   singleton_class.prepend(MadminPatches::SavedDisplayName)
   singleton_class.prepend(MadminPatches::DeleteConfirmation)

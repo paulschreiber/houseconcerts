@@ -2,6 +2,7 @@
 # (not an input) on the new/edit form.
 class ReadonlyStringField < Madmin::Fields::String
   include CustomPartials
+  include NoLabelTarget
 
   custom_partials :form
 end

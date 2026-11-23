@@ -2,6 +2,7 @@
 # list (no attach/detach select) on the new/edit form.
 class ReadonlyHasManyField < Madmin::Fields::HasMany
   include CustomPartials
+  include NoLabelTarget
 
   custom_partials :form
 end

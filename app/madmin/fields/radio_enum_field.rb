@@ -2,6 +2,7 @@
 # (a segmented control) instead of a <select> on the new/edit form.
 class RadioEnumField < Madmin::Fields::Enum
   include CustomPartials
+  include NoLabelTarget
 
   custom_partials :form
 end
