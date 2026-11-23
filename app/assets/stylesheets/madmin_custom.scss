@@ -719,66 +719,65 @@ body.dashboard.show {
   }
 }
 
-/* Invite editor: the Markdown form on the left, a preview of the email on
+/* Markdown editors (invites, pages): the form on the left, a live preview on
    the right; stacked on narrower screens. */
-body.invite_messages {
-  .invite-editor {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 1.5rem;
-    align-items: start;
-  }
+.markdown-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
 
-  .invite-editor-form label {
+  @media (width <= 1100px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.markdown-editor-form {
+  label {
     display: block;
     font-weight: 700;
   }
 
-  .invite-editor-form textarea {
+  textarea {
     width: 100%;
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   }
+}
 
-  .invite-editor-help {
-    margin-bottom: 1rem;
+.markdown-editor-help {
+  margin-bottom: 1rem;
 
-    summary {
-      cursor: pointer;
-    }
-
-    td {
-      padding: 0.125rem 1rem 0.125rem 0;
-    }
+  summary {
+    cursor: pointer;
   }
 
-  .invite-preview-headers {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    gap: 0.25rem 0.75rem;
-    margin: 0 0 0.5rem;
-    font-size: 0.875rem;
+  td {
+    padding: 0.125rem 1rem 0.125rem 0;
+  }
+}
 
-    dt {
-      color: var(--light-text-color);
-    }
+.markdown-preview-frame {
+  width: 100%;
+  height: 70vh;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  background-color: white;
+}
 
-    dd {
-      margin: 0;
-      overflow-wrap: anywhere;
-    }
+/* The invite preview's From, To and Subject. */
+.invite-preview-headers {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.25rem 0.75rem;
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
+
+  dt {
+    color: var(--light-text-color);
   }
 
-  .invite-preview-frame {
-    width: 100%;
-    height: 70vh;
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
-    background-color: white;
-  }
-
-  @media (width <= 1100px) {
-    .invite-editor {
-      grid-template-columns: minmax(0, 1fr);
-    }
+  dd {
+    margin: 0;
+    overflow-wrap: anywhere;
   }
 }

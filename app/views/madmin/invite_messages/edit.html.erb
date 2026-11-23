@@ -3,7 +3,7 @@
       (e.g. after a save that failed). %>
   <%= button_to "Send Test", send_test_madmin_show_invite_message_path(@show, @invite_message), class: "btn btn-secondary",
                                                                                                 disabled: @invite_message.changed?,
-                                                                                                data: { invite_preview_target: "testButton" } %>
+                                                                                                data: { live_preview_target: "testButton" } %>
   <%= link_to "History", madmin_show_invite_messages_path(@show), class: "btn btn-secondary" %>
 <% end %>
 <%= render "editor", title: "Invite, Revision #{@invite_message.revision}", actions: %>
