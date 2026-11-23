@@ -1,18 +1,18 @@
 <%# The Markdown editor, with a live preview of the email beside it (see
-    invite_preview_controller.js), under the page's header. title and
+    live_preview_controller.js), under the page's header. title and
     actions: the header's (see _header). The header is inside the
     controller's element, so a Send Test button among its actions is too. %>
 <% sample = InvitesMailer.with(show: @show, invite_message: @invite_message).invite_preview.message %>
-<div data-controller="invite-preview">
+<div data-controller="live-preview" data-live-preview-test-notice-value="Save the invite first">
   <%= render "header", title:, actions: local_assigns[:actions] %>
 
-  <div class="invite-editor">
-    <div class="invite-editor-pane">
+  <div class="markdown-editor">
+    <div class="markdown-editor-pane">
       <%# The session-wide CSRF token, not one scoped to this form's action:
           the Preview button submits the form to a different URL. %>
-      <%= form_with model: [:madmin, @show, @invite_message], id: "invite-editor-form", class: "invite-editor-form",
+      <%= form_with model: [:madmin, @show, @invite_message], id: "invite-editor-form", class: "markdown-editor-form",
                     authenticity_token: form_authenticity_token,
-                    data: { invite_preview_target: "form", action: "input->invite-preview#changed" } do |form| %>
+                    data: { live_preview_target: "form", action: "input->live-preview#changed" } do |form| %>
         <%= render layout: "madmin/application/form_errors", locals: { record: @invite_message } do %>
           <div class="form-group">
             <%= form.label :intro, "Introduction" %>
@@ -25,7 +25,7 @@
             <%= form.text_area :about, rows: 14, class: "form-input" %>
           </div>
 
-          <details class="invite-editor-help">
+          <details class="markdown-editor-help">
             <summary>Formatting</summary>
             <table>
               <tbody>
@@ -58,7 +58,7 @@
 
           <%= form.button "Preview", type: "submit", hidden: true,
                           formaction: preview_madmin_show_invite_messages_path(@show), formtarget: "invite-preview",
-                          data: { invite_preview_target: "previewButton", turbo: false } %>
+                          data: { live_preview_target: "previewButton", turbo: false } %>
         <% end %>
       <% end %>
 
@@ -81,7 +81,7 @@
         <dt>Subject</dt>
         <dd><%= sample.subject %></dd>
       </dl>
-      <iframe name="invite-preview" title="Preview of the invite" class="invite-preview-frame"></iframe>
+      <iframe name="invite-preview" title="Preview of the invite" class="markdown-preview-frame"></iframe>
     </section>
   </div>
 </div>

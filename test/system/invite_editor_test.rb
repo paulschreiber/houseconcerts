@@ -1,6 +1,6 @@
 require "application_system_test_case"
 
-# The invite editor's preview updates as you type (invite_preview_controller.js),
+# The invite editor's preview updates as you type (live_preview_controller.js),
 # so it runs in a real browser.
 class InviteEditorTest < ApplicationSystemTestCase
   setup do

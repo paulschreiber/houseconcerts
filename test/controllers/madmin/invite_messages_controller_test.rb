@@ -119,8 +119,9 @@ module Madmin
       get edit_madmin_show_invite_message_path(show, invite_message)
 
       assert_select ".form-secondary-actions button[type=submit][form=invite-editor-form]", text: "Update Invite"
-      assert_select "[data-controller='invite-preview'] .header .actions form[action=?] button[data-invite-preview-target=testButton]", send_test_madmin_show_invite_message_path(show, invite_message), text: "Send Test"
+      assert_select "[data-controller='live-preview'] .header .actions form[action=?] button[data-live-preview-target=testButton]", send_test_madmin_show_invite_message_path(show, invite_message), text: "Send Test"
       assert_select ".form-secondary-actions button", text: "Send Test", count: 0
+      assert_select "[data-controller='live-preview'][data-live-preview-test-notice-value=?]", "Save the invite first"
       assert_select ".form-secondary-actions form[action=?] button.btn-danger", madmin_show_invite_message_path(show, invite_message), text: "Delete"
       assert_select ".form-secondary-actions a[href=?]", madmin_show_invite_message_path(show, invite_message), text: "Cancel"
       assert_select "a", text: "Back", count: 0
@@ -224,7 +225,7 @@ module Madmin
       ActionController::Base.allow_forgery_protection = true
 
       get new_madmin_show_invite_message_path(show)
-      token = css_select("form.invite-editor-form input[name='authenticity_token']").first["value"]
+      token = css_select("form.markdown-editor-form input[name='authenticity_token']").first["value"]
       post preview_madmin_show_invite_messages_path(show), params: { authenticity_token: token, invite_message: { intro: "Draft", about: "Draft bio" } }
 
       assert_response :success
