@@ -1,0 +1,16 @@
+<%# The editor's preview of a page (Madmin::PagesController#preview): the site's
+    styles around the page's text, without its navigation and scripts. %>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><%= yield(:title) %></title>
+    <%= stylesheet_link_tag "application" %>
+  </head>
+  <body>
+    <main>
+      <%= yield %>
+    </main>
+  </body>
+</html>

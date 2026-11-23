@@ -7,6 +7,11 @@ namespace :madmin, path: Settings.admin_prefix do
     resources :attachments, only: :destroy
   end
   resources :opens
+  # The text pages (About, Musician Info). Previewing renders the editor's
+  # unsaved text, posted from the edit form.
+  resources :pages, only: %i[index edit update] do
+    match :preview, on: :member, via: %i[post patch]
+  end
   resources :people do
     member do
       patch :invite

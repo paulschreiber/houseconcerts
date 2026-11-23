@@ -1,0 +1,28 @@
+<% content_for :title, PageResource.friendly_plural_name %>
+
+<header class="header">
+  <h1><%= PageResource.friendly_plural_name %></h1>
+</header>
+
+<div class="table-scroll">
+  <table>
+    <thead>
+      <tr>
+        <th><%= t("madmin.pages.index.title") %></th>
+        <th><%= t("madmin.pages.index.saved") %></th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @pages.each do |page| %>
+        <tr>
+          <td><%= link_to page.title, edit_madmin_page_path(page) %></td>
+          <td><%= page.persisted? ? l(page.updated_at, format: :short) : t("madmin.pages.index.not_saved") %></td>
+          <td class="actions">
+            <%= link_to t("madmin.actions.edit"), edit_madmin_page_path(page), class: "btn btn-secondary" %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
