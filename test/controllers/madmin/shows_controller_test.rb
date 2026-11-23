@@ -268,6 +268,16 @@ module Madmin
       assert_select "tbody td", text: shows(:past).start.to_date.iso8601
     end
 
+    test "index shows the status column only when no scope is selected" do
+      get madmin_shows_path
+
+      assert_select "thead th a[href*='sort=status']"
+
+      get madmin_shows_path(scope: "upcoming")
+
+      assert_select "thead th a[href*='sort=status']", count: 0
+    end
+
     test "destroy destroys the show and redirects to the index page" do
       show = shows(:past)
 
