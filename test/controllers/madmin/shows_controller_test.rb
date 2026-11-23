@@ -25,11 +25,25 @@ module Madmin
       assert_select "header .actions .metrics", count: 0
       assert_select ".metrics--totals .metric", count: 5
       assert_metric "Shows", total
-      assert_select ".metrics--totals small", text: "#{Show.next_milestone(total) - total} to go until #{Show.next_milestone(total)}"
       assert_metric "Held", Show.past.count
       assert_metric "Upcoming", Show.upcoming.count
       assert_metric "Unconfirmed", Show.unconfirmed.count
       assert_metric "Artists", Artist.joins(:shows).merge(Show.past).distinct.count
+    end
+
+    test "index leaves out the milestone note until it is fewer than 10 shows away" do
+      total = Show.where.not(status: :cancelled).count
+      milestone = Show.next_milestone(total)
+      ten_away = milestone - Show::MILESTONE_NOTICE
+      assert_operator total, :<=, ten_away, "the fixtures are already within the milestone notice"
+
+      (ten_away - total).times { |i| shows(:upcoming).dup.tap { |show| show.name = "Jane Smith Live #{i}" }.save! }
+      get madmin_shows_path
+      assert_select ".metrics--totals small", count: 0
+
+      shows(:upcoming).dup.tap { |show| show.name = "Jane Smith Live last" }.save!
+      get madmin_shows_path
+      assert_select ".metrics--totals small", text: "#{Show::MILESTONE_NOTICE - 1} to go until #{milestone}"
     end
 
     test "index totals leave out cancelled shows and count each artist once" do
