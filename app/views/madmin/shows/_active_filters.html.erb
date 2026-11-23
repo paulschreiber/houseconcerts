@@ -1,8 +1,9 @@
 <%# The counts above the list. Madmin renders this partial below the header, so they get a full-width row of their own. %>
 <% totals = show_totals %>
+<% to_go = totals[:next_milestone] - totals[:total] %>
 <div class="metrics metrics--totals">
   <%= render "madmin/application/metric", label: t("madmin.shows.totals.shows"), value: totals[:total],
-             note: t("madmin.shows.totals.to_go", count: totals[:next_milestone] - totals[:total], milestone: totals[:next_milestone]) %>
+             note: (t("madmin.shows.totals.to_go", count: to_go, milestone: totals[:next_milestone]) if to_go < Show::MILESTONE_NOTICE) %>
   <%= render "madmin/application/metric", label: t("madmin.shows.totals.held"), value: totals[:held] %>
   <%= render "madmin/application/metric", label: t("madmin.shows.totals.upcoming"), value: totals[:upcoming], long: true %>
   <%= render "madmin/application/metric", label: t("madmin.shows.totals.unconfirmed"), value: totals[:unconfirmed], long: true %>
