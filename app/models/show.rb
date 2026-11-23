@@ -122,8 +122,14 @@ class Show < ApplicationRecord
     confirmed? && artists.any?
   end
 
+  # The seats the show takes before it starts a waitlist: the venue's capacity
+  # plus Settings.show.overbook_seats, since some guests who RSVP don't come.
+  def bookable_seats
+    venue.capacity + Settings.show.overbook_seats
+  end
+
   # Whether the show is full, has room on its waitlist, or is sold out follows
-  # its RSVPs' seats (T) against the venue's capacity (C) and the waitlist
+  # its RSVPs' seats (T) against the bookable_seats (C) and the waitlist
   # capacity (W): available below C, waitlisted from C, sold out from C + W.
   # Waitlisted seats count in T, so waitlisting an RSVP doesn't change the
   # state. Within Settings.show.availability_cutoff_hours of the start there's
@@ -133,20 +139,20 @@ class Show < ApplicationRecord
     return availability unless confirmed? && start && !occurred?
 
     seats = rsvps.yes.sum(:seats_reserved)
-    capacity = venue.capacity
-    waitlist_limit = capacity + Settings.show.waitlist_capacity
+    bookable = bookable_seats
+    waitlist_limit = bookable + Settings.show.waitlist_capacity
 
     # After the cutoff, availability is no longer opened up: it stays as set
     # and can only change to sold out.
     if start <= Settings.show.availability_cutoff_hours.hours.from_now
-      limit = waitlisted? ? waitlist_limit : capacity
+      limit = waitlisted? ? waitlist_limit : bookable
       return seats >= limit ? "sold_out" : availability
     end
 
     # Before the cutoff, availability follows the seat counts alone.
     if seats >= waitlist_limit
       "sold_out"
-    elsif seats >= capacity
+    elsif seats >= bookable
       "waitlisted"
     else
       "available"

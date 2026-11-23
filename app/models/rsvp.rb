@@ -201,7 +201,7 @@ class RSVP < ApplicationRecord
   def room_before_this_rsvp?
     others = show.rsvps.yes.where.not(id:)
     ahead = others.confirmed_confirmed.or(others.confirmed_unconfirmed.where(id: ...id))
-    ahead.sum(:seats_reserved) < show.venue.capacity
+    ahead.sum(:seats_reserved) < show.bookable_seats
   end
 
   def can_cancel?(next_show = Show.next)
