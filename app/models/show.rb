@@ -3,6 +3,7 @@ class Show < ApplicationRecord
 
   MILESTONES = [ 25, 50 ].freeze
   MILESTONE_STEP = 50
+  MILESTONE_NOTICE = 10
 
   # In the order the artists were added, usually the headliner first.
   has_many :artist_shows, -> { order(:id) }, dependent: :delete_all, inverse_of: :show
