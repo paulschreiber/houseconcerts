@@ -426,6 +426,35 @@ class RsvpTest < ActiveSupport::TestCase
     assert after.can_waitlist?
   end
 
+  # The venue holds 25 seats and overbooks by 5, so the show takes 30. It
+  # already has 2 confirmed seats from rsvps(:one).
+  test "can_confirm? allows a party to take the show past capacity plus overbook seats" do
+    with_overbook(5) do
+      venues(:one).update_columns(capacity: 25) # rubocop:disable Rails/SkipsModelValidations
+      book(shows(:upcoming), 27) # 29 seats, one short of the 30 the show takes
+      last = book(shows(:upcoming), 2).first # takes it to 31
+
+      assert last.can_confirm?
+      assert_not last.can_waitlist?
+      assert_equal "waitlisted", shows(:upcoming).reload.availability
+
+      after = book(shows(:upcoming), 1).first
+      assert_not after.can_confirm?
+      assert after.can_waitlist?
+    end
+  end
+
+  test "can_confirm? is false once the seats ahead fill capacity plus overbook seats" do
+    with_overbook(5) do
+      venues(:one).update_columns(capacity: 25) # rubocop:disable Rails/SkipsModelValidations
+      book(shows(:upcoming), 28) # 30 seats
+      last = book(shows(:upcoming), 1).first
+
+      assert_not last.can_confirm?
+      assert last.can_waitlist?
+    end
+  end
+
   test "a later rsvp doesn't stop an earlier one being confirmed" do
     small_venue
     first, second, third = book(shows(:upcoming), 4 + 4 + 4)

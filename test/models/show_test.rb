@@ -302,6 +302,33 @@ class ShowTest < ActiveSupport::TestCase
     assert_equal "sold_out", show.reload.availability
   end
 
+  # The venue holds 10 seats and overbooks by 5, so the waitlist starts at 15
+  # and, with a waitlist of Settings.show.waitlist_capacity, sells out at 25.
+  test "overbook seats move the waitlist and sold out boundaries up" do
+    with_overbook(5) do
+      show = shows(:upcoming)
+      small_venue
+
+      assert_equal 15, show.bookable_seats
+
+      book(show, 12)
+      assert_equal "available", show.reload.availability
+
+      book(show, 1)
+      assert_equal "waitlisted", show.reload.availability
+
+      book(show, Settings.show.waitlist_capacity - 1)
+      assert_equal "waitlisted", show.reload.availability
+
+      book(show, 1)
+      assert_equal "sold_out", show.reload.availability
+    end
+  end
+
+  test "bookable_seats is the venue's capacity with no overbook seats" do
+    with_overbook(0) { assert_equal shows(:upcoming).venue.capacity, shows(:upcoming).bookable_seats }
+  end
+
   test "availability counts waitlisted seats, so waitlisting an RSVP doesn't change it" do
     show = shows(:upcoming)
     small_venue
@@ -342,6 +369,20 @@ class ShowTest < ActiveSupport::TestCase
 
     book(show, 1)
     assert_equal "sold_out", show.reload.availability
+  end
+
+  test "a show close to its start sells out at capacity plus overbook seats" do
+    with_overbook(5) do
+      show = shows(:upcoming)
+      small_venue
+      start_soon(show)
+
+      book(show, 12) # 14 seats, one short of the 15 the show takes
+      assert_equal "available", show.reload.availability
+
+      book(show, 1)
+      assert_equal "sold_out", show.reload.availability
+    end
   end
 
   test "a show close to its start doesn't go back to a better availability" do
