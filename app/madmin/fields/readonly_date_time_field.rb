@@ -2,6 +2,7 @@
 # (not a picker) on the new/edit form.
 class ReadonlyDateTimeField < Madmin::Fields::DateTime
   include CustomPartials
+  include NoLabelTarget
 
   custom_partials :form
 end

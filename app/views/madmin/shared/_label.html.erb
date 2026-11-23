@@ -1,0 +1,5 @@
+<%# A copy of Madmin 3.4.1's field label, pointed at the field's own control (label_target_id) so its `for` always matches an element. %>
+<%= form.label field.attribute_name, field.options.label, for: field.label_target_id(form), id: form.field_id(field.attribute_name, :label) %>
+<% if field.required? %>
+  <span class="required">*</span>
+<% end %>

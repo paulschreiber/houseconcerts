@@ -1,4 +1,4 @@
-<div class="radio-group">
+<div class="radio-group" role="radiogroup" aria-labelledby="<%= form.field_id(field.attribute_name, :label) %>">
   <% field.options_for_select(record).each do |option| %>
     <label class="radio-group__option">
       <%= form.radio_button field.attribute_name, option %>
