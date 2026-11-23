@@ -6,8 +6,8 @@ class NotifyMailerTest < ActionMailer::TestCase
   test "rsvp uses a subject appropriate to the type and notifies the admin" do
     new_email = NotifyMailer.rsvp(rsvps(:one), "new", nil)
     assert_includes new_email.subject, "New RSVP"
-    assert_equal [ "#{Settings.invites_from_email}@#{Settings.domain}" ], new_email.to
-    assert_equal "#{Settings.invites_from_first_name} #{Settings.invites_from_last_name}", new_email[:to].display_names.first
+    assert_equal [ "#{Settings.organization.invites_from_email}@#{Settings.organization.domain}" ], new_email.to
+    assert_equal "#{Settings.organization.invites_from_first_name} #{Settings.organization.invites_from_last_name}", new_email[:to].display_names.first
   end
 
   test "rsvp uses a cancellation subject for type cancel" do
@@ -99,7 +99,7 @@ class NotifyMailerTest < ActionMailer::TestCase
 
     assert_includes email.subject, "1 failed invites send"
     assert_includes email.subject, show.name
-    assert_equal [ "#{Settings.invites_from_email}@#{Settings.domain}" ], email.to
+    assert_equal [ "#{Settings.organization.invites_from_email}@#{Settings.organization.domain}" ], email.to
     body = email.body.encoded
     assert_includes body, person.email
     assert_includes body, "boom"
@@ -148,7 +148,7 @@ class NotifyMailerTest < ActionMailer::TestCase
     email = NotifyMailer.auto_reminders_started(batch_run)
 
     assert_equal "Reminders started for #{show.name}", email.subject
-    assert_equal [ "#{Settings.invites_from_email}@#{Settings.domain}" ], email.to
+    assert_equal [ "#{Settings.organization.invites_from_email}@#{Settings.organization.domain}" ], email.to
     body = email.body.encoded
     assert_includes body, "1 confirmed attendee (2 seats)"
     assert_includes body, "Jane Smith (unconfirmed@example.com) — 2 seats"
@@ -349,7 +349,7 @@ class NotifyMailerTest < ActionMailer::TestCase
     email = NotifyMailer.ses_event(person, "bounce")
 
     assert_equal "Bounce from #{person.full_name}", email.subject
-    assert_equal [ "#{Settings.invites_from_email}@#{Settings.domain}" ], email.to
+    assert_equal [ "#{Settings.organization.invites_from_email}@#{Settings.organization.domain}" ], email.to
     assert_includes email.body.to_s, person.email
     assert_includes email.body.to_s, "bounced permanently"
     assert_includes email.body.to_s, "/backstage/people/#{person.id}"

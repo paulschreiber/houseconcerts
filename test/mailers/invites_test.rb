@@ -23,9 +23,9 @@ class InvitesTest < ActionMailer::TestCase
       email.deliver_now
     end
     assert_equal [ person.email ], email.to
-    assert_equal [ "#{Settings.invites_from_email}@#{Settings.domain}" ], email.from
-    assert_equal "#{Settings.invites_from_first_name} #{Settings.invites_from_last_name}", email[:from].display_names.first
-    assert_match %r{>\s*#{Settings.invites_from_first_name}</p>}, email.body.decoded
+    assert_equal [ "#{Settings.organization.invites_from_email}@#{Settings.organization.domain}" ], email.from
+    assert_equal "#{Settings.organization.invites_from_first_name} #{Settings.organization.invites_from_last_name}", email[:from].display_names.first
+    assert_match %r{>\s*#{Settings.organization.invites_from_first_name}</p>}, email.body.decoded
     assert_includes email.subject, show.name
     unsub_url = Rails.application.routes.url_helpers.unsubscribe_url(uniqid: person.uniqid, host: "example.com")
     assert_equal "<#{unsub_url}>", email["List-Unsubscribe"].to_s
@@ -190,7 +190,7 @@ class InvitesTest < ActionMailer::TestCase
     assert_equal "PUBLISH", calendar.ip_method
     event = calendar.events.sole
     rsvp_url = Rails.application.routes.url_helpers.modify_rsvp_url(slug: show.slug, uniqid: rsvp.uniqid)
-    assert_equal "event-#{show.slug}@#{Settings.domain}", event.uid
+    assert_equal "event-#{show.slug}@#{Settings.organization.domain}", event.uid
     assert_equal show.venue.full_address_calendar, event.location
     assert_equal rsvp_url, event.url.to_s
     assert_includes event.description, rsvp_url
@@ -327,7 +327,7 @@ class InvitesTest < ActionMailer::TestCase
       email = mailer.public_send(action)
       # confirm is multipart, with its calendar attachment.
       html = (email.html_part || email).body.decoded
-      assert_match %r{>\s*#{Settings.invites_from_first_name}</p>}, html, action
+      assert_match %r{>\s*#{Settings.organization.invites_from_first_name}</p>}, html, action
     end
   end
 

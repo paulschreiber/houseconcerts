@@ -6,6 +6,7 @@ class RSVP < ApplicationRecord
   include NameHelpers
   include NumberHelpers
   include IPAddress
+  include Uniqid
 
   belongs_to :show
 
@@ -35,8 +36,6 @@ class RSVP < ApplicationRecord
   after_save :update_phone_number
   after_save -> { NotifyAdminOfRSVP.call(self) }
   after_save :update_show_availability, if: -> { saved_change_to_response? || saved_change_to_seats_reserved? }
-
-  attribute :uniqid, default: -> { SecureRandom.alphanumeric(Settings.uniqid_length) }
 
   validates :seats_reserved, numericality: {
     only_integer: true,

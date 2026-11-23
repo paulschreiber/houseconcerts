@@ -4,8 +4,8 @@ class NotifyMailer < ApplicationMailer
   layout "admin_notification"
 
   # Every notification goes to the admin.
-  default from: -> { formatted_address(Settings.confirms_from_name, Settings.confirms_from_email) },
-          to: -> { formatted_address(invites_from_name, Settings.invites_from_email) }
+  default from: -> { formatted_address(Settings.organization.confirms_from_name, Settings.organization.confirms_from_email) },
+          to: -> { formatted_address(invites_from_name, Settings.organization.invites_from_email) }
 
   def rsvp(rsvp, type, old_seats)
     # Atomic claim keyed on this exact save's updated_at, not a plain

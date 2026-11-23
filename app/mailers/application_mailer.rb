@@ -1,5 +1,5 @@
 class ApplicationMailer < ActionMailer::Base
-  default from: -> { formatted_address(invites_from_name, Settings.invites_from_email) }
+  default from: -> { formatted_address(invites_from_name, Settings.organization.invites_from_email) }
   layout "mailer"
 
   before_action { Current.mailer_claim = nil }
@@ -36,10 +36,10 @@ class ApplicationMailer < ActionMailer::Base
     end
 
     def formatted_address(name, username)
-      email_address_with_name("#{username}@#{Settings.domain}", name)
+      email_address_with_name("#{username}@#{Settings.organization.domain}", name)
     end
 
     def invites_from_name
-      "#{Settings.invites_from_first_name} #{Settings.invites_from_last_name}".strip
+      "#{Settings.organization.invites_from_first_name} #{Settings.organization.invites_from_last_name}".strip
     end
 end

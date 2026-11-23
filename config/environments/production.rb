@@ -115,8 +115,8 @@ Rails.application.configure do
   # answer requests for our own domain and its subdomains (the leading dot), so
   # a spoofed Host or X-Forwarded-Host can't change the canonical, social-sharing,
   # or redirect URLs the app generates. (There's no /up health check to exclude.)
-  config.hosts = [ ".#{Settings.domain}" ]
+  config.hosts = [ ".#{Settings.organization.domain}" ]
 
   # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: Settings.domain, protocol: "https" }
+  config.action_mailer.default_url_options = { host: Settings.organization.domain, protocol: "https" }
 end

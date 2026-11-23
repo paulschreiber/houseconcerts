@@ -3,7 +3,7 @@
 class AdminMailer < ApplicationMailer
   layout "admin_notification"
 
-  default from: -> { formatted_address(Settings.confirms_from_name, Settings.confirms_from_email) }
+  default from: -> { formatted_address(Settings.organization.confirms_from_name, Settings.organization.confirms_from_email) }
 
   def welcome(admin, token)
     @token = token
