@@ -18,6 +18,24 @@ module Madmin
       assert_response :success
     end
 
+    test "show displays an em dash when the artist has no photo" do
+      artist = artists(:one)
+      assert_not artist.photo.attached?
+
+      get madmin_artist_path(artist)
+
+      assert_select "img", count: 0
+      assert_select "tr", text: /Photo\s+—/
+    end
+
+    test "show displays the photo when the artist has one" do
+      artist = attach_photo(artists(:one))
+
+      get madmin_artist_path(artist)
+
+      assert_select "img[alt=?]", artist.name
+    end
+
     test "edit renders successfully" do
       get edit_madmin_artist_path(artists(:one))
 
