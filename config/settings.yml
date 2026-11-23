@@ -11,8 +11,6 @@
 :invites_from_email: "paul"
 :confirms_from_name: "House Concerts"
 :confirms_from_email: "info"
-:arrival_minutes: 30
-:show_duration: 2
 :notify_rsvp: "yes"
 :admin_prefix: "backstage"
 # The config/storage.yml service for uploaded files in production: "local"
@@ -31,6 +29,8 @@
   :max_seats: 4
   :max_seats_used: 10
   :waitlist_capacity: 10
+  :duration: 2
+  :arrival_minutes: 30
   :availability_cutoff_hours: 8
 
 :reminders:
