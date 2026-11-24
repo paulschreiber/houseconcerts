@@ -1,0 +1,33 @@
+<fieldset>
+  <legend><%= t("madmin.settings.groups.timing") %></legend>
+  <%= render "number", form:, attribute: :arrival_minutes %>
+  <%= render "number", form:, attribute: :duration %>
+  <%= render "number", form:, attribute: :availability_cutoff_hours %>
+</fieldset>
+
+<fieldset>
+  <legend><%= t("madmin.settings.groups.seats") %></legend>
+  <%= render "number", form:, attribute: :max_seats, min: Defaults.show.min_seats %>
+  <%= render "number", form:, attribute: :overbook_seats %>
+  <%= render "number", form:, attribute: :waitlist_capacity %>
+</fieldset>
+
+<fieldset>
+  <legend><%= t("madmin.settings.groups.price") %></legend>
+  <%= render "number", form:, attribute: :min_price, prefix: t("madmin.settings.units.dollars") %>
+  <%= render "number", form:, attribute: :max_price, prefix: t("madmin.settings.units.dollars") %>
+</fieldset>
+
+<fieldset>
+  <legend><%= t("madmin.settings.groups.capacity") %></legend>
+  <%= render "number", form:, attribute: :min_capacity, min: 1 %>
+  <%= render "number", form:, attribute: :max_capacity, min: 1 %>
+</fieldset>
+
+<fieldset>
+  <legend><%= t("madmin.settings.groups.notifications") %></legend>
+  <div class="form-group settings-check">
+    <%= form.check_box :notify_rsvp %>
+    <%= form.label :notify_rsvp %>
+  </div>
+</fieldset>

@@ -14,6 +14,7 @@ Rails.application.config.dartsass.builds["madmin_custom.scss"] = "madmin_custom.
 Madmin.menu.before_render do
   add label: "divider-1", position: 25
   add label: "divider-2", position: 45
+  add label: I18n.t("madmin.settings.title"), url: Rails.application.routes.url_helpers.madmin_settings_path, position: 24
 end
 
 # App-specific changes to Madmin's own classes, prepended below.

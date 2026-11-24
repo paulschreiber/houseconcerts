@@ -1,0 +1,20 @@
+<% content_for :title, t("madmin.settings.title") %>
+
+<header class="header">
+  <h1><%= t("madmin.settings.title") %></h1>
+</header>
+
+<nav class="settings-tabs" aria-label="<%= t("madmin.settings.sections") %>">
+  <% Madmin::SettingsController::FORMS.each_key do |tab| %>
+    <%= link_to t("madmin.settings.tabs.#{tab}"), madmin_setting_path(tab), class: ("here" if tab == @tab), aria: { current: ("page" if tab == @tab) } %>
+  <% end %>
+</nav>
+
+<%= form_with model: @form, scope: :settings, url: madmin_setting_path(@tab), method: :patch, id: "settings-form", class: "settings-form" do |form| %>
+  <%= render layout: "madmin/application/form_errors", locals: { record: @form } do %>
+    <%= render @tab, form: %>
+  <% end %>
+<% end %>
+
+<%= render "madmin/application/form_actions", form_id: "settings-form", submit_label: t("madmin.settings.update", tab: t("madmin.settings.tabs.#{@tab}")),
+                                              cancel_path: madmin_setting_path(@tab) %>

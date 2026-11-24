@@ -781,3 +781,108 @@ body.dashboard.show {
     overflow-wrap: anywhere;
   }
 }
+
+/* The settings page: a link for each tab, then one form per tab, in groups. */
+.settings-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+
+  a {
+    padding: 0.5rem 0.875rem;
+    border: 1px solid transparent;
+    border-bottom: 0;
+    border-radius: 0.375rem 0.375rem 0 0;
+    margin-bottom: -1px;
+
+    &.here {
+      border-color: var(--border-color);
+      font-weight: 600;
+      background-color: var(--background-color);
+    }
+  }
+}
+
+.settings-form {
+  max-width: 40rem;
+
+  fieldset {
+    margin: 0 0 1.25rem;
+    padding: 0.75rem 1rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    min-width: 0;
+  }
+
+  legend {
+    padding: 0 0.375rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--light-text-color);
+  }
+
+  .settings-number-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.125rem 0.75rem;
+    align-items: center;
+    margin-bottom: 0.625rem;
+
+    label {
+      font-weight: 700;
+    }
+
+    .form-description {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .settings-number,
+  .settings-address {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+
+  .settings-number .form-input {
+    width: 5.5rem;
+    text-align: right;
+  }
+
+  .settings-address .form-input {
+    flex: 0 1 9rem;
+    width: 9rem;
+  }
+
+  .settings-unit {
+    color: var(--light-text-color);
+    font-size: 0.8125rem;
+    overflow-wrap: anywhere;
+  }
+
+  .settings-readonly {
+    padding: 0.4375rem 0.5625rem;
+    border: 1px dashed var(--border-color);
+    border-radius: 0.25rem;
+    color: var(--light-text-color);
+    overflow-wrap: anywhere;
+  }
+
+  .settings-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    label {
+      margin: 0;
+    }
+  }
+
+  input[type="time"] {
+    width: auto;
+  }
+}

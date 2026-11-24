@@ -51,6 +51,8 @@ namespace :madmin, path: Defaults.admin_prefix do
   # Every show's invite revisions (InviteResource). Each revision's own page
   # is the show's, above.
   resources :invite_messages, only: :index, path: "invites", controller: "invites"
+  # The settings, a tab at a time (SettingsForm).
+  resources :settings, only: %i[index show update], param: :tab
   # Checks of the site’s health (SiteHealth).
   get :site_health, to: "site_health#index"
   resources :venues
