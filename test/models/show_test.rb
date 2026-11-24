@@ -6,6 +6,19 @@ class ShowTest < ActiveSupport::TestCase
     assert shows(:past).valid?
   end
 
+  test "the price range is read when validating" do
+    show = shows(:upcoming)
+    show.price = 50
+
+    with_setting("show.max_price", 49) do
+      assert_not show.valid?
+      assert_includes show.errors.attribute_names, :price
+    end
+    with_setting("show.max_price", 50) do
+      assert_predicate show, :valid?
+    end
+  end
+
   test "a blank price gets one error" do
     show = shows(:upcoming)
     show.price = nil

@@ -69,6 +69,28 @@ class VenueTest < ActiveSupport::TestCase
     assert_includes venue.errors.attribute_names, :capacity
   end
 
+  test "the capacity range and the postal code country are read when validating" do
+    venue = venues(:one)
+    venue.capacity = 20
+
+    with_setting("venue.max_capacity", 19) do
+      assert_not venue.valid?
+      assert_includes venue.errors.attribute_names, :capacity
+    end
+    with_setting("venue.max_capacity", 20) do
+      assert venue.valid?
+    end
+
+    venue.postcode = "K1A 0B1"
+    assert_not venue.valid?
+    assert_includes venue.errors.attribute_names, :postcode
+    with_setting("default_country", "CA") do
+      venue.valid?
+
+      assert_not_includes venue.errors.attribute_names, :postcode
+    end
+  end
+
   test "upcase_province_and_country upcases before save" do
     venue = create_venue(province: "ny", country: "us")
     assert_equal "NY", venue.province
