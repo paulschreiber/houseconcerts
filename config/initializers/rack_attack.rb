@@ -22,8 +22,8 @@ module Rack
     def self.exact_path(path)
       %r{\A/#{path}(?:\.[^/]+)?/?\z}
     end
-    ADMIN_SIGN_IN_PATH = exact_path("#{Regexp.escape(Settings.admin_prefix)}/sign_in")
-    ADMIN_PASSWORD_PATH = exact_path("#{Regexp.escape(Settings.admin_prefix)}/password")
+    ADMIN_SIGN_IN_PATH = exact_path("#{Regexp.escape(Defaults.admin_prefix)}/sign_in")
+    ADMIN_PASSWORD_PATH = exact_path("#{Regexp.escape(Defaults.admin_prefix)}/password")
 
     # The normalized email submitted in a form (params[model][email]), or nil
     # if there isn't one or the params are malformed.
@@ -84,7 +84,7 @@ module Rack
 
     # Adding a passkey checks the admin's current password, so a stolen session
     # mustn't be able to guess it there without limit.
-    ADMIN_PASSKEYS_PATH = exact_path("#{Regexp.escape(Settings.admin_prefix)}/passkeys")
+    ADMIN_PASSKEYS_PATH = exact_path("#{Regexp.escape(Defaults.admin_prefix)}/passkeys")
     throttle("passkey-creation/ip", limit: 5, period: 1.minute) do |req|
       req.ip if req.post? && req.path.match?(ADMIN_PASSKEYS_PATH)
     end

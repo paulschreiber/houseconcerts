@@ -4,8 +4,8 @@ WebAuthn.configure do |config|
   # This value needs to match `window.location.origin` evaluated by
   # the User Agent during registration and authentication ceremonies.
   if Rails.env.production?
-    config.rp_id = Settings.organization.domain
-    config.allowed_origins = [ "https://#{Settings.organization.domain}" ]
+    config.rp_id = Defaults.organization.domain
+    config.allowed_origins = [ "https://#{Defaults.organization.domain}" ]
   else
     config.rp_id = "localhost"
     config.allowed_origins = [ "http://localhost:3000" ]

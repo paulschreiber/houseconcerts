@@ -1,11 +1,11 @@
 Rails.application.routes.draw do
   draw :madmin
-  devise_for :admins, skip: [ :registrations ], path: Settings.admin_prefix, controllers: { passkeys: "admins/passkeys" }
+  devise_for :admins, skip: [ :registrations ], path: Defaults.admin_prefix, controllers: { passkeys: "admins/passkeys" }
   # devise-webauthn has no index route; this is the passkeys page.
   devise_scope :admin do
-    get "#{Settings.admin_prefix}/passkeys", to: "admins/passkeys#index", as: nil
+    get "#{Defaults.admin_prefix}/passkeys", to: "admins/passkeys#index", as: nil
   end
-  mount MissionControl::Jobs::Engine, at: "#{Settings.admin_prefix}/jobs"
+  mount MissionControl::Jobs::Engine, at: "#{Defaults.admin_prefix}/jobs"
 
   # Resized photos (Active Storage variants), the only uploaded files served.
   # Active Storage's own routes are off (see config/application.rb).

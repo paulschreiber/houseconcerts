@@ -7,4 +7,5 @@ class Current < ActiveSupport::CurrentAttributes
   attribute :next_show_rsvpd_emails
   attribute :mailer_claim
   attribute :locked_invite_message_ids
+  attribute :settings
 end

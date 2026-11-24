@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_24_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_24_130000) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", precision: nil, null: false
@@ -215,6 +215,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_120000) do
     t.index ["response"], name: "index_rsvps_on_response"
     t.index ["show_id", "email"], name: "index_rsvps_on_show_id_and_email", unique: true
     t.index ["uniqid"], name: "index_rsvps_on_uniqid", unique: true
+  end
+
+  create_table "setting_values", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "key", null: false
+    t.text "value", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["key"], name: "index_setting_values_on_key", unique: true
   end
 
   create_table "shows", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|

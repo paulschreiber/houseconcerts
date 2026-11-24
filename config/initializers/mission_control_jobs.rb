@@ -5,7 +5,7 @@ Rails.application.config.dartsass.builds["mission_control_custom.scss"] = "missi
 # Use Mission Control's own config hook for the "Back to main app" link,
 # rather than hardcoding the path in the overridden application_selection
 # partial (still overridden, but only for the header it has no hook for).
-MissionControl::Jobs.back_to_main_app_path = "/#{Settings.admin_prefix}"
+MissionControl::Jobs.back_to_main_app_path = "/#{Defaults.admin_prefix}"
 
 # The admin sidebar (madmin/application/_navigation, rendered in the
 # overridden application_selection partial) uses Madmin's nav_link_to and the

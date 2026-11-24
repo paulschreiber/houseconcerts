@@ -1,5 +1,5 @@
 # Below are the routes for madmin
-namespace :madmin, path: Settings.admin_prefix do
+namespace :madmin, path: Defaults.admin_prefix do
   resources :admins
   resources :artists
   # Removing an attachment, such as an artist's photo (see ArtistPhotoField).

@@ -13,7 +13,7 @@ module BootChecks
     end
 
     # storage_services: the names of the services in config/storage.yml.
-    def initialize(settings = Settings, storage_services: Rails.application.config.active_storage.service_configurations&.keys || [])
+    def initialize(settings = Defaults, storage_services: Rails.application.config.active_storage.service_configurations&.keys || [])
       @settings = settings
       @storage_services = storage_services
     end
