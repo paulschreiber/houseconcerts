@@ -39,14 +39,14 @@ class RSVP < ApplicationRecord
 
   validates :seats_reserved, numericality: {
     only_integer: true,
-    greater_than_or_equal_to: Settings.show.min_seats,
-    less_than_or_equal_to: Settings.show.max_seats
+    greater_than_or_equal_to: ->(_rsvp) { Settings.show.min_seats },
+    less_than_or_equal_to: ->(_rsvp) { Settings.show.max_seats }
   }, unless: :no?
   validates :seats_used, absence: true, if: :no?
   validates :seats_used, numericality: {
     only_integer: true,
     greater_than_or_equal_to: 0,
-    less_than_or_equal_to: Settings.show.max_seats_used
+    less_than_or_equal_to: ->(_rsvp) { Settings.show.max_seats_used }
   }, allow_blank: true, if: :yes?
   validate :tickets_available?, unless: :no?, if: :requesting_more_seats?
 

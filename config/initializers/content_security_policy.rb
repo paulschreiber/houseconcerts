@@ -4,9 +4,9 @@
 # mistake ever lets markup into a page (e.g. the admin pages that show
 # visitor-submitted names), injected scripts still won't run.
 # See https://guides.rubyonrails.org/security.html#content-security-policy-header
-
-GOOGLE_ANALYTICS_SCRIPT_HOST = "https://*.googletagmanager.com".freeze
-GOOGLE_ANALYTICS_HOSTS = [ "https://*.google-analytics.com", "https://*.analytics.google.com", GOOGLE_ANALYTICS_SCRIPT_HOST ].freeze
+#
+# ApplicationController adds Google Analytics' hosts per request, since whether
+# it's set up is a setting.
 
 # Madmin's layout adds `<script type="module">import "trix"</script>` without a
 # nonce, so allow that exact script by its hash.
@@ -14,19 +14,16 @@ MADMIN_TRIX_IMPORT_HASH = "'sha256-V5zew2x5YyErASs5rh5r3bTP+k/2KxYM6dnIXeUHtVw='
 
 Rails.application.configure do
   config.content_security_policy do |policy|
-    # Google Analytics' hosts are only allowed when it's set up.
-    analytics = Settings.google_analytics_id.present?
-
     policy.default_src     :self
     policy.base_uri        :self
     policy.form_action     :self
     policy.frame_ancestors :none
     policy.object_src      :none
     policy.font_src        :self, :data
-    policy.img_src         :self, :data, *(GOOGLE_ANALYTICS_HOSTS if analytics)
-    policy.connect_src     :self, *(GOOGLE_ANALYTICS_HOSTS if analytics)
+    policy.img_src         :self, :data
+    policy.connect_src     :self
     # Importmap tags and the inline Google Analytics snippet get a nonce.
-    policy.script_src      :self, *(GOOGLE_ANALYTICS_SCRIPT_HOST if analytics), MADMIN_TRIX_IMPORT_HASH
+    policy.script_src      :self, MADMIN_TRIX_IMPORT_HASH
     # Turbo's progress bar and Trix inject <style> elements. Inline styles
     # can't run script, so they're allowed rather than nonced.
     policy.style_src       :self, :unsafe_inline

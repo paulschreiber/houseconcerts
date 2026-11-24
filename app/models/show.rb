@@ -40,8 +40,8 @@ class Show < ApplicationRecord
   validates :price, presence: true, numericality: {
     allow_nil: true,
     only_integer: true,
-    greater_than_or_equal_to: Settings.show.min_price,
-    less_than_or_equal_to: Settings.show.max_price
+    greater_than_or_equal_to: ->(_show) { Settings.show.min_price },
+    less_than_or_equal_to: ->(_show) { Settings.show.max_price }
   }
 
   def attendees

@@ -1,5 +1,4 @@
 Madmin.stylesheets << "madmin_custom"
-Madmin.site_name = Settings.site_name
 
 # Madmin pages use Madmin's own importmap, not the app's. The passkeys page
 # (Admins::PasskeysController renders in Madmin's layout) needs devise-webauthn's
@@ -19,6 +18,13 @@ end
 
 # App-specific changes to Madmin's own classes, prepended below.
 module MadminPatches
+  # The site name is a setting, so it's read when a page is rendered rather
+  # than when the app boots. Madmin only takes a fixed string for it (madmin
+  # 3.4.1).
+  module SiteName
+    delegate :site_name, to: :Settings
+  end
+
   # Which columns and fields Madmin shows:
   # - id and timestamps are hidden everywhere unless a resource explicitly opts
   #   back in (e.g. `attribute :created_at, show: true`).
@@ -99,6 +105,7 @@ module MadminPatches
   end
 end
 
+Madmin.singleton_class.prepend(MadminPatches::SiteName)
 Madmin::Field.prepend(MadminPatches::FieldVisibility)
 Madmin::Field.prepend(MadminPatches::LabelTarget)
 Madmin::Fields::BelongsTo.prepend(MadminPatches::AssociationLabelTarget)
