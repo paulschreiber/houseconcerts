@@ -40,7 +40,7 @@ Rails.application.configure do
 
   # Where uploaded files are stored: a service in config/storage.yml, chosen
   # with storage_service in config/settings.yml.
-  config.active_storage.service = Settings.storage_service.to_sym
+  config.active_storage.service = Defaults.storage_service.to_sym
 
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
   config.assume_ssl = true
@@ -116,8 +116,8 @@ Rails.application.configure do
   # answer requests for our own domain and its subdomains (the leading dot), so
   # a spoofed Host or X-Forwarded-Host can't change the canonical, social-sharing,
   # or redirect URLs the app generates. (There's no /up health check to exclude.)
-  config.hosts = [ ".#{Settings.organization.domain}" ]
+  config.hosts = [ ".#{Defaults.organization.domain}" ]
 
   # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: Settings.organization.domain, protocol: "https" }
+  config.action_mailer.default_url_options = { host: Defaults.organization.domain, protocol: "https" }
 end

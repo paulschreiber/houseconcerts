@@ -19,7 +19,7 @@ class SettingsReadWhenUsedTest < ActionDispatch::IntegrationTest
 
   test "the site name is read for the admin pages and the passkey relying party" do
     with_setting("site_name", "Jane’s Concerts") do
-      assert_equal "Jane’s Concerts", Madmin.site_name
+      assert_equal "Jane’s Concerts", Madmin.site_name.to_s
       assert_equal "Jane’s Concerts", WebAuthn.configuration.rp_name
     end
   end

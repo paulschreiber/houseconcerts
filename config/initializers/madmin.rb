@@ -19,10 +19,14 @@ end
 # App-specific changes to Madmin's own classes, prepended below.
 module MadminPatches
   # The site name is a setting, so it's read when a page is rendered rather
-  # than when the app boots. Madmin only takes a fixed string for it (madmin
-  # 3.4.1).
-  module SiteName
-    delegate :site_name, to: :Settings
+  # than when the app boots, when the database isn't available. Madmin reads
+  # site_name once at boot and only prints it, so an object that prints the
+  # setting stands in for the string (madmin 3.4.1).
+  class SiteName
+    def to_s
+      Settings.site_name
+    end
+    alias to_str to_s
   end
 
   # Which columns and fields Madmin shows:
@@ -105,7 +109,7 @@ module MadminPatches
   end
 end
 
-Madmin.singleton_class.prepend(MadminPatches::SiteName)
+Madmin.site_name = MadminPatches::SiteName.new
 Madmin::Field.prepend(MadminPatches::FieldVisibility)
 Madmin::Field.prepend(MadminPatches::LabelTarget)
 Madmin::Fields::BelongsTo.prepend(MadminPatches::AssociationLabelTarget)

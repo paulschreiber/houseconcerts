@@ -328,21 +328,18 @@ class RsvpTest < ActiveSupport::TestCase
   end
 
   test "notify_admin does not deliver an email when notify_rsvp setting is blank" do
-    original = Settings.notify_rsvp
-    Settings.notify_rsvp = nil
-
-    assert_no_emails do
-      RSVP.create!(
-        first_name: "Blank",
-        last_name: "Setting",
-        email: "blank.setting@example.com",
-        show_id: shows(:upcoming).id,
-        response: "yes",
-        seats_reserved: 1
-      )
+    with_setting("notify_rsvp", "") do
+      assert_no_emails do
+        RSVP.create!(
+          first_name: "Blank",
+          last_name: "Setting",
+          email: "blank.setting@example.com",
+          show_id: shows(:upcoming).id,
+          response: "yes",
+          seats_reserved: 1
+        )
+      end
     end
-  ensure
-    Settings.notify_rsvp = original
   end
 
   test "notify_admin does not deliver an email for a show that already occurred" do

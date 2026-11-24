@@ -30,26 +30,19 @@ module ActiveSupport
     end
 
     # Runs the block with Settings.show.overbook_seats set to seats.
-    def with_overbook(seats)
-      original = Settings.show.overbook_seats
-      Settings.show.overbook_seats = seats
-      yield
-    ensure
-      Settings.show.overbook_seats = original
+    def with_overbook(seats, &)
+      with_setting("show.overbook_seats", seats, &)
     end
 
-    # Runs the block with a setting changed (a dotted path such as
-    # "show.max_seats"), then restores it.
+    # Runs the block with an editable setting (a dotted path such as
+    # "show.max_seats") changed, as an admin would change it, then restores it.
     def with_setting(path, value)
-      *parents, key = path.split(".")
-      holder = parents.inject(Settings) { |settings, name| settings.public_send(name) }
-      original = holder.public_send(key)
-      begin
-        holder.public_send("#{key}=", value)
-        yield
-      ensure
-        holder.public_send("#{key}=", original)
-      end
+      SettingValue.create!(key: path, value: value.to_s)
+      Settings.expire
+      yield
+    ensure
+      SettingValue.where(key: path).destroy_all
+      Settings.expire
     end
 
     # A saved copy of the fixture venue, in a venue group, with the attributes
