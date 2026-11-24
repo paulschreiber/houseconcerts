@@ -9,7 +9,7 @@ class SettingsForm
       found ? ActiveSupport::TimeZone::MAPPING.key(found.tzinfo.name) || found.name : zone
     end
 
-    setting :time_zone, "time_zone", from: ->(zone) { rails_zone_name(zone) }
+    setting :time_zone, "time_zone", from: ->(zone) { rails_zone_name(zone) }, to: ->(zone) { rails_zone_name(zone) }
 
     validate :country_exists
     validate :venue_group_exists
