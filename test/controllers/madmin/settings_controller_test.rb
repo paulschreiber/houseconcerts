@@ -40,10 +40,10 @@ module Madmin
       assert_select "input#settings_reminder_time[type=time][step='3600'][value='13:00']"
     end
 
-    test "the sidebar links to the settings, after Pages" do
+    test "the sidebar links to the settings, after Pages and before Jobs, in its last group" do
       get madmin_setting_path("site")
 
-      assert_select "#sidebar a[href=?] + a[href=?]", madmin_pages_path, madmin_settings_path
+      assert_select "#sidebar h4 + a[href=?] + a[href=?] + a[href=?]", madmin_pages_path, madmin_settings_path, mission_control_jobs_path
     end
 
     test "saving a tab stores the changes and keeps the admin on the tab" do
