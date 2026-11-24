@@ -12,15 +12,13 @@ class SettingsForm
   class_attribute :settings, instance_writer: false, default: {}
 
   class << self
-    # type: :string, :integer, :boolean, :one_line (text that has its line
-    # breaks replaced with spaces) or :multiline (text that keeps them). from:
-    # reads the setting's value into the form's attribute; to: turns the
-    # attribute into the value stored for the setting.
+    # type: :string (one line: line breaks and tabs become spaces), :text
+    # (several lines), :integer or :boolean. Text is cleaned like a record's
+    # (TextCleaner). from: reads the setting's value into the form's attribute;
+    # to: turns the attribute into the value stored for the setting.
     def setting(name, key, type = :string, from: nil, to: nil)
-      attribute name, { integer: WholeNumber.new, one_line: :string, multiline: :string }.fetch(type, type)
-      normalizes name, with: ->(value) { value.gsub(/\s*[\r\n]+\s*/, " ").strip } if type == :one_line
-      normalizes name, with: ->(value) { value.strip } if type == :string
-      normalizes name, with: ->(value) { value.gsub(/\r\n?/, "\n").strip } if type == :multiline
+      attribute name, { integer: WholeNumber.new, text: :string }.fetch(type, type)
+      normalizes name, with: ->(value) { TextCleaner.clean(value, one_line: type == :string) } if %i[string text].include?(type)
       self.settings = settings.merge(name => { key:, from:, to: })
     end
   end
@@ -28,7 +26,7 @@ class SettingsForm
   def initialize(values = {})
     super()
     settings.each do |name, setting|
-      value = setting[:key].split(".").inject(Settings) { |node, part| node.public_send(part) }
+      value = Settings.dig(*setting[:key].split(".").map(&:to_sym))
       public_send("#{name}=", setting[:from] ? setting[:from].call(value) : value)
     end
     assign_attributes(values)
@@ -56,11 +54,15 @@ class SettingsForm
       (setting[:to] ? setting[:to].call(value) : value).to_s
     end
 
+    # Only a value that differs from the default is stored, and only a stored
+    # value that changes is written, so a save with no changes writes nothing.
     def store(record, key, value)
-      if value == Defaults.dig(*key.split(".").map(&:to_sym)).to_s
+      if value == Settings.default(key).to_s
         record&.destroy!
-      else
-        (record || SettingValue.new(key:)).update!(value:)
+      elsif record.nil?
+        SettingValue.create!(key:, value:)
+      elsif record.value != value
+        record.update!(value:)
       end
     end
 end

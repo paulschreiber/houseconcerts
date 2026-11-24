@@ -13,7 +13,7 @@ class Page < ApplicationRecord
   # bytes a character.
   MAXIMUM_LENGTH = 15_000
 
-  normalizes :title, with: ->(title) { title.strip }
+  normalizes :title, with: ->(title) { TextCleaner.clean(title) }
 
   validates :slug, inclusion: { in: SLUGS }, uniqueness: true
   validates :title, presence: true, length: { maximum: 255 }

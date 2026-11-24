@@ -1,6 +1,21 @@
 require "test_helper"
 
 class SettingsFormTest < ActiveSupport::TestCase
+  test "every setting a form edits can be stored" do
+    keys = [ SettingsForm::Site, SettingsForm::Email, SettingsForm::Shows, SettingsForm::Location ].flat_map { |form| form.settings.values.pluck(:key) }
+
+    assert_empty keys - Settings::EDITABLE
+  end
+
+  test "a save with no changes writes nothing" do
+    SettingValue.create!(key: "show.duration", value: "3")
+    form = SettingsForm::Shows.new
+
+    assert_no_changes -> { SettingValue.pluck(:key, :value, :updated_at) } do
+      assert form.save
+    end
+  end
+
   test "starts from the current settings" do
     with_setting("site_name", "Jane’s Concerts") do
       form = SettingsForm::Site.new
@@ -41,6 +56,16 @@ class SettingsFormTest < ActiveSupport::TestCase
     assert_equal [ "Google Analytics ID should look like G-ABC123: a G, a dash, then capital letters and numbers" ], form.errors.full_messages
   end
 
+  test "every text field is cleaned of hidden characters and outer whitespace" do
+    form = SettingsForm::Site.new(site_name: "\u00a0Jane’s\u200B Concerts\u202E ", meta_description: "\ufeffA description\u0007 ",
+                                  meta_keywords: "\u2003Music\u200D ", google_analytics_id: " G-ABC123\u200B ")
+
+    assert_equal [ "Jane’s Concerts", "A description", "Music", "G-ABC123" ],
+                 [ form.site_name, form.meta_description, form.meta_keywords, form.google_analytics_id ]
+    assert form.save
+    assert_equal "Jane’s Concerts", Settings.site_name
+  end
+
   test "the site needs a name and a description" do
     form = SettingsForm::Site.new(site_name: "", meta_description: "")
 
@@ -59,8 +84,7 @@ class SettingsFormTest < ActiveSupport::TestCase
   test "the site name is one line, since it goes into email subjects" do
     form = SettingsForm::Site.new(site_name: "Jane’s Concerts\r\nBcc: x@example.org")
 
-    assert_not form.valid?
-    assert_equal [ "Site name can’t have line breaks" ], form.errors.full_messages
+    assert_equal "Jane’s Concerts Bcc: x@example.org", form.site_name
   end
 
   test "analytics can be blank, which turns it off" do
@@ -89,27 +113,29 @@ class SettingsFormTest < ActiveSupport::TestCase
   end
 
   test "sender names can't hold anything that would break a From header" do
-    [ "Jane <jane@example.org>", "Jane \"JS\" Smith", "Jane\r\nBcc: x@example.org" ].each do |name|
+    [ "Jane <jane@example.org>", "Jane \"JS\" Smith" ].each do |name|
       form = SettingsForm::Email.new(invites_from_first_name: name)
 
       assert_not form.valid?, name.inspect
-      assert_equal [ "First name can’t have angle brackets, quotation marks or line breaks" ], form.errors.full_messages
+      assert_equal [ "First name can’t have angle brackets or quotation marks" ], form.errors.full_messages
     end
     assert SettingsForm::Email.new(invites_from_first_name: "Jane O’Brien-Smith").valid?
   end
 
-  test "the sign-off keeps its line breaks and has no other control characters" do
-    form = SettingsForm::Email.new(guest_sign_off: "  See you soon,\r\nJane \n")
+  test "a line break in a sender name becomes a space, so it can't add a header" do
+    form = SettingsForm::Email.new(invites_from_first_name: "Jane\r\nBcc: x@example.org")
+
+    assert_equal "Jane Bcc: x@example.org", form.invites_from_first_name
+    assert_equal "Jane Smith", SettingsForm::Email.new(invites_from_last_name: "Jane\tSmith").invites_from_last_name
+    assert form.save
+    assert_not_includes Settings.organization.invites_from_first_name, "\n"
+  end
+
+  test "the sign-off keeps its line breaks, and loses hidden characters" do
+    form = SettingsForm::Email.new(guest_sign_off: "  See you soon,\r\nJane\u202E \u200B\n")
 
     assert form.save
     assert_equal "See you soon,\nJane", Settings.guest_sign_off
-
-    [ "Thanks\u0007!", "Thanks\u202E!", "Thanks\u2028!", "Thanks\u200B!" ].each do |text|
-      form = SettingsForm::Email.new(guest_sign_off: text)
-
-      assert_not form.valid?, text.inspect
-      assert_equal [ "Sign-off can only have text and line breaks" ], form.errors.full_messages
-    end
   end
 
   test "the sign-off can be blank, which signs off with the first name, but not very long" do

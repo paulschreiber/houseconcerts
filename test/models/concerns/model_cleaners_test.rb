@@ -16,6 +16,13 @@ class ModelCleanersTest < ActiveSupport::TestCase
     assert_equal 9_999, message.intro.length
   end
 
+  test "saving removes invisible characters and Unicode whitespace at the ends" do
+    artist = artists(:one)
+    artist.update!(name: "\u00a0Jane\u200B Smith\u202E ")
+
+    assert_equal "Jane Smith", artist.reload.name
+  end
+
   test "saving stores a textarea's CRLF line breaks as LF" do
     venue = venues(:one)
     venue.update!(directions: "Line 1\r\nline 2")

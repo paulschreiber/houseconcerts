@@ -1,7 +1,7 @@
 class WebauthnCredential < ApplicationRecord
   belongs_to :admin
 
-  normalizes :name, with: ->(name) { name.strip }
+  normalizes :name, with: ->(name) { TextCleaner.clean(name) }
 
   validates :external_id, :public_key, :name, :sign_count, presence: true
   validates :external_id, uniqueness: true
