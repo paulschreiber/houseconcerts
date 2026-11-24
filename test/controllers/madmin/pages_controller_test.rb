@@ -58,7 +58,7 @@ module Madmin
       patch madmin_page_path("about"), params: { page: { title: "About us", body: "# About us\n\nHello." } }
 
       assert_redirected_to edit_madmin_page_path("about")
-      assert_equal "Saved “About us”.", flash[:notice]
+      assert_equal "Saved “About us.”", flash[:notice]
       page = pages(:about).reload
       assert_equal "About us", page.title
       assert_equal "# About us\n\nHello.", page.body
