@@ -90,8 +90,8 @@ class InviteMessageTest < ActiveSupport::TestCase
     message = show.invite_messages.new(intro: "[Yes][rsvp_yse]", about: "[me][]")
 
     assert_not message.valid?
-    assert_equal [ "links to “rsvp_yse”, which isn’t a link name. Use rsvp_yes, rsvp_no or rsvp." ], message.errors[:intro]
-    assert_equal [ "links to “me”, which isn’t a link name. Use rsvp_yes, rsvp_no or rsvp." ], message.errors[:about]
+    assert_equal [ "links to “rsvp_yse,” which isn’t a link name. Use rsvp_yes, rsvp_no or rsvp." ], message.errors[:intro]
+    assert_equal [ "links to “me,” which isn’t a link name. Use rsvp_yes, rsvp_no or rsvp." ], message.errors[:about]
   end
 
   test "allows [name][] for a placeholder" do

@@ -26,7 +26,7 @@ class PageEditorTest < ApplicationSystemTestCase
     fill_in "Text", with: "# Our concerts\n\nCome along."
     click_button "Update Page"
 
-    assert_text "Saved “About these shows”."
+    assert_text "Saved “About these shows.”"
 
     visit about_path
     assert_selector "h1", text: "Our concerts"

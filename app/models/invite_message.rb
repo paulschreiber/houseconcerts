@@ -101,7 +101,7 @@ class InviteMessage < ApplicationRecord
           name = text if name.empty?
           next if PLACEHOLDERS.key?(name.downcase)
 
-          errors.add(attribute, "links to “#{name}”, which isn’t a link name. Use #{PLACEHOLDERS.keys.to_sentence(last_word_connector: ' or ', two_words_connector: ' or ')}.")
+          errors.add(attribute, "links to “#{name},” which isn’t a link name. Use #{PLACEHOLDERS.keys.to_sentence(last_word_connector: ' or ', two_words_connector: ' or ')}.")
         end
       end
     end
