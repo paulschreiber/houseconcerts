@@ -60,6 +60,7 @@ en:
         capacity: "Venue capacity"
         notifications: "Notifications"
         defaults: "Defaults"
+        time_zone: "Time zone"
       address_domain: "@%{domain}"
       units:
         dollars: "$"
@@ -72,6 +73,7 @@ en:
         overbook_seats: "Extra seats to cover no-shows."
         guest_sign_off: "Ends every email guests get from you. Leave blank to sign off with just your first name."
         default_country: "Sets the postal code and phone number formats."
+        time_zone: "Show times and reminders use this time zone. Changing it changes the times people see, not when a show happens."
     pages:
       saved: "Saved “%{title}”."
       view_on_site: "View on site"

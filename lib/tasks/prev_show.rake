@@ -1,6 +1,6 @@
 namespace :prev_show do
   desc "Show attendees for previous show"
-  task attendees: :environment do
+  task attendees: :site_time_zone do
     rsvps = RSVP.previous_show_attendees.order(:id).to_a
     rsvps.each do |rsvp|
       puts "#{rsvp.created_at.to_date} #{rsvp.seats_reserved} #{rsvp.email_address_with_name}"

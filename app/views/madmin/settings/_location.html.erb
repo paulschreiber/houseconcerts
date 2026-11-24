@@ -10,3 +10,12 @@
     <%= form.select :default_venue_group, VenueGroup.order(:name).map { |group| [ group.name, group.id ] }, {}, class: "form-input" %>
   </div>
 </fieldset>
+
+<fieldset>
+  <legend><%= t("madmin.settings.groups.time_zone") %></legend>
+  <div class="form-group">
+    <%= form.label :time_zone %>
+    <%= form.time_zone_select :time_zone, ActiveSupport::TimeZone.us_zones, {}, class: "form-input" %>
+    <div class="form-description"><%= t("madmin.settings.help.time_zone") %></div>
+  </div>
+</fieldset>

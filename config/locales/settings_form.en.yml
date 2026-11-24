@@ -30,6 +30,7 @@ en:
       settings_form/location:
         default_country: "Country"
         default_venue_group: "Default venue group"
+        time_zone: "Time zone"
     errors:
       models:
         settings_form/site:

@@ -2,14 +2,14 @@ require_relative "next_show_tasks"
 
 namespace :next_show do
   desc "Send invites for next show"
-  task invite: :environment do
+  task invite: :site_time_zone do
     show = NextShowTasks.next_show_or_exit
 
     NextShowTasks.run_batch(show, "invite", "invite")
   end
 
   desc "Send invites for next show to one person"
-  task :invite_one, [ :email ] => [ :environment ] do |_, args|
+  task :invite_one, [ :email ] => [ :site_time_zone ] do |_, args|
     email = args[:email]
     unless email
       puts "Please enter an email address"
@@ -40,21 +40,21 @@ namespace :next_show do
   end
 
   desc "Send invites for next show to people who have not opened the invitation"
-  task invite_unopened: :environment do
+  task invite_unopened: :site_time_zone do
     show = NextShowTasks.next_show_or_exit
 
     NextShowTasks.run_batch(show, "invite_unopened", "invite")
   end
 
   desc "Count invites for next show"
-  task invite_count: :environment do
+  task invite_count: :site_time_zone do
     show = NextShowTasks.next_show_or_exit
 
     puts "Can email #{Person.invitable_for(show).size} people."
   end
 
   desc "Show attendees for next show"
-  task attendees: :environment do
+  task attendees: :site_time_zone do
     show = NextShowTasks.next_show_or_exit
 
     rsvps = show.attendees.order(:id).to_a
@@ -66,7 +66,7 @@ namespace :next_show do
   end
 
   desc "Show RSVPs for next show"
-  task rsvps: :environment do
+  task rsvps: :site_time_zone do
     show = NextShowTasks.next_show_or_exit
 
     rsvps = show.rsvps.order(:id).to_a
@@ -83,7 +83,7 @@ namespace :next_show do
   end
 
   desc "Show Unconfirmed RSVPs for next show"
-  task unconfirmed: :environment do
+  task unconfirmed: :site_time_zone do
     show = NextShowTasks.next_show_or_exit
 
     rsvps = show.rsvps.awaiting_confirmation.order(:id).to_a
@@ -97,7 +97,7 @@ namespace :next_show do
   end
 
   desc "Show Email opens for next show"
-  task opens: :environment do
+  task opens: :site_time_zone do
     show = NextShowTasks.next_show_or_exit
 
     opens = Open.for_show(show).order(:created_at).to_a
@@ -109,7 +109,7 @@ namespace :next_show do
   end
 
   desc "Confirm RSVPs for next show"
-  task confirm: :environment do
+  task confirm: :site_time_zone do
     show = NextShowTasks.next_show_or_exit
 
     unless show.confirmed?
@@ -126,7 +126,7 @@ namespace :next_show do
   end
 
   desc "Remind RSVPs for next show"
-  task remind: :environment do
+  task remind: :site_time_zone do
     show = NextShowTasks.next_show_or_exit
 
     NextShowTasks.run_batch(show, "remind", "reminder")
