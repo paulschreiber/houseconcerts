@@ -1,0 +1,10 @@
+<%# A labelled field, with help text if the setting has any. kind: the form
+    builder's field method; options: for the field. %>
+<% kind = local_assigns.fetch(:kind, :text_field) %>
+<div class="form-group">
+  <%= form.label attribute %>
+  <%= form.public_send(kind, attribute, class: "form-input", **local_assigns.fetch(:options, {})) %>
+  <% if (help = t("madmin.settings.help.#{attribute}", zone: Time.zone.name, default: "").presence) %>
+    <div class="form-description"><%= help %></div>
+  <% end %>
+</div>

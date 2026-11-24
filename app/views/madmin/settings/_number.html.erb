@@ -1,0 +1,12 @@
+<%# A number with its label on the left and, if given, a unit after it. %>
+<div class="settings-number-row">
+  <%= form.label attribute %>
+  <span class="settings-number">
+    <% if local_assigns[:prefix] %><span class="settings-unit"><%= prefix %></span><% end %>
+    <%= form.number_field attribute, class: "form-input", min: local_assigns[:min] || 0 %>
+    <% if local_assigns[:unit] %><span class="settings-unit"><%= unit %></span><% end %>
+  </span>
+  <% if (help = t("madmin.settings.help.#{attribute}", zone: Time.zone.name, default: "").presence) %>
+    <div class="form-description"><%= help %></div>
+  <% end %>
+</div>

@@ -1,0 +1,18 @@
+<fieldset>
+  <legend><%= t("madmin.settings.groups.invitations") %></legend>
+  <%= render "field", form:, attribute: :invites_from_first_name %>
+  <%= render "field", form:, attribute: :invites_from_last_name %>
+  <%= render "address", form:, attribute: :invites_from_email %>
+</fieldset>
+
+<fieldset>
+  <legend><%= t("madmin.settings.groups.confirmations") %></legend>
+  <%= render "field", form:, attribute: :confirms_from_name %>
+  <%= render "address", form:, attribute: :confirms_from_email %>
+</fieldset>
+
+<fieldset>
+  <legend><%= t("madmin.settings.groups.reminders") %></legend>
+  <%= render "number", form:, attribute: :reminder_days, unit: t("madmin.settings.units.days_before_show") %>
+  <%= render "field", form:, attribute: :reminder_time, kind: :time_field, options: { step: 3600 } %>
+</fieldset>

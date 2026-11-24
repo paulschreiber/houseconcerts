@@ -1,0 +1,20 @@
+<fieldset>
+  <legend><%= t("madmin.settings.groups.public_site") %></legend>
+  <%= render "field", form:, attribute: :site_name %>
+  <%= render "field", form:, attribute: :meta_description, kind: :text_area, options: { rows: 3 } %>
+  <%= render "field", form:, attribute: :meta_keywords %>
+</fieldset>
+
+<fieldset>
+  <legend><%= t("madmin.settings.groups.analytics") %></legend>
+  <%= render "field", form:, attribute: :google_analytics_id %>
+</fieldset>
+
+<fieldset>
+  <legend><%= t("madmin.settings.groups.domain") %></legend>
+  <div class="form-group">
+    <span class="label"><%= t("madmin.settings.domain") %></span>
+    <div class="settings-readonly"><%= Defaults.organization.domain %></div>
+    <div class="form-description"><%= t("madmin.settings.help.domain") %></div>
+  </div>
+</fieldset>

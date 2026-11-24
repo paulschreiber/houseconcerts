@@ -1,0 +1,8 @@
+<%# The part of an email address before the @, followed by the fixed domain. %>
+<div class="form-group">
+  <%= form.label attribute %>
+  <span class="settings-address">
+    <%= form.text_field attribute, class: "form-input" %>
+    <span class="settings-unit"><%= t("madmin.settings.address_domain", domain: Defaults.organization.domain) %></span>
+  </span>
+</div>

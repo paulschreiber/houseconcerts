@@ -14,6 +14,8 @@
   <% end %>
 
   <h4>divider-3</h4>
+  <%= nav_link_to PageResource.friendly_plural_name, madmin_pages_path, starts_with: madmin_pages_path %>
+  <%= nav_link_to t("madmin.settings.title"), madmin_settings_path, starts_with: madmin_settings_path %>
   <%= nav_link_to "Jobs", mission_control_jobs_path, starts_with: mission_control_jobs_path %>
   <%= nav_link_to t("madmin.site_health.title"), madmin_site_health_path, starts_with: madmin_site_health_path %>
   <%= nav_link_to "Admins", madmin_admins_path, starts_with: madmin_admins_path %>
