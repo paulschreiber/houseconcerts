@@ -2,6 +2,18 @@
 
 <h1 class="visually-hidden">Dashboard</h1>
 
+<% if @site_health_failures.any? %>
+  <div class="dashboard-warning">
+    <h2><%= t("madmin.site_health.banner") %></h2>
+    <ul>
+      <% @site_health_failures.each do |failure| %>
+        <li><%= failure.title %>: <%= failure.problems.join(" ") %></li>
+      <% end %>
+    </ul>
+    <p><%= link_to t("madmin.site_health.view"), madmin_site_health_path %></p>
+  </div>
+<% end %>
+
 <% if @failed_batch_items.any? %>
   <div class="dashboard-warning">
     <h2>Failed sends need attention</h2>

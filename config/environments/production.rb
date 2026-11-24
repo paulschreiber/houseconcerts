@@ -96,12 +96,13 @@ Rails.application.configure do
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
   # config.action_mailer.raise_delivery_errors = false
 
-  # Specify outgoing SMTP server.
+  # Specify outgoing SMTP server. Missing credentials don't stop the app from
+  # booting; Site Health reports them (see SiteHealth::SesCredentials).
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
-    user_name: Rails.application.credentials.amazon.username,
-    password: Rails.application.credentials.amazon.password,
-    address: Rails.application.credentials.amazon.server,
+    user_name: Rails.application.credentials.dig(:amazon, :username),
+    password: Rails.application.credentials.dig(:amazon, :password),
+    address: Rails.application.credentials.dig(:amazon, :server),
     port: 587
   }
 
