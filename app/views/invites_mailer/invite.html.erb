@@ -20,8 +20,7 @@
 
   <p><%= link_to "Spend #{@show.day_of_week} evening with #{@show.name}", @links[:rsvp_yes] %>.</p>
 
-  <p><br/>
-    <%= Settings.organization.invites_from_first_name %></p>
+  <%= guest_sign_off %>
 
   <p>P.S. If you have moved or don’t want to receive house concert invites, <%= link_to "instantly unsubscribe", @unsub_url %>.</p>
 

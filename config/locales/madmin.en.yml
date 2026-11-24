@@ -52,6 +52,7 @@ en:
         domain: "Domain"
         invitations: "Invitations are sent from"
         confirmations: "Confirmations and sign-in emails are sent from"
+        sign_off: "Guest email sign-off"
         reminders: "Reminders"
         timing: "Timing"
         seats: "Seats"
@@ -69,6 +70,7 @@ en:
         domain: "Set when the site is installed. Changing it affects passkeys, email and DNS, so it isn’t editable here."
         reminder_time: "In the site’s time zone (%{zone})."
         overbook_seats: "Extra seats to cover no-shows."
+        guest_sign_off: "Ends every email guests get from you. Leave blank to sign off with just your first name."
         default_country: "Sets the postal code and phone number formats."
     pages:
       saved: "Saved “%{title}”."

@@ -12,6 +12,11 @@
 </fieldset>
 
 <fieldset>
+  <legend><%= t("madmin.settings.groups.sign_off") %></legend>
+  <%= render "field", form:, attribute: :guest_sign_off, kind: :text_area, options: { rows: 3 } %>
+</fieldset>
+
+<fieldset>
   <legend><%= t("madmin.settings.groups.reminders") %></legend>
   <%= render "number", form:, attribute: :reminder_days, unit: t("madmin.settings.units.days_before_show") %>
   <%= render "field", form:, attribute: :reminder_time, kind: :time_field, options: { step: 3600 } %>

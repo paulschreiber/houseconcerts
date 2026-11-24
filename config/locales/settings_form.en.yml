@@ -12,6 +12,7 @@ en:
         invites_from_email: "Email address"
         confirms_from_name: "Name"
         confirms_from_email: "Email address"
+        guest_sign_off: "Sign-off"
         reminder_days: "Send"
         reminder_time: "At"
       settings_form/shows:
@@ -49,6 +50,8 @@ en:
               not_an_address_start: "can’t have spaces, commas or an @ (the domain is added for you), or start or end with a dot"
             confirms_from_email:
               not_an_address_start: "can’t have spaces, commas or an @ (the domain is added for you), or start or end with a dot"
+            guest_sign_off:
+              not_plain_text: "can only have text and line breaks"
             reminder_time:
               not_a_whole_hour: "must be a whole hour, such as 1:00 PM"
         settings_form/shows:
