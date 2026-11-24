@@ -34,24 +34,20 @@ en:
       models:
         settings_form/site:
           attributes:
-            site_name:
-              not_a_single_line: "can’t have line breaks"
             google_analytics_id:
               not_an_analytics_id: "should look like G-ABC123: a G, a dash, then capital letters and numbers"
         settings_form/email:
           attributes:
             invites_from_first_name:
-              not_a_name: "can’t have angle brackets, quotation marks or line breaks"
+              not_a_name: "can’t have angle brackets or quotation marks"
             invites_from_last_name:
-              not_a_name: "can’t have angle brackets, quotation marks or line breaks"
+              not_a_name: "can’t have angle brackets or quotation marks"
             confirms_from_name:
-              not_a_name: "can’t have angle brackets, quotation marks or line breaks"
+              not_a_name: "can’t have angle brackets or quotation marks"
             invites_from_email:
               not_an_address_start: "can’t have spaces, commas or an @ (the domain is added for you), or start or end with a dot"
             confirms_from_email:
               not_an_address_start: "can’t have spaces, commas or an @ (the domain is added for you), or start or end with a dot"
-            guest_sign_off:
-              not_plain_text: "can only have text and line breaks"
             reminder_time:
               not_a_whole_hour: "must be a whole hour, such as 1:00 PM"
         settings_form/shows:
