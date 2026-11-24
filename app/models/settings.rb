@@ -17,7 +17,7 @@ module Settings
 
   EDITABLE = %w[
     site_name meta_description meta_keywords google_analytics_id
-    default_country default_venue_group notify_rsvp guest_sign_off
+    default_country default_venue_group notify_rsvp guest_sign_off time_zone
     organization.invites_from_first_name organization.invites_from_last_name organization.invites_from_email
     organization.confirms_from_name organization.confirms_from_email
     venue.min_capacity venue.max_capacity
@@ -48,6 +48,13 @@ module Settings
       Integer(value, 10)
     end
 
+    # The values an admin changed, by key, as stored (cached). The merged
+    # settings need these too, but a caller that wants one value, such as
+    # SiteTimeZone when each request starts, can read it without building them.
+    def stored
+      Rails.cache.fetch(CACHE_KEY, expires_in: 1.hour) { SettingValue.where(key: EDITABLE).pluck(:key, :value).to_h }
+    end
+
     # Clears the cached values, and the merged settings kept for this request.
     def expire
       Rails.cache.delete(CACHE_KEY)
@@ -70,10 +77,6 @@ module Settings
           settings.add_source!(merged)
           settings.reload!
         end
-      end
-
-      def stored
-        Rails.cache.fetch(CACHE_KEY, expires_in: 1.hour) { SettingValue.where(key: EDITABLE).pluck(:key, :value).to_h }
       end
   end
 end

@@ -1,5 +1,6 @@
 ---
 :default_country: "US"
+:time_zone: "Eastern Time (US & Canada)"
 :site_name: "House Concerts"
 :meta_description: "Private house concerts featuring talented singer-songwriters."
 :meta_keywords: "Music, Live, Concert, Concerts, House Concert, Singer Songwriter, Folk, Acoustic, Unplugged"
@@ -36,7 +37,7 @@
 
 :reminders:
   # Reminders go out automatically this many days before a show, at this
-  # hour (Eastern). See Show#reminder_time.
+  # hour, in the site's time zone. See Show#reminder_time.
   :days_before: 1
   :hour: 13
 

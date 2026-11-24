@@ -47,6 +47,22 @@ module Madmin
       assert_select "label[for=settings_guest_sign_off]", text: "Sign-off"
     end
 
+    test "the location tab has a time zone to choose, the US ones first" do
+      get madmin_setting_path("location")
+
+      assert_select "select#settings_time_zone" do
+        # The US zones come first, with a divider after them.
+        assert_select "option[selected][value=?] ~ option[disabled]", Defaults.time_zone
+      end
+    end
+
+    test "saving the location changes the time zone" do
+      patch madmin_setting_path("location"), params: { settings: { default_country: "US", default_venue_group: venue_groups(:two).id, time_zone: "Pacific Time (US & Canada)" } }
+
+      assert_redirected_to madmin_setting_path("location")
+      assert_equal "Pacific Time (US & Canada)", Settings.time_zone
+    end
+
     test "the sidebar links to the settings, after Pages and before Jobs, in its last group" do
       get madmin_setting_path("site")
 

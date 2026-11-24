@@ -173,6 +173,23 @@ class SettingsFormTest < ActiveSupport::TestCase
     assert_empty SettingValue.where(key: "notify_rsvp")
   end
 
+  test "the time zone is a zone Rails knows" do
+    assert_equal Defaults.time_zone, SettingsForm::Location.new.time_zone
+
+    with_setting("time_zone", "America/Los_Angeles") do
+      assert_equal "Pacific Time (US & Canada)", SettingsForm::Location.new.time_zone
+    end
+    assert_not SettingsForm::Location.new(time_zone: "Mars/Olympus").valid?
+    assert_not SettingsForm::Location.new(time_zone: "").valid?
+
+    assert SettingsForm::Location.new(time_zone: "Pacific Time (US & Canada)").save
+    assert_equal "Pacific Time (US & Canada)", Settings.time_zone
+
+    assert SettingsForm::Location.new(time_zone: "America/New_York").save
+    assert_empty SettingValue.where(key: "time_zone"), "the default zone, written as a tzinfo name, isn't stored"
+    assert_equal Defaults.time_zone, Settings.time_zone
+  end
+
   test "the location needs a real country and venue group" do
     assert_not SettingsForm::Location.new(default_country: "ZZ").valid?
     assert_not SettingsForm::Location.new(default_venue_group: 0).valid?
