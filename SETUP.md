@@ -39,7 +39,10 @@ Then check:
   `yes`, Passenger can’t start the app: see “Native gems and systemd hardening”
   in [`INFRASTRUCTURE.md`](INFRASTRUCTURE.md).
 - `/data/sites/houseconcerts/shared/config/` holds the files every release
-  links to: `database.yml`, `master.key` and `credentials.yml.enc`.
+  links to: `database.yml`, `master.key`, `credentials.yml.enc` and
+  `settings.local.yml` (see “Site settings” in
+  [`INFRASTRUCTURE.md`](INFRASTRUCTURE.md)). A deploy fails if any of them is
+  missing.
   `database.yml` connects to MySQL with a password, not socket authentication,
   so both new users can connect.
 - If logrotate manages `/data/sites/houseconcerts/shared/log`, its `create` line
