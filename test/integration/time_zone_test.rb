@@ -39,6 +39,36 @@ class TimeZoneTest < ActionDispatch::IntegrationTest
     end
   end
 
+  # Records the time zone it ran in.
+  class ZoneJob < ApplicationJob
+    cattr_accessor :zone_name
+
+    def perform
+      self.class.zone_name = Time.zone.name
+    end
+  end
+
+  # Active Job runs a job in the zone it was enqueued in, so a job enqueued in a
+  # request or by the scheduler (both in an executor) runs in the site's zone.
+  # The test's thread is already in an executor, so the job's thread isn't.
+  test "a job enqueued in an executor runs in the time zone setting" do
+    job_data = nil
+    with_setting("time_zone", PACIFIC) do
+      Thread.new { Rails.application.executor.wrap { job_data = ZoneJob.new.serialize } }.join
+    end
+
+    assert_equal PACIFIC, job_data["timezone"]
+    Thread.new { ZoneJob.execute(job_data) }.join
+
+    assert_equal PACIFIC, ZoneJob.zone_name
+  end
+
+  test "a setting that can't be read is logged, and the default zone is used" do
+    with_stubbed(Settings, :stored, -> { raise TypeError, "bad cache" }) do
+      assert_equal Defaults.time_zone, SiteTimeZone.zone.name
+    end
+  end
+
   test "an unknown time zone falls back to the default" do
     SettingValue.new(key: "time_zone", value: "Mars/Olympus").save!(validate: false)
     Settings.expire

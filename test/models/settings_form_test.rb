@@ -184,6 +184,10 @@ class SettingsFormTest < ActiveSupport::TestCase
 
     assert SettingsForm::Location.new(time_zone: "Pacific Time (US & Canada)").save
     assert_equal "Pacific Time (US & Canada)", Settings.time_zone
+
+    assert SettingsForm::Location.new(time_zone: "America/New_York").save
+    assert_empty SettingValue.where(key: "time_zone"), "the default zone, written as a tzinfo name, isn't stored"
+    assert_equal Defaults.time_zone, Settings.time_zone
   end
 
   test "the location needs a real country and venue group" do
