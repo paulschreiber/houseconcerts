@@ -10,8 +10,9 @@ class BootTest < ActiveSupport::TestCase
   # config/routes.rb.
   %w[development production].each do |environment|
     test "the app boots in #{environment}" do
-      # Production won't boot without its SES credentials, which CI doesn't have.
-      skip "needs the credentials" if environment == "production" && Rails.application.credentials.dig(:amazon, :username).blank?
+      # Production's boot checks reject the placeholder domain, so this needs a
+      # config/settings.local.yml with the site's own settings.
+      skip "needs the site’s settings" if environment == "production" && Settings.organization.domain == BootChecks::RequiredSettings::PLACEHOLDER_DOMAIN
 
       assert_equal "booted", run_rails(environment, "puts :booted")
     end
