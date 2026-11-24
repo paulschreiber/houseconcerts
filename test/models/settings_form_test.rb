@@ -176,6 +176,9 @@ class SettingsFormTest < ActiveSupport::TestCase
   test "the time zone is a zone Rails knows" do
     assert_equal Defaults.time_zone, SettingsForm::Location.new.time_zone
 
+    with_setting("time_zone", "America/Los_Angeles") do
+      assert_equal "Pacific Time (US & Canada)", SettingsForm::Location.new.time_zone
+    end
     assert_not SettingsForm::Location.new(time_zone: "Mars/Olympus").valid?
     assert_not SettingsForm::Location.new(time_zone: "").valid?
 
