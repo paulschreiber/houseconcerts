@@ -98,6 +98,26 @@ class SettingsFormTest < ActiveSupport::TestCase
     assert SettingsForm::Email.new(invites_from_first_name: "Jane O’Brien-Smith").valid?
   end
 
+  test "the sign-off keeps its line breaks and has no other control characters" do
+    form = SettingsForm::Email.new(guest_sign_off: "  See you soon,\r\nJane \n")
+
+    assert form.save
+    assert_equal "See you soon,\nJane", Settings.guest_sign_off
+
+    [ "Thanks\u0007!", "Thanks\u202E!", "Thanks\u2028!", "Thanks\u200B!" ].each do |text|
+      form = SettingsForm::Email.new(guest_sign_off: text)
+
+      assert_not form.valid?, text.inspect
+      assert_equal [ "Sign-off can only have text and line breaks" ], form.errors.full_messages
+    end
+  end
+
+  test "the sign-off can be blank, which signs off with the first name, but not very long" do
+    assert SettingsForm::Email.new(guest_sign_off: " ").valid?
+    assert_not SettingsForm::Email.new(guest_sign_off: "a" * 501).valid?
+    assert SettingsForm::Email.new(guest_sign_off: "a" * 500).valid?
+  end
+
   test "the reminder time is a whole hour, stored as an hour" do
     assert_equal "13:00", SettingsForm::Email.new.reminder_time
 

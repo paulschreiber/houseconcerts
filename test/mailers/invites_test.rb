@@ -25,7 +25,7 @@ class InvitesTest < ActionMailer::TestCase
     assert_equal [ person.email ], email.to
     assert_equal [ "#{Settings.organization.invites_from_email}@#{Settings.organization.domain}" ], email.from
     assert_equal "#{Settings.organization.invites_from_first_name} #{Settings.organization.invites_from_last_name}", email[:from].display_names.first
-    assert_match %r{>\s*#{Settings.organization.invites_from_first_name}</p>}, email.body.decoded
+    assert_match %r{<p>#{Settings.organization.invites_from_first_name}</p>}, email.body.decoded
     assert_includes email.subject, show.name
     unsub_url = Rails.application.routes.url_helpers.unsubscribe_url(uniqid: person.uniqid, host: "example.com")
     assert_equal "<#{unsub_url}>", email["List-Unsubscribe"].to_s
@@ -320,14 +320,33 @@ class InvitesTest < ActionMailer::TestCase
     assert_includes body, "/rsvps/show/#{rsvp.show.slug}/#{rsvp.uniqid}"
   end
 
-  test "the RSVP emails are signed with the sender's first name" do
-    mailer = InvitesMailer.with(rsvp: rsvps(:one), previous: { response: "yes", seats: 2 }, current: { response: "no", seats: 0 }, seats: 2)
+  test "every guest email ends with the sign-off setting, with its line breaks" do
+    with_setting("guest_sign_off", "See you soon,\nthe <b>host</b> & friends") do
+      mailer = InvitesMailer.with(rsvp: rsvps(:one), previous: { response: "yes", seats: 2 }, current: { response: "no", seats: 0 }, seats: 2)
 
-    %i[confirm waitlisted remind rsvp_updated rsvp_change_requested].each do |action|
-      email = mailer.public_send(action)
-      # confirm is multipart, with its calendar attachment.
-      html = (email.html_part || email).body.decoded
-      assert_match %r{>\s*#{Settings.organization.invites_from_first_name}</p>}, html, action
+      %i[confirm waitlisted remind rsvp_updated rsvp_change_requested].each do |action|
+        email = mailer.public_send(action)
+        # confirm is multipart, with its calendar attachment.
+        html = (email.html_part || email).body.decoded
+        assert_includes html, "See you soon,\n<br />the &lt;b&gt;host&lt;/b&gt; &amp; friends", action
+      end
+
+      invite = InvitesMailer.with(person: people(:one), show: shows(:upcoming)).invite
+      assert_includes invite.body.decoded, "See you soon,\n<br />the &lt;b&gt;host&lt;/b&gt; &amp; friends"
+    end
+  end
+
+  test "a blank sign-off setting signs off with the first name" do
+    html = InvitesMailer.with(rsvp: rsvps(:one), seats: 2).rsvp_change_requested.body.decoded
+
+    assert_match %r{<p>#{Settings.organization.invites_from_first_name}</p>\s*\z}m, html.sub(%r{\s*</body>.*\z}m, "")
+  end
+
+  test "a blank line in the sign-off starts a new paragraph" do
+    with_setting("guest_sign_off", "Thanks!\n\nJane") do
+      html = InvitesMailer.with(rsvp: rsvps(:one), seats: 2).rsvp_change_requested.body.decoded
+
+      assert_includes html, "<p>Thanks!</p>\n\n<p>Jane</p>"
     end
   end
 
