@@ -75,7 +75,7 @@ class PageTest < ActiveSupport::TestCase
   test "body_html shows HTML and unsafe links as text" do
     html = Page.new(body: "<script>alert(1)</script> <b>bold</b> [x](javascript:alert(1)) <img src=x onerror=alert(1)>").body_html
 
-    assert_no_match(/<script|<b>|<img|href="javascript/, html)
+    assert_no_match(/<script|<b>|<img|href="javascript/i, html)
     assert_includes html, "&lt;script&gt;"
   end
 
