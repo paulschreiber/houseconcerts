@@ -110,6 +110,12 @@ module Madmin
       assert_no_match(/<script>alert/, response.body)
     end
 
+    test "preview asks proxies not to transform it" do
+      post preview_madmin_page_path("about"), params: { page: { title: "T", body: "Text" } }
+
+      assert_includes response.headers["Cache-Control"].split(/,\s*/), "no-transform"
+    end
+
     test "signed-out visitors are sent to sign in" do
       sign_out :admin
 

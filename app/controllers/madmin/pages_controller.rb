@@ -29,9 +29,12 @@ module Madmin
       end
     end
 
-    # The page with the editor’s unsaved text, in the site’s styles.
+    # The page with the editor’s unsaved text, in the site’s styles. no-transform
+    # asks Cloudflare not to add its scripts (email decoding, the analytics
+    # beacon), which the sandbox blocks.
     def preview
       @page.assign_attributes(page_params)
+      response.cache_control[:extras] = [ "no-transform" ]
       render template: "shows/page", layout: "page_preview"
     end
 
