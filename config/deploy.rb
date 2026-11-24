@@ -23,7 +23,8 @@ set :ssh_options,
 set :log_level, :info
 
 # Default value for :linked_files is []
-set :linked_files, %w[config/database.yml config/master.key config/credentials.yml.enc]
+# settings.local.yml holds this site’s own values for config/settings.yml.
+set :linked_files, %w[config/database.yml config/master.key config/credentials.yml.enc config/settings.local.yml]
 
 # Default value for linked_dirs is []
 # storage holds uploaded files (artist photos), which must outlive each release.

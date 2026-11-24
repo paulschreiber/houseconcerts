@@ -321,6 +321,32 @@ default):
 Older versions of sudo write this as `#includedir /etc/sudoers.d`; despite the
 `#`, it isn’t a comment. To check the rule: `sudo -l -U houseconcerts-deploy`.
 
+### Site settings
+
+`config/settings.yml` holds neutral defaults (a site called “House Concerts” on
+`example.com`). This site’s own values go in
+`shared/config/settings.local.yml`, which every release links to
+(`linked_files` in `config/deploy.rb`) and which isn’t in the repository.
+It needs, at least:
+
+```yaml
+:site_name: "House Concerts"
+:meta_description: "Private house concerts featuring talented singer-songwriters."
+:meta_keywords: "Music, Live, Concert"
+:google_analytics_id: "" # blank turns analytics off
+
+:organization:
+  :domain: "example.com"
+  :invites_from_first_name: "Jane"
+  :invites_from_last_name: "Smith"
+  :invites_from_email: "invites"
+```
+
+The domain matters most: without it, `config.hosts` and the mailer host are
+`example.com`, so the site rejects every request. The file must be readable by
+the `houseconcerts` group, since the Solid Queue worker reads it too. Restart
+the app after changing it.
+
 ### Deploying
 
 From a checkout, with your key in `houseconcerts-deploy`’s `authorized_keys`:

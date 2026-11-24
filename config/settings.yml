@@ -1,21 +1,19 @@
 ---
 :default_country: "US"
-:site_name: "Paul’s Brooklyn House Concerts"
-:meta_description: "Paul’s house concerts in Brooklyn, New York. Private shows featuring talented singer-songwriters."
-:meta_keywords: "Brooklyn, New York, Music, Live, Concert, Concerts, House Concert, Singer Songwriter, Folk, Acoustic, Unplugged"
-:google_analytics_id: "G-1RMTZBQMTP"
+:site_name: "House Concerts"
+:meta_description: "Private house concerts featuring talented singer-songwriters."
+:meta_keywords: "Music, Live, Concert, Concerts, House Concert, Singer Songwriter, Folk, Acoustic, Unplugged"
+:google_analytics_id: ""
 :default_venue_group: 2
 :notify_rsvp: "yes"
 :admin_prefix: "backstage"
-# The config/storage.yml service for uploaded files in production: "local"
-# (the server's disk) or "amazon" (S3). See INFRASTRUCTURE.md.
 :storage_service: "local"
 
 :organization:
-  :domain: "houseconcerts.nyc"
-  :invites_from_first_name: "Paul"
-  :invites_from_last_name: "Schreiber"
-  :invites_from_email: "paul"
+  :domain: "example.com"
+  :invites_from_first_name: "Jane"
+  :invites_from_last_name: "Smith"
+  :invites_from_email: "invites"
   :confirms_from_name: "House Concerts"
   :confirms_from_email: "info"
 
