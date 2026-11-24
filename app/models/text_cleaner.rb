@@ -6,9 +6,11 @@ module TextCleaner
   # Control characters other than a line break or tab, and invisible formatting
   # characters: zero-width spaces, right-to-left overrides, the byte order mark.
   HIDDEN = /(?![\n\t])\p{Cc}|\p{Cf}/
-  # Every kind of line break: CRLF, CR, vertical tab, form feed, next line, and
-  # the Unicode line and paragraph separators.
-  LINE_BREAKS = /\r\n?|[\v\f\u0085\u2028\u2029]/
+  # Every kind of line break (Ruby's R: CRLF, CR, vertical tab, form feed, next
+  # line, and the Unicode line and paragraph separators). They become newlines
+  # first, so that HIDDEN, which deletes the control characters, doesn't delete
+  # the ones that are line breaks.
+  LINE_BREAKS = /\R/
   # Whitespace at the ends of the text, including non-breaking and ideographic
   # spaces, which String#strip leaves.
   EDGES = /\A[[:space:]]+|[[:space:]]+\z/

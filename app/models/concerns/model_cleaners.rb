@@ -13,10 +13,8 @@ module ModelCleaners
   # characters removed.
   def clean_variables
     changed_attribute_names_to_save.each do |a|
-      next if self[a].frozen?
-      next unless self[a].is_a?(String)
-
-      self[a] = TextCleaner.clean(self[a])
+      value = self[a]
+      self[a] = TextCleaner.clean(value) if value.is_a?(String)
     end
   end
 
