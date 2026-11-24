@@ -17,7 +17,7 @@ module Settings
 
   EDITABLE = %w[
     site_name meta_description meta_keywords google_analytics_id
-    default_country default_venue_group notify_rsvp
+    default_country default_venue_group notify_rsvp guest_sign_off
     organization.invites_from_first_name organization.invites_from_last_name organization.invites_from_email
     organization.confirms_from_name organization.confirms_from_email
     venue.min_capacity venue.max_capacity

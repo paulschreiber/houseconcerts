@@ -6,6 +6,7 @@
 :google_analytics_id: ""
 :default_venue_group: 2
 :notify_rsvp: "yes"
+:guest_sign_off: ""
 :admin_prefix: "backstage"
 :storage_service: "local"
 

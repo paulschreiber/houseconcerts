@@ -39,11 +39,14 @@ class SettingsTest < ApplicationSystemTestCase
     assert_equal "", saved_settings.notify_rsvp
 
     click_link "Email"
+    fill_in "Sign-off", with: "See you soon,\nJane"
     fill_in "At", with: Time.zone.local(2000, 1, 1, 9)
     click_button "Update Email settings"
 
     assert_text "Email settings saved."
     assert_equal 9, saved_settings.reminders.hour
+    assert_equal "See you soon,\nJane", saved_settings.guest_sign_off
+    assert_field "Sign-off", with: "See you soon,\nJane"
     assert_field "At", with: "09:00"
   end
 

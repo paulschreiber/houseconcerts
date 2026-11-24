@@ -40,6 +40,13 @@ module Madmin
       assert_select "input#settings_reminder_time[type=time][step='3600'][value='13:00']"
     end
 
+    test "the email tab has the guest sign-off, as plain text over several lines" do
+      get madmin_setting_path("email")
+
+      assert_select "textarea#settings_guest_sign_off", text: ""
+      assert_select "label[for=settings_guest_sign_off]", text: "Sign-off"
+    end
+
     test "the sidebar links to the settings, after Pages and before Jobs, in its last group" do
       get madmin_setting_path("site")
 

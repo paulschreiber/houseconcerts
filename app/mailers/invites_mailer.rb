@@ -1,5 +1,5 @@
 class InvitesMailer < ApplicationMailer
-  helper JsonLdHelper
+  helper JsonLdHelper, GuestSignOffHelper
 
   before_action :set_rsvp, except: %i[invite invite_preview]
 

@@ -31,7 +31,5 @@
     <h3>Contact Info</h3>
     <%= @rsvp.show.venue.formatted_contact_info&.html_safe %>
 
-    <p>thanks!
-      <br />
-      <%= Settings.organization.invites_from_first_name %></p>
+    <%= guest_sign_off %>
     <%= ld_json_tag(ld_json_reservation(@rsvp)) %>
