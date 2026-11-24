@@ -1,4 +1,17 @@
 class ApplicationController < ActionController::Base
+  GOOGLE_ANALYTICS_SCRIPT_HOST = "https://*.googletagmanager.com".freeze
+  GOOGLE_ANALYTICS_HOSTS = [ "https://*.google-analytics.com", "https://*.analytics.google.com", GOOGLE_ANALYTICS_SCRIPT_HOST ].freeze
+
+  # Google Analytics' hosts are only allowed when it's set up. The setting is
+  # read for each request, not when the app boots.
+  content_security_policy do |policy|
+    if Settings.google_analytics_id.present?
+      policy.directives["img-src"].push(*GOOGLE_ANALYTICS_HOSTS)
+      policy.directives["connect-src"].push(*GOOGLE_ANALYTICS_HOSTS)
+      policy.directives["script-src"].push(GOOGLE_ANALYTICS_SCRIPT_HOST)
+    end
+  end
+
   # Prevent CSRF attacks by raising an exception.
   # For APIs, you may want to use :null_session instead.
   protect_from_forgery with: :exception

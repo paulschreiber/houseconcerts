@@ -16,17 +16,17 @@ class Venue < ApplicationRecord
   validates :address, presence: true
   validates :city, presence: true
   validates :province, inclusion: { in: ->(record) { record.province_codes } }
-  validates :postcode, postal_code: { country: Settings.default_country }
+  validates :postcode, postal_code: { country: :default_country }
   validates :country, inclusion: { in: ->(record) { record.country_codes } }
   validates :capacity, presence: true, numericality: {
     allow_nil: true,
     only_integer: true,
-    greater_than_or_equal_to: Settings.venue.min_capacity,
-    less_than_or_equal_to: Settings.venue.max_capacity
+    greater_than_or_equal_to: ->(_venue) { Settings.venue.min_capacity },
+    less_than_or_equal_to: ->(_venue) { Settings.venue.max_capacity }
   }
 
   def province_name
-    Carmen::Country.coded(Settings.default_country).subregions.coded(province)
+    Carmen::Country.coded(default_country).subregions.coded(province)
   end
 
   def location
