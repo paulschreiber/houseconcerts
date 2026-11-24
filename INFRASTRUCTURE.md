@@ -355,6 +355,15 @@ From a checkout, with your key in `houseconcerts-deploy`’s `authorized_keys`:
 bundle exec cap production deploy
 ```
 
+That deploys `main`. To deploy another pushed branch, for example to try a
+change in production before merging it, set `BRANCH`:
+
+```bash
+bundle exec cap production deploy BRANCH=fix/example
+```
+
+The next deploy from `main` replaces it.
+
 Or from GitHub: **Actions → Deploy → Run workflow** (`.github/workflows/deploy.yml`).
 It deploys `main`, and only runs for the repository’s owner. It needs:
 

@@ -7,7 +7,7 @@ set :bundle_without, %w[development test deploy].join(":")
 
 set :application, "houseconcerts"
 set :repo_url, "https://github.com/paulschreiber/houseconcerts.git"
-set :branch, "main"
+set :branch, ENV.fetch("BRANCH", "main")
 
 set :ssh_options,
     # Refuse to connect unless the host key is already in known_hosts, rather
