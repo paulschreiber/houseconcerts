@@ -455,10 +455,12 @@ with a photo size’s URL, and accept uploads from anyone.
         Header set Cache-Control "public, max-age=31536000, immutable"
     </LocationMatch>
 
-    # Artist photo uploads (see ModSecurity and photo uploads).
+    # Artist photo uploads and Markdown text (see ModSecurity and the admin forms).
     <LocationMatch "^/backstage/artists(/[^/]+)?$">
         SecRuleRemoveById 200004
     </LocationMatch>
+    SecRule REQUEST_URI "@rx ^/backstage/pages/[^/]+(/preview)?$" "id:10001,phase:1,pass,nolog,ctl:ruleRemoveTargetById=933210;ARGS:page[body]"
+    SecRule REQUEST_URI "@rx ^/backstage/shows/[^/]+/invite(/[^/]+)?(/preview)?$" "id:10002,phase:1,pass,nolog,ctl:ruleRemoveTargetById=933210;ARGS:invite_message[intro],ctl:ruleRemoveTargetById=933210;ARGS:invite_message[about]"
 
     # Redirect other host names (e.g. www.) to the canonical one.
     RewriteEngine on
@@ -472,7 +474,7 @@ with a photo size’s URL, and accept uploads from anyone.
 </IfModule>
 ```
 
-### ModSecurity and photo uploads
+### ModSecurity and the admin forms
 
 If Apache runs ModSecurity (`libapache2-mod-security2`), its recommended
 configuration (`/etc/modsecurity/modsecurity.conf`) denies some photo uploads
@@ -490,6 +492,26 @@ upload is refused depends on the photo. The vhost turns off just that rule for
 the artist pages, the only forms with a file field. Other rules still apply,
 and other pages keep this one. `SecRuleRemoveById` in a `LocationMatch` works
 because `modsecurity.conf` is loaded before the vhost.
+
+The Markdown text in the pages and invite editors trips another rule. A link
+such as `[house concert](https://en.wikipedia.org/wiki/House_concert)` looks
+like a PHP variable function call to the OWASP Core Rule Set, which refuses the
+preview and the save with a 403:
+
+```
+ModSecurity: Warning. Pattern match "(?:(?:\\(|\\[)[a-zA-Z0-9_.$..." at
+ARGS:page[body]. [id "933210"] [msg "PHP Injection Attack: Variable Function
+Call Found"] [uri "/backstage/pages/about/preview"]
+```
+
+The vhost stops rule 933210 from checking just the Markdown fields (`page[body]`,
+`invite_message[intro]` and `invite_message[about]`), on just the pages that
+post them. Each `SecRule` runs in phase 1, before the Core Rule Set checks the
+arguments, and `ctl:ruleRemoveTargetById` removes one argument from that rule’s
+targets for the request, so the rule still checks every other field. (Apache
+refuses `SecRuleUpdateTargetById` in a `LocationMatch` here with a syntax
+error.) Each rule needs an id no other local rule uses. Reload Apache after
+changing the vhost (`sudo apachectl configtest && sudo systemctl reload apache2`).
 
 ### Cache lifetimes
 
