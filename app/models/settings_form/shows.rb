@@ -12,13 +12,13 @@ class SettingsForm
     setting :max_capacity, "venue.max_capacity", :integer
     setting :notify_rsvp, "notify_rsvp", :boolean, from: ->(value) { value.present? }, to: ->(notify) { notify ? "yes" : "" }
 
-    validates :arrival_minutes, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 600 }
-    validates :duration, numericality: { only_integer: true, greater_than_or_equal_to: 1, less_than_or_equal_to: 24 }
-    validates :availability_cutoff_hours, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 720 }
-    validates :max_seats, numericality: { only_integer: true, greater_than_or_equal_to: ->(_form) { Defaults.show.min_seats }, less_than_or_equal_to: 100 }
-    validates :overbook_seats, :waitlist_capacity, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 1000 }
-    validates :min_price, :max_price, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 100_000 }
-    validates :min_capacity, :max_capacity, numericality: { only_integer: true, greater_than_or_equal_to: 1, less_than_or_equal_to: 10_000 }
+    validates :arrival_minutes, numericality: { in: 0..600 }
+    validates :duration, numericality: { in: 1..24 }
+    validates :availability_cutoff_hours, numericality: { in: 0..720 }
+    validates :max_seats, numericality: { greater_than_or_equal_to: ->(_form) { Defaults.show.min_seats }, less_than_or_equal_to: 100 }
+    validates :overbook_seats, :waitlist_capacity, numericality: { in: 0..1000 }
+    validates :min_price, :max_price, numericality: { in: 0..100_000 }
+    validates :min_capacity, :max_capacity, numericality: { in: 1..10_000 }
     validate :minimums_are_not_above_maximums
 
     private

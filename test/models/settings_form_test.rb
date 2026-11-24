@@ -1,6 +1,21 @@
 require "test_helper"
 
 class SettingsFormTest < ActiveSupport::TestCase
+  test "every setting a form edits can be stored" do
+    keys = [ SettingsForm::Site, SettingsForm::Email, SettingsForm::Shows, SettingsForm::Location ].flat_map { |form| form.settings.values.pluck(:key) }
+
+    assert_empty keys - Settings::EDITABLE
+  end
+
+  test "a save with no changes writes nothing" do
+    SettingValue.create!(key: "show.duration", value: "3")
+    form = SettingsForm::Shows.new
+
+    assert_no_changes -> { SettingValue.pluck(:key, :value, :updated_at) } do
+      assert form.save
+    end
+  end
+
   test "starts from the current settings" do
     with_setting("site_name", "Jane’s Concerts") do
       form = SettingsForm::Site.new

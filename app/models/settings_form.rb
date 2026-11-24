@@ -26,7 +26,7 @@ class SettingsForm
   def initialize(values = {})
     super()
     settings.each do |name, setting|
-      value = setting[:key].split(".").inject(Settings) { |node, part| node.public_send(part) }
+      value = Settings.dig(*setting[:key].split(".").map(&:to_sym))
       public_send("#{name}=", setting[:from] ? setting[:from].call(value) : value)
     end
     assign_attributes(values)
@@ -54,11 +54,15 @@ class SettingsForm
       (setting[:to] ? setting[:to].call(value) : value).to_s
     end
 
+    # Only a value that differs from the default is stored, and only a stored
+    # value that changes is written, so a save with no changes writes nothing.
     def store(record, key, value)
-      if value == Defaults.dig(*key.split(".").map(&:to_sym)).to_s
+      if value == Settings.default(key).to_s
         record&.destroy!
-      else
-        (record || SettingValue.new(key:)).update!(value:)
+      elsif record.nil?
+        SettingValue.create!(key:, value:)
+      elsif record.value != value
+        record.update!(value:)
       end
     end
 end

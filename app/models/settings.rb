@@ -37,11 +37,15 @@ module Settings
       Defaults.respond_to?(name, include_private) || super
     end
 
+    # A setting's default, by its dotted key such as "show.max_seats".
+    def default(key)
+      Defaults.dig(*key.split(".").map(&:to_sym))
+    end
+
     # A stored value as the type of the setting's default. Raises ArgumentError
     # when it doesn't fit, such as "abc" or " 5" for a number.
     def cast(key, value)
-      default = Defaults.dig(*key.split(".").map(&:to_sym))
-      return value.to_s unless default.is_a?(Integer)
+      return value.to_s unless default(key).is_a?(Integer)
 
       raise ArgumentError, "not a whole number: #{value.inspect}" unless value.to_s.match?(/\A-?\d+\z/)
 

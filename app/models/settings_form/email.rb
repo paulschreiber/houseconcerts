@@ -22,7 +22,7 @@ class SettingsForm
     validates :invites_from_email, :confirms_from_email, presence: true, length: { maximum: 64 }
     validates :invites_from_email, :confirms_from_email, format: { with: LOCAL_PART, message: :not_an_address_start }, allow_blank: true
     validates :guest_sign_off, length: { maximum: 500 }
-    validates :reminder_days, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 30 }
+    validates :reminder_days, numericality: { in: 0..30 }
     validates :reminder_time, format: { with: HOUR, message: :not_a_whole_hour }
   end
 end
