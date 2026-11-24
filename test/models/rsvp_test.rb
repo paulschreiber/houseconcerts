@@ -209,6 +209,19 @@ class RsvpTest < ActiveSupport::TestCase
     assert_not_nil rsvp.confirmed_at
   end
 
+  test "the seat limits are read when validating" do
+    rsvp = rsvps(:one)
+    rsvp.seats_reserved = 2
+
+    with_setting("show.max_seats", 1) do
+      assert_not rsvp.valid?
+      assert_includes rsvp.errors.attribute_names, :seats_reserved
+    end
+    with_setting("show.max_seats", 2) do
+      assert_predicate rsvp, :valid?
+    end
+  end
+
   test "seats_used can be at most show.max_seats_used" do
     rsvp = rsvps(:one)
 

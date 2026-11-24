@@ -5,6 +5,16 @@ class PersonTest < ActiveSupport::TestCase
     assert people(:one).valid?
   end
 
+  test "the postal code country is read when validating" do
+    person = people(:one)
+    person.postcode = "K1A 0B1"
+
+    assert_not person.valid?
+    with_setting("default_country", "CA") do
+      assert_predicate person, :valid?
+    end
+  end
+
   test "rejects values longer than the form allows" do
     { first_name: [ 100, "first name" ], last_name: [ 100, "last name" ], postcode: [ 10, "zip code" ] }.each do |attribute, (maximum, label)|
       record = people(:one)

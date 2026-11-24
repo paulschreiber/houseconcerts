@@ -38,6 +38,20 @@ module ActiveSupport
       Settings.show.overbook_seats = original
     end
 
+    # Runs the block with a setting changed (a dotted path such as
+    # "show.max_seats"), then restores it.
+    def with_setting(path, value)
+      *parents, key = path.split(".")
+      holder = parents.inject(Settings) { |settings, name| settings.public_send(name) }
+      original = holder.public_send(key)
+      begin
+        holder.public_send("#{key}=", value)
+        yield
+      ensure
+        holder.public_send("#{key}=", original)
+      end
+    end
+
     # A saved copy of the fixture venue, in a venue group, with the attributes
     # overridden.
     def create_venue(**attrs)
