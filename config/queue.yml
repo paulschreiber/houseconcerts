@@ -8,7 +8,9 @@ default: &default
       # Needs a database pool of threads + 2 (config/database.yml).
       threads: 10
       processes: <%= ENV.fetch("JOB_CONCURRENCY", 1) %>
-      polling_interval: 0.1
+      # Polling commits database transactions even when the queue is empty, and
+      # frequent commits keep the server’s disks busy.
+      polling_interval: 1
 
 development:
   <<: *default
