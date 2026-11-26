@@ -40,7 +40,9 @@ Environment=BOOTSNAP_CACHE_DIR=/var/cache/houseconcerts-jobs
 # warn and fall back to a temporary one on every start
 Environment=HOME=/var/cache/houseconcerts-jobs
 CacheDirectory=houseconcerts-jobs
-ExecStart=/usr/bin/ruby bin/jobs
+# The shell opens the log as houseconcerts-jobs. StandardOutput=append: would
+# open it as root, following symlinks (see "Logs" in INFRASTRUCTURE.md).
+ExecStart=/bin/sh -c 'exec /usr/bin/ruby bin/jobs >>/data/sites/houseconcerts/shared/log/solid_queue.log 2>&1'
 Restart=always
 RestartSec=1
 
