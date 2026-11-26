@@ -14,13 +14,9 @@
 # keeps running as the deploy user, which setup_deploy_user.sh added to the
 # shared group.
 #
-# Before relying on the worker, also check:
-# - If config/database.yml connects to MySQL without a password (socket
-#   authentication as the deploy user), give the app's MySQL user a password,
-#   or the worker can't connect. The check at the end catches this.
-# - If logrotate manages shared/log, its "create" line should be
-#   "create 0664 houseconcerts-deploy houseconcerts" so rotated logs stay
-#   group-writable.
+# Before relying on the worker, also check that config/database.yml connects to
+# MySQL with a password. With socket authentication as the deploy user, the
+# worker can't connect. The check at the end catches this.
 
 set -euo pipefail
 

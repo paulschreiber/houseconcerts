@@ -45,10 +45,6 @@ Then check:
   missing.
   `database.yml` connects to MySQL with a password, not socket authentication,
   so both new users can connect.
-- If logrotate manages `/data/sites/houseconcerts/shared/log`, its `create` line
-  is `create 0664 houseconcerts-deploy houseconcerts`, so rotated logs stay
-  writable by both users (see also “Logs” in
-  [`INFRASTRUCTURE.md`](INFRASTRUCTURE.md)).
 
 ## 2. Make the SSH keys
 
@@ -98,7 +94,7 @@ From your development machine:
 
 ```bash
 scp config/deploy/setup_solidqueue_user.sh config/deploy/templates/houseconcerts-solidqueue.service \
-  "$SERVER":houseconcerts-setup/
+  config/deploy/templates/houseconcerts.logrotate "$SERVER":houseconcerts-setup/
 ```
 
 Then on the server. Stop if the script fails:
@@ -109,7 +105,13 @@ sudo bash setup_solidqueue_user.sh
 sudo cp houseconcerts-solidqueue.service /etc/systemd/system/
 sudo systemd-analyze verify /etc/systemd/system/houseconcerts-solidqueue.service
 sudo systemctl enable --now houseconcerts-solidqueue
+sudo install -m 0644 houseconcerts.logrotate /etc/logrotate.d/houseconcerts
+sudo logrotate --debug /etc/logrotate.conf
 ```
+
+The last command changes nothing. It checks the whole configuration: look for
+both logs, and no errors. `duplicate log entry` means another logrotate file
+also covers `shared/log`: remove that entry.
 
 `setup_solidqueue_user.sh` ends by booting the app as `houseconcerts-jobs` and
 connecting to the database; if that fails, see the notes at the top of the

@@ -1,0 +1,31 @@
+# Log rotation for shared/log (see "Logs" in INFRASTRUCTURE.md).
+#
+# Install on the server, from a copy of this file:
+#   sudo install -m 0644 houseconcerts.logrotate /etc/logrotate.d/houseconcerts
+#   sudo logrotate --debug /etc/logrotate.conf
+#
+# The directory is writable by the houseconcerts group, so logrotate needs "su"
+# to rotate in it: each log's owner, with that group. The web app and the
+# worker keep their logs open, so the logs are copied and truncated in place.
+
+/data/sites/houseconcerts/shared/log/production.log {
+    su houseconcerts-deploy houseconcerts
+    weekly
+    maxsize 50M
+    rotate 8
+    missingok
+    notifempty
+    compress
+    copytruncate
+}
+
+/data/sites/houseconcerts/shared/log/solid_queue.log {
+    su houseconcerts-jobs houseconcerts
+    weekly
+    maxsize 50M
+    rotate 8
+    missingok
+    notifempty
+    compress
+    copytruncate
+}

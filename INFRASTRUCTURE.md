@@ -316,9 +316,11 @@ The unit’s `ExecStart` redirects the output in a shell, so the file is opened 
 unit or a drop-in: systemd then opens the file as root, and the deploy user or
 the worker could swap in a symlink to make it write to any file on the server.
 
-The web app and the worker keep their logs open. If logrotate rotates them, use
-`copytruncate`. Without it, restart both after each rotation, and give the new
-files the `create` line in step 1 of [`SETUP.md`](SETUP.md).
+logrotate rotates both weekly, or sooner once one passes 50 MB (checked when
+logrotate runs, usually daily), and keeps 8 compressed copies. Its config is
+`config/deploy/templates/houseconcerts.logrotate`, installed in step 5 of
+[`SETUP.md`](SETUP.md). The web app and the worker keep their logs open, so it
+uses `copytruncate`, which can lose lines written during a rotation.
 
 ### Running commands in production
 
