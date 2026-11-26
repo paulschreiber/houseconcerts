@@ -1,4 +1,5 @@
 require "test_helper"
+require "support/capybara_chrome_reset"
 
 Capybara.server_host = "localhost"
 
