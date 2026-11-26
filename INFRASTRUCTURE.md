@@ -299,6 +299,27 @@ Both are in the `houseconcerts` group, which can read the app’s secrets in
 `systemctl restart houseconcerts-solidqueue` (see [sudo](#sudo)). To work on
 the server as it, log in as yourself and run `sudo -iu houseconcerts-deploy`.
 
+### Logs
+
+Both are in `/data/sites/houseconcerts/shared/log`:
+
+| File              | What’s in it                                                                                        |
+| ----------------- | --------------------------------------------------------------------------------------------------- |
+| `production.log`  | the Rails log, from the web app and the worker                                                      |
+| `solid_queue.log` | the worker’s output: its Rails log lines again, plus anything else it prints, such as a boot crash |
+
+`journalctl -u houseconcerts-solidqueue` doesn’t have the worker’s output, only
+systemd’s messages about the service and any error opening the log.
+
+The unit’s `ExecStart` redirects the output in a shell, so the file is opened as
+`houseconcerts-jobs`. Don’t replace this with `StandardOutput=append:`, in the
+unit or a drop-in: systemd then opens the file as root, and the deploy user or
+the worker could swap in a symlink to make it write to any file on the server.
+
+The web app and the worker keep their logs open. If logrotate rotates them, use
+`copytruncate`. Without it, restart both after each rotation, and give the new
+files the `create` line in step 1 of [`SETUP.md`](SETUP.md).
+
 ### Running commands in production
 
 Run the console, rake tasks and `rails runner` as `houseconcerts-deploy`, from

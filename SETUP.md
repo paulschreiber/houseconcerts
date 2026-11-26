@@ -47,7 +47,8 @@ Then check:
   so both new users can connect.
 - If logrotate manages `/data/sites/houseconcerts/shared/log`, its `create` line
   is `create 0664 houseconcerts-deploy houseconcerts`, so rotated logs stay
-  writable by both users.
+  writable by both users (see also “Logs” in
+  [`INFRASTRUCTURE.md`](INFRASTRUCTURE.md)).
 
 ## 2. Make the SSH keys
 
@@ -119,6 +120,8 @@ script.
 On the server:
 
 - `systemctl status houseconcerts-solidqueue`: running, as `houseconcerts-jobs`
+- `sudo tail /data/sites/houseconcerts/shared/log/solid_queue.log`: the
+  worker’s output (see “Logs” in [`INFRASTRUCTURE.md`](INFRASTRUCTURE.md))
 - `ps -eo user:24,cmd | grep -i '[p]assenger'`: the app runs as `houseconcerts-deploy`
 - `sudo -l -U houseconcerts-deploy`: only the restart rule
 
