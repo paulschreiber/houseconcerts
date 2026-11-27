@@ -391,8 +391,11 @@ It needs, at least:
   :invites_from_email: "invites"
 ```
 
-The domain matters most: without it, `config.hosts` and the mailer host are
-`example.com`, so the site rejects every request. The file must be readable by
+The domain matters most: it sets `config.hosts` and the mailer host. In
+production the app refuses to boot, which fails the deploy, while the domain is
+blank or still `example.com`. Missing Amazon SES or Twilio credentials don’t
+stop the app from booting. The dashboard shows a banner, and **Site Health** in
+the sidebar lists them. The file must be readable by
 the `houseconcerts` group, since the Solid Queue worker reads it too. Restart
 the app after changing it.
 

@@ -95,6 +95,18 @@ module Madmin
       assert_select ".graph", count: 0
     end
 
+    test "shows a banner linking to the Site Health when one fails" do
+      failures = [ SiteHealth::Result.new("Twilio text message credentials", [ "Missing credentials: twilio.auth_token." ]) ]
+
+      with_stubbed(SiteHealth, :failures, -> { failures }) do
+        get madmin_root_path
+      end
+
+      assert_select ".dashboard-warning h2", text: "Site Health needs attention"
+      assert_select ".dashboard-warning li", text: "Twilio text message credentials: Missing credentials: twilio.auth_token."
+      assert_select ".dashboard-warning a[href=?]", madmin_site_health_path, text: "View Site Health"
+    end
+
     test "shows no warning when there are no failed batch items" do
       get madmin_root_path
 

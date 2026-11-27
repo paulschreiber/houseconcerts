@@ -1,0 +1,7 @@
+en:
+  site_health:
+    missing_credentials: "Missing credentials: %{names}."
+    ses_credentials:
+      title: "Amazon SES email credentials"
+    twilio_credentials:
+      title: "Twilio text message credentials"

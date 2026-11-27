@@ -1,0 +1,31 @@
+<% content_for :title, t("madmin.site_health.title") %>
+
+<header class="header">
+  <h1><%= t("madmin.site_health.title") %></h1>
+</header>
+
+<div class="table-scroll">
+  <table>
+    <thead>
+      <tr>
+        <th><%= t("madmin.site_health.check") %></th>
+        <th><%= t("madmin.site_health.status") %></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @results.each do |result| %>
+        <tr>
+          <td><%= result.title %></td>
+          <td>
+            <% if result.passed? %>
+              <%= t("madmin.site_health.passed") %>
+            <% else %>
+              <strong><%= t("madmin.site_health.failed") %></strong>:
+              <%= result.problems.join(" ") %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
