@@ -80,6 +80,9 @@ CACHE=/var/cache/$SERVICE_USER
 install -d -m 0755 -o "$SERVICE_USER" -g "$GROUP" "$CACHE"
 sudo -u "$SERVICE_USER" env RAILS_ENV=production BOOTSNAP_CACHE_DIR="$CACHE" HOME="$CACHE" \
   bash -c "cd $APP/current && /usr/bin/ruby bin/rails runner 'SolidQueue::Job.count'"
+# Rails boots even if it can't open its log, so that's checked separately.
+sudo -u "$SERVICE_USER" test -w "$SHARED/log/production.log" ||
+  { echo "$SERVICE_USER can't write to $SHARED/log/production.log" >&2; exit 1; }
 sudo -u "$SERVICE_USER" touch "$SHARED/storage/.write-test"
 rm -f "$SHARED/storage/.write-test"
-echo "ok: $SERVICE_USER can boot the app, reach the database and write to storage"
+echo "ok: $SERVICE_USER can boot the app, reach the database and write to the log and storage"
