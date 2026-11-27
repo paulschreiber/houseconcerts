@@ -122,9 +122,11 @@ script.
 On the server:
 
 - `systemctl status houseconcerts-solidqueue`: running, as `houseconcerts-jobs`
-- `sudo tail /data/sites/houseconcerts/shared/log/solid_queue.log`: the
-  worker’s output (see “Logs” in [`INFRASTRUCTURE.md`](INFRASTRUCTURE.md))
+- `sudo tail /data/sites/houseconcerts/shared/log/solid_queue.log`: no errors
+  (it can be empty; see “Logs” in [`INFRASTRUCTURE.md`](INFRASTRUCTURE.md))
 - `ps -eo user:24,cmd | grep -i '[p]assenger'`: the app runs as `houseconcerts-deploy`
+- after loading a page of the site,
+  `sudo tail /data/sites/houseconcerts/shared/log/production.log`: that request
 - `sudo -l -U houseconcerts-deploy`: only the restart rule
 
 ## 7. Set up GitHub

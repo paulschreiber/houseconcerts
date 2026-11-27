@@ -1,22 +1,5 @@
 require "active_support/core_ext/integer/time"
 
-# An IO-like object that fans out writes to multiple targets. See the
-# comment in Rails.application.configure below for why this is used
-# instead of ActiveSupport::BroadcastLogger.
-class MultiIO
-  def initialize(*targets)
-    @targets = targets
-  end
-
-  def write(...)
-    @targets.each { |target| target.write(...) }
-  end
-
-  def close
-    @targets.each(&:close)
-  end
-end
-
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -51,26 +34,13 @@ Rails.application.configure do
   # Skip http-to-https redirect for the default health check endpoint.
   # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
 
-  # Log to STDOUT with the current request id as a default log tag.
   config.log_tags = [ :request_id ]
 
-  # Logs to STDOUT and log/production.log through one Logger writing to both
-  # (MultiIO), not an ActiveSupport::BroadcastLogger. ActiveJob::Logging wraps
-  # enqueue and perform in logger.tagged(&block), and a BroadcastLogger runs
-  # that block once per target, so every job would be enqueued and performed
-  # twice. A single Logger runs it once, and ActiveJob shares its log level.
-  #
-  # Once Rails fixes this upstream, this can be a plain
-  # ActiveSupport::BroadcastLogger:
-  # https://github.com/rails/rails/pull/53105
-  # https://github.com/rails/rails/pull/53505
-  # https://github.com/rails/rails/pull/58429
-  config.logger = ActiveSupport::TaggedLogging.new(
-    ActiveSupport::Logger.new(
-      MultiIO.new($stdout, File.open(Rails.root.join("log/production.log"), "a")),
-      formatter: Logger::Formatter.new
-    )
-  )
+  # Don't broadcast to a second tagged logger (such as one for STDOUT):
+  # BroadcastLogger then runs a tagged block once per logger, so ActiveJob would
+  # enqueue and perform every job twice. The fix is
+  # https://github.com/rails/rails/pull/58429.
+  config.log_formatter = Logger::Formatter.new
 
   # Change to "debug" to log everything (including potentially personally-identifiable information!)
   config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "info")

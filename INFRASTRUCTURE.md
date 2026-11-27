@@ -303,13 +303,17 @@ the server as it, log in as yourself and run `sudo -iu houseconcerts-deploy`.
 
 Both are in `/data/sites/houseconcerts/shared/log`:
 
-| File              | What’s in it                                                                                        |
-| ----------------- | --------------------------------------------------------------------------------------------------- |
-| `production.log`  | the Rails log, from the web app and the worker                                                      |
-| `solid_queue.log` | the worker’s output: its Rails log lines again, plus anything else it prints, such as a boot crash |
+| File              | What’s in it                                                           |
+| ----------------- | ---------------------------------------------------------------------- |
+| `production.log`  | the Rails log, from the web app and the worker                         |
+| `solid_queue.log` | whatever the worker prints outside the Rails log, such as a boot crash |
 
 `journalctl -u houseconcerts-solidqueue` doesn’t have the worker’s output, only
 systemd’s messages about the service and any error opening the log.
+
+If Rails can’t open `production.log`, it starts anyway and logs to standard
+error instead: `solid_queue.log` for the worker, and Passenger’s log (usually
+Apache’s error log) for the web app.
 
 The unit’s `ExecStart` redirects the output in a shell, so the file is opened as
 `houseconcerts-jobs`. Don’t replace this with `StandardOutput=append:`, in the
@@ -332,6 +336,9 @@ sudo -iu houseconcerts-deploy
 cd /data/sites/houseconcerts/current
 RAILS_ENV=production bundle exec rails console
 ```
+
+Rake tasks and `rails runner` don’t show Rails log lines, such as why an email
+failed to send. Look in `shared/log/production.log` (see [Logs](#logs)).
 
 Other users can’t read `shared/config` (it holds the database password and
 `master.key`). As root, the command runs, but it leaves root-owned files in
