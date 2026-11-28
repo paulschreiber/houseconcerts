@@ -53,20 +53,27 @@ as_deploy_user() {
 # 2. Logs: both Passenger (as the deploy user) and the worker append to
 #    log/production.log, so the directory is group-writable and setgid (new
 #    files inherit the group), and the existing logs become group-writable.
+#    They record visitors' activity, so other users get no access.
 chgrp -R "$GROUP" "$SHARED/log"
-as_deploy_user chmod 2775 "$SHARED/log"
-find "$SHARED/log" -type f -exec chmod g+w {} +
+as_deploy_user chmod 2770 "$SHARED/log"
+find "$SHARED/log" -type f -exec chmod g+w,o-rwx {} +
 
 # 2b. Storage: the worker writes photo sizes and deletes the files of replaced
 #     photos, and the web app reads and writes them too. The directories are
-#     group-writable and setgid, like the logs. The web app creates new files
-#     and directories group-writable too (config/initializers/umask.rb).
+#     group-writable, setgid and closed to other users, like the logs. The web
+#     app creates new files and directories the same way
+#     (config/initializers/umask.rb).
 chgrp -R "$GROUP" "$SHARED/storage"
-find "$SHARED/storage" -type d -exec chmod 2775 {} +
-find "$SHARED/storage" -type f -exec chmod g+w {} +
+find "$SHARED/storage" -type d -exec chmod 2770 {} +
+find "$SHARED/storage" -type f -exec chmod g+w,o-rwx {} +
 
-# 3. Secrets: readable by the group, not by everyone.
-for file in config/master.key config/database.yml config/credentials.yml.enc; do
+# 3. Secrets and this site's settings: readable by the group, not by everyone.
+#    Closing the directory covers any other file kept in it, and setgid gives
+#    new files the group.
+as_deploy_user chgrp "$GROUP" "$SHARED/config"
+as_deploy_user chmod 2750 "$SHARED/config"
+for file in config/master.key config/database.yml config/credentials.yml.enc \
+  config/settings.local.yml; do
   as_deploy_user chgrp "$GROUP" "$SHARED/$file"
   as_deploy_user chmod 0640 "$SHARED/$file"
 done
