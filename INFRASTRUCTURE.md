@@ -293,6 +293,8 @@ To set up a new server, or add a deploy key, follow [`SETUP.md`](SETUP.md).
 
 Both are in the `houseconcerts` group, which can read the app’s secrets in
 `shared/config` and write to `shared/log` and `shared/storage`.
+`setup_solidqueue_user.sh` closes all three directories to users outside the
+group.
 
 `houseconcerts-deploy` has no password and logs in only with the SSH keys in its
 `~/.ssh/authorized_keys`, each limited with `restrict`. Its only sudo right is
@@ -307,6 +309,9 @@ Both are in `/data/sites/houseconcerts/shared/log`:
 | ----------------- | ---------------------------------------------------------------------- |
 | `production.log`  | the Rails log, from the web app and the worker                         |
 | `solid_queue.log` | whatever the worker prints outside the Rails log, such as a boot crash |
+
+Logs record visitors’ activity, so keep them closed to users outside the
+`houseconcerts` group.
 
 `journalctl -u houseconcerts-solidqueue` doesn’t have the worker’s output, only
 systemd’s messages about the service and any error opening the log.
@@ -393,8 +398,9 @@ It needs, at least:
 
 The domain matters most: without it, `config.hosts` and the mailer host are
 `example.com`, so the site rejects every request. The file must be readable by
-the `houseconcerts` group, since the Solid Queue worker reads it too. Restart
-the app after changing it.
+the `houseconcerts` group, since the Solid Queue worker reads it too;
+`setup_solidqueue_user.sh` sets that group and closes the file to other users.
+Restart the app after changing it.
 
 ### Deploying
 
